@@ -1,0 +1,10 @@
+// [[member-create]]
+// === 회원가입
+//
+// ==== HTTP Request
+// include::{snippets}/member-create/http-request.adoc[]
+// include::{snippets}/member-create/request-fields.adoc[]
+//
+// ==== HTTP Response
+// include::{snippets}/member-create/http-response.adoc[]
+// include::{snippets}/member-create/response-fields.adoc[]

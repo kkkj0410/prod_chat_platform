@@ -1,0 +1,45 @@
+package kr.co.fitview.api.app.global.constant
+
+object SecurityConstant {
+
+
+    const val API_BASE: String = "/api/*"
+
+    val ADMIN_URIS: List<String> = listOf(
+        "$API_BASE/swagger/resource/**",
+        "/swagger-ui/**",
+        "/webjars/**",
+        "/swagger-ui.html",
+        "/docs/**"
+    )
+
+
+    val USER_URIS: List<String> = listOf(
+
+    )
+
+    val PERMIT_ALL_URIS: List<String> = listOf(
+        "$API_BASE/auth/**",
+
+        "/css/**",
+        "/js/**",
+        "/images/**",
+        "/fonts/**",
+        "/static/**",
+        "/public/**",
+        "/resources/**",
+        "/favicon.ico",
+        "/error",
+        "/h2-console/**",
+        "/actuator/health",
+        "/actuator/info",
+        "/api/header",
+    )
+
+
+    val API_DOCS_URIS: List<String> = listOf(
+        "/docs/**"
+    )
+
+
+}
