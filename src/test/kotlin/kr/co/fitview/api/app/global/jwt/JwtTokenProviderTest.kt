@@ -67,12 +67,11 @@ class JwtTokenProviderTest
         val testJwtConfig = jwtTokenProvider.jwtConfig
         val testTime = jwtTokenProvider.time
 
-        val email = "test@email.com"
         val memberId = 123L
         val role = Role.USER
 
         // when
-        val accessToken = jwtTokenProvider.createAccessToken(email, memberId, role)
+        val accessToken = jwtTokenProvider.createAccessToken(memberId, role)
         val claims = Jwts.parser()
             .verifyWith(testJwtConfig.secretKey)
             .build()
@@ -80,8 +79,7 @@ class JwtTokenProviderTest
             .payload
 
         // then
-        assertThat(claims.subject).isEqualTo(email)
-        assertThat(claims[JwtConstant.MEMBER_ID].toString().toLong()).isEqualTo(memberId)
+        assertThat(claims.subject.toLong()).isEqualTo(memberId)
         assertThat(claims[JwtConstant.ROLE]).isEqualTo(role.toString())
         assertThat(claims.issuedAt).isEqualTo(testTime.nowDate)
         assertThat(claims.expiration).isEqualTo(testTime.nowDatePlus(testJwtConfig.accessTokenValidityInMs))
@@ -107,7 +105,7 @@ class JwtTokenProviderTest
             .payload
 
         // then
-        assertThat(claims[JwtConstant.MEMBER_ID].toString().toLong()).isEqualTo(memberId)
+        assertThat(claims.subject.toLong()).isEqualTo(memberId)
         assertThat(claims[JwtConstant.CLAIM_JTI]).isEqualTo(testIdGenerator.createUuid())
         assertThat(claims[JwtConstant.TYP]).isEqualTo(JwtConstant.TYP_REFRESH)
         assertThat(claims.issuedAt).isEqualTo(testTime.nowDate)
@@ -121,11 +119,10 @@ class JwtTokenProviderTest
         // given
         val jwtTokenProvider = createJwtTokenProvider(3000, 1, 1)
 
-        val email = "test@email.com"
         val memberId = 123L
         val role = Role.USER
 
-        val accessToken = jwtTokenProvider.createAccessToken(email, memberId, role)
+        val accessToken = jwtTokenProvider.createAccessToken(memberId, role)
 
         // when
         val extractMemberId = jwtTokenProvider.extractMemberIdFrom(accessToken)
@@ -141,11 +138,10 @@ class JwtTokenProviderTest
         // given
         val jwtTokenProvider = createJwtTokenProvider(2000, 1, 1)
 
-        val email = "test@email.com"
         val memberId = 123L
         val role = Role.USER
 
-        val accessToken = jwtTokenProvider.createAccessToken(email, memberId, role)
+        val accessToken = jwtTokenProvider.createAccessToken(memberId, role)
 
         // when & then
         assertThatThrownBy {
@@ -187,11 +183,10 @@ class JwtTokenProviderTest
         // given
         val jwtTokenProvider = createJwtTokenProvider(3000, 1, 1)
 
-        val email = "test@email.com"
         val memberId = 123L
         val role = Role.USER
 
-        val accessToken = jwtTokenProvider.createAccessToken(email, memberId, role)
+        val accessToken = jwtTokenProvider.createAccessToken(memberId, role)
 
         // when
         val extractRole = jwtTokenProvider.extractRoleFrom(accessToken)
@@ -206,11 +201,10 @@ class JwtTokenProviderTest
         // given
         val jwtTokenProvider = createJwtTokenProvider(2000, 1, 1)
 
-        val email = "test@email.com"
         val memberId = 123L
         val role = Role.USER
 
-        val accessToken = jwtTokenProvider.createAccessToken(email, memberId, role)
+        val accessToken = jwtTokenProvider.createAccessToken(memberId, role)
 
         // when & then
         assertThatThrownBy {
@@ -228,6 +222,69 @@ class JwtTokenProviderTest
     @DisplayName("로그인 액세스 토큰이 유효하지 않으면 role 추출에 실패한다.")
     @Test
     fun extractRoleFromWithInvalidAccessToken() {
+        // given
+        val jwtTokenProvider = createJwtTokenProvider(3000, 1, 1)
+
+        val accessToken = "failToken"
+
+        // when & then
+        assertThatThrownBy {
+            jwtTokenProvider.extractRoleFrom(accessToken)
+        }
+            .isInstanceOf(GlobalException::class.java)
+            .satisfies(ThrowingConsumer { ex ->
+                val globalEx = ex as GlobalException
+                assertThat(globalEx.errorCode)
+                    .isEqualTo(JwtErrorCode.JWT_TOKEN_INVALID)
+            })
+    }
+
+
+    @DisplayName("로그인 액세스 토큰에서 이메일을 추출한다.")
+    @Test
+    fun extractEmailFrom() {
+        // given
+        val jwtTokenProvider = createJwtTokenProvider(3000, 1, 1)
+
+        val memberId = 123L
+        val role = Role.USER
+
+        val accessToken = jwtTokenProvider.createAccessToken(memberId, role)
+
+        // when
+        val extractRole = jwtTokenProvider.extractRoleFrom(accessToken)
+
+        // then
+        assertThat(extractRole).isEqualTo(Role.USER)
+    }
+
+    @DisplayName("로그인 액세스 토큰이 만료되면 role 추출에 실패한다.")
+    @Test
+    fun extractEmailFromWithExpired() {
+        // given
+        val jwtTokenProvider = createJwtTokenProvider(2000, 1, 1)
+
+        val memberId = 123L
+        val role = Role.USER
+
+        val accessToken = jwtTokenProvider.createAccessToken(memberId, role)
+
+        // when & then
+        assertThatThrownBy {
+            jwtTokenProvider.extractRoleFrom(accessToken)
+        }
+            .isInstanceOf(GlobalException::class.java)
+            .satisfies(ThrowingConsumer { ex ->
+                val globalEx = ex as GlobalException
+                assertThat(globalEx.errorCode)
+                    .isEqualTo(JwtErrorCode.JWT_TOKEN_EXPIRED)
+            })
+    }
+
+
+    @DisplayName("로그인 액세스 토큰이 유효하지 않으면 role 추출에 실패한다.")
+    @Test
+    fun extractEmailFromWithInvalidAccessToken() {
         // given
         val jwtTokenProvider = createJwtTokenProvider(3000, 1, 1)
 

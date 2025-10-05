@@ -26,15 +26,15 @@ class JwtTokenProvider(
 ) {
 
     fun createAccessToken(
-        email: String, memberId: Long, role: Role
+        memberId: Long, role: Role
     ): String {
 
         return Jwts.builder()
             .header()
             .add(JwtConstant.JWT_HEADER_TYPE, JwtConstant.JWT_HEADER_TYPE_VALUE)
             .and()
-            .subject(email)
-            .claim(JwtConstant.MEMBER_ID, memberId)
+            .subject(memberId.toString())
+//            .claim(JwtConstant.MEMBER_ID, memberId)
             .claim(JwtConstant.ROLE, role)
             .claim(JwtConstant.TYP, JwtConstant.TYP_ACCESS)
             .issuedAt(time.nowDate)
@@ -50,7 +50,8 @@ class JwtTokenProvider(
             .header()
             .add(JwtConstant.JWT_HEADER_TYPE, JwtConstant.JWT_HEADER_TYPE_VALUE)
             .and()
-            .claim(JwtConstant.MEMBER_ID, memberId)
+            .subject(memberId.toString())
+//            .claim(JwtConstant.MEMBER_ID, memberId)
             .claim(JwtConstant.CLAIM_JTI, idGenerator.createUuid())
             .claim(JwtConstant.TYP, JwtConstant.TYP_REFRESH)
             .issuedAt(time.nowDate)
@@ -73,7 +74,7 @@ class JwtTokenProvider(
 
     fun extractMemberIdFrom(jwtToken : String): Long{
         val claims = extractClaimsFrom(jwtToken)
-        return claims[JwtConstant.MEMBER_ID].toString().toLong()
+        return claims.subject.toLong()
     }
 
     fun extractRoleFrom(accessToken : String) : Role{

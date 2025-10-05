@@ -10,4 +10,8 @@ enum class Role {
                 ?: throw IllegalArgumentException("매칭되는 역할이 없습니다.")
         }
     }
+
+    fun toRoleName() : String{
+        return "ROLE_$name"
+    }
 }

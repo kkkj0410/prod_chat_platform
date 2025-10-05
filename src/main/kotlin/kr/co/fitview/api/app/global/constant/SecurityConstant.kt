@@ -37,7 +37,7 @@ object SecurityConstant {
     )
 
 
-    val API_DOCS_URIS: List<String> = listOf(
+    val DOCS_URIS: List<String> = listOf(
         "/docs/**"
     )
 
