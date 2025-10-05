@@ -70,6 +70,7 @@ class JwtTokenProvider(
     }
 
 
+
     fun extractMemberIdFrom(jwtToken : String): Long{
         val claims = extractClaimsFrom(jwtToken)
         return claims[JwtConstant.MEMBER_ID].toString().toLong()
@@ -103,5 +104,17 @@ class JwtTokenProvider(
 //        }
 //    }
 
+
+    // 해당 함수는 API 문서를 위한 임시 함수
+    // 실제 서비스에서 사용X
+    fun convertRestrictCookieFromAccessToken(
+        accessToken : String
+    ) : ResponseCookie {
+        return cookieProvider.createRestrictCookie(
+            JwtConstant.DOCS_TOKEN_COOKIE_NAME,
+            accessToken,
+            jwtConfig.accessTokenValidityInMs
+        )
+    }
 
 }

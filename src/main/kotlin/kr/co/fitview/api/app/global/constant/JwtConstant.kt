@@ -12,6 +12,6 @@ object JwtConstant {
     const val CLAIM_JTI: String = "jti"
     const val TYP_ACCESS: String = "access"
     const val TYP_REFRESH: String = "refresh"
-    const val SWAGGER_TOKEN_COOKIE_NAME: String = "swagger_token"
+    const val DOCS_TOKEN_COOKIE_NAME: String = "docs_token"
 
 }
