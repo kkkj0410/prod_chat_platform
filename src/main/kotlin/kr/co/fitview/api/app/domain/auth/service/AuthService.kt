@@ -24,6 +24,7 @@ class AuthService(
     val jwtTokenProvider : JwtTokenProvider
 ) {
 
+    @Transactional
     fun signup(request : MemberCreateServiceRequest) : Member{
         val encryptedPassword = passwordEncoder.encode(request.password)
         val member = createMember(request, encryptedPassword)
