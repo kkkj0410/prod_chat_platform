@@ -1,0 +1,29 @@
+[[JWT_001]]
+=== JWT_001
+
+==== HTTP Request
+include::{snippets}/JWT_001/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/JWT_001/http-response.adoc[]
+include::{snippets}/JWT_001/response-fields.adoc[]
+
+[[JWT_002]]
+=== JWT_002
+
+==== HTTP Request
+include::{snippets}/JWT_002/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/JWT_002/http-response.adoc[]
+include::{snippets}/JWT_002/response-fields.adoc[]
+
+[[JWT_003]]
+=== JWT_003
+
+==== HTTP Request
+include::{snippets}/JWT_003/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/JWT_003/http-response.adoc[]
+include::{snippets}/JWT_003/response-fields.adoc[]

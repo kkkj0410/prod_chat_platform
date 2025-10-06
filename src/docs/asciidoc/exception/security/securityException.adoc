@@ -1,0 +1,11 @@
+[[SECURITY_001]]
+=== SECURITY_001
+
+==== HTTP Request
+include::{snippets}/SECURITY_001/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/SECURITY_001/http-response.adoc[]
+include::{snippets}/SECURITY_001/response-fields.adoc[]
+
+

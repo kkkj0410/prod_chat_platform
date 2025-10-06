@@ -6,10 +6,11 @@ import org.springframework.http.HttpStatus
 
 enum class AuthErrorCode(
     override val rawCode: String,
-    override val message: String
+    override val message: String,
+    override val description: String
 ) : ErrorCode {
 
-    INVALID_PASSWORD("001", "Invalid password"),
+    INVALID_PASSWORD("001", "Invalid password", "로그인 비밀번호 틀림"),
 
 
     ;

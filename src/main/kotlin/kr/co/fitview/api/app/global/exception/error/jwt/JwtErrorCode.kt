@@ -6,12 +6,13 @@ import org.springframework.http.HttpStatus
 
 enum class JwtErrorCode(
     override val rawCode: String,
-    override val message: String
+    override val message: String,
+    override val description: String
 ) : ErrorCode {
 
-    JWT_TOKEN_EXPIRED("001", "jwt token has expired"),
-    JWT_TOKEN_INVALID("002", "jwt token is invalid"),
-    JWT_TOKEN_MISSING("003","jwt token is missing");
+    JWT_TOKEN_EXPIRED("001", "jwt token has expired", "jwt 토큰 만료"),
+    JWT_TOKEN_INVALID("002", "jwt token is invalid", "jwt가 변형됐거나 필드값 파싱이 안됨"),
+    JWT_TOKEN_MISSING("003","jwt token is missing", "jwt 토큰을 서버에 주지 않았음");
 
     override val prefix: String
         get() = "JWT"

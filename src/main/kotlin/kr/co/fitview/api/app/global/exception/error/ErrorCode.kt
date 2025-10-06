@@ -11,6 +11,7 @@ interface ErrorCode {
 
     val code: String get() = "${prefix}_$rawCode"
     val message: String
+    val description: String
 
     fun toApiResponse(): ApiResponse<Any?> =
         ApiResponse.error(HttpStatus.UNAUTHORIZED, code, message)
