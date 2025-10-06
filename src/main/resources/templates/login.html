@@ -125,7 +125,7 @@
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ email: loginId, password })
+                body: JSON.stringify({loginId, password })
             });
 
             if (!response.ok) {
@@ -133,6 +133,8 @@
                 document.getElementById('message').textContent = '로그인 실패';
                 return;
             }
+
+            window.location.href = '/docs/index.html';
 
         } catch (err) {
             document.getElementById('message').textContent = '로그인 실패';
