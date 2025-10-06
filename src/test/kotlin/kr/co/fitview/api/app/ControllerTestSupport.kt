@@ -2,7 +2,9 @@ package kr.co.fitview.api.app
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import kr.co.fitview.api.app.domain.auth.controller.AuthController
+import kr.co.fitview.api.app.domain.auth.service.AuthService
 import kr.co.fitview.api.app.domain.member.controller.MemberController
+import kr.co.fitview.api.app.domain.member.service.MemberService
 import kr.co.fitview.api.app.global.config.JwtConfig
 import kr.co.fitview.api.app.global.config.SecurityConfig
 import kr.co.fitview.api.app.global.config.TestSecurityConfig
@@ -17,6 +19,7 @@ import kr.co.fitview.api.app.global.jwt.JwtTokenProvider
 import kr.co.fitview.api.app.global.security.JwtAuthenticationEntryPoint
 import kr.co.fitview.api.app.global.time.Time
 import kr.co.fitview.api.app.global.time.TimeProvider
+import kr.co.fitview.api.app.global.util.SecurityUtil
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
 import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
@@ -26,12 +29,17 @@ import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.FilterType
 import org.springframework.context.annotation.Import
 import org.springframework.test.context.ContextConfiguration
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.web.servlet.MockMvc
 
 
-@Import(TestSecurityConfig::class)
+@Import(
+    TestSecurityConfig::class,
+    SecurityUtil::class
+)
 @WebMvcTest(controllers = [
     AuthController::class,
+    MemberController::class,
     GlobalExceptionHandler::class
 ],
 excludeFilters = [
@@ -55,6 +63,12 @@ abstract class ControllerTestSupport {
 
     @Autowired
     protected lateinit var objectMapper: ObjectMapper
+
+    @MockitoBean
+    private lateinit var authService: AuthService
+
+    @MockitoBean
+    private lateinit var memberService: MemberService
 
 
 }

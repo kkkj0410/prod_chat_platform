@@ -1,10 +1,10 @@
-// [[member-create]]
-// === 회원가입
-//
-// ==== HTTP Request
-// include::{snippets}/member-create/http-request.adoc[]
-// include::{snippets}/member-create/request-fields.adoc[]
-//
-// ==== HTTP Response
-// include::{snippets}/member-create/http-response.adoc[]
-// include::{snippets}/member-create/response-fields.adoc[]
+[[member-me]]
+=== 본인 사용자 정보 조회
+
+==== HTTP Request
+include::{snippets}/member-me/http-request.adoc[]
+include::{snippets}/member-me/request-headers.adoc[]
+
+==== HTTP Response
+include::{snippets}/member-me/http-response.adoc[]
+include::{snippets}/member-me/response-fields.adoc[]

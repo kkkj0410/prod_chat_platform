@@ -1,7 +1,7 @@
 package kr.co.fitview.api.app.domain.member.service
 
+import kr.co.fitview.api.app.domain.member.dto.response.MemberMeResponse
 import kr.co.fitview.api.app.domain.member.entity.Member
-import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.member.MemberErrorCode
@@ -30,10 +30,20 @@ class MemberService(
         return memberRepository.findByIdAndDeletedAtIsNull(memberId)
     }
 
+    fun findMemberMe(memberId: Long): MemberMeResponse {
+        val findMember = findMemberOrElseThrow(memberId)
+        return MemberMeResponse(findMember.loginId!!, findMember.role!!)
+    }
+
     private fun validateDuplicatedLoginId(member: Member) {
         findMemberFrom(member.loginId!!)?.let {
             throw GlobalException(MemberErrorCode.MEMBER_DUPLICATE_LOGIN_ID)
         }
+    }
+
+    private fun MemberService.findMemberOrElseThrow(memberId: Long) : Member {
+        return findMemberFrom(memberId)
+            ?: throw GlobalException(MemberErrorCode.MEMBER_NOT_FOUND)
     }
 
 

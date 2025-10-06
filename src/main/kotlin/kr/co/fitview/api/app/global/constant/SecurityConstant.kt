@@ -13,7 +13,7 @@ object SecurityConstant {
 
 
     val USER_URIS: List<String> = listOf(
-
+        "$API_BASE/members/**",
     )
 
     val PERMIT_ALL_URIS: List<String> = listOf(
