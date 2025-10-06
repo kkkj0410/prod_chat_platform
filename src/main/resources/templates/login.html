@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>로그인</title>
+    <style>
+        /* 전체 배경과 폰트 */
+        body {
+            background: #f0f2f5;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        /* 로그인 박스 */
+        .login-container {
+            background: white;
+            padding: 40px 50px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            width: 320px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        /* 제목 */
+        .login-container h2 {
+            margin-bottom: 25px;
+            color: #333;
+        }
+
+        /* 라벨 */
+        label {
+            display: block;
+            text-align: left;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        /* 입력창 */
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 10px 12px;
+            margin-bottom: 20px;
+            border: 1.8px solid #ddd;
+            border-radius: 6px;
+            font-size: 15px;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus {
+            outline: none;
+            border-color: #4a90e2;
+            box-shadow: 0 0 5px rgba(74, 144, 226, 0.5);
+        }
+
+        /* 버튼 */
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #4a90e2;
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #357ABD;
+        }
+
+        /* 에러 메시지 */
+        #message {
+            margin-top: 15px;
+            min-height: 20px;
+            color: #e74c3c;
+            font-weight: 600;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+<div class="login-container">
+    <h2>로그인</h2>
+    <form th:action="@{/api/v1/docs/login}" method="post" id="loginForm">
+        <label for="loginId">아이디</label>
+        <input type="text" id="loginId" name="loginId" placeholder="아이디 입력" required/>
+
+        <label for="password">비밀번호</label>
+        <input type="password" id="password" name="password" placeholder="비밀번호 입력" required/>
+
+        <input type="hidden" name="clientType" id="clientType" value="web"/>
+        <button type="submit">로그인</button>
+    </form>
+
+    <div style="margin-top: 15px; text-align: center;">
+        <a href="/docs/index.html"
+           style="display: inline-block; margin: 0 15px; color: #4a90e2; text-decoration: none;">
+            Spring REST Docs 문서
+        </a>
+    </div>
+
+    <p id="message"></p>
+</div>
+
+<script>
+    document.getElementById('loginForm').addEventListener('submit', async function(event) {
+        event.preventDefault();
+
+        const loginId = document.getElementById('loginId').value;
+        const password = document.getElementById('password').value;
+
+        try {
+            const response = await fetch('/api/v1/docs/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email: loginId, password })
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                document.getElementById('message').textContent = '로그인 실패';
+                return;
+            }
+
+        } catch (err) {
+            document.getElementById('message').textContent = '로그인 실패';
+        }
+    });
+</script>
+</body>
+</html>

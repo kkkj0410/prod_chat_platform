@@ -6,30 +6,30 @@ import org.springframework.data.domain.Slice
 import org.springframework.http.HttpStatus
 
 data class ApiResponse<T>(
-    val status: Int?,
+    val status: Int,
 
-    val code: String?,
+    val code: String,
 
-    val message: String?,
+    val message: String,
 
-    val data: T?,
+    val data: T,
 ) {
 
     companion object {
-        fun <T> success(status: HttpStatus, data: T): ApiResponse<T> {
-            return ApiResponse(status.value(), null, status.reasonPhrase, data)
+        fun <T> success(data: T): ApiResponse<T> {
+            return ApiResponse(HttpStatus.OK.value(), "ok", "ok", data)
         }
 
         fun <T> successWithPagination(data: List<T>, pagination: Pagination): ApiResponse<SuccessPagedResponse<T>> {
             return ApiResponse(
                 HttpStatus.OK.value(),
-                null,
+                "ok",
                 HttpStatus.OK.reasonPhrase,
                 SuccessPagedResponse(data, pagination)
             )
         }
 
-        fun <T> fail(status: HttpStatus, code: String, message: String): ApiResponse<T> {
+        fun error(status: HttpStatus, code: String, message: String): ApiResponse<Any?> {
             return ApiResponse(status.value(), code, message, null)
         }
     }

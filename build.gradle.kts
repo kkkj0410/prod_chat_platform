@@ -4,6 +4,7 @@ plugins {
 	id("org.springframework.boot") version "3.5.6"
 	id("io.spring.dependency-management") version "1.1.7"
 	kotlin("plugin.jpa") version "1.9.25"
+	id ("org.asciidoctor.jvm.convert") version "4.0.5"
 }
 
 group = "kr.co.fitview.api"
@@ -15,6 +16,8 @@ java {
 		languageVersion = JavaLanguageVersion.of(17)
 	}
 }
+
+val asciidoctorExt by configurations.creating
 
 configurations {
 	compileOnly {
@@ -29,16 +32,37 @@ repositories {
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 //	implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
+	implementation("org.springframework.boot:spring-boot-starter-security")
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
+	implementation("org.springframework.boot:spring-boot-starter-validation")
+
 	compileOnly("org.projectlombok:lombok")
+
+	runtimeOnly ("com.h2database:h2")
 	runtimeOnly("com.mysql:mysql-connector-j")
+
 	annotationProcessor("org.projectlombok:lombok")
+
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 	testImplementation("org.springframework.security:spring-security-test")
+
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
+	// RestDocs
+	asciidoctorExt("org.springframework.restdocs:spring-restdocs-asciidoctor")
+	testImplementation("org.springframework.restdocs:spring-restdocs-mockmvc")
+
+	// jwt
+	implementation("io.jsonwebtoken:jjwt:0.12.6")
+
+	//thymeleaf
+	implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
+
+	//mock
+	testImplementation("org.mockito.kotlin:mockito-kotlin:5.1.0")
 }
 
 kotlin {
@@ -55,4 +79,32 @@ allOpen {
 
 tasks.withType<Test> {
 	useJUnitPlatform()
+}
+
+// 1. 전역 변수 (Groovy ext 대신 Kotlin val)
+val snippetsDir = file("build/generated-snippets")
+
+// 2. test task
+tasks.test {
+	outputs.dir(snippetsDir)
+}
+
+// 3. asciidoctor task
+tasks.named<org.asciidoctor.gradle.jvm.AsciidoctorTask>("asciidoctor") {
+	inputs.dir(snippetsDir)
+	configurations("asciidoctorExt")
+
+	sources {
+		include("**/index.adoc")
+	}
+	baseDirFollowsSourceFile() // 다른 adoc 파일 include 시, 경로를 baseDir로 맞추기
+	dependsOn(tasks.test)
+}
+
+// 4. bootJar task
+tasks.named<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
+	dependsOn(tasks.named("asciidoctor"))
+	from(tasks.named<org.asciidoctor.gradle.jvm.AsciidoctorTask>("asciidoctor").get().outputDir) {
+		into("static/docs")
+	}
 }
