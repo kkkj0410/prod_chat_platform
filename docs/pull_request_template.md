@@ -41,10 +41,10 @@ ex) 로그인 시, 구글 소셜 로그인 기능을 추가했습니다.
 `테스트 위치/대상/유형을 남겨주세요.`
 `(테스트를 위해 준비해야되는 환경이 있다면 남겨주세요)`
 ex)
-1. test/java/com/UserRepositoryTest
+1. test/kotlin/kr/co/fitview/api/app/domain/auth/controller/AuthControllerTest
 - User 도메인에 대한 Repository 테스트 완료
 - Mock 객체 기반 단위 테스트 진행
-2. test/java/com/UserServiceTest
+2. test/kotlin/kr/co/fitview/api/app/domain/auth/service/AuthServiceTest
 - User 도메인에 대한 Service 테스트 완료
 - 통합 테스트(h2 DB) 진행
 
