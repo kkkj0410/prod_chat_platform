@@ -1,0 +1,21 @@
+[[MEMBER_001]]
+=== MEMBER_001
+
+==== HTTP Request
+include::{snippets}/MEMBER_001/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/MEMBER_001/http-response.adoc[]
+include::{snippets}/MEMBER_001/response-fields.adoc[]
+
+[[MEMBER_002]]
+=== MEMBER_002
+
+==== HTTP Request
+include::{snippets}/MEMBER_002/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/MEMBER_002/http-response.adoc[]
+include::{snippets}/MEMBER_002/response-fields.adoc[]
+
+

@@ -1,0 +1,20 @@
+[[exception]]
+=== <AUTH>
+
+include::auth/authException.adoc[]
+
+=== <JWT>
+
+include::jwt/jwtException.adoc[]
+
+=== <MEMBER>
+
+include::member/memberException.adoc[]
+
+=== <REQ>
+
+include::request/requestException.adoc[]
+
+=== <SECURITY>
+
+include::security/securityException.adoc[]

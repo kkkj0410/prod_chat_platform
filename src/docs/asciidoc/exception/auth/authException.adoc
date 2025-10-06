@@ -1,0 +1,11 @@
+[[AUTH_001]]
+=== AUTH_001
+
+==== HTTP Request
+include::{snippets}/AUTH_001/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/AUTH_001/http-response.adoc[]
+include::{snippets}/AUTH_001/response-fields.adoc[]
+
+

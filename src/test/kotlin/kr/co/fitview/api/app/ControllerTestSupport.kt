@@ -32,7 +32,7 @@ import org.springframework.test.web.servlet.MockMvc
 @Import(TestSecurityConfig::class)
 @WebMvcTest(controllers = [
     AuthController::class,
-//    MemberController::class
+    GlobalExceptionHandler::class
 ],
 excludeFilters = [
     ComponentScan.Filter(

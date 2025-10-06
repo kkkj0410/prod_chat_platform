@@ -1,0 +1,31 @@
+[[REQ_001]]
+=== REQ_001
+
+==== HTTP Request
+include::{snippets}/REQ_001/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/REQ_001/http-response.adoc[]
+include::{snippets}/REQ_001/response-fields.adoc[]
+
+
+[[REQ_002]]
+=== REQ_002
+
+==== HTTP Request
+include::{snippets}/REQ_002/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/REQ_002/http-response.adoc[]
+include::{snippets}/REQ_002/response-fields.adoc[]
+
+
+[[REQ_003]]
+=== REQ_003
+
+==== HTTP Request
+include::{snippets}/REQ_003/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/REQ_003/http-response.adoc[]
+include::{snippets}/REQ_003/response-fields.adoc[]

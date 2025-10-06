@@ -13,3 +13,9 @@ endif::[]
 == Auth API
 
 include::api/auth/auth.adoc[]
+
+[[Exception]]
+== Exception
+
+include::exception/exception.adoc[]
+
