@@ -9,11 +9,14 @@ import kr.co.fitview.api.app.global.config.JwtConfig
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.jwt.JwtErrorCode
 import kr.co.fitview.api.app.global.exception.error.member.MemberErrorCode
+import kr.co.fitview.api.app.global.security.UserPrincipal
 import org.assertj.core.api.Assertions.*
 import org.assertj.core.api.ThrowingConsumer
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.transaction.annotation.Transactional
 
 @Transactional
@@ -145,6 +148,45 @@ class MemberServiceTest @Autowired constructor(
 
         // then
         assertThat(findMember).isNull()
+    }
+
+
+    @DisplayName("회원 id로 회원 정보를 조회한다.")
+    @Test
+    fun findMemberMe() {
+        // given
+        val member = Member(
+            loginId = "loginId",
+            password = "password",
+            role = Role.USER,
+            email = "email"
+        )
+        val savedMember = memberRepository.save(member)
+
+        // when
+        val response = memberService.findMemberMe(savedMember.id!!)
+
+        // then
+        assertThat(response.loginId).isEqualTo(savedMember.loginId)
+        assertThat(response.role).isEqualTo(savedMember.role)
+    }
+
+    @DisplayName("회원 정보가 없으면 회원 고유 id로 사용자 정보를 조회할 수 없다.")
+    @Test
+    fun findMemberMeWithoutMember() {
+        // given
+        val memberId = 100L
+
+        // when & then
+        assertThatThrownBy {
+            memberService.findMemberMe(memberId)
+        }
+            .isInstanceOf(GlobalException::class.java)
+            .satisfies(ThrowingConsumer { ex ->
+                val globalEx = ex as GlobalException
+                assertThat(globalEx.errorCode)
+                    .isEqualTo(MemberErrorCode.MEMBER_NOT_FOUND)
+            })
     }
 
 }
