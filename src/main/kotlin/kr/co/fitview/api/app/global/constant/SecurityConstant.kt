@@ -6,10 +6,8 @@ object SecurityConstant {
     const val API_BASE: String = "/api/*"
 
     val ADMIN_URIS: List<String> = listOf(
-        "$API_BASE/swagger/resource/**",
-        "/swagger-ui/**",
+        "$API_BASE/admin/**",
         "/webjars/**",
-        "/swagger-ui.html",
         "/docs/**"
     )
 

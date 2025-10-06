@@ -10,6 +10,7 @@ import kr.co.fitview.api.app.global.cookie.CookieProvider
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.jwt.JwtErrorCode
+import kr.co.fitview.api.app.global.exception.error.jwt.SecurityAuthenticationException
 import kr.co.fitview.api.app.global.id.IdGenerator
 import kr.co.fitview.api.app.global.time.Time
 import org.springframework.http.ResponseCookie

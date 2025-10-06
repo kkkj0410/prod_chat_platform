@@ -7,7 +7,6 @@ import org.springframework.security.core.userdetails.UserDetails
 
 class UserPrincipal(
     val memberId : Long,
-    val loginId : String,
     val role : Role,
 ) : UserDetails {
 
@@ -24,7 +23,7 @@ class UserPrincipal(
     }
 
     override fun getUsername(): String {
-        return loginId
+        return memberId.toString()
     }
 
 

@@ -7,5 +7,7 @@ interface MemberRepository : JpaRepository<Member, Long> {
 
     fun findByLoginIdAndDeletedAtIsNull(loginId : String) : Member?
 
-    fun findByLoginIdAndPasswordAndDeletedAtIsNull(loginId : String, password : String) : Member?
+    fun findByIdAndDeletedAtIsNull(memberId : Long) : Member?
+
+
 }

@@ -26,6 +26,10 @@ class MemberService(
         return memberRepository.findByLoginIdAndDeletedAtIsNull(loginId)
     }
 
+    fun findMemberFrom(memberId : Long) : Member?{
+        return memberRepository.findByIdAndDeletedAtIsNull(memberId)
+    }
+
     private fun validateDuplicatedLoginId(member: Member) {
         findMemberFrom(member.loginId!!)?.let {
             throw GlobalException(MemberErrorCode.MEMBER_DUPLICATE_LOGIN_ID)

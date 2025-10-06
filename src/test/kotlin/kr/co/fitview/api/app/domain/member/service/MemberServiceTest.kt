@@ -104,10 +104,44 @@ class MemberServiceTest @Autowired constructor(
     fun findMemberFromWithoutMember() {
         // given
         val loginId = "loginId"
-        val password = "password"
 
         // when
         val findMember = memberService.findMemberFrom(loginId)
+
+        // then
+        assertThat(findMember).isNull()
+    }
+
+    @DisplayName("회원 id로 회원을 찾는다.")
+    @Test
+    fun findMemberFromMemberId() {
+        // given
+        val member = Member(
+            loginId = "loginId",
+            password = "password",
+            role = Role.USER,
+            email = "email"
+        )
+        memberRepository.save(member)
+
+        // when
+        val findMember = memberService.findMemberFrom(member.id!!)
+
+        // then
+        assertThat(findMember)
+            .extracting("loginId", "password", "role", "email")
+            .contains(member.loginId, member.password, Role.USER, member.email)
+
+    }
+
+    @DisplayName("존재하지 않는 회원이면 회원 id로 회원을 찾을 수 없다.")
+    @Test
+    fun findMemberFromMemberIdWithoutMember() {
+        // given
+        val memberId = 100L
+
+        // when
+        val findMember = memberService.findMemberFrom(memberId)
 
         // then
         assertThat(findMember).isNull()

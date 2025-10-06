@@ -15,14 +15,14 @@ class CustomUserDetailService(
     val memberService : MemberService
 ) : UserDetailsService{
 
-    override fun loadUserByUsername(loginId: String): UserDetails {
-        val findMember = findMemberElseThrow(loginId)
+    override fun loadUserByUsername(memberId: String): UserDetails {
+        val findMember = findMemberElseThrow(memberId.toLong())
 
-        return UserPrincipal(findMember.id!!, findMember.loginId!!, findMember.role!!)
+        return UserPrincipal(findMember.id!!, findMember.role!!)
     }
 
-    private fun findMemberElseThrow(loginId : String): Member {
-        return (memberService.findMemberFrom(loginId)
+    private fun findMemberElseThrow(memberId : Long): Member {
+        return (memberService.findMemberFrom(memberId)
             ?: throw GlobalException(MemberErrorCode.MEMBER_NOT_FOUND))
     }
 }

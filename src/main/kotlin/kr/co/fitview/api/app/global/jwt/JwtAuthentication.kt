@@ -1,6 +1,8 @@
 package kr.co.fitview.api.app.global.jwt
 
+import kr.co.fitview.api.app.global.security.UserPrincipal
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Component
 
 
@@ -10,16 +12,23 @@ class JwtAuthentication(
 ) {
 
 
-    fun setAuthentication(){
+    fun setAuthentication(accessToken : String){
+        val userPrincipal = createUserPrincipalFrom(accessToken)
 
-//        UsernamePasswordAuthenticationToken()
+        val authentication = createAuthentication(userPrincipal)
+
+        SecurityContextHolder.getContext().authentication = authentication
     }
 
-    fun getUserPrincipalFrom(accessToken : String){
-        jwtTokenProvider.extractMemberIdFrom(accessToken)
-        jwtTokenProvider.extractRoleFrom(accessToken)
+    private fun createUserPrincipalFrom(accessToken : String) : UserPrincipal{
+        val memberId = jwtTokenProvider.extractMemberIdFrom(accessToken)
+        val role = jwtTokenProvider.extractRoleFrom(accessToken)
 
+        return UserPrincipal(memberId, role)
+    }
 
+    private fun createAuthentication(userPrincipal: UserPrincipal): UsernamePasswordAuthenticationToken {
+        return UsernamePasswordAuthenticationToken(userPrincipal, null, userPrincipal.authorities)
     }
 
 

@@ -18,10 +18,14 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 
+
+
 class AuthControllerTest : ControllerTestSupport(){
+
 
     @MockitoBean
     private lateinit var authService: AuthService
+
 
     @DisplayName("사용자가 회원가입을 하면 사용자 정보를 저장한다.")
     @Test

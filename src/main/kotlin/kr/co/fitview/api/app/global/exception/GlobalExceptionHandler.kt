@@ -2,9 +2,11 @@ package kr.co.fitview.api.app.global.exception
 
 import kr.co.fitview.api.app.domain.auth.HeaderClientType
 import kr.co.fitview.api.app.global.dto.ApiResponse
+import kr.co.fitview.api.app.global.exception.error.jwt.SecurityAuthenticationException
 import kr.co.fitview.api.app.global.exception.error.request.RequestErrorCode
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.AuthenticationException
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.MissingRequestHeaderException
 import org.springframework.web.bind.annotation.ExceptionHandler
@@ -20,6 +22,7 @@ class GlobalExceptionHandler {
             .status(HttpStatus.UNAUTHORIZED)
             .body(ex.errorCode.toApiResponse())
     }
+
 
 
     @ExceptionHandler(MethodArgumentNotValidException::class)
