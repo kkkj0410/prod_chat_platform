@@ -17,13 +17,13 @@ class MemberService(
 
     @Transactional
     fun addMember(member : Member) : Member{
-        validateDuplicatedLoginId(member)
+        validateDuplicatedEmail(member)
 
         return memberRepository.save(member)
     }
 
     fun findMemberFrom(loginId : String) : Member?{
-        return memberRepository.findByLoginIdAndDeletedAtIsNull(loginId)
+        return memberRepository.findByEmailAndDeletedAtIsNull(loginId)
     }
 
     fun findMemberFrom(memberId : Long) : Member?{
@@ -32,11 +32,11 @@ class MemberService(
 
     fun findMemberMe(memberId: Long): MemberMeResponse {
         val findMember = findMemberOrElseThrow(memberId)
-        return MemberMeResponse(findMember.loginId!!, findMember.role!!)
+        return MemberMeResponse(findMember.email!!, findMember.role!!)
     }
 
-    private fun validateDuplicatedLoginId(member: Member) {
-        findMemberFrom(member.loginId!!)?.let {
+    private fun validateDuplicatedEmail(member: Member) {
+        findMemberFrom(member.email!!)?.let {
             throw GlobalException(MemberErrorCode.MEMBER_DUPLICATE_LOGIN_ID)
         }
     }

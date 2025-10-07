@@ -1,7 +1,6 @@
 package kr.co.fitview.api.app.domain.docs.service
 
 import kr.co.fitview.api.app.domain.docs.dto.request.DocsLoginServiceRequest
-import kr.co.fitview.api.app.domain.member.dto.request.MemberLoginServiceRequest
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.service.MemberService
 import kr.co.fitview.api.app.global.exception.GlobalException
@@ -21,7 +20,7 @@ class DocsService(
 ) {
 
     fun login(request: DocsLoginServiceRequest): HttpHeaders {
-        val findMember = findMember(request.loginId, request.password)
+        val findMember = findMember(request.email, request.password)
 
         val accessToken = jwtTokenProvider.createAccessToken(findMember.id!!, findMember.role!!)
 

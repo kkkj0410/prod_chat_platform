@@ -1,30 +1,21 @@
 package kr.co.fitview.api.app.domain.auth.service
 
-import io.jsonwebtoken.Jwts
 import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.auth.HeaderClientType
 import kr.co.fitview.api.app.domain.member.dto.request.MemberCreateServiceRequest
 import kr.co.fitview.api.app.domain.member.dto.request.MemberLoginServiceRequest
-import kr.co.fitview.api.app.domain.member.repository.MemberRepository
-import kr.co.fitview.api.app.domain.member.service.MemberService
-import kr.co.fitview.api.app.global.config.JwtConfig
-import kr.co.fitview.api.app.global.cookie.CookieProvider
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.member.MemberErrorCode
-import kr.co.fitview.api.app.global.id.TestIdGenerator
 import kr.co.fitview.api.app.global.jwt.JwtTokenProvider
-import kr.co.fitview.api.app.global.time.TestTime
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.assertj.core.api.ThrowingConsumer
-import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.transaction.annotation.Transactional
-import java.time.LocalDateTime
 
 
 @Transactional
@@ -49,8 +40,8 @@ class AuthServiceTest@Autowired constructor(
         // then
         assertThat(savedMember.id).isNotNull()
         assertThat(savedMember)
-            .extracting("loginId", "email", "role")
-            .contains(request.email, request.email, Role.USER)
+            .extracting("email", "role")
+            .contains(request.email, Role.USER)
         assertThat(passwordEncoder.matches(request.password, savedMember.password!!)).isTrue()
     }
 
@@ -96,7 +87,7 @@ class AuthServiceTest@Autowired constructor(
         val savedMember = authService.signup(signupRequest);
 
         val loginRequest = MemberLoginServiceRequest(
-            loginId = signupRequest.email,
+            email = signupRequest.email,
             password = signupRequest.password
         )
 
@@ -122,7 +113,7 @@ class AuthServiceTest@Autowired constructor(
     fun loginWithoutMember() {
         // given
         val loginRequest = MemberLoginServiceRequest(
-            loginId = "loginId",
+            email = "loginId",
             password = "password"
         )
 
@@ -150,7 +141,7 @@ class AuthServiceTest@Autowired constructor(
         authService.signup(signupRequest);
 
         val loginRequest = MemberLoginServiceRequest(
-            loginId = signupRequest.email,
+            email = signupRequest.email,
             password = signupRequest.password
         )
 
@@ -174,7 +165,7 @@ class AuthServiceTest@Autowired constructor(
         authService.signup(signupRequest);
 
         val loginRequest = MemberLoginServiceRequest(
-            loginId = signupRequest.email,
+            email = signupRequest.email,
             password = signupRequest.password
         )
 

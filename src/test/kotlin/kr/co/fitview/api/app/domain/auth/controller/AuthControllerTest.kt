@@ -5,14 +5,12 @@ import kr.co.fitview.api.app.domain.auth.HeaderClientType
 import kr.co.fitview.api.app.domain.auth.constant.AuthConstant
 import kr.co.fitview.api.app.domain.auth.dto.request.MemberCreateRequest
 import kr.co.fitview.api.app.domain.auth.dto.request.MemberLoginRequest
-import kr.co.fitview.api.app.domain.auth.service.AuthService
 import kr.co.fitview.api.app.global.exception.error.request.RequestErrorCode
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.springframework.http.MediaType
-import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
@@ -95,7 +93,7 @@ class AuthControllerTest : ControllerTestSupport(){
     fun memberLogin() {
         // given
         val request = MemberLoginRequest(
-            loginId = "loginId",
+            email = "loginId",
             password = "password"
         )
 
@@ -115,7 +113,7 @@ class AuthControllerTest : ControllerTestSupport(){
     fun memberLoginWithoutHeader() {
         // given
         val request = MemberLoginRequest(
-            loginId = "loginId",
+            email = "loginId",
             password = "password"
         )
 
@@ -139,7 +137,7 @@ class AuthControllerTest : ControllerTestSupport(){
     fun memberLoginNotValidHeader(headerClientType : String) {
         // given
         val request = MemberLoginRequest(
-            loginId = "loginId",
+            email = "loginId",
             password = "password"
         )
 
@@ -164,7 +162,7 @@ class AuthControllerTest : ControllerTestSupport(){
     fun memberLoginWithoutLoginId() {
         // given
         val request = MemberLoginRequest(
-            loginId = null,
+            email = null,
             password = "password"
         )
 
@@ -179,7 +177,7 @@ class AuthControllerTest : ControllerTestSupport(){
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.code").value(RequestErrorCode.REQ_FIELD_NOT_VALID.code))
             .andExpect(jsonPath("$.status").value("400"))
-            .andExpect(jsonPath("$.message").value("LoginId is required"))
+            .andExpect(jsonPath("$.message").value("Email is required"))
             .andExpect(jsonPath("$.data").isEmpty())
     }
 
@@ -188,7 +186,7 @@ class AuthControllerTest : ControllerTestSupport(){
     fun memberLoginWithoutPassword() {
         // given
         val request = MemberLoginRequest(
-            loginId = "loginId",
+            email = "email",
             password = null
         )
 

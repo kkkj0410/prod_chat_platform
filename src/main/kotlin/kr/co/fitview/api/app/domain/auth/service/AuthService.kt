@@ -54,9 +54,8 @@ class AuthService(
         request: MemberCreateServiceRequest,
         encryptedPassword: String
     ) = Member(
-        loginId = request.email,
-        password = encryptedPassword,
         email = request.email,
+        password = encryptedPassword,
         role = Role.USER
     )
 
@@ -69,7 +68,7 @@ class AuthService(
     }
 
     private fun findMemberElseThrow(request: MemberLoginServiceRequest): Member {
-        return (memberService.findMemberFrom(request.loginId)
+        return (memberService.findMemberFrom(request.email)
             ?: throw GlobalException(MemberErrorCode.MEMBER_NOT_FOUND))
     }
 

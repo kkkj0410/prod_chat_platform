@@ -4,8 +4,8 @@ import jakarta.validation.constraints.NotBlank
 
 data class DocsLoginRequest(
 
-    @field:NotBlank(message = "LoginId is required")
-    val loginId : String?,
+    @field:NotBlank(message = "Email is required")
+    val email : String?,
 
     @field:NotBlank(message = "Password is required")
     val password : String?
@@ -14,7 +14,7 @@ data class DocsLoginRequest(
 
     fun toServiceRequest() : DocsLoginServiceRequest {
         return DocsLoginServiceRequest(
-            loginId = loginId!!,
+            email = email!!,
             password = password!!
         )
     }

@@ -8,10 +8,8 @@ import kr.co.fitview.api.app.domain.auth.dto.request.MemberCreateRequest
 import kr.co.fitview.api.app.domain.auth.dto.request.MemberLoginRequest
 import kr.co.fitview.api.app.domain.auth.dto.response.MemberLoginResponse
 import kr.co.fitview.api.app.domain.auth.service.AuthService
-import kr.co.fitview.api.app.domain.member.dto.request.MemberLoginServiceRequest
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.mockito.BDDMockito.willReturn
 import org.mockito.Mockito.mock
 import org.springframework.http.MediaType
 import org.springframework.restdocs.cookies.CookieDocumentation.cookieWithName
@@ -89,7 +87,7 @@ class AuthControllerDocsTest : RestDocsSupport() {
     fun memberLogin() {
         // given
         val request = MemberLoginRequest(
-            loginId = "loginId",
+            email = "email",
             password = "password"
         )
         given(authService.login(any(),any()))
@@ -120,8 +118,8 @@ class AuthControllerDocsTest : RestDocsSupport() {
             ),
 
             requestFields(
-                fieldWithPath("loginId").type(JsonFieldType.STRING)
-                    .description("사용자 가입 아이디"),
+                fieldWithPath("email").type(JsonFieldType.STRING)
+                    .description("사용자 가입 이메일"),
                 fieldWithPath("password").type(JsonFieldType.STRING)
                     .description("사용자 가입 비밀번호"),
             ),

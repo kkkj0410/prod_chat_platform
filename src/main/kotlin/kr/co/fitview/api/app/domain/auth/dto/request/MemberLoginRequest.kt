@@ -5,8 +5,8 @@ import kr.co.fitview.api.app.domain.member.dto.request.MemberLoginServiceRequest
 
 data class MemberLoginRequest(
 
-    @field:NotBlank(message = "LoginId is required")
-    val loginId : String?,
+    @field:NotBlank(message = "Email is required")
+    val email : String?,
 
     @field:NotBlank(message = "Password is required")
     val password : String?
@@ -14,7 +14,7 @@ data class MemberLoginRequest(
 ){
     fun toServiceRequest() : MemberLoginServiceRequest{
         return MemberLoginServiceRequest(
-            loginId = loginId!!,
+            email = email!!,
             password = password!!
         )
     }
