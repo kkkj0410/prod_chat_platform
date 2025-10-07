@@ -30,6 +30,11 @@ class MemberService(
         return memberRepository.findByIdAndDeletedAtIsNull(memberId)
     }
 
+    fun findMemberOrElseThrow(memberId: Long) : Member {
+        return findMemberFrom(memberId)
+            ?: throw GlobalException(MemberErrorCode.MEMBER_NOT_FOUND)
+    }
+
     fun findMemberMe(memberId: Long): MemberMeResponse {
         val findMember = findMemberOrElseThrow(memberId)
         return MemberMeResponse(findMember.email!!, findMember.role!!)
@@ -41,10 +46,6 @@ class MemberService(
         }
     }
 
-    private fun MemberService.findMemberOrElseThrow(memberId: Long) : Member {
-        return findMemberFrom(memberId)
-            ?: throw GlobalException(MemberErrorCode.MEMBER_NOT_FOUND)
-    }
 
 
 }

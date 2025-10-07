@@ -50,8 +50,6 @@ class MemberServiceTest @Autowired constructor(
     @Test
     fun saveMemberDuplicateEmail() {
         // given
-        val loginId = "loginId"
-
         val member1 = Member(
             email = "email",
             password = "password",
@@ -174,6 +172,46 @@ class MemberServiceTest @Autowired constructor(
         // when & then
         assertThatThrownBy {
             memberService.findMemberMe(memberId)
+        }
+            .isInstanceOf(GlobalException::class.java)
+            .satisfies(ThrowingConsumer { ex ->
+                val globalEx = ex as GlobalException
+                assertThat(globalEx.errorCode)
+                    .isEqualTo(MemberErrorCode.MEMBER_NOT_FOUND)
+            })
+    }
+
+
+    @DisplayName("회원이 존재하면 조회한다.")
+    @Test
+    fun findMemberOrElseThrow() {
+        // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        memberRepository.save(member)
+
+        // when
+        val findMember = memberService.findMemberOrElseThrow(member.id!!)
+
+        // then
+        assertThat(findMember)
+            .extracting("email", "password", "role")
+            .contains(member.email, member.password, Role.USER)
+    }
+
+    @DisplayName("회원이 존재하지 않으면 조회에 실패한다.")
+    @Test
+    fun findMemberOrElseThrowWithoutMember() {
+        // given
+        val memberId = 100L
+
+
+        // when & then
+        assertThatThrownBy {
+            memberService.findMemberOrElseThrow(memberId)
         }
             .isInstanceOf(GlobalException::class.java)
             .satisfies(ThrowingConsumer { ex ->

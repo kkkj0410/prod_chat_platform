@@ -3,6 +3,7 @@ package kr.co.fitview.api.app
 import com.fasterxml.jackson.databind.ObjectMapper
 import kr.co.fitview.api.app.domain.auth.controller.AuthController
 import kr.co.fitview.api.app.domain.auth.service.AuthService
+import kr.co.fitview.api.app.domain.auth.service.RefreshTokenService
 import kr.co.fitview.api.app.domain.member.controller.MemberController
 import kr.co.fitview.api.app.domain.member.service.MemberService
 import kr.co.fitview.api.app.global.config.JwtConfig
@@ -69,6 +70,9 @@ abstract class ControllerTestSupport {
 
     @MockitoBean
     private lateinit var memberService: MemberService
+
+    @MockitoBean
+    private lateinit var refreshTokenService: RefreshTokenService
 
 
 }

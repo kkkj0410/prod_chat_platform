@@ -27,3 +27,24 @@ include::{snippets}/JWT_003/http-request.adoc[]
 ==== HTTP Response
 include::{snippets}/JWT_003/http-response.adoc[]
 include::{snippets}/JWT_003/response-fields.adoc[]
+
+[[JWT_004]]
+=== JWT_004
+
+==== HTTP Request
+include::{snippets}/JWT_004/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/JWT_004/http-response.adoc[]
+include::{snippets}/JWT_004/response-fields.adoc[]
+
+
+[[JWT_005]]
+=== JWT_005
+
+==== HTTP Request
+include::{snippets}/JWT_005/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/JWT_005/http-response.adoc[]
+include::{snippets}/JWT_005/response-fields.adoc[]

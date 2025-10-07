@@ -83,6 +83,11 @@ class JwtTokenProvider(
         return Role.from(claims[JwtConstant.ROLE] as String)
     }
 
+    fun extractUuidFrom(refreshToken : String) : String{
+        val claims = extractClaimsFrom(refreshToken)
+        return claims[JwtConstant.CLAIM_JTI] as String
+    }
+
 
     private fun extractClaimsFrom(jwtToken: String): Claims {
         try{

@@ -4,10 +4,14 @@ import kr.co.fitview.api.app.docs.RestDocsSupport
 import kr.co.fitview.api.app.domain.auth.HeaderClientType
 import kr.co.fitview.api.app.domain.auth.constant.AuthConstant
 import kr.co.fitview.api.app.domain.auth.controller.AuthController
+import kr.co.fitview.api.app.domain.auth.dto.request.AccessTokenRefreshRequest
 import kr.co.fitview.api.app.domain.auth.dto.request.MemberCreateRequest
 import kr.co.fitview.api.app.domain.auth.dto.request.MemberLoginRequest
+import kr.co.fitview.api.app.domain.auth.dto.request.MemberLogoutRequest
+import kr.co.fitview.api.app.domain.auth.dto.response.AccessTokenRefreshResponse
 import kr.co.fitview.api.app.domain.auth.dto.response.MemberLoginResponse
 import kr.co.fitview.api.app.domain.auth.service.AuthService
+import kr.co.fitview.api.app.domain.auth.service.RefreshTokenService
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
@@ -31,9 +35,10 @@ import org.mockito.kotlin.given
 class AuthControllerDocsTest : RestDocsSupport() {
 
     private val authService: AuthService = mock(AuthService::class.java)
+    private val refreshTokenService : RefreshTokenService = mock(RefreshTokenService::class.java)
 
     override fun initController(): Any {
-        return AuthController(authService)
+        return AuthController(authService, refreshTokenService)
     }
 
     @DisplayName("사용자 회원가입 API")
@@ -148,5 +153,97 @@ class AuthControllerDocsTest : RestDocsSupport() {
             )
             )
         )
+    }
+
+
+
+    @DisplayName("AccessToken 재발급 API")
+    @Test
+    fun accessTokenRefresh() {
+        val request = AccessTokenRefreshRequest(
+            refreshToken = "refreshToken"
+        )
+
+        given(authService.refreshAccessToken(any()))
+            .willReturn(
+                AccessTokenRefreshResponse(
+                    accessToken = "accessToken",
+                )
+            )
+
+        // when // then
+        mockMvc.perform(
+            post("/api/v1/auth/refresh")
+                .content(objectMapper.writeValueAsString(request))
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andDo(document("auth-refresh",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+
+
+                requestFields(
+                    fieldWithPath("refreshToken").type(JsonFieldType.STRING)
+                        .description("로그인 refresh token"),
+                ),
+
+
+                responseFields(
+                    fieldWithPath("status").type(JsonFieldType.NUMBER)
+                        .description("상태"),
+                    fieldWithPath("code").type(JsonFieldType.STRING)
+                        .description("코드"),
+                    fieldWithPath("message").type(JsonFieldType.STRING)
+                        .description("에러 메시지"),
+                    fieldWithPath("data").type(JsonFieldType.OBJECT)
+                        .description("응답 데이터"),
+                    fieldWithPath("data.accessToken").type(JsonFieldType.STRING)
+                        .description("로그인 액세스 토큰"),
+                    )
+            )
+            )
+    }
+
+    @DisplayName("로그아웃 API")
+    @Test
+    fun memberLogout() {
+        val request = MemberLogoutRequest(
+            refreshToken = "해당 refreshToken을 비활성화한다."
+        )
+
+
+        // when // then
+        mockMvc.perform(
+            post("/api/v1/auth/logout")
+                .content(objectMapper.writeValueAsString(request))
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andDo(document("auth-logout",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+
+
+                requestFields(
+                    fieldWithPath("refreshToken").type(JsonFieldType.STRING)
+                        .description("로그인 refresh token"),
+                ),
+
+
+                responseFields(
+                    fieldWithPath("status").type(JsonFieldType.NUMBER)
+                        .description("상태"),
+                    fieldWithPath("code").type(JsonFieldType.STRING)
+                        .description("코드"),
+                    fieldWithPath("message").type(JsonFieldType.STRING)
+                        .description("에러 메시지"),
+                    fieldWithPath("data").type(JsonFieldType.STRING)
+                        .description("응답 데이터"),
+                )
+            )
+            )
     }
 }
