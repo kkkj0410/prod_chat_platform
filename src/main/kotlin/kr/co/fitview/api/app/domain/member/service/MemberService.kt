@@ -17,34 +17,35 @@ class MemberService(
 
     @Transactional
     fun addMember(member : Member) : Member{
-        validateDuplicatedLoginId(member)
+        validateDuplicatedEmail(member)
 
         return memberRepository.save(member)
     }
 
     fun findMemberFrom(loginId : String) : Member?{
-        return memberRepository.findByLoginIdAndDeletedAtIsNull(loginId)
+        return memberRepository.findByEmailAndDeletedAtIsNull(loginId)
     }
 
     fun findMemberFrom(memberId : Long) : Member?{
         return memberRepository.findByIdAndDeletedAtIsNull(memberId)
     }
 
-    fun findMemberMe(memberId: Long): MemberMeResponse {
-        val findMember = findMemberOrElseThrow(memberId)
-        return MemberMeResponse(findMember.loginId!!, findMember.role!!)
+    fun findMemberOrElseThrow(memberId: Long) : Member {
+        return findMemberFrom(memberId)
+            ?: throw GlobalException(MemberErrorCode.MEMBER_NOT_FOUND)
     }
 
-    private fun validateDuplicatedLoginId(member: Member) {
-        findMemberFrom(member.loginId!!)?.let {
+    fun findMemberMe(memberId: Long): MemberMeResponse {
+        val findMember = findMemberOrElseThrow(memberId)
+        return MemberMeResponse(findMember.email!!, findMember.role!!)
+    }
+
+    private fun validateDuplicatedEmail(member: Member) {
+        findMemberFrom(member.email!!)?.let {
             throw GlobalException(MemberErrorCode.MEMBER_DUPLICATE_LOGIN_ID)
         }
     }
 
-    private fun MemberService.findMemberOrElseThrow(memberId: Long) : Member {
-        return findMemberFrom(memberId)
-            ?: throw GlobalException(MemberErrorCode.MEMBER_NOT_FOUND)
-    }
 
 
 }

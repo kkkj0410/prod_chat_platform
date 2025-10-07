@@ -54,7 +54,7 @@ class MemberControllerDocsTest : RestDocsSupport() {
         given(memberService.findMemberMe(any()))
             .willReturn(
                 MemberMeResponse(
-                    loginId = "loginId",
+                    email = "email",
                     role = Role.USER
                 )
             )
@@ -84,7 +84,7 @@ class MemberControllerDocsTest : RestDocsSupport() {
                     .description("에러 메시지"),
                 fieldWithPath("data").type(JsonFieldType.OBJECT)
                     .description("응답 데이터"),
-                fieldWithPath("data.loginId").type(JsonFieldType.STRING)
+                fieldWithPath("data.email").type(JsonFieldType.STRING)
                     .description("로그인 id"),
                 fieldWithPath("data.role").type(JsonFieldType.STRING)
                     .description("회원 역할")

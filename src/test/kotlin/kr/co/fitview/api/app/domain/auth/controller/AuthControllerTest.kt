@@ -1,23 +1,29 @@
 package kr.co.fitview.api.app.domain.auth.controller
 
+import jakarta.validation.Valid
 import kr.co.fitview.api.app.ControllerTestSupport
 import kr.co.fitview.api.app.domain.auth.HeaderClientType
 import kr.co.fitview.api.app.domain.auth.constant.AuthConstant
+import kr.co.fitview.api.app.domain.auth.dto.request.AccessTokenRefreshRequest
 import kr.co.fitview.api.app.domain.auth.dto.request.MemberCreateRequest
 import kr.co.fitview.api.app.domain.auth.dto.request.MemberLoginRequest
-import kr.co.fitview.api.app.domain.auth.service.AuthService
+import kr.co.fitview.api.app.domain.auth.dto.request.MemberLogoutRequest
+import kr.co.fitview.api.app.domain.auth.dto.response.AccessTokenRefreshResponse
+import kr.co.fitview.api.app.global.dto.ApiResponse
+import kr.co.fitview.api.app.global.exception.error.jwt.JwtErrorCode
 import kr.co.fitview.api.app.global.exception.error.request.RequestErrorCode
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.springframework.http.MediaType
-import org.springframework.test.context.bean.override.mockito.MockitoBean
+import org.springframework.http.ResponseEntity
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
-
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
 
 
 class AuthControllerTest : ControllerTestSupport(){
@@ -95,7 +101,7 @@ class AuthControllerTest : ControllerTestSupport(){
     fun memberLogin() {
         // given
         val request = MemberLoginRequest(
-            loginId = "loginId",
+            email = "loginId",
             password = "password"
         )
 
@@ -115,7 +121,7 @@ class AuthControllerTest : ControllerTestSupport(){
     fun memberLoginWithoutHeader() {
         // given
         val request = MemberLoginRequest(
-            loginId = "loginId",
+            email = "loginId",
             password = "password"
         )
 
@@ -139,7 +145,7 @@ class AuthControllerTest : ControllerTestSupport(){
     fun memberLoginNotValidHeader(headerClientType : String) {
         // given
         val request = MemberLoginRequest(
-            loginId = "loginId",
+            email = "loginId",
             password = "password"
         )
 
@@ -164,7 +170,7 @@ class AuthControllerTest : ControllerTestSupport(){
     fun memberLoginWithoutLoginId() {
         // given
         val request = MemberLoginRequest(
-            loginId = null,
+            email = null,
             password = "password"
         )
 
@@ -179,7 +185,7 @@ class AuthControllerTest : ControllerTestSupport(){
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.code").value(RequestErrorCode.REQ_FIELD_NOT_VALID.code))
             .andExpect(jsonPath("$.status").value("400"))
-            .andExpect(jsonPath("$.message").value("LoginId is required"))
+            .andExpect(jsonPath("$.message").value("Email is required"))
             .andExpect(jsonPath("$.data").isEmpty())
     }
 
@@ -188,7 +194,7 @@ class AuthControllerTest : ControllerTestSupport(){
     fun memberLoginWithoutPassword() {
         // given
         val request = MemberLoginRequest(
-            loginId = "loginId",
+            email = "email",
             password = null
         )
 
@@ -205,6 +211,63 @@ class AuthControllerTest : ControllerTestSupport(){
             .andExpect(jsonPath("$.status").value("400"))
             .andExpect(jsonPath("$.message").value("Password is required"))
             .andExpect(jsonPath("$.data").isEmpty())
+    }
+
+
+
+    @DisplayName("리프레시 토큰을 요청하면 액세스 토큰을 재발급한다.")
+    @Test
+    fun accessTokenRefresh() {
+        val request = AccessTokenRefreshRequest(
+            refreshToken = "refreshToken"
+        )
+
+        // when // then
+        mockMvc.perform(
+            post("/api/v1/auth/refresh")
+                .content(objectMapper.writeValueAsString(request))
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andDo(print())
+            .andExpect(status().isOk());
+    }
+
+    @DisplayName("리프레시 토큰을 넣지 않으면 액세스 토큰을 재발급하지 못한다.")
+    @Test
+    fun accessTokenRefreshWithoutRefreshToken() {
+        val request = AccessTokenRefreshRequest(
+            refreshToken = null
+        )
+
+        // when // then
+        mockMvc.perform(
+            post("/api/v1/auth/refresh")
+                .content(objectMapper.writeValueAsString(request))
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andDo(print())
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value(RequestErrorCode.REQ_FIELD_NOT_VALID.code))
+            .andExpect(jsonPath("$.status").value("400"))
+            .andExpect(jsonPath("$.message").value("RefreshToken is required"))
+            .andExpect(jsonPath("$.data").isEmpty())
+    }
+
+    @DisplayName("로그아웃하면 리프레시 토큰을 비활성화한다.")
+    @Test
+    fun memberLogout() {
+        val request = MemberLogoutRequest(
+            refreshToken = "refreshToken"
+        )
+
+        // when // then
+        mockMvc.perform(
+            post("/api/v1/auth/logout")
+                .content(objectMapper.writeValueAsString(request))
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andDo(print())
+            .andExpect(status().isOk());
     }
 
 

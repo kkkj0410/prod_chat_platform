@@ -30,10 +30,9 @@ class MemberServiceTest @Autowired constructor(
     fun saveMember() {
         // given
         val member = Member(
-            loginId = "loginId",
+            email = "email",
             password = "password",
             role = Role.USER,
-            email = "email"
         )
 
         // when
@@ -42,8 +41,8 @@ class MemberServiceTest @Autowired constructor(
         // then
         assertThat(savedMember.id).isNotNull()
         assertThat(savedMember)
-            .extracting("loginId", "password", "role", "email")
-            .contains(member.loginId, member.password, Role.USER, member.email)
+            .extracting("email", "password", "role")
+            .contains(member.email, member.password, Role.USER)
     }
 
 
@@ -51,19 +50,15 @@ class MemberServiceTest @Autowired constructor(
     @Test
     fun saveMemberDuplicateEmail() {
         // given
-        val loginId = "loginId"
-
         val member1 = Member(
-            loginId = loginId,
+            email = "email",
             password = "password",
             role = Role.USER,
-            email = "email"
         )
         val member2 = Member(
-            loginId = loginId,
+            email = "email",
             password = "password",
             role = Role.USER,
-            email = "email"
         )
 
         memberService.addMember(member1);
@@ -85,20 +80,19 @@ class MemberServiceTest @Autowired constructor(
    fun findMemberFrom() {
        // given
        val member = Member(
-           loginId = "loginId",
+           email = "email",
            password = "password",
            role = Role.USER,
-           email = "email"
        )
        memberRepository.save(member)
 
        // when
-       val findMember = memberService.findMemberFrom(member.loginId!!)
+       val findMember = memberService.findMemberFrom(member.email!!)
 
        // then
        assertThat(findMember)
-           .extracting("loginId", "password", "role", "email")
-           .contains(member.loginId, member.password, Role.USER, member.email)
+           .extracting("email", "password", "role")
+           .contains(member.email, member.password, Role.USER)
 
    }
 
@@ -106,10 +100,10 @@ class MemberServiceTest @Autowired constructor(
     @Test
     fun findMemberFromWithoutMember() {
         // given
-        val loginId = "loginId"
+        val email = "email"
 
         // when
-        val findMember = memberService.findMemberFrom(loginId)
+        val findMember = memberService.findMemberFrom(email)
 
         // then
         assertThat(findMember).isNull()
@@ -120,10 +114,9 @@ class MemberServiceTest @Autowired constructor(
     fun findMemberFromMemberId() {
         // given
         val member = Member(
-            loginId = "loginId",
+            email = "email",
             password = "password",
             role = Role.USER,
-            email = "email"
         )
         memberRepository.save(member)
 
@@ -132,8 +125,8 @@ class MemberServiceTest @Autowired constructor(
 
         // then
         assertThat(findMember)
-            .extracting("loginId", "password", "role", "email")
-            .contains(member.loginId, member.password, Role.USER, member.email)
+            .extracting("email", "password", "role")
+            .contains(member.email, member.password, Role.USER)
 
     }
 
@@ -156,10 +149,9 @@ class MemberServiceTest @Autowired constructor(
     fun findMemberMe() {
         // given
         val member = Member(
-            loginId = "loginId",
+            email = "email",
             password = "password",
             role = Role.USER,
-            email = "email"
         )
         val savedMember = memberRepository.save(member)
 
@@ -167,7 +159,7 @@ class MemberServiceTest @Autowired constructor(
         val response = memberService.findMemberMe(savedMember.id!!)
 
         // then
-        assertThat(response.loginId).isEqualTo(savedMember.loginId)
+        assertThat(response.email).isEqualTo(savedMember.email)
         assertThat(response.role).isEqualTo(savedMember.role)
     }
 
@@ -180,6 +172,46 @@ class MemberServiceTest @Autowired constructor(
         // when & then
         assertThatThrownBy {
             memberService.findMemberMe(memberId)
+        }
+            .isInstanceOf(GlobalException::class.java)
+            .satisfies(ThrowingConsumer { ex ->
+                val globalEx = ex as GlobalException
+                assertThat(globalEx.errorCode)
+                    .isEqualTo(MemberErrorCode.MEMBER_NOT_FOUND)
+            })
+    }
+
+
+    @DisplayName("회원이 존재하면 조회한다.")
+    @Test
+    fun findMemberOrElseThrow() {
+        // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        memberRepository.save(member)
+
+        // when
+        val findMember = memberService.findMemberOrElseThrow(member.id!!)
+
+        // then
+        assertThat(findMember)
+            .extracting("email", "password", "role")
+            .contains(member.email, member.password, Role.USER)
+    }
+
+    @DisplayName("회원이 존재하지 않으면 조회에 실패한다.")
+    @Test
+    fun findMemberOrElseThrowWithoutMember() {
+        // given
+        val memberId = 100L
+
+
+        // when & then
+        assertThatThrownBy {
+            memberService.findMemberOrElseThrow(memberId)
         }
             .isInstanceOf(GlobalException::class.java)
             .satisfies(ThrowingConsumer { ex ->

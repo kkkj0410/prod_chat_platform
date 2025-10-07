@@ -8,14 +8,12 @@ import kr.co.fitview.api.app.global.entity.Role
 @Table(name = "member")
 class Member(
 
-    @Column(name = "login_id", nullable = false, length = 100)
-    var loginId: String? = null,
+    @Column(name = "email", nullable = false, length = 100)
+    var email: String? = null,
 
     @Column(name = "password", nullable = false)
     var password: String? = null,
 
-    @Column(name = "email", nullable = false, length = 100)
-    var email: String? = null,
 
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false, length = 20)

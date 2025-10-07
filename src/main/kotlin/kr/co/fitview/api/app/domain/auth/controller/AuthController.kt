@@ -5,8 +5,12 @@ import kr.co.fitview.api.app.domain.auth.HeaderClientType
 import kr.co.fitview.api.app.domain.auth.constant.AuthConstant
 import kr.co.fitview.api.app.domain.auth.dto.request.MemberCreateRequest
 import kr.co.fitview.api.app.domain.auth.dto.request.MemberLoginRequest
+import kr.co.fitview.api.app.domain.auth.dto.request.AccessTokenRefreshRequest
+import kr.co.fitview.api.app.domain.auth.dto.request.MemberLogoutRequest
+import kr.co.fitview.api.app.domain.auth.dto.response.AccessTokenRefreshResponse
 import kr.co.fitview.api.app.domain.auth.dto.response.MemberLoginResponse
 import kr.co.fitview.api.app.domain.auth.service.AuthService
+import kr.co.fitview.api.app.domain.auth.service.RefreshTokenService
 import kr.co.fitview.api.app.global.dto.ApiResponse
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -15,7 +19,8 @@ import org.springframework.web.bind.annotation.*
 @RestController
 @RequestMapping("/api/v1/auth")
 class AuthController(
-    val authService : AuthService
+    val authService : AuthService,
+    val refreshTokenService : RefreshTokenService
 ) {
 
     @PostMapping("/signup")
@@ -48,6 +53,30 @@ class AuthController(
             .headers(response.refreshTokenCookieHeader)
             .body(ApiResponse.success(response))
     }
+
+    @PostMapping("/logout")
+    fun memberLogout(
+        @Valid
+        @RequestBody
+        request: MemberLogoutRequest
+    ): ResponseEntity<ApiResponse<String>> {
+        refreshTokenService.inactiveRefreshToken(request.refreshToken!!)
+
+        return ResponseEntity.ok(ApiResponse.success("ok"))
+    }
+
+    @PostMapping("/refresh")
+    fun accessTokenRefresh(
+        @Valid
+        @RequestBody
+        request: AccessTokenRefreshRequest
+    ): ResponseEntity<ApiResponse<AccessTokenRefreshResponse>> {
+        val response = authService.refreshAccessToken(request.toServiceRequest())
+
+        return ResponseEntity.ok(ApiResponse.success(response))
+    }
+
+
 
     private fun isMobile(headerClientType: HeaderClientType) =
         headerClientType == HeaderClientType.MOBILE

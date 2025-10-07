@@ -1,7 +1,9 @@
 package kr.co.fitview.api.app.domain.auth.service
 
 import kr.co.fitview.api.app.domain.auth.HeaderClientType
+import kr.co.fitview.api.app.domain.auth.dto.request.AccessTokenRefreshServiceRequest
 import kr.co.fitview.api.app.domain.auth.dto.response.MemberLoginResponse
+import kr.co.fitview.api.app.domain.auth.dto.response.AccessTokenRefreshResponse
 import kr.co.fitview.api.app.domain.member.dto.request.MemberCreateServiceRequest
 import kr.co.fitview.api.app.domain.member.dto.request.MemberLoginServiceRequest
 import kr.co.fitview.api.app.domain.member.entity.Member
@@ -21,7 +23,8 @@ import org.springframework.transaction.annotation.Transactional
 class AuthService(
     val memberService : MemberService,
     val passwordEncoder : PasswordEncoder,
-    val jwtTokenProvider : JwtTokenProvider
+    val jwtTokenProvider : JwtTokenProvider,
+    val refreshTokenService: RefreshTokenService
 ) {
 
     @Transactional
@@ -32,6 +35,7 @@ class AuthService(
         return memberService.addMember(member)
     }
 
+    @Transactional
     fun login(
         request: MemberLoginServiceRequest,
         headerClientType : HeaderClientType
@@ -39,7 +43,7 @@ class AuthService(
         val findMember = findMember(request)
 
         val accessToken = jwtTokenProvider.createAccessToken(findMember.id!!, findMember.role!!)
-        val refreshToken = jwtTokenProvider.createRefreshToken(findMember.id!!)
+        val refreshToken = refreshTokenService.issueRefreshToken(findMember.id!!)
 
         if(isMobile(headerClientType)){
             return MemberLoginResponse(accessToken, refreshToken, null)
@@ -50,13 +54,25 @@ class AuthService(
     }
 
 
+    @Transactional
+    fun refreshAccessToken(request: AccessTokenRefreshServiceRequest): AccessTokenRefreshResponse {
+        refreshTokenService.inactiveRefreshToken(request.refreshToken)
+
+        val memberId = jwtTokenProvider.extractMemberIdFrom(request.refreshToken)
+        val findMember = memberService.findMemberOrElseThrow(memberId)
+
+        val accessToken = jwtTokenProvider.createAccessToken(findMember.id!!, findMember.role!!)
+
+        return AccessTokenRefreshResponse(accessToken)
+    }
+
+
     private fun createMember(
         request: MemberCreateServiceRequest,
         encryptedPassword: String
     ) = Member(
-        loginId = request.email,
-        password = encryptedPassword,
         email = request.email,
+        password = encryptedPassword,
         role = Role.USER
     )
 
@@ -69,7 +85,7 @@ class AuthService(
     }
 
     private fun findMemberElseThrow(request: MemberLoginServiceRequest): Member {
-        return (memberService.findMemberFrom(request.loginId)
+        return (memberService.findMemberFrom(request.email)
             ?: throw GlobalException(MemberErrorCode.MEMBER_NOT_FOUND))
     }
 

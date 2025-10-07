@@ -4,6 +4,6 @@ import kr.co.fitview.api.app.global.entity.Role
 
 data class MemberMeResponse(
 
-    val loginId : String,
+    val email : String,
     val role : Role
 )
