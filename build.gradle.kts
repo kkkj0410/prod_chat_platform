@@ -63,6 +63,9 @@ dependencies {
 
 	//mock
 	testImplementation("org.mockito.kotlin:mockito-kotlin:5.1.0")
+
+	//websocket
+	implementation("org.springframework.boot:spring-boot-starter-websocket")
 }
 
 kotlin {
@@ -95,7 +98,7 @@ tasks.named<org.asciidoctor.gradle.jvm.AsciidoctorTask>("asciidoctor") {
 	configurations("asciidoctorExt")
 
 	sources {
-		include("**/index.adoc")
+		include("**/index.adoc", "**/exception.adoc")
 	}
 	baseDirFollowsSourceFile() // 다른 adoc 파일 include 시, 경로를 baseDir로 맞추기
 	dependsOn(tasks.test)

@@ -16,7 +16,7 @@ enum class JwtErrorCode(
 
 
     REFRESH_TOKEN_NOT_FOUND("004", "refresh token not found", "DB에 기록되어있지 않은 refresh token이다."),
-    REFRESH_TOKEN_INVALID("005", "refresh token inactive", "무효한 refresh token을 사용하여 accessToken 재발급 시도시 발생하는 에러")
+    REFRESH_TOKEN_INVALID("005", "refresh token inactive", "무효화된 refresh token으로 api 사용시 발생하는 에러")
 
 
     ;
