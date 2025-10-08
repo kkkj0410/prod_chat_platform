@@ -19,8 +19,5 @@ include::api/auth/auth.adoc[]
 
 include::api/member/member.adoc[]
 
-[[Exception]]
-== Exception
 
-include::exception/exception.adoc[]
 

@@ -1,0 +1,35 @@
+ifndef::snippets[]
+:snippets: ../../build/generated-snippets
+endif::[]
+=  Exception 문서
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:toc: left
+:toclevels: 2
+:sectlinks:
+
+[[AUTH]]
+== <AUTH>
+
+include::exception/auth/authException.adoc[]
+
+[[JWT]]
+== <JWT>
+
+include::exception/jwt/jwtException.adoc[]
+
+[[MEMBER]]
+== <MEMBER>
+
+include::exception/member/memberException.adoc[]
+
+[[REQ]]
+== <REQ>
+
+include::exception/request/requestException.adoc[]
+
+[[SECURITY]]
+== <SECURITY>
+
+include::exception/security/securityException.adoc[]
