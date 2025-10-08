@@ -20,7 +20,7 @@ object SecurityConstant {
         "$API_BASE/auth/**",
         "$API_BASE/docs/**",
         "$API_BASE/exception/**",
-        "/connect/**",
+//        "/connect/**",
 
         "/css/**",
         "/js/**",
