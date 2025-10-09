@@ -26,15 +26,6 @@ class JwtConfig(
     final val secretKey: SecretKey
     final val secretKeySpec: SecretKeySpec
 
-//    @PostConstruct
-//    fun init() {
-//        val keyBytes = Base64.getDecoder().decode(secretKeyString)
-//        if (keyBytes.size < 32) {
-//            throw IllegalArgumentException("jwt 비밀키는 32바이트 이상이어야 합니다.")
-//        }
-//        this.secretKey = Keys.hmacShaKeyFor(keyBytes)
-//        this.secretKeySpec = SecretKeySpec(keyBytes, algorithm)
-//    }
 
     init {
         val keyBytes = Base64.getDecoder().decode(secretKeyString)

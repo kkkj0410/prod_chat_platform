@@ -56,7 +56,7 @@ class AuthService(
 
     @Transactional
     fun refreshAccessToken(request: AccessTokenRefreshServiceRequest): AccessTokenRefreshResponse {
-        refreshTokenService.inactiveRefreshToken(request.refreshToken)
+        refreshTokenService.validateRefreshTokenFrom(request.refreshToken)
 
         val memberId = jwtTokenProvider.extractMemberIdFrom(request.refreshToken)
         val findMember = memberService.findMemberOrElseThrow(memberId)

@@ -34,13 +34,19 @@ class RefreshTokenService(
 
     @Transactional
     fun inactiveRefreshToken(refreshToken: String) : RefreshToken {
-        val refreshTokenUuid =  jwtTokenProvider.extractUuidFrom(refreshToken)
+        val findRefreshTokenEntity = validateRefreshTokenFrom(refreshToken)
+
+        return findRefreshTokenEntity.inactive()
+    }
+
+    fun validateRefreshTokenFrom(refreshToken: String): RefreshToken {
+        val refreshTokenUuid = jwtTokenProvider.extractUuidFrom(refreshToken)
 
         val findRefreshTokenEntity = refreshTokenRepository.findByIdOrNull(refreshTokenUuid)
 
-        validateRefreshToken(findRefreshTokenEntity)
+        validateRefreshTokenFrom(findRefreshTokenEntity)
 
-        return findRefreshTokenEntity!!.inactive()
+        return findRefreshTokenEntity!!
     }
 
 
@@ -52,7 +58,7 @@ class RefreshTokenService(
         return refreshTokenRepository.save(refreshTokenEntity)
     }
 
-    private fun validateRefreshToken(findRefreshTokenEntity: RefreshToken?) {
+    private fun validateRefreshTokenFrom(findRefreshTokenEntity: RefreshToken?) {
         if(isNull(findRefreshTokenEntity)){
             throw GlobalException(JwtErrorCode.REFRESH_TOKEN_NOT_FOUND)
         }

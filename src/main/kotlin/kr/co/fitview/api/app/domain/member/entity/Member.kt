@@ -1,8 +1,8 @@
 package kr.co.fitview.api.app.domain.member.entity
 
 import jakarta.persistence.*
-import kr.co.fitview.api.app.global.entity.BaseEntity
 import kr.co.fitview.api.app.global.entity.Role
+import kr.co.fitview.api.app.global.entity.SoftDeletableEntity
 
 @Entity
 @Table(name = "member")
@@ -13,7 +13,6 @@ class Member(
 
     @Column(name = "password", nullable = false)
     var password: String? = null,
-
 
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false, length = 20)
@@ -26,7 +25,7 @@ class Member(
     @Column(name = "provider_id", length = 100)
     var providerId: String? = null,
 
-    ) : BaseEntity() {
+    ) : SoftDeletableEntity() {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

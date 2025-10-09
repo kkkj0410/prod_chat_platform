@@ -18,6 +18,4 @@ open class BaseEntity {
     @Column(name = "updated_at", nullable = false)
     var updatedAt: LocalDateTime? = null
 
-    @Column(name = "deleted_at")
-    var deletedAt: LocalDateTime? = null
 }
