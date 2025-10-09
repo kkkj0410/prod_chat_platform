@@ -28,7 +28,9 @@ class SecurityExceptionFilter : OncePerRequestFilter() {
            response.contentType = "application/json;charset=UTF-8"
            response.characterEncoding = "UTF-8"
 
-           val apiResponse = SecurityErrorCode.SECURITY_ACCESS_DENIED.toApiResponse()
+           val errorCode = ex.errorCode
+
+           val apiResponse = errorCode.toApiResponse()
 
            val objectMapper = ObjectMapper()
            response.status = HttpStatus.UNAUTHORIZED.value()
