@@ -1,25 +1,18 @@
 package kr.co.fitview.api.app.domain.member.service
 
 import kr.co.fitview.api.app.IntegrationTestSupport
-import kr.co.fitview.api.app.domain.member.dto.request.MemberCreateServiceRequest
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
-import kr.co.fitview.api.app.global.config.JwtConfig
 import kr.co.fitview.api.app.global.exception.GlobalException
-import kr.co.fitview.api.app.global.exception.error.jwt.JwtErrorCode
 import kr.co.fitview.api.app.global.exception.error.member.MemberErrorCode
-import kr.co.fitview.api.app.global.security.UserPrincipal
 import org.assertj.core.api.Assertions.*
 import org.assertj.core.api.ThrowingConsumer
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
-import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.transaction.annotation.Transactional
 
-@Transactional
 class MemberServiceTest @Autowired constructor(
     val memberService : MemberService,
     val memberRepository : MemberRepository,
@@ -77,7 +70,7 @@ class MemberServiceTest @Autowired constructor(
 
    @DisplayName("로그인 정보로 회원을 찾는다.")
    @Test
-   fun findMemberFrom() {
+   fun findMemberFromLoginId() {
        // given
        val member = Member(
            email = "email",
@@ -87,7 +80,7 @@ class MemberServiceTest @Autowired constructor(
        memberRepository.save(member)
 
        // when
-       val findMember = memberService.findMemberFrom(member.email!!)
+       val findMember = memberService.findMemberFromLoginId(member.email!!)
 
        // then
        assertThat(findMember)
@@ -98,12 +91,12 @@ class MemberServiceTest @Autowired constructor(
 
     @DisplayName("존재하지 않는 회원이면 로그인 정보로 회원을 찾을 수 없다.")
     @Test
-    fun findMemberFromWithoutMember() {
+    fun findMemberFromWithoutMemberLoginId() {
         // given
         val email = "email"
 
         // when
-        val findMember = memberService.findMemberFrom(email)
+        val findMember = memberService.findMemberFromLoginId(email)
 
         // then
         assertThat(findMember).isNull()
@@ -111,7 +104,7 @@ class MemberServiceTest @Autowired constructor(
 
     @DisplayName("회원 id로 회원을 찾는다.")
     @Test
-    fun findMemberFromMemberId() {
+    fun findMemberFromMemberIdLoginId() {
         // given
         val member = Member(
             email = "email",
@@ -121,7 +114,7 @@ class MemberServiceTest @Autowired constructor(
         memberRepository.save(member)
 
         // when
-        val findMember = memberService.findMemberFrom(member.id!!)
+        val findMember = memberService.findMemberFromLoginId(member.id!!)
 
         // then
         assertThat(findMember)
@@ -132,12 +125,12 @@ class MemberServiceTest @Autowired constructor(
 
     @DisplayName("존재하지 않는 회원이면 회원 id로 회원을 찾을 수 없다.")
     @Test
-    fun findMemberFromMemberIdWithoutMember() {
+    fun findMemberFromMemberIdWithoutMemberLoginId() {
         // given
         val memberId = 100L
 
         // when
-        val findMember = memberService.findMemberFrom(memberId)
+        val findMember = memberService.findMemberFromLoginId(memberId)
 
         // then
         assertThat(findMember).isNull()

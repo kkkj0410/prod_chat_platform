@@ -22,16 +22,21 @@ class MemberService(
         return memberRepository.save(member)
     }
 
-    fun findMemberFrom(loginId : String) : Member?{
+    fun findMemberFromLoginId(loginId : String) : Member?{
         return memberRepository.findByEmailAndDeletedAtIsNull(loginId)
     }
 
-    fun findMemberFrom(memberId : Long) : Member?{
+    fun findMemberFromProviderId(providerId : String) : Member?{
+        return memberRepository.findByProviderIdAndDeletedAtIsNull(providerId)
+    }
+
+
+    fun findMemberFromLoginId(memberId : Long) : Member?{
         return memberRepository.findByIdAndDeletedAtIsNull(memberId)
     }
 
     fun findMemberOrElseThrow(memberId: Long) : Member {
-        return findMemberFrom(memberId)
+        return findMemberFromLoginId(memberId)
             ?: throw GlobalException(MemberErrorCode.MEMBER_NOT_FOUND)
     }
 
@@ -41,7 +46,7 @@ class MemberService(
     }
 
     private fun validateDuplicatedEmail(member: Member) {
-        findMemberFrom(member.email!!)?.let {
+        findMemberFromLoginId(member.email!!)?.let {
             throw GlobalException(MemberErrorCode.MEMBER_DUPLICATE_LOGIN_ID)
         }
     }

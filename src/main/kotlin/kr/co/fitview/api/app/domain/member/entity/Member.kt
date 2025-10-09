@@ -1,6 +1,7 @@
 package kr.co.fitview.api.app.domain.member.entity
 
 import jakarta.persistence.*
+import kr.co.fitview.api.app.global.entity.OAuth2Provider
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.entity.SoftDeletableEntity
 
@@ -19,8 +20,9 @@ class Member(
     var role: Role? = Role.USER,
 
     @Lob
+    @Enumerated(EnumType.STRING)
     @Column(name = "provider")
-    var provider: String? = null,
+    var provider: OAuth2Provider? = null,
 
     @Column(name = "provider_id", length = 100)
     var providerId: String? = null,

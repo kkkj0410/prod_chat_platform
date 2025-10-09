@@ -31,7 +31,7 @@ repositories {
 
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-//	implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
+	implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
 	implementation("org.springframework.boot:spring-boot-starter-security")
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
@@ -59,6 +59,9 @@ dependencies {
 	implementation("io.jsonwebtoken:jjwt:0.12.6")
 	implementation ("com.auth0:java-jwt:4.2.1")
 
+	// apple oauth2 jwt validate
+	implementation ("com.nimbusds:nimbus-jose-jwt:10.3")
+
 	//thymeleaf
 	implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
 
@@ -70,6 +73,7 @@ dependencies {
 
 	//webClient
 	implementation("org.springframework.boot:spring-boot-starter-webflux")
+
 }
 
 kotlin {

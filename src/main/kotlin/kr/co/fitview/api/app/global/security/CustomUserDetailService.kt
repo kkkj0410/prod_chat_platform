@@ -1,6 +1,5 @@
 package kr.co.fitview.api.app.global.security
 
-import kr.co.fitview.api.app.domain.member.dto.request.MemberLoginServiceRequest
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.service.MemberService
 import kr.co.fitview.api.app.global.exception.GlobalException
@@ -22,7 +21,7 @@ class CustomUserDetailService(
     }
 
     private fun findMemberElseThrow(memberId : Long): Member {
-        return (memberService.findMemberFrom(memberId)
+        return (memberService.findMemberFromLoginId(memberId)
             ?: throw GlobalException(MemberErrorCode.MEMBER_NOT_FOUND))
     }
 }

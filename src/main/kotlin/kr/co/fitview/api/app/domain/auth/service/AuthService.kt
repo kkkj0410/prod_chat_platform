@@ -85,7 +85,7 @@ class AuthService(
     }
 
     private fun findMemberElseThrow(request: MemberLoginServiceRequest): Member {
-        return (memberService.findMemberFrom(request.email)
+        return (memberService.findMemberFromLoginId(request.email)
             ?: throw GlobalException(MemberErrorCode.MEMBER_NOT_FOUND))
     }
 

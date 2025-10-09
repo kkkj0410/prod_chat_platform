@@ -5,8 +5,11 @@ import kr.co.fitview.api.app.domain.auth.dto.request.AccessTokenRefreshServiceRe
 
 data class AppleLoginRequest(
 
-    @field:NotBlank(message = "AuthCode is required")
-    val authCode : String?,
+    @field:NotBlank(message = "appleAuthCode is required")
+    val appleAuthCode : String?,
+
+    @field:NotBlank(message = "redirectUri is required")
+    val redirectUri : String?,
 
 ){
 

@@ -36,7 +36,7 @@ class DocsService(
     }
 
     private fun findMemberElseThrow(loginId : String): Member {
-        return (memberService.findMemberFrom(loginId)
+        return (memberService.findMemberFromLoginId(loginId)
             ?: throw GlobalException(MemberErrorCode.MEMBER_NOT_FOUND))
     }
 
