@@ -12,5 +12,11 @@ data class AppleLoginRequest(
     val redirectUri : String?,
 
 ){
+    fun toServiceRequest() : AppleLoginServiceRequest{
+        return AppleLoginServiceRequest(
+            appleAuthCode = appleAuthCode!!,
+            redirectUri = redirectUri!!
+        )
+    }
 
 }

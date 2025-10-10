@@ -1,0 +1,13 @@
+package kr.co.fitview.api.app.domain.oauth2.dto.request
+
+import jakarta.validation.constraints.NotBlank
+import kr.co.fitview.api.app.domain.auth.dto.request.AccessTokenRefreshServiceRequest
+
+data class AppleLoginServiceRequest(
+
+    val appleAuthCode : String,
+    val redirectUri : String,
+
+){
+
+}

@@ -11,6 +11,7 @@ import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.service.MemberService
 import kr.co.fitview.api.app.domain.oauth2.config.AppleConfig
 import kr.co.fitview.api.app.domain.oauth2.dto.request.AppleLoginRequest
+import kr.co.fitview.api.app.domain.oauth2.dto.request.AppleLoginServiceRequest
 import kr.co.fitview.api.app.domain.oauth2.dto.response.AppleProfile
 import kr.co.fitview.api.app.domain.oauth2.dto.response.OAuth2LoginResponse
 import kr.co.fitview.api.app.domain.oauth2.util.AppleJwtProvider
@@ -47,7 +48,7 @@ class AppleService(
 
     @Transactional
     fun loginAppleWithSignup(
-        request : AppleLoginRequest
+        request : AppleLoginServiceRequest
     ) : OAuth2LoginResponse{
 
         val appleJwtToken = getAppleJwtToken(request)
@@ -68,13 +69,13 @@ class AppleService(
         return OAuth2LoginResponse(accessToken, refreshToken)
     }
 
-    private fun getAppleJwtToken(request: AppleLoginRequest): String {
+    private fun getAppleJwtToken(request: AppleLoginServiceRequest): String {
         val response = getApplePostResponse(request)
 
         return response["id_token"] as? String ?: throw GlobalException(OAuth2ErrorCode.APPLE_JWT_NOT_FOUND)
     }
 
-    private fun getApplePostResponse(request: AppleLoginRequest): Map<String, Any> {
+    private fun getApplePostResponse(request: AppleLoginServiceRequest): Map<String, Any> {
         val clientSecret = appleJwtProvider.createClientSecret()
 
         val formData: MultiValueMap<String, String> = getFormData(clientSecret, request)
@@ -84,7 +85,7 @@ class AppleService(
 
     private fun getFormData(
         clientSecret: String,
-        request: AppleLoginRequest
+        request: AppleLoginServiceRequest
     ): MultiValueMap<String, String> {
         val formData: MultiValueMap<String, String> = LinkedMultiValueMap()
         formData.add("client_id", appleConfig.clientId)

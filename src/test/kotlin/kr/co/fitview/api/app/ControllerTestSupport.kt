@@ -6,6 +6,8 @@ import kr.co.fitview.api.app.domain.auth.service.AuthService
 import kr.co.fitview.api.app.domain.auth.service.RefreshTokenService
 import kr.co.fitview.api.app.domain.member.controller.MemberController
 import kr.co.fitview.api.app.domain.member.service.MemberService
+import kr.co.fitview.api.app.domain.oauth2.controller.OAuth2Controller
+import kr.co.fitview.api.app.domain.oauth2.service.AppleService
 import kr.co.fitview.api.app.global.config.JwtConfig
 import kr.co.fitview.api.app.global.config.SecurityConfig
 import kr.co.fitview.api.app.global.config.TestSecurityConfig
@@ -41,6 +43,7 @@ import org.springframework.test.web.servlet.MockMvc
 @WebMvcTest(controllers = [
     AuthController::class,
     MemberController::class,
+    OAuth2Controller::class,
     GlobalExceptionHandler::class
 ],
 excludeFilters = [
@@ -73,6 +76,9 @@ abstract class ControllerTestSupport {
 
     @MockitoBean
     private lateinit var refreshTokenService: RefreshTokenService
+
+    @MockitoBean
+    private lateinit var appleService: AppleService
 
 
 }

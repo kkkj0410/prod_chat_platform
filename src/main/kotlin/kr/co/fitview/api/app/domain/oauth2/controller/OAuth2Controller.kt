@@ -1,5 +1,6 @@
 package kr.co.fitview.api.app.domain.oauth2.controller
 
+import jakarta.validation.Valid
 import kr.co.fitview.api.app.domain.oauth2.dto.request.AppleLoginRequest
 import kr.co.fitview.api.app.domain.oauth2.dto.response.OAuth2LoginResponse
 import kr.co.fitview.api.app.domain.oauth2.service.AppleService
@@ -20,10 +21,11 @@ class OAuth2Controller(
 
     @PostMapping("/apple")
     fun appleLogin(
+        @Valid
         @RequestBody
         request : AppleLoginRequest
     ) : ResponseEntity<ApiResponse<OAuth2LoginResponse>> {
-        val response = appleService.loginAppleWithSignup(request)
+        val response = appleService.loginAppleWithSignup(request.toServiceRequest())
 
         return ResponseEntity.ok(ApiResponse.success(response))
     }

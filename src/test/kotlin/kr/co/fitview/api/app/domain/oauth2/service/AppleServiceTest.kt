@@ -14,7 +14,7 @@ import kr.co.fitview.api.app.domain.auth.repository.RefreshTokenRepository
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.domain.oauth2.config.AppleConfig
-import kr.co.fitview.api.app.domain.oauth2.dto.request.AppleLoginRequest
+import kr.co.fitview.api.app.domain.oauth2.dto.request.AppleLoginServiceRequest
 import kr.co.fitview.api.app.global.entity.OAuth2Provider
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.exception.GlobalException
@@ -83,7 +83,7 @@ class AppleServiceTest @Autowired constructor(
         // given
         val appleId = "subject"
         val email = "email"
-        val request = AppleLoginRequest(
+        val request = AppleLoginServiceRequest(
             appleAuthCode = "appleAuthCode",
             redirectUri = "https://asd.com"
         )
@@ -135,7 +135,7 @@ class AppleServiceTest @Autowired constructor(
 
         val findMember = memberRepository.findByEmailAndDeletedAtIsNull(email)
 
-        val request = AppleLoginRequest(
+        val request = AppleLoginServiceRequest(
             appleAuthCode = "appleAuthCode",
             redirectUri = "https://asd.com"
         )
@@ -180,7 +180,7 @@ class AppleServiceTest @Autowired constructor(
     @Test
     fun loginAppleWithSignupOnRequestFailure() {
         // given
-        val request = AppleLoginRequest(
+        val request = AppleLoginServiceRequest(
             appleAuthCode = "appleAuthCode",
             redirectUri = "https://asd.com"
         )
@@ -205,7 +205,7 @@ class AppleServiceTest @Autowired constructor(
     @Test
     fun loginAppleWithSignupWithoutIdToken() {
         // given
-        val request = AppleLoginRequest(
+        val request = AppleLoginServiceRequest(
             appleAuthCode = "appleAuthCode",
             redirectUri = "https://asd.com"
         )
@@ -234,7 +234,7 @@ class AppleServiceTest @Autowired constructor(
     @Test
     fun loginAppleWithSignupWithoutEmail() {
         val appleId = "subject"
-        val request = AppleLoginRequest(
+        val request = AppleLoginServiceRequest(
             appleAuthCode = "appleAuthCode",
             redirectUri = "https://asd.com"
         )
@@ -273,8 +273,7 @@ class AppleServiceTest @Autowired constructor(
     @Test
     fun loginAppleWithSignupWithoutAppleId() {
         // given
-        val email = "email"
-        val request = AppleLoginRequest(
+        val request = AppleLoginServiceRequest(
             appleAuthCode = "appleAuthCode",
             redirectUri = "https://asd.com"
         )
