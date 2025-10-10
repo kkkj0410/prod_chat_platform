@@ -6,22 +6,19 @@ import com.nimbusds.jose.jwk.JWKSet
 import com.nimbusds.jose.jwk.RSAKey
 import com.nimbusds.jwt.JWTClaimsSet
 import com.nimbusds.jwt.SignedJWT
-import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.oauth2.config.AppleConfig
-import kr.co.fitview.api.app.domain.oauth2.dto.request.AppleLoginRequest
 import kr.co.fitview.api.app.domain.oauth2.dto.response.AppleProfile
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.oauth2.OAuth2ErrorCode
+import kr.co.fitview.api.app.global.network.NetworkService
 import kr.co.fitview.api.app.global.time.Time
 import org.springframework.stereotype.Service
-import org.springframework.util.LinkedMultiValueMap
-import org.springframework.util.MultiValueMap
-import java.net.URI
 
 
 @Service
 class AppleAuthService(
     val appleConfig: AppleConfig,
+    val networkService: NetworkService,
     val time : Time
 ) {
 
@@ -47,7 +44,8 @@ class AppleAuthService(
 
         validateTime(claims)
 
-        val appleId = claims.subject
+        val appleId = getSubjectFrom(claims)
+
         val email: String? = extractEmailFrom(claims)
 
         return AppleProfile(appleId, email)
@@ -59,13 +57,13 @@ class AppleAuthService(
         val targetKid = signedJwt.header.keyID
 
         // 애플 퍼블릭 키 모음
-        val appleJwkSet = JWKSet.load(URI(applePublicEndPointUrl).toURL())
+        val appleJwkSet = networkService.getJwkSet(applePublicEndPointUrl)
 
         // 타겟 서명 키와 일치하는 퍼블릭 키 찾기
-        val appleJwk = appleJwkSet.getKeyByKeyId(targetKid)
+        val appleJwk = findAppleJwkByKeyId(appleJwkSet, targetKid!!)
 
         // 퍼블릭 키 -> RSA 키 변환
-        val appleRsaKey = appleJwk as? RSAKey ?: throw GlobalException(OAuth2ErrorCode.APPLE_JWT_CONVERTER_FAIL)
+        val appleRsaKey = appleJwk as RSAKey
 
         // RSA 키 -> RSA 퍼블릭 키 변환
         val appleRsaPublicKey = appleRsaKey.toRSAPublicKey()
@@ -74,6 +72,9 @@ class AppleAuthService(
         return RSASSAVerifier(appleRsaPublicKey)
     }
 
+    private fun findAppleJwkByKeyId(appleJwkSet: JWKSet, targetKid: String) =
+        (appleJwkSet.getKeyByKeyId(targetKid)
+            ?: throw GlobalException(OAuth2ErrorCode.APPLE_JWT_SIGNED_KEY_NOT_FOUND))
 
 
     private fun getClaimsFrom(signedJwt: SignedJWT): JWTClaimsSet =
@@ -116,6 +117,9 @@ class AppleAuthService(
     }
 
     private fun isExpired(claims: JWTClaimsSet) = time.nowDate.after(claims.expirationTime)
+
+    private fun getSubjectFrom(claims: JWTClaimsSet) = (claims.subject?.takeIf { it.isNotBlank() }
+        ?: throw GlobalException(OAuth2ErrorCode.APPLE_SUBJECT_INVALID))
 
     private fun extractEmailFrom(claims: JWTClaimsSet): String? {
         val email: String? = claims.getStringClaim("email")

@@ -1,5 +1,6 @@
 package kr.co.fitview.api.app.global.network
 
+import com.nimbusds.jose.jwk.JWKSet
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.network.NetworkErrorCode
 import kr.co.fitview.api.app.global.exception.error.oauth2.OAuth2ErrorCode
@@ -9,6 +10,7 @@ import org.springframework.util.MultiValueMap
 import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientResponseException
+import java.net.URI
 
 
 @Service
@@ -32,5 +34,10 @@ class NetworkService(
         } catch (e: WebClientResponseException) {
             throw GlobalException(NetworkErrorCode.NETWORK_SEND_ERROR)
         }
+    }
+
+
+    fun getJwkSet(url : String) : JWKSet{
+        return JWKSet.load(URI(url).toURL())
     }
 }

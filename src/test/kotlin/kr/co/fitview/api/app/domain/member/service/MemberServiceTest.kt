@@ -60,12 +60,12 @@ class MemberServiceTest @Autowired constructor(
         assertThatThrownBy {
             memberService.addMember(member2);
         }
-        .isInstanceOf(GlobalException::class.java)
-        .satisfies(ThrowingConsumer { ex ->
-            val globalEx = ex as GlobalException
-            assertThat(globalEx.errorCode)
-                .isEqualTo(MemberErrorCode.MEMBER_DUPLICATE_LOGIN_ID)
-        })
+            .isInstanceOf(GlobalException::class.java)
+            .satisfies(ThrowingConsumer { ex ->
+                val globalEx = ex as GlobalException
+                assertThat(globalEx.errorCode)
+                    .isEqualTo(MemberErrorCode.MEMBER_DUPLICATE_LOGIN_ID)
+            })
     }
 
    @DisplayName("로그인 정보로 회원을 찾는다.")
