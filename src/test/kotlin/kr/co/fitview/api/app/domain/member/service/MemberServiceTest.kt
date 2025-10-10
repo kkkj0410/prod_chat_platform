@@ -4,6 +4,7 @@ import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
+import kr.co.fitview.api.app.global.entity.OAuth2Provider
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.member.MemberErrorCode
 import org.assertj.core.api.Assertions.*
@@ -212,6 +213,43 @@ class MemberServiceTest @Autowired constructor(
                 assertThat(globalEx.errorCode)
                     .isEqualTo(MemberErrorCode.MEMBER_NOT_FOUND)
             })
+    }
+
+
+    @DisplayName("소셜 로그인 회원이 존재하면 해당 회원을 조회한다.")
+    @Test
+    fun findMemberFromProviderId() {
+        // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+            provider = OAuth2Provider.APPLE,
+            providerId = "providerId"
+        )
+        val savedMember = memberRepository.save(member)
+
+        // when
+        val findMember = memberService.findMemberFromProviderId(savedMember.providerId!!)
+
+        // then
+        assertThat(savedMember.id).isNotNull()
+        assertThat(findMember)
+            .extracting("email", "password", "role", "provider", "providerId")
+            .contains(savedMember.email, savedMember.password, savedMember.role, savedMember.provider, savedMember.providerId)
+    }
+
+    @DisplayName("소셜 로그인 회원이 존재하지 않으면 해당 회원 조회에 실패한다.")
+    @Test
+    fun findMemberFromProviderIdWithoutMember() {
+        // given
+        val providerId = "providerId"
+
+        // when
+        val findMember = memberService.findMemberFromProviderId(providerId)
+
+        // then
+        assertThat(findMember).isNull()
     }
 
 }
