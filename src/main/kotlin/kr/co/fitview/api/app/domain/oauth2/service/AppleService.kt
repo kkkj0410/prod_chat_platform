@@ -6,6 +6,7 @@ import com.nimbusds.jose.jwk.JWKSet
 import com.nimbusds.jose.jwk.RSAKey
 import com.nimbusds.jwt.JWTClaimsSet
 import com.nimbusds.jwt.SignedJWT
+import kr.co.fitview.api.app.domain.auth.service.RefreshTokenService
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.service.MemberService
 import kr.co.fitview.api.app.domain.oauth2.config.AppleConfig
@@ -38,6 +39,7 @@ class AppleService(
     val networkService: NetworkService,
     val memberService : MemberService,
     val jwtTokenProvider : JwtTokenProvider,
+    val refreshTokenService : RefreshTokenService,
     val idGenerator: IdGenerator,
     val time : Time
 ) {
@@ -61,7 +63,7 @@ class AppleService(
         }
 
         val accessToken = jwtTokenProvider.createAccessToken(findMember!!.id!!, findMember.role!!)
-        val refreshToken = jwtTokenProvider.createRefreshToken(findMember.id!!)
+        val refreshToken = refreshTokenService.issueRefreshToken(findMember.id!!)
 
         return OAuth2LoginResponse(accessToken, refreshToken)
     }

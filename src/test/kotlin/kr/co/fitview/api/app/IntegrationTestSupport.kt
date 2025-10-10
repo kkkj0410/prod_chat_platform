@@ -19,7 +19,5 @@ abstract class IntegrationTestSupport {
     @MockitoBean
     lateinit var networkService: NetworkService
 
-    @MockitoBean
-    lateinit var appleAuthService: AppleAuthService
 
 }

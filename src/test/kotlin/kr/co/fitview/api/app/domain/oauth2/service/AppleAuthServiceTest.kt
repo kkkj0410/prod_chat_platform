@@ -7,9 +7,9 @@ import com.nimbusds.jose.jwk.JWKSet
 import com.nimbusds.jose.jwk.gen.RSAKeyGenerator
 import com.nimbusds.jwt.JWTClaimsSet
 import com.nimbusds.jwt.SignedJWT
+import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.oauth2.config.AppleConfig
 import kr.co.fitview.api.app.global.exception.GlobalException
-import kr.co.fitview.api.app.global.exception.error.member.MemberErrorCode
 import kr.co.fitview.api.app.global.exception.error.oauth2.OAuth2ErrorCode
 import kr.co.fitview.api.app.global.time.Time
 import org.assertj.core.api.Assertions.assertThat
@@ -30,7 +30,7 @@ class AppleAuthServiceTest @Autowired constructor(
     var appleAuthService: AppleAuthService,
     val appleConfig: AppleConfig,
     val time : Time
-) : AppleAuthServiceTestSupport(){
+) : IntegrationTestSupport(){
 
     private val usedRsaKey = RSAKeyGenerator(2048).keyID("TEST_KID").generate()
     private val usedEmail = "test@example.com"
