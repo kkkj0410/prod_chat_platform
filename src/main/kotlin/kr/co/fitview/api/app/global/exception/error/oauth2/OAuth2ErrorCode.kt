@@ -16,7 +16,9 @@ enum class OAuth2ErrorCode(
     APPLE_ISSUER_INVALID("006", "apple jwt issuer invalid", "애플 응답받은 jwt 토큰의 issuer가 유효하지 않음"),
     APPLE_AUDIENCE_INVALID("006", "apple jwt audience invalid", "애플 응답받은 jwt 토큰의 audience가 유효하지 않음"),
     APPLE_JWT_EXPIRED("006", "apple jwt expired", "애플 응답받은 jwt 토큰의 유효기간 지났음"),
-    APPLE_SUBJECT_INVALID("007", "apple not found subject", "애플 jwt 토큰에서 고유 id를 찾을 수 없음")
+    APPLE_SUBJECT_INVALID("007", "apple not found subject", "애플 jwt 토큰에서 고유 id를 찾을 수 없음"),
+    APPLE_KEY_INVALID_FORMAT("008", "apple key invalid format", "apple key는 BEGIN PRIVATE KEY ~ END PRIVATE KEY 형식인데, 해당 형식이 아님. 따라서, 애플 비밀키가 아닌 것으로 간주하고 에러"),
+    APPLE_SIGN_KEY_GENERATION_FAILED("009", "apple sign key generation failed", "apple key로 애플 프로필 요청 jwt 토큰에 쓰이는 서명키 제작을 시도했음. 하지만 애플키가 서명키 제작 형식에 맞지 않아 에러. 즉, 애플키 값이 유효하지 않음")
 
 
     ;

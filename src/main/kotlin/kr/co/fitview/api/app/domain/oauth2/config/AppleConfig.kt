@@ -14,26 +14,24 @@ class AppleConfig(
     @Value("\${oauth2.apple.bundle-id}")
     val bundleId: String,
 
-//    @Value("\${oauth2.apple.redirect-url}")
-//    val redirectUrl: String,
-
     @Value("\${oauth2.apple.team-id}")
     val teamId: String,
 
     @Value("\${oauth2.apple.key-id}")
     val keyId: String,
 
-    @Value("\${oauth2.apple.key-name}")
-    val keyName: String,
+    @Value("\${oauth2.apple.key-value}")
+    val key: String,
 
     @Value("\${oauth2.apple.jwt.validity-in-ms}")
     val jwtValidityInMs: Long,
 
+
 ) {
 
-    val appleKeyString: String by lazy {
-        ClassPathResource(keyName).inputStream.use { it.readBytes() }.toString(Charsets.UTF_8)
-    }
+//    val appleKeyString: String by lazy {
+//        ClassPathResource(keyName).inputStream.use { it.readBytes() }.toString(Charsets.UTF_8)
+//    }
 
     val appleAuthServer = "https://appleid.apple.com"
 
