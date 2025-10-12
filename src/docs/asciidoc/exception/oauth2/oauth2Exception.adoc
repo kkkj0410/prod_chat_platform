@@ -1,0 +1,98 @@
+[[OAUTH2_001]]
+=== OAUTH2_001
+
+==== HTTP Request
+include::{snippets}/OAUTH2_001/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/OAUTH2_001/http-response.adoc[]
+include::{snippets}/OAUTH2_001/response-fields.adoc[]
+
+[[OAUTH2_002]]
+=== OAUTH2_002
+
+==== HTTP Request
+include::{snippets}/OAUTH2_002/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/OAUTH2_002/http-response.adoc[]
+include::{snippets}/OAUTH2_002/response-fields.adoc[]
+
+
+[[OAUTH2_003]]
+=== OAUTH2_003
+
+==== HTTP Request
+include::{snippets}/OAUTH2_003/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/OAUTH2_003/http-response.adoc[]
+include::{snippets}/OAUTH2_003/response-fields.adoc[]
+
+
+[[OAUTH2_004]]
+=== OAUTH2_004
+
+==== HTTP Request
+include::{snippets}/OAUTH2_004/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/OAUTH2_004/http-response.adoc[]
+include::{snippets}/OAUTH2_004/response-fields.adoc[]
+
+
+[[OAUTH2_005]]
+=== OAUTH2_005
+
+==== HTTP Request
+include::{snippets}/OAUTH2_005/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/OAUTH2_005/http-response.adoc[]
+include::{snippets}/OAUTH2_005/response-fields.adoc[]
+
+
+[[OAUTH2_006]]
+=== OAUTH2_006
+
+==== HTTP Request
+include::{snippets}/OAUTH2_006/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/OAUTH2_006/http-response.adoc[]
+include::{snippets}/OAUTH2_006/response-fields.adoc[]
+
+
+[[OAUTH2_007]]
+=== OAUTH2_007
+
+==== HTTP Request
+include::{snippets}/OAUTH2_007/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/OAUTH2_007/http-response.adoc[]
+include::{snippets}/OAUTH2_007/response-fields.adoc[]
+
+
+[[OAUTH2_008]]
+=== OAUTH2_008
+
+==== HTTP Request
+include::{snippets}/OAUTH2_008/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/OAUTH2_008/http-response.adoc[]
+include::{snippets}/OAUTH2_008/response-fields.adoc[]
+
+
+[[OAUTH2_009]]
+=== OAUTH2_009
+
+==== HTTP Request
+include::{snippets}/OAUTH2_009/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/OAUTH2_009/http-response.adoc[]
+include::{snippets}/OAUTH2_009/response-fields.adoc[]
+
+

@@ -51,7 +51,14 @@ class SecurityConfig(
             .formLogin { form -> form.disable() }
             .cors { cors ->
                 cors.configurationSource(corsConfig.corsConfigurationSource())
+//                cors.configurationSource { request ->
+//                    if (SecurityConstant.CORS_PERMIT_URIS.any { request.requestURI.startsWith(it) }) {
+//                        return@configurationSource null
+//                    }
+//                    corsConfig.corsConfigurationSource().getCorsConfiguration(request)
+//                }
             }
+
             .sessionManagement { session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             }
@@ -71,6 +78,7 @@ class SecurityConfig(
                 exception
                     .authenticationEntryPoint(jwtAuthenticationEntryPoint)
             }
+
 
 
 //            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)

@@ -9,5 +9,7 @@ interface MemberRepository : JpaRepository<Member, Long> {
 
     fun findByIdAndDeletedAtIsNull(memberId : Long) : Member?
 
+    fun findByProviderIdAndDeletedAtIsNull(providerId : String) : Member?
+
 
 }

@@ -2,6 +2,7 @@ package kr.co.fitview.api.app.domain.member.repository
 
 import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.member.entity.Member
+import kr.co.fitview.api.app.global.entity.OAuth2Provider
 import kr.co.fitview.api.app.global.entity.Role
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
@@ -13,10 +14,6 @@ class MemberRepositoryTest@Autowired constructor(
     val memberRepository : MemberRepository,
 ) : IntegrationTestSupport() {
 
-
-//    fun findByLoginIdAndDeletedAtIsNull(loginId : String) : Member?
-//
-//    fun findByIdAndDeletedAtIsNull(memberId : Long) : Member?
 
     @DisplayName("로그인 id로 해당 회원을 조회한다.")
     @Test
@@ -83,6 +80,45 @@ class MemberRepositoryTest@Autowired constructor(
 
         // when
         val findMember = memberRepository.findByIdAndDeletedAtIsNull(memberId)
+
+        // then
+        assertThat(findMember).isNull()
+    }
+
+
+    @DisplayName("소셜 로그인 고유 id로 해당 회원을 조회한다.")
+    @Test
+    fun findByProviderIdAndDeletedAtIsNull() {
+        // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+            provider = OAuth2Provider.APPLE,
+            providerId = "providerId"
+        )
+        val savedMember = memberRepository.save(member)
+
+        // when
+        val findMember = memberRepository.findByProviderIdAndDeletedAtIsNull(savedMember.providerId!!)
+
+        // then
+        assertThat(savedMember.id).isNotNull()
+        assertThat(findMember)
+            .extracting("email", "password", "role", "provider", "providerId")
+            .contains(savedMember.email, savedMember.password, savedMember.role, savedMember.provider, savedMember.providerId)
+
+    }
+
+
+    @DisplayName("저장되지 않은 회원은 소셜 로그인 고유 id로 해당 회원을 조회할 수 없다.")
+    @Test
+    fun findByProviderIdAndDeletedAtIsNullWithoutMember() {
+        // given
+        val providerId = "providerId"
+
+        // when
+        val findMember = memberRepository.findByProviderIdAndDeletedAtIsNull(providerId)
 
         // then
         assertThat(findMember).isNull()

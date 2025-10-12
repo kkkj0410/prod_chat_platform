@@ -1,0 +1,11 @@
+[[NETWORK_001]]
+=== NETWORK_001
+
+==== HTTP Request
+include::{snippets}/NETWORK_001/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/NETWORK_001/http-response.adoc[]
+include::{snippets}/NETWORK_001/response-fields.adoc[]
+
+

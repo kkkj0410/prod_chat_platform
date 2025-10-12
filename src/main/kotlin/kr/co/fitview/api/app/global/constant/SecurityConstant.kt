@@ -20,7 +20,7 @@ object SecurityConstant {
         "$API_BASE/auth/**",
         "$API_BASE/docs/**",
         "$API_BASE/exception/**",
-//        "$API_BASE/oauth2/**",
+        "$API_BASE/oauth2/**",
 //        "/connect/**",
 
         "/css/**",
@@ -41,6 +41,10 @@ object SecurityConstant {
 
     val DOCS_URIS: List<String> = listOf(
         "/docs/**"
+    )
+
+    val CORS_PERMIT_URIS: List<String> = listOf(
+        "$API_BASE/oauth2/**",
     )
 
 

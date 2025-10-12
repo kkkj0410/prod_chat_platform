@@ -14,6 +14,11 @@ endif::[]
 
 include::exception/auth/authException.adoc[]
 
+[[OAUTH2]]
+== <OAUTH2>
+
+include::exception/oauth2/oauth2Exception.adoc[]
+
 [[JWT]]
 == <JWT>
 
@@ -33,3 +38,9 @@ include::exception/request/requestException.adoc[]
 == <SECURITY>
 
 include::exception/security/securityException.adoc[]
+
+
+[[NETWORK]]
+== <NETWORK>
+
+include::exception/network/networkException.adoc[]
