@@ -14,10 +14,18 @@ endif::[]
 
 include::api/auth/auth.adoc[]
 
+[[OAuth2-API]]
+== OAuth2 API
+
+include::api/oauth2/oauth2.adoc[]
+
+
+
 [[Member-API]]
 == Member API
 
 include::api/member/member.adoc[]
+
 
 
 
