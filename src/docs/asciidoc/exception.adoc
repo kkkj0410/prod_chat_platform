@@ -38,3 +38,9 @@ include::exception/request/requestException.adoc[]
 == <SECURITY>
 
 include::exception/security/securityException.adoc[]
+
+
+[[NETWORK]]
+== <NETWORK>
+
+include::exception/network/networkException.adoc[]
