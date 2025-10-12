@@ -20,7 +20,6 @@ include::api/auth/auth.adoc[]
 include::api/oauth2/oauth2.adoc[]
 
 
-
 [[Member-API]]
 == Member API
 
