@@ -8,14 +8,10 @@ data class AppleLoginRequest(
     @field:NotBlank(message = "appleAuthCode is required")
     val appleAuthCode : String?,
 
-    @field:NotBlank(message = "redirectUri is required")
-    val redirectUri : String?,
-
 ){
     fun toServiceRequest() : AppleLoginServiceRequest{
         return AppleLoginServiceRequest(
-            appleAuthCode = appleAuthCode!!,
-            redirectUri = redirectUri!!
+            appleAuthCode = appleAuthCode!!
         )
     }
 

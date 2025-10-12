@@ -85,7 +85,6 @@ class AppleServiceTest @Autowired constructor(
         val email = "email"
         val request = AppleLoginServiceRequest(
             appleAuthCode = "appleAuthCode",
-            redirectUri = "https://asd.com"
         )
 
         val usedRsaKey = RSAKeyGenerator(2048).keyID("TEST_KID").generate()
@@ -137,7 +136,6 @@ class AppleServiceTest @Autowired constructor(
 
         val request = AppleLoginServiceRequest(
             appleAuthCode = "appleAuthCode",
-            redirectUri = "https://asd.com"
         )
 
         val usedRsaKey = RSAKeyGenerator(2048).keyID("TEST_KID").generate()
@@ -182,7 +180,6 @@ class AppleServiceTest @Autowired constructor(
         // given
         val request = AppleLoginServiceRequest(
             appleAuthCode = "appleAuthCode",
-            redirectUri = "https://asd.com"
         )
 
         given(networkService.postByWebClient(any(), any()))
@@ -206,8 +203,7 @@ class AppleServiceTest @Autowired constructor(
     fun loginAppleWithSignupWithoutIdToken() {
         // given
         val request = AppleLoginServiceRequest(
-            appleAuthCode = "appleAuthCode",
-            redirectUri = "https://asd.com"
+            appleAuthCode = "appleAuthCode"
         )
 
         // when
@@ -235,8 +231,7 @@ class AppleServiceTest @Autowired constructor(
     fun loginAppleWithSignupWithoutEmail() {
         val appleId = "subject"
         val request = AppleLoginServiceRequest(
-            appleAuthCode = "appleAuthCode",
-            redirectUri = "https://asd.com"
+            appleAuthCode = "appleAuthCode"
         )
 
         val usedRsaKey = RSAKeyGenerator(2048).keyID("TEST_KID").generate()
@@ -275,7 +270,6 @@ class AppleServiceTest @Autowired constructor(
         // given
         val request = AppleLoginServiceRequest(
             appleAuthCode = "appleAuthCode",
-            redirectUri = "https://asd.com"
         )
 
         val usedRsaKey = RSAKeyGenerator(2048).keyID("TEST_KID").generate()

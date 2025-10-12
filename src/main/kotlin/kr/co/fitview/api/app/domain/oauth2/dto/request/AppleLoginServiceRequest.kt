@@ -6,7 +6,6 @@ import kr.co.fitview.api.app.domain.auth.dto.request.AccessTokenRefreshServiceRe
 data class AppleLoginServiceRequest(
 
     val appleAuthCode : String,
-    val redirectUri : String,
 
 ){
 

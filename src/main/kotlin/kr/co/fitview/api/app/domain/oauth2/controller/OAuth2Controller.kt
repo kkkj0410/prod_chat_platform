@@ -30,4 +30,16 @@ class OAuth2Controller(
         return ResponseEntity.ok(ApiResponse.success(response))
     }
 
+    @PostMapping("/kakao")
+    fun kakaoLogin(
+        @Valid
+        @RequestBody
+        request : AppleLoginRequest
+    ) : ResponseEntity<ApiResponse<OAuth2LoginResponse>> {
+        val response = appleService.loginAppleWithSignup(request.toServiceRequest())
+
+        return ResponseEntity.ok(ApiResponse.success(response))
+    }
+
+
 }

@@ -36,7 +36,6 @@ class OAuth2ControllerDocsTest : RestDocsSupport() {
         // given
         val request = AppleLoginRequest(
             appleAuthCode = "appleAuthCode",
-            redirectUri = "redirectUri"
         )
 
         given(appleService.loginAppleWithSignup(any()))
@@ -61,9 +60,7 @@ class OAuth2ControllerDocsTest : RestDocsSupport() {
 
             requestFields(
                 fieldWithPath("appleAuthCode").type(JsonFieldType.STRING)
-                    .description("애플 인증 코드"),
-                fieldWithPath("redirectUri").type(JsonFieldType.STRING)
-                    .description("애플 리다이렉트 URI"),
+                    .description("애플 인증 코드")
             ),
 
             responseFields(

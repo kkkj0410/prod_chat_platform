@@ -92,7 +92,6 @@ class AppleService(
         formData.add("client_secret", clientSecret)
         formData.add("code", request.appleAuthCode)
         formData.add("grant_type", "authorization_code")
-        formData.add("redirect_uri", request.redirectUri)
         return formData
     }
 
