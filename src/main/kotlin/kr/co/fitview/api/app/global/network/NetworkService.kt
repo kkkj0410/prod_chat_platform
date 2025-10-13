@@ -1,10 +1,13 @@
 package kr.co.fitview.api.app.global.network
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.nimbusds.jose.jwk.JWKSet
+import kr.co.fitview.api.app.domain.oauth2.dto.response.KakaoProfile
 import kr.co.fitview.api.app.global.exception.GlobalException
+import kr.co.fitview.api.app.global.exception.error.ErrorCode
 import kr.co.fitview.api.app.global.exception.error.network.NetworkErrorCode
-import kr.co.fitview.api.app.global.exception.error.oauth2.OAuth2ErrorCode
 import org.springframework.core.ParameterizedTypeReference
+import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import org.springframework.util.MultiValueMap
@@ -35,6 +38,21 @@ class NetworkService(
                 .block() ?: emptyMap()
             return response
         } catch (e: WebClientResponseException) {
+            throw GlobalException(NetworkErrorCode.NETWORK_SEND_ERROR)
+        }
+    }
+
+    fun postKakaoProfile(url: String, accessToken: String): KakaoProfile {
+        try {
+            return webClient.post()
+                .uri(url)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer $accessToken")
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .bodyToMono(KakaoProfile::class.java)
+                .block()!!
+        }
+        catch(ex : Exception) {
             throw GlobalException(NetworkErrorCode.NETWORK_SEND_ERROR)
         }
     }

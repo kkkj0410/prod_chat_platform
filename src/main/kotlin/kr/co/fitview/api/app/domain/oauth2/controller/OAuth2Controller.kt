@@ -2,8 +2,10 @@ package kr.co.fitview.api.app.domain.oauth2.controller
 
 import jakarta.validation.Valid
 import kr.co.fitview.api.app.domain.oauth2.dto.request.AppleLoginRequest
+import kr.co.fitview.api.app.domain.oauth2.dto.request.KakaoLoginRequest
 import kr.co.fitview.api.app.domain.oauth2.dto.response.OAuth2LoginResponse
 import kr.co.fitview.api.app.domain.oauth2.service.AppleService
+import kr.co.fitview.api.app.domain.oauth2.service.KakaoService
 import kr.co.fitview.api.app.global.dto.ApiResponse
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
@@ -15,7 +17,8 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/api/v1/oauth2")
 class OAuth2Controller(
-    val appleService : AppleService
+    val appleService : AppleService,
+    val kakaoService : KakaoService
 ) {
 
 
@@ -34,9 +37,9 @@ class OAuth2Controller(
     fun kakaoLogin(
         @Valid
         @RequestBody
-        request : AppleLoginRequest
+        request : KakaoLoginRequest
     ) : ResponseEntity<ApiResponse<OAuth2LoginResponse>> {
-        val response = appleService.loginAppleWithSignup(request.toServiceRequest())
+        val response = kakaoService.loginKakaoWithSignup(request.toServiceRequest())
 
         return ResponseEntity.ok(ApiResponse.success(response))
     }

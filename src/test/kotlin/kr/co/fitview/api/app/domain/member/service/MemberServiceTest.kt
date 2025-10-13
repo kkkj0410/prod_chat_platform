@@ -12,7 +12,6 @@ import org.assertj.core.api.ThrowingConsumer
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.transaction.annotation.Transactional
 
 class MemberServiceTest @Autowired constructor(
     val memberService : MemberService,
@@ -65,7 +64,7 @@ class MemberServiceTest @Autowired constructor(
             .satisfies(ThrowingConsumer { ex ->
                 val globalEx = ex as GlobalException
                 assertThat(globalEx.errorCode)
-                    .isEqualTo(MemberErrorCode.MEMBER_DUPLICATE_LOGIN_ID)
+                    .isEqualTo(MemberErrorCode.MEMBER_DUPLICATE_EMAIL)
             })
     }
 
