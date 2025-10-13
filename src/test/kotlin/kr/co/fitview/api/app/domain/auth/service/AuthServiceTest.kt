@@ -2,13 +2,11 @@ package kr.co.fitview.api.app.domain.auth.service
 
 import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.auth.HeaderClientType
-import kr.co.fitview.api.app.domain.auth.dto.request.AccessTokenRefreshRequest
 import kr.co.fitview.api.app.domain.auth.dto.request.AccessTokenRefreshServiceRequest
 import kr.co.fitview.api.app.domain.auth.entity.RefreshTokenStatus
 import kr.co.fitview.api.app.domain.auth.repository.RefreshTokenRepository
 import kr.co.fitview.api.app.domain.member.dto.request.MemberCreateServiceRequest
 import kr.co.fitview.api.app.domain.member.dto.request.MemberLoginServiceRequest
-import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.exception.GlobalException
@@ -80,7 +78,7 @@ class AuthServiceTest@Autowired constructor(
             .satisfies(ThrowingConsumer { ex ->
                 val globalEx = ex as GlobalException
                 assertThat(globalEx.errorCode)
-                    .isEqualTo(MemberErrorCode.MEMBER_DUPLICATE_LOGIN_ID)
+                    .isEqualTo(MemberErrorCode.MEMBER_DUPLICATE_EMAIL)
             })
     }
 

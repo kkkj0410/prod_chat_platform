@@ -8,6 +8,7 @@ import kr.co.fitview.api.app.domain.member.controller.MemberController
 import kr.co.fitview.api.app.domain.member.service.MemberService
 import kr.co.fitview.api.app.domain.oauth2.controller.OAuth2Controller
 import kr.co.fitview.api.app.domain.oauth2.service.AppleService
+import kr.co.fitview.api.app.domain.oauth2.service.KakaoService
 import kr.co.fitview.api.app.global.config.JwtConfig
 import kr.co.fitview.api.app.global.config.SecurityConfig
 import kr.co.fitview.api.app.global.config.TestSecurityConfig
@@ -79,6 +80,9 @@ abstract class ControllerTestSupport {
 
     @MockitoBean
     private lateinit var appleService: AppleService
+
+    @MockitoBean
+    private lateinit var kakaoService: KakaoService
 
 
 }
