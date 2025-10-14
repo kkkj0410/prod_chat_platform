@@ -38,6 +38,11 @@ class NetworkService(
                 .block() ?: emptyMap()
             return response
         } catch (e: WebClientResponseException) {
+//            println("❌ [WebClient Error] status=${e.statusCode}")
+//            println("❌ [WebClient Error] headers=${e.headers}")
+//            println("❌ [WebClient Error] body=${e.responseBodyAsString}")
+
+
             throw GlobalException(NetworkErrorCode.NETWORK_SEND_ERROR)
         }
     }
