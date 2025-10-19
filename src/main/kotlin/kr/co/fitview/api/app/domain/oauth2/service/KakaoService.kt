@@ -4,9 +4,7 @@ import kr.co.fitview.api.app.domain.auth.service.RefreshTokenService
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.service.MemberService
 import kr.co.fitview.api.app.domain.oauth2.dto.request.KakaoLoginServiceRequest
-import kr.co.fitview.api.app.domain.oauth2.dto.response.AppleProfile
 import kr.co.fitview.api.app.domain.oauth2.dto.response.KakaoProfile
-import kr.co.fitview.api.app.domain.oauth2.dto.response.OAuth2LoginResponse
 import kr.co.fitview.api.app.global.entity.OAuth2Provider
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.exception.GlobalException
@@ -30,7 +28,7 @@ class KakaoService(
     val requestUrlFromKakao = "https://kapi.kakao.com/v2/user/me"
 
     @Transactional
-    fun loginKakaoWithSignup(request: KakaoLoginServiceRequest): OAuth2LoginResponse {
+    fun loginKakaoWithAdd(request: KakaoLoginServiceRequest): Member {
 
         val kakaoProfile = getKakaoProfile(request)
 
@@ -40,10 +38,8 @@ class KakaoService(
             findMember = kakaoSignup(kakaoProfile)
         }
 
-        val accessToken = jwtTokenProvider.createAccessToken(findMember!!.id!!, findMember.role!!)
-        val refreshToken = refreshTokenService.issueRefreshToken(findMember.id!!)
 
-        return OAuth2LoginResponse(accessToken,refreshToken)
+        return findMember!!
     }
 
 

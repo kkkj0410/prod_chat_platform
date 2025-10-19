@@ -1,5 +1,7 @@
 package kr.co.fitview.api.app.global.entity
 
+import com.fasterxml.jackson.annotation.JsonCreator
+
 enum class OAuth2Provider {
     APPLE, KAKAO;
 
@@ -9,4 +11,5 @@ enum class OAuth2Provider {
 //                ?: throw IllegalArgumentException("매칭되는 플랫폼이 없습니다.")
 //        }
 //    }
+
 }

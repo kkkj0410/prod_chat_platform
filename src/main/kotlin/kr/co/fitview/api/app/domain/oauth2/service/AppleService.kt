@@ -1,19 +1,11 @@
 package kr.co.fitview.api.app.domain.oauth2.service
 
-import com.nimbusds.jose.JWSVerifier
-import com.nimbusds.jose.crypto.RSASSAVerifier
-import com.nimbusds.jose.jwk.JWKSet
-import com.nimbusds.jose.jwk.RSAKey
-import com.nimbusds.jwt.JWTClaimsSet
-import com.nimbusds.jwt.SignedJWT
 import kr.co.fitview.api.app.domain.auth.service.RefreshTokenService
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.service.MemberService
 import kr.co.fitview.api.app.domain.oauth2.config.AppleConfig
-import kr.co.fitview.api.app.domain.oauth2.dto.request.AppleLoginRequest
 import kr.co.fitview.api.app.domain.oauth2.dto.request.AppleLoginServiceRequest
 import kr.co.fitview.api.app.domain.oauth2.dto.response.AppleProfile
-import kr.co.fitview.api.app.domain.oauth2.dto.response.OAuth2LoginResponse
 import kr.co.fitview.api.app.domain.oauth2.util.AppleJwtProvider
 import kr.co.fitview.api.app.global.entity.OAuth2Provider
 import kr.co.fitview.api.app.global.entity.Role
@@ -27,8 +19,6 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.util.LinkedMultiValueMap
 import org.springframework.util.MultiValueMap
-
-import java.net.URI
 
 
 @Service
@@ -47,9 +37,9 @@ class AppleService(
     val appleEndpointUrl = "https://appleid.apple.com/auth/token"
 
     @Transactional
-    fun loginAppleWithSignup(
+    fun loginAppleWithAdd(
         request : AppleLoginServiceRequest
-    ) : OAuth2LoginResponse{
+    ) : Member{
 
         val appleJwtToken = getAppleJwtToken(request)
 
@@ -63,10 +53,8 @@ class AppleService(
             findMember = appleSignup(appleProfile)
         }
 
-        val accessToken = jwtTokenProvider.createAccessToken(findMember!!.id!!, findMember.role!!)
-        val refreshToken = refreshTokenService.issueRefreshToken(findMember.id!!)
 
-        return OAuth2LoginResponse(accessToken, refreshToken)
+        return findMember!!
     }
 
     private fun getAppleJwtToken(request: AppleLoginServiceRequest): String {

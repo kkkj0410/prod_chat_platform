@@ -1,24 +1,10 @@
-[[oauth2-apple]]
-=== 애플 로그인
+[[oauth2-login]]
+=== 소셜 로그인
 
 ==== HTTP Request
-include::{snippets}/oauth2-apple/http-request.adoc[]
-include::{snippets}/oauth2-apple/request-fields.adoc[]
+include::{snippets}/oauth2-login/http-request.adoc[]
+include::{snippets}/oauth2-login/request-fields.adoc[]
 
 ==== HTTP Response
-include::{snippets}/oauth2-apple/http-response.adoc[]
-include::{snippets}/oauth2-apple/response-fields.adoc[]
-
-
-[[oauth2-kakao]]
-=== 카카오 로그인
-
-==== HTTP Request
-include::{snippets}/oauth2-kakao/http-request.adoc[]
-include::{snippets}/oauth2-kakao/request-fields.adoc[]
-
-==== HTTP Response
-include::{snippets}/oauth2-kakao/http-response.adoc[]
-include::{snippets}/oauth2-kakao/response-fields.adoc[]
-
-
+include::{snippets}/oauth2-login/http-response.adoc[]
+include::{snippets}/oauth2-login/response-fields.adoc[]
