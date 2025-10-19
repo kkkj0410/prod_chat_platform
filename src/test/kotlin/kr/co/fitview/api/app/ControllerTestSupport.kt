@@ -9,37 +9,28 @@ import kr.co.fitview.api.app.domain.member.service.MemberService
 import kr.co.fitview.api.app.domain.oauth2.controller.OAuth2Controller
 import kr.co.fitview.api.app.domain.oauth2.service.AppleService
 import kr.co.fitview.api.app.domain.oauth2.service.KakaoService
-import kr.co.fitview.api.app.global.config.JwtConfig
+import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
 import kr.co.fitview.api.app.global.config.SecurityConfig
 import kr.co.fitview.api.app.global.config.TestSecurityConfig
-import kr.co.fitview.api.app.global.cookie.CookieProvider
 import kr.co.fitview.api.app.global.exception.GlobalExceptionHandler
 import kr.co.fitview.api.app.global.filter.JwtAuthenticationFilter
-import kr.co.fitview.api.app.global.filter.SecurityExceptionFilter
-import kr.co.fitview.api.app.global.id.IdGenerator
-import kr.co.fitview.api.app.global.id.IdGeneratorProvider
-import kr.co.fitview.api.app.global.jwt.JwtAuthentication
-import kr.co.fitview.api.app.global.jwt.JwtTokenProvider
 import kr.co.fitview.api.app.global.security.JwtAuthenticationEntryPoint
-import kr.co.fitview.api.app.global.time.Time
-import kr.co.fitview.api.app.global.time.TimeProvider
 import kr.co.fitview.api.app.global.util.SecurityUtil
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
-import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
-import org.springframework.boot.autoconfigure.validation.ValidationAutoConfiguration
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.FilterType
 import org.springframework.context.annotation.Import
-import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.web.servlet.MockMvc
 
 
 @Import(
     TestSecurityConfig::class,
-    SecurityUtil::class
+    SecurityUtil::class,
+//    TestWebConfig::class,
+//    RequestEnumConverter::class,
+//    WebConverterConfig::class
 )
 @WebMvcTest(controllers = [
     AuthController::class,
@@ -78,11 +69,14 @@ abstract class ControllerTestSupport {
     @MockitoBean
     private lateinit var refreshTokenService: RefreshTokenService
 
-    @MockitoBean
-    private lateinit var appleService: AppleService
+//    @MockitoBean
+//    private lateinit var appleService: AppleService
+//
+//    @MockitoBean
+//    private lateinit var kakaoService: KakaoService
 
     @MockitoBean
-    private lateinit var kakaoService: KakaoService
+    private lateinit var oAuth2Service: OAuth2Service
 
 
 }

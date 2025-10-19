@@ -4,6 +4,7 @@ import kr.co.fitview.api.app.global.dto.ApiResponse
 import kr.co.fitview.api.app.global.exception.error.request.RequestErrorCode
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.MissingRequestHeaderException
 import org.springframework.web.bind.annotation.ExceptionHandler
@@ -51,6 +52,13 @@ class GlobalExceptionHandler {
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
             .body(RequestErrorCode.REQ_HEADER_NOT_VALID.toApiResponse())
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException::class)
+    fun handleHttpMessageNotReadable(e: HttpMessageNotReadableException): ResponseEntity<ApiResponse<*>> {
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(RequestErrorCode.REQ_ENUM_MISMATCH.toApiResponse())
     }
 
 }

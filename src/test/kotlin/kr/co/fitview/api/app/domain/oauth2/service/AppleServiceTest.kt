@@ -9,8 +9,6 @@ import com.nimbusds.jose.jwk.gen.RSAKeyGenerator
 import com.nimbusds.jwt.JWTClaimsSet
 import com.nimbusds.jwt.SignedJWT
 import kr.co.fitview.api.app.IntegrationTestSupport
-import kr.co.fitview.api.app.domain.auth.entity.RefreshToken
-import kr.co.fitview.api.app.domain.auth.repository.RefreshTokenRepository
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.domain.oauth2.config.AppleConfig
@@ -20,7 +18,6 @@ import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.oauth2.OAuth2ErrorCode
 import kr.co.fitview.api.app.global.id.IdGenerator
-import kr.co.fitview.api.app.global.jwt.JwtTokenProvider
 import kr.co.fitview.api.app.global.time.Time
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
@@ -40,8 +37,6 @@ class AppleServiceTest @Autowired constructor(
     val time : Time,
     val appleConfig : AppleConfig,
     val appleAuthService: AppleAuthService,
-    val jwtTokenProvider : JwtTokenProvider,
-    val refreshTokenRepository: RefreshTokenRepository
 ) : IntegrationTestSupport(){
 
 
@@ -79,7 +74,7 @@ class AppleServiceTest @Autowired constructor(
 
     @DisplayName("애플 인증 코드를 받고 프로필을 조회했을때, 없는 회원이면 회원가입된다.")
     @Test
-    fun loginAppleWithSignup() {
+    fun loginAppleWithAdd() {
         // given
         val appleId = "subject"
         val email = "email"
@@ -104,9 +99,8 @@ class AppleServiceTest @Autowired constructor(
                 JWKSet(usedRsaKey.toPublicJWK())
             )
 
-
         // when
-        appleService.loginAppleWithSignup(request)
+        appleService.loginAppleWithAdd(request)
 
         // then
         val findMember = memberRepository.findByProviderIdAndDeletedAtIsNull(appleId)
@@ -117,9 +111,9 @@ class AppleServiceTest @Autowired constructor(
 
     }
 
-    @DisplayName("애플 인증 코드를 받고 프로필을 조회했을때, 회원 정보를 액세스, 리프레시 토큰으로 반환한다.")
+    @DisplayName("애플 인증 코드를 받고 프로필을 조회했을때, 회원 정보를 반환한다.")
     @Test
-    fun loginAppleWithSignupResponse() {
+    fun loginAppleWithAddResponse() {
         // given
         val appleId = "subject"
         val email = "email"
@@ -157,26 +151,18 @@ class AppleServiceTest @Autowired constructor(
 
 
         // when
-        val response = appleService.loginAppleWithSignup(request)
+        val response = appleService.loginAppleWithAdd(request)
 
         // then
-        val findMemberIdByAccessToken = jwtTokenProvider.extractMemberIdFrom(response.accessToken)
-        val findMemberIdByRefreshToken = jwtTokenProvider.extractMemberIdFrom(response.refreshToken)
-        val findRole = jwtTokenProvider.extractRoleFrom(response.accessToken)
-        val findUuid = jwtTokenProvider.extractUuidFrom(response.refreshToken)
-        val findRefreshTokenEntity : RefreshToken = refreshTokenRepository.findById(findUuid).orElseThrow()
-
-
-        assertThat(findMember)
-            .extracting("id", "id", "role")
-            .contains(findMemberIdByAccessToken, findMemberIdByRefreshToken, findRole)
-        assertThat(findRefreshTokenEntity.id).isEqualTo(findUuid)
+        assertThat(response)
+            .extracting("email", "password", "role", "provider", "providerId")
+            .contains(findMember!!.email, findMember.password, findMember.role, findMember.provider, findMember.providerId)
     }
 
 
     @DisplayName("애플 인증 코드로 애플 프로필 조회를 했지만 요청 실패")
     @Test
-    fun loginAppleWithSignupOnRequestFailure() {
+    fun loginAppleWithAddOnRequestFailure() {
         // given
         val request = AppleLoginServiceRequest(
             appleAuthCode = "appleAuthCode",
@@ -187,7 +173,7 @@ class AppleServiceTest @Autowired constructor(
 
         // when & then
         assertThatThrownBy {
-            appleService.loginAppleWithSignup(request)
+            appleService.loginAppleWithAdd(request)
         }
             .isInstanceOf(GlobalException::class.java)
             .satisfies(ThrowingConsumer { ex ->
@@ -200,7 +186,7 @@ class AppleServiceTest @Autowired constructor(
 
     @DisplayName("애플 회원 정보 응답을 받았으나, 회원 프로필이 담긴 jwt 토큰을 획득하지 못했다.")
     @Test
-    fun loginAppleWithSignupWithoutIdToken() {
+    fun loginAppleWithAddWithoutIdToken() {
         // given
         val request = AppleLoginServiceRequest(
             appleAuthCode = "appleAuthCode"
@@ -215,7 +201,7 @@ class AppleServiceTest @Autowired constructor(
 
         // then
         assertThatThrownBy {
-            appleService.loginAppleWithSignup(request)
+            appleService.loginAppleWithAdd(request)
         }
             .isInstanceOf(GlobalException::class.java)
             .satisfies(ThrowingConsumer { ex ->
@@ -228,7 +214,7 @@ class AppleServiceTest @Autowired constructor(
 
     @DisplayName("애플 회원 프로필을 취득 후, 회원가입을 시도했으나 이메일이 없어서 회원가입 실패")
     @Test
-    fun loginAppleWithSignupWithoutEmail() {
+    fun loginAppleWithAddWithoutEmail() {
         val appleId = "subject"
         val request = AppleLoginServiceRequest(
             appleAuthCode = "appleAuthCode"
@@ -253,7 +239,7 @@ class AppleServiceTest @Autowired constructor(
 
         // when & then
         assertThatThrownBy {
-            appleService.loginAppleWithSignup(request)
+            appleService.loginAppleWithAdd(request)
         }
             .isInstanceOf(GlobalException::class.java)
             .satisfies(ThrowingConsumer { ex ->
@@ -291,7 +277,7 @@ class AppleServiceTest @Autowired constructor(
 
         // when & then
         assertThatThrownBy {
-            appleService.loginAppleWithSignup(request)
+            appleService.loginAppleWithAdd(request)
         }
             .isInstanceOf(GlobalException::class.java)
             .satisfies(ThrowingConsumer { ex ->
