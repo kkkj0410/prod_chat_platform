@@ -3,6 +3,7 @@ package kr.co.fitview.api.app.domain.oauth2.controller
 import jakarta.validation.Valid
 import kr.co.fitview.api.app.domain.oauth2.dto.request.AppleLoginRequest
 import kr.co.fitview.api.app.domain.oauth2.dto.request.KakaoLoginRequest
+import kr.co.fitview.api.app.domain.oauth2.dto.request.OAuth2LoginRequest
 import kr.co.fitview.api.app.domain.oauth2.dto.response.OAuth2LoginResponse
 import kr.co.fitview.api.app.domain.oauth2.service.AppleService
 import kr.co.fitview.api.app.domain.oauth2.service.KakaoService
@@ -43,6 +44,7 @@ class OAuth2Controller(
 
         return ResponseEntity.ok(ApiResponse.success(response))
     }
+
 
 
 }

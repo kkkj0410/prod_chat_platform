@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Size
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.global.entity.BaseEntity
 import org.hibernate.annotations.ColumnDefault
+import java.time.Instant
 
 @Entity
 @Table(name = "refresh_token")

@@ -1,0 +1,18 @@
+package kr.co.fitview.api.app.domain.oauth2.dto.request
+
+import jakarta.validation.constraints.NotBlank
+import kr.co.fitview.api.app.domain.auth.dto.request.AccessTokenRefreshServiceRequest
+
+data class OAuth2LoginRequest(
+
+    @field:NotBlank(message = "appleAuthCode is required")
+    val appleAuthCode : String?,
+
+){
+    fun toServiceRequest() : AppleLoginServiceRequest{
+        return AppleLoginServiceRequest(
+            appleAuthCode = appleAuthCode!!
+        )
+    }
+
+}
