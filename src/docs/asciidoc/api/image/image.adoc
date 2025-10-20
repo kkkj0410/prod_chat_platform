@@ -1,0 +1,11 @@
+[[image-presign]]
+=== 이미지 presigned URL 발급 API
+
+==== HTTP Request
+include::{snippets}/image-presign/http-request.adoc[]
+include::{snippets}/image-presign/request-fields.adoc[]
+include::{snippets}/image-presign/request-headers.adoc[]
+
+==== HTTP Response
+include::{snippets}/image-presign/http-response.adoc[]
+include::{snippets}/image-presign/response-fields.adoc[]

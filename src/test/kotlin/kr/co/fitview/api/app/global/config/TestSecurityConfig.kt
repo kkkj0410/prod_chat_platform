@@ -11,18 +11,6 @@ import org.springframework.security.web.SecurityFilterChain
 @TestConfiguration
 class TestSecurityConfig {
 
-//    @MockitoBean
-//    private lateinit var jwtAuthentication: JwtAuthentication
-//
-//    @MockitoBean
-//    private lateinit var jwtAuthenticationFilter: JwtAuthenticationFilter
-//
-//    @MockitoBean
-//    private lateinit var securityExceptionFilter: SecurityExceptionFilter
-//
-//    @MockitoBean
-//    private lateinit var jwtAuthenticationEntryPoint: JwtAuthenticationEntryPoint
-
 
     @Bean
     fun filterChain(http: HttpSecurity): SecurityFilterChain {
