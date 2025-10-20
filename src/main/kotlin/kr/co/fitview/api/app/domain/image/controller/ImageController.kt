@@ -20,6 +20,7 @@ class ImageController(
 
     @PostMapping("/presign")
     fun presign(
+
         @Valid
         @RequestBody
         request : List<S3UploadUrlRequest>

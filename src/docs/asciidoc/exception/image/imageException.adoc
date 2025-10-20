@@ -1,0 +1,22 @@
+[[IMAGE_001]]
+=== IMAGE_001
+
+==== HTTP Request
+include::{snippets}/IMAGE_001/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/IMAGE_001/http-response.adoc[]
+include::{snippets}/IMAGE_001/response-fields.adoc[]
+
+
+[[IMAGE_002]]
+=== IMAGE_002
+
+==== HTTP Request
+include::{snippets}/IMAGE_002/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/IMAGE_002/http-response.adoc[]
+include::{snippets}/IMAGE_002/response-fields.adoc[]
+
+

@@ -25,6 +25,10 @@ include::api/oauth2/oauth2.adoc[]
 
 include::api/member/member.adoc[]
 
+[[Image-API]]
+== Image API
+
+include::api/image/image.adoc[]
 
 
 

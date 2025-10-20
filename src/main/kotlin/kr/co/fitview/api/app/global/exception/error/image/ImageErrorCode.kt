@@ -9,7 +9,7 @@ enum class ImageErrorCode(
 ) : ErrorCode {
 
     S3_IMAGE_TOO_LARGE("001", "Image size exceeds 50MB limit", "이미지 업로드는 50MB 이하로 제한. 용량 초과하면 업로드 불가"),
-    S3_UPLOAD_COUNT_LIMIT_50("002", "Cannot upload more than 50 files", "업로드 파일은 최대 50개까지 가능합니다. 50개 초과 시 업로드 불가")
+    S3_UPLOAD_COUNT_LIMIT("002", "Cannot upload more than 50 files", "업로드 파일은 최대 50개까지 가능합니다. 50개 초과 시 업로드 불가")
 
     ;
 

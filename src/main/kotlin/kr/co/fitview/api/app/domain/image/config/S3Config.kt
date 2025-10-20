@@ -26,8 +26,19 @@ class S3Config(
     val bucket: String,
 
     @Value("\${cloud.s3.domain}")
-    val domain: String
+    val domain: String,
+
+    @Value("\${cloud.s3.max-image-byte}")
+    val maxImageByte : Long,
+
+    @Value("\${cloud.s3.max-image-count}")
+    val maxImageCount : Int,
+
+    @Value("\${cloud.s3.max-duration-minute}")
+    val maxDurationMinute : Long,
+
 ) {
+
 
     @Bean
     fun s3Client(): S3Client {

@@ -21,21 +21,16 @@ class S3Service(
     private val idGenerator: IdGenerator
 ) {
 
-    val maxImageSize = 52428800L
-    val maxImageCount = 50
-    val maxDurationMinute = 10L
-
     fun getAllUploadUrls(requests : List<S3UploadUrlServiceRequest>): List<S3UploadUrlResponse> {
-
         if(isImageCountExceeded(requests)){
-            throw GlobalException(ImageErrorCode.S3_UPLOAD_COUNT_LIMIT_50)
+            throw GlobalException(ImageErrorCode.S3_UPLOAD_COUNT_LIMIT)
         }
 
         return requests.map { createUploadUrl(it) }
     }
 
     private fun isImageCountExceeded(request: List<S3UploadUrlServiceRequest>) =
-        request.size > maxImageCount
+        request.size > s3Config.maxImageCount
 
     private fun createUploadUrl(
         request : S3UploadUrlServiceRequest
@@ -56,9 +51,9 @@ class S3Service(
     private fun createPresignedUrl(
         fullFileName: String,
         imageByte: Long
-    ): URL {
+    ): String {
         if (isImageTooLarge(imageByte)) {
-            throw GlobalException(ImageErrorCode.S3_UPLOAD_COUNT_LIMIT_50)
+            throw GlobalException(ImageErrorCode.S3_IMAGE_TOO_LARGE)
         }
 
         val putObjectRequest = getPutObjectRequest(fullFileName, imageByte)
@@ -68,7 +63,7 @@ class S3Service(
         return presignedUrl(putObjectPresignRequest)
     }
 
-    private fun isImageTooLarge(imageByte: Long) = imageByte > maxImageSize
+    private fun isImageTooLarge(imageByte: Long) = imageByte > s3Config.maxImageByte
 
     private fun getPutObjectRequest(fullFileName: String, imageByte: Long): PutObjectRequest =
         PutObjectRequest.builder()
@@ -80,11 +75,11 @@ class S3Service(
     private fun getPutObjectPresignRequest(putObjectRequest: PutObjectRequest): PutObjectPresignRequest =
         PutObjectPresignRequest.builder()
             .putObjectRequest(putObjectRequest)
-            .signatureDuration(Duration.ofMinutes(maxDurationMinute))
+            .signatureDuration(Duration.ofMinutes(s3Config.maxDurationMinute))
             .build()
 
-    private fun presignedUrl(putObjectPresignRequest: PutObjectPresignRequest): URL =
-        s3Presigner.presignPutObject(putObjectPresignRequest).url()
+    private fun presignedUrl(putObjectPresignRequest: PutObjectPresignRequest): String =
+        s3Presigner.presignPutObject(putObjectPresignRequest).url().toString()
 
     private fun getAccessUrl(fullFileName: String): String {
         return String.format("https://%s/%s", s3Config.domain, fullFileName)

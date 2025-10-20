@@ -8,10 +8,13 @@ import org.springframework.context.annotation.Import
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.transaction.annotation.Transactional
+import software.amazon.awssdk.services.s3.presigner.S3Presigner
 
 
 @ActiveProfiles("test")
-@Import(TestJwtConfig::class)
+@Import(
+    TestJwtConfig::class,
+)
 @Transactional
 @SpringBootTest
 abstract class IntegrationTestSupport {

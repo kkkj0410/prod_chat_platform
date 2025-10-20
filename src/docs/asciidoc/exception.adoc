@@ -44,3 +44,8 @@ include::exception/security/securityException.adoc[]
 == <NETWORK>
 
 include::exception/network/networkException.adoc[]
+
+[[IMAGE]]
+== <IMAGE>
+
+include::exception/image/imageException.adoc[]
