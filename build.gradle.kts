@@ -74,6 +74,9 @@ dependencies {
 	//webClient
 	implementation("org.springframework.boot:spring-boot-starter-webflux")
 
+	//aws
+	implementation("io.awspring.cloud:spring-cloud-aws-starter:3.2.1")
+	implementation("software.amazon.awssdk:s3:2.32.22")
 }
 
 kotlin {
