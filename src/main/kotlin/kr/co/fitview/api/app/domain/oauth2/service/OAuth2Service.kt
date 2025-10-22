@@ -3,6 +3,7 @@ package kr.co.fitview.api.app.domain.oauth2.service
 import kr.co.fitview.api.app.domain.auth.service.RefreshTokenService
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.oauth2.dto.request.OAuth2LoginServiceRequest
+import kr.co.fitview.api.app.domain.oauth2.dto.request.OAuth2SignupServiceRequest
 import kr.co.fitview.api.app.domain.oauth2.dto.response.OAuth2LoginResponse
 import kr.co.fitview.api.app.global.entity.OAuth2Provider
 import kr.co.fitview.api.app.global.jwt.JwtTokenProvider
@@ -33,6 +34,11 @@ class OAuth2Service(
         val refreshToken = refreshTokenService.issueRefreshToken(findMember.id!!)
 
         return OAuth2LoginResponse(accessToken, refreshToken, findMember.isSignup!!)
+    }
+
+    fun signup(request: OAuth2SignupServiceRequest, memberId : Long) {
+
+
     }
 
 }

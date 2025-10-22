@@ -1,8 +1,8 @@
 package kr.co.fitview.api.app.domain.term.entity.enums
 
-enum class TermName {
+enum class TermName(val isRequired : Boolean) {
 
-    AGE_OVER_14, PRIVACY_POLICY, TERMS_OF_SERVICE, LOCATION_SERVICE
+    AGE_OVER_14(true), PRIVACY_POLICY(true), TERMS_OF_SERVICE(true), LOCATION_SERVICE(true)
 
 //    companion object {
 //        fun from(value: String): Gender {

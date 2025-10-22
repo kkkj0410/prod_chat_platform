@@ -10,6 +10,7 @@ import kr.co.fitview.api.app.domain.oauth2.service.AppleService
 import kr.co.fitview.api.app.domain.oauth2.service.KakaoService
 import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
 import kr.co.fitview.api.app.global.entity.OAuth2Provider
+import kr.co.fitview.api.app.global.util.SecurityUtil
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
@@ -32,9 +33,10 @@ class OAuth2ControllerDocsTest : RestDocsSupport() {
 //    private val appleService: AppleService = mock(AppleService::class.java)
 //    private val kakaoService : KakaoService = mock(KakaoService::class.java)
     private val oAuth2Service : OAuth2Service = mock(OAuth2Service::class.java)
+    private val securityUtil : SecurityUtil = mock(SecurityUtil::class.java)
 
     override fun initController(): Any {
-        return OAuth2Controller(oAuth2Service)
+        return OAuth2Controller(oAuth2Service, securityUtil)
     }
 
 //    @DisplayName("애플 로그인 API")

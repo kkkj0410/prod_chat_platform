@@ -1,5 +1,6 @@
 plugins {
 	kotlin("jvm") version "1.9.25"
+	kotlin("kapt") version "1.9.25"
 	kotlin("plugin.spring") version "1.9.25"
 	id("org.springframework.boot") version "3.5.6"
 	id("io.spring.dependency-management") version "1.1.7"
@@ -77,6 +78,10 @@ dependencies {
 	//aws
 	implementation("io.awspring.cloud:spring-cloud-aws-starter:3.2.1")
 	implementation("software.amazon.awssdk:s3:2.32.22")
+
+	//querydsl
+	implementation ("com.querydsl:querydsl-jpa:5.0.0:jakarta")
+	annotationProcessor ("com.querydsl:querydsl-apt:5.0.0:jakarta")
 }
 
 kotlin {
