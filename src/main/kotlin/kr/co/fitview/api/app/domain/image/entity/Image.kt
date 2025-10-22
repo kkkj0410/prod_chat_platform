@@ -4,6 +4,7 @@ import jakarta.persistence.*
 import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
 import kr.co.fitview.api.app.global.entity.BaseEntity
+import java.time.LocalDateTime
 
 @Entity
 @Table(name = "image")
@@ -21,4 +22,12 @@ class Image(
     @Column(name = "image_id", nullable = false)
     var id: Long? = null
 
+    fun changeUrl(url : String){
+        this.url = url
+    }
+
+    fun delete(now : LocalDateTime) : Image{
+        this.deletedAt = now
+        return this
+    }
 }
