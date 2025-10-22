@@ -8,6 +8,7 @@ import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.global.entity.BaseEntity
 import org.hibernate.annotations.ColumnDefault
 import java.time.Instant
+import java.time.LocalDateTime
 
 @Entity
 @Table(name = "member_image")
@@ -38,5 +39,16 @@ class MemberImage(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "member_image_id", nullable = false)
     var id: Long? = null
+
+    fun changeImageUrl(url : String) : MemberImage{
+        this.image?.changeUrl(url)
+        return this
+    }
+
+    fun delete(now : LocalDateTime) : MemberImage{
+        this.image?.delete(now)
+        this.deletedAt = now
+        return this
+    }
 
 }

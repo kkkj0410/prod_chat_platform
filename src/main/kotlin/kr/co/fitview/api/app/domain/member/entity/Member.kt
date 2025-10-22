@@ -93,4 +93,6 @@ class Member(
 
     @OneToMany(mappedBy = "member")
     var workoutTimes: MutableSet<WorkoutTime> = mutableSetOf()
+
+
 }

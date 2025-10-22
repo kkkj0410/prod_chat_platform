@@ -2,8 +2,14 @@ package kr.co.fitview.api.app.domain.member.service
 
 import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.member.entity.Member
+import kr.co.fitview.api.app.domain.member.entity.WorkoutDay
+import kr.co.fitview.api.app.domain.member.entity.WorkoutTime
+import kr.co.fitview.api.app.domain.member.entity.enums.WorkoutDayName
+import kr.co.fitview.api.app.domain.member.entity.enums.WorkoutTimeName
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
+import kr.co.fitview.api.app.domain.member.repository.WorkoutDayRepository
+import kr.co.fitview.api.app.domain.member.repository.WorkoutTimeRepository
 import kr.co.fitview.api.app.global.entity.OAuth2Provider
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.member.MemberErrorCode
@@ -16,6 +22,8 @@ import org.springframework.beans.factory.annotation.Autowired
 class MemberServiceTest @Autowired constructor(
     val memberService : MemberService,
     val memberRepository : MemberRepository,
+    val workoutDayRepository: WorkoutDayRepository,
+    val workoutTimeRepository : WorkoutTimeRepository
 ) : IntegrationTestSupport() {
 
     @DisplayName("사용자 정보를 저장한다")
@@ -249,6 +257,212 @@ class MemberServiceTest @Autowired constructor(
 
         // then
         assertThat(findMember).isNull()
+    }
+
+    @DisplayName("회원은 선호 운동요일을 기록하고, 회원의 전체 선호운동요일을 반환한다.")
+    @Test
+    fun addWorkoutDays() {
+        // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        val savedMember = memberRepository.save(member)
+
+        val workoutDayNames = listOf(
+                WorkoutDayName.FRI,
+                WorkoutDayName.SUN
+        )
+
+        // when
+        val workoutDays = memberService.addWorkoutDays(savedMember, workoutDayNames)
+
+        // then
+        assertThat(workoutDays)
+            .allSatisfy { workoutDay ->
+                assertThat(workoutDay.id).isNotNull()
+            }
+
+        assertThat(workoutDays)
+            .extracting("member", "name")
+            .containsExactlyInAnyOrder(
+                tuple(savedMember, WorkoutDayName.FRI),
+                tuple(savedMember, WorkoutDayName.SUN),
+            )
+
+    }
+
+    @DisplayName("회원이 선호 운동요일을 기록하는데, 이미 DB에 있으면 저장하지 않는다.")
+    @Test
+    fun addWorkoutDaysDuplicatedWorkoutDay() {
+        // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        val savedMember = memberRepository.save(member)
+
+        val workoutDays = listOf(
+            WorkoutDay(
+                savedMember,
+                WorkoutDayName.FRI
+            ),
+            WorkoutDay(
+                savedMember,
+                WorkoutDayName.SUN
+            )
+        )
+        workoutDayRepository.saveAll(workoutDays)
+
+        val workoutDayNames = listOf(
+            WorkoutDayName.FRI,
+            WorkoutDayName.MON
+        )
+
+        // when
+        val returnWorkoutDays = memberService.addWorkoutDays(savedMember, workoutDayNames)
+
+        // then
+        assertThat(returnWorkoutDays)
+            .allSatisfy { workoutDay ->
+                assertThat(workoutDay.id).isNotNull()
+            }
+
+        assertThat(returnWorkoutDays)
+            .extracting("member", "name")
+            .containsExactlyInAnyOrder(
+                tuple(savedMember, WorkoutDayName.FRI),
+                tuple(savedMember, WorkoutDayName.SUN),
+                tuple(savedMember, WorkoutDayName.MON),
+            )
+
+        assertThat(returnWorkoutDays)
+            .extracting("name")
+            .doesNotHaveDuplicates()
+
+        val findWorkoutDays = workoutDayRepository.findAllByMemberIdAndDeletedAtIsNull(savedMember.id!!)
+
+        assertThat(findWorkoutDays)
+            .allSatisfy { workoutDay ->
+                assertThat(workoutDay.id).isNotNull()
+            }
+
+        assertThat(findWorkoutDays)
+            .extracting("member", "name")
+            .containsExactlyInAnyOrder(
+                tuple(savedMember, WorkoutDayName.FRI),
+                tuple(savedMember, WorkoutDayName.SUN),
+                tuple(savedMember, WorkoutDayName.MON),
+            )
+
+        assertThat(findWorkoutDays)
+            .extracting("name")
+            .doesNotHaveDuplicates()
+    }
+
+    @DisplayName("회원은 선호 운동시간을 기록하고, 회원의 전체 선호운동시간을 반환한다.")
+    @Test
+    fun addWorkoutTimes() {
+        // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        val savedMember = memberRepository.save(member)
+
+        val workoutTimeNames = listOf(
+            WorkoutTimeName.WEEKDAY_DAWN,
+            WorkoutTimeName.WEEKEND_AFTERNOON
+        )
+
+        // when
+        val workoutTimes = memberService.addWorkoutTimes(savedMember, workoutTimeNames)
+
+        // then
+        assertThat(workoutTimes)
+            .allSatisfy { workoutDay ->
+                assertThat(workoutDay.id).isNotNull()
+            }
+
+        assertThat(workoutTimes)
+            .extracting("member", "name")
+            .containsExactlyInAnyOrder(
+                tuple(savedMember, WorkoutTimeName.WEEKDAY_DAWN),
+                tuple(savedMember, WorkoutTimeName.WEEKEND_AFTERNOON),
+            )
+
+    }
+
+    @DisplayName("회원이 선호 운동시간을 기록하는데, 이미 DB에 있으면 저장하지 않는다.")
+    @Test
+    fun addWorkoutTimesDuplicatedWorkoutTime() {
+        // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        val savedMember = memberRepository.save(member)
+
+        val workoutTimes = listOf(
+            WorkoutTime(
+                savedMember,
+                WorkoutTimeName.WEEKDAY_DAWN
+            ),
+            WorkoutTime(
+                savedMember,
+                WorkoutTimeName.WEEKDAY_EVENING
+            )
+        )
+        workoutTimeRepository.saveAll(workoutTimes)
+
+        val workoutTimeNames = listOf(
+            WorkoutTimeName.WEEKDAY_DAWN,
+            WorkoutTimeName.WEEKDAY_AFTERNOON
+        )
+
+        // when
+        val returnWorkoutTimes = memberService.addWorkoutTimes(savedMember, workoutTimeNames)
+
+        // then
+        assertThat(returnWorkoutTimes)
+            .allSatisfy { workoutTime ->
+                assertThat(workoutTime.id).isNotNull()
+            }
+
+        assertThat(returnWorkoutTimes)
+            .extracting("member", "name")
+            .containsExactlyInAnyOrder(
+                tuple(savedMember, WorkoutTimeName.WEEKDAY_DAWN),
+                tuple(savedMember, WorkoutTimeName.WEEKDAY_EVENING),
+                tuple(savedMember, WorkoutTimeName.WEEKDAY_AFTERNOON),
+            )
+
+        assertThat(returnWorkoutTimes)
+            .extracting("name")
+            .doesNotHaveDuplicates()
+
+        val findWorkoutTimes = workoutTimeRepository.findAllByMemberIdAndDeletedAtIsNull(savedMember.id!!)
+
+        assertThat(findWorkoutTimes)
+            .allSatisfy { workoutTime ->
+                assertThat(workoutTime.id).isNotNull()
+            }
+
+        assertThat(findWorkoutTimes)
+            .extracting("member", "name")
+            .containsExactlyInAnyOrder(
+                tuple(savedMember, WorkoutTimeName.WEEKDAY_DAWN),
+                tuple(savedMember, WorkoutTimeName.WEEKDAY_EVENING),
+                tuple(savedMember, WorkoutTimeName.WEEKDAY_AFTERNOON),
+            )
+
+        assertThat(findWorkoutTimes)
+            .extracting("name")
+            .doesNotHaveDuplicates()
     }
 
 }

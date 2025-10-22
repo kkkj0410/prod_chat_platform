@@ -14,6 +14,7 @@ import kr.co.fitview.api.app.global.exception.error.network.NetworkErrorCode
 import kr.co.fitview.api.app.global.exception.error.oauth2.OAuth2ErrorCode
 import kr.co.fitview.api.app.global.exception.error.request.RequestErrorCode
 import kr.co.fitview.api.app.global.exception.error.security.SecurityErrorCode
+import kr.co.fitview.api.app.global.exception.error.term.TermErrorCode
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
@@ -93,7 +94,8 @@ class GlobalExceptionHandlerDocsTest  : RestDocsSupport() {
                     SecurityErrorCode.entries +
                     OAuth2ErrorCode.entries +
                     NetworkErrorCode.entries +
-                    ImageErrorCode.entries
+                    ImageErrorCode.entries +
+                    TermErrorCode.entries
         }
     }
 

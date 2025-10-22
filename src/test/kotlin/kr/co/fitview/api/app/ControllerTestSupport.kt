@@ -12,6 +12,7 @@ import kr.co.fitview.api.app.domain.oauth2.controller.OAuth2Controller
 import kr.co.fitview.api.app.domain.oauth2.service.AppleService
 import kr.co.fitview.api.app.domain.oauth2.service.KakaoService
 import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
+import kr.co.fitview.api.app.global.config.JacksonConfig
 import kr.co.fitview.api.app.global.config.SecurityConfig
 import kr.co.fitview.api.app.global.config.TestSecurityConfig
 import kr.co.fitview.api.app.global.exception.GlobalExceptionHandler
@@ -30,7 +31,8 @@ import software.amazon.awssdk.services.s3.presigner.S3Presigner
 
 @Import(
     TestSecurityConfig::class,
-    SecurityUtil::class,
+    JacksonConfig::class
+//    SecurityUtil::class,
 //    TestWebConfig::class,
 //    RequestEnumConverter::class,
 //    WebConverterConfig::class
@@ -78,5 +80,8 @@ abstract class ControllerTestSupport {
 
     @MockitoBean
     private lateinit var s3Service: S3Service
+
+    @MockitoBean
+    private lateinit var securityUtil: SecurityUtil
 
 }

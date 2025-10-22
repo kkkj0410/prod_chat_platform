@@ -2,9 +2,10 @@ package kr.co.fitview.api.app.domain.oauth2.controller
 
 import kr.co.fitview.api.app.ControllerTestSupport
 import kr.co.fitview.api.app.domain.auth.dto.request.MemberCreateRequest
-import kr.co.fitview.api.app.domain.oauth2.dto.request.AppleLoginRequest
-import kr.co.fitview.api.app.domain.oauth2.dto.request.KakaoLoginRequest
-import kr.co.fitview.api.app.domain.oauth2.dto.request.OAuth2LoginRequest
+import kr.co.fitview.api.app.domain.member.entity.enums.*
+import kr.co.fitview.api.app.domain.oauth2.dto.request.*
+import kr.co.fitview.api.app.domain.term.entity.enums.TermName
+import kr.co.fitview.api.app.global.entity.Gender
 import kr.co.fitview.api.app.global.entity.OAuth2Provider
 import kr.co.fitview.api.app.global.exception.error.jwt.JwtErrorCode
 import kr.co.fitview.api.app.global.exception.error.request.RequestErrorCode
@@ -20,86 +21,9 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import java.time.LocalDate
 
 class OAuth2ControllerTest : ControllerTestSupport(){
-
-//    @DisplayName("애플 인증 코드를 요청하면 회원 로그인한다.")
-//    @Test
-//    fun appleLogin() {
-//        // given
-//        val request = AppleLoginRequest("appleAuthCode")
-//
-//        // when // then
-//        mockMvc.perform(
-//            post("/api/v1/oauth2/apple")
-//            .content(objectMapper.writeValueAsString(request))
-//            .contentType(MediaType.APPLICATION_JSON)
-//        )
-//            .andDo(print())
-//            .andExpect(status().isOk())
-//    }
-//
-//    @DisplayName("애플 소셜 로그인 시, 애플 인증 코드는 필수값이다.")
-//    @Test
-//    fun appleLoginWithoutAppleAuthCode() {
-//        // given
-//        val request = AppleLoginRequest(
-//            appleAuthCode = null,
-//        )
-//
-//        // when // then
-//        mockMvc.perform(
-//            post("/api/v1/oauth2/apple")
-//                .content(objectMapper.writeValueAsString(request))
-//                .contentType(MediaType.APPLICATION_JSON)
-//        )
-//            .andDo(print())
-//            .andExpect(status().isBadRequest())
-//            .andExpect(jsonPath("$.code").value(RequestErrorCode.REQ_FIELD_NOT_VALID.code))
-//            .andExpect(jsonPath("$.status").value("400"))
-//            .andExpect(jsonPath("$.message").value("appleAuthCode is required"))
-//            .andExpect(jsonPath("$.data").isEmpty())
-//    }
-//
-//    @DisplayName("카카오 액세스 토큰을 요청하면 회원 로그인한다.")
-//    @Test
-//    fun kakaoLogin() {
-//        val request = KakaoLoginRequest(
-//            kakaoAccessToken = "kakaoAccessToken"
-//        )
-//
-//        // when // then
-//        mockMvc.perform(
-//            post("/api/v1/oauth2/kakao")
-//                .content(objectMapper.writeValueAsString(request))
-//                .contentType(MediaType.APPLICATION_JSON)
-//        )
-//            .andDo(print())
-//            .andExpect(status().isOk())
-//    }
-//
-//    @DisplayName("카카오 소셜 로그인 시, 카카오 액세스 토큰은 필수값이다.")
-//    @Test
-//    fun kakaoLoginWithoutKakaoAccessToken() {
-//        // given
-//        val request = KakaoLoginRequest(
-//            kakaoAccessToken = null
-//        )
-//
-//        // when // then
-//        mockMvc.perform(
-//            post("/api/v1/oauth2/kakao")
-//                .content(objectMapper.writeValueAsString(request))
-//                .contentType(MediaType.APPLICATION_JSON)
-//        )
-//            .andDo(print())
-//            .andExpect(status().isBadRequest())
-//            .andExpect(jsonPath("$.code").value(RequestErrorCode.REQ_FIELD_NOT_VALID.code))
-//            .andExpect(jsonPath("$.status").value("400"))
-//            .andExpect(jsonPath("$.message").value("kakaoAccessToken is required"))
-//            .andExpect(jsonPath("$.data").isEmpty())
-//    }
-
 
     @DisplayName("소셜 로그인을 요청하면 회원 로그인한다.")
     @Test
@@ -188,7 +112,63 @@ class OAuth2ControllerTest : ControllerTestSupport(){
             .andExpect(jsonPath("$.status").value("400"))
             .andExpect(jsonPath("$.message").value("providerToken is required"))
             .andExpect(jsonPath("$.data").isEmpty())
+    }
 
+    fun createOAuth2SignupRequest(
+        profileImageUrl: String = "profileImageUrl",
+        nickname: String = "nickname",
+        gender: Gender = Gender.MALE,
+        birthday: LocalDate = LocalDate.of(2000, 1, 1),
+        height: Int = 170,
+        weight: Int = 65,
+        workoutExperience: MemberWorkoutExperience = MemberWorkoutExperience.JUST_STARTED,
+        workoutStyle: MemberWorkoutStyle = MemberWorkoutStyle.STRENGTH,
+        workoutDays: List<WorkoutDayName> = listOf(WorkoutDayName.MON, WorkoutDayName.WED),
+        workoutTimes: List<WorkoutTimeName> = listOf(WorkoutTimeName.WEEKDAY_DAWN, WorkoutTimeName.WEEKDAY_EVENING),
+        workoutGoal: MemberWorkoutGoal = MemberWorkoutGoal.PERFORMANCE_GOAL,
+        workoutImageUrls: List<WorkoutImageUrlRequest> = listOf(
+            WorkoutImageUrlRequest("imageUrl1", 1),
+            WorkoutImageUrlRequest("imageUrl2", 2)
+        ),
+        intro: String? = "intro",
+        terms: List<TermRequest> = listOf(
+            TermRequest(TermName.AGE_OVER_14, true),
+            TermRequest(TermName.PRIVACY_POLICY, true),
+            TermRequest(TermName.TERMS_OF_SERVICE, true),
+            TermRequest(TermName.LOCATION_SERVICE, true)
+        )
+    ): OAuth2SignupRequest {
+        return OAuth2SignupRequest(
+            profileImageUrl = profileImageUrl,
+            nickname = nickname,
+            gender = gender,
+            birthday = birthday,
+            height = height,
+            weight = weight,
+            workoutExperience = workoutExperience,
+            workoutStyle = workoutStyle,
+            workoutDays = workoutDays,
+            workoutTimes = workoutTimes,
+            workoutGoal = workoutGoal,
+            workoutImageUrls = workoutImageUrls,
+            intro = intro,
+            terms = terms
+        )
+    }
+
+    @DisplayName("")
+    @Test
+    fun oAuth2Signup() {
+        val request = createOAuth2SignupRequest()
+
+        // when // then
+        mockMvc.perform(
+            post("/api/v1/oauth2/signup")
+                .content(objectMapper.writeValueAsString(request))
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andDo(print())
+            .andExpect(status().isOk())
     }
 
 

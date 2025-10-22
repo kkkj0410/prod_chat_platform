@@ -1,6 +1,9 @@
 package kr.co.fitview.api.app.docs
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.KotlinModule
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.restdocs.RestDocumentationContextProvider
@@ -15,7 +18,11 @@ import org.springframework.test.web.servlet.setup.StandaloneMockMvcBuilder
 abstract class RestDocsSupport {
 
     protected lateinit var mockMvc: MockMvc
-    protected var objectMapper: ObjectMapper = ObjectMapper()
+    protected var objectMapper: ObjectMapper = ObjectMapper().apply {
+        registerModule(JavaTimeModule())
+        disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+        registerModule(KotlinModule.Builder().build())
+    }
 
     @BeforeEach
     fun setUp(provider: RestDocumentationContextProvider) {

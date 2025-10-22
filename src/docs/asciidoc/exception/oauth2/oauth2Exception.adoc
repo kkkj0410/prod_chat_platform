@@ -107,3 +107,14 @@ include::{snippets}/OAUTH2_010/http-response.adoc[]
 include::{snippets}/OAUTH2_010/response-fields.adoc[]
 
 
+[[OAUTH2_011]]
+=== OAUTH2_011
+
+==== HTTP Request
+include::{snippets}/OAUTH2_011/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/OAUTH2_011/http-response.adoc[]
+include::{snippets}/OAUTH2_011/response-fields.adoc[]
+
+

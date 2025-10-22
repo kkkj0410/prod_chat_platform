@@ -1,0 +1,31 @@
+[[TERM_001]]
+=== TERM_001
+
+==== HTTP Request
+include::{snippets}/TERM_001/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/TERM_001/http-response.adoc[]
+include::{snippets}/TERM_001/response-fields.adoc[]
+
+[[TERM_002]]
+=== TERM_002
+
+==== HTTP Request
+include::{snippets}/TERM_002/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/TERM_002/http-response.adoc[]
+include::{snippets}/TERM_002/response-fields.adoc[]
+
+[[TERM_003]]
+=== TERM_003
+
+==== HTTP Request
+include::{snippets}/TERM_003/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/TERM_003/http-response.adoc[]
+include::{snippets}/TERM_003/response-fields.adoc[]
+
+
