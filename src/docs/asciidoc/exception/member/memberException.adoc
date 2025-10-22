@@ -19,3 +19,45 @@ include::{snippets}/MEMBER_002/http-response.adoc[]
 include::{snippets}/MEMBER_002/response-fields.adoc[]
 
 
+[[MEMBER_003]]
+=== MEMBER_003
+
+==== HTTP Request
+include::{snippets}/MEMBER_003/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/MEMBER_003/http-response.adoc[]
+include::{snippets}/MEMBER_003/response-fields.adoc[]
+
+[[MEMBER_004]]
+=== MEMBER_004
+
+==== HTTP Request
+include::{snippets}/MEMBER_004/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/MEMBER_004/http-response.adoc[]
+include::{snippets}/MEMBER_004/response-fields.adoc[]
+
+
+[[MEMBER_005]]
+=== MEMBER_005
+
+==== HTTP Request
+include::{snippets}/MEMBER_005/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/MEMBER_005/http-response.adoc[]
+include::{snippets}/MEMBER_005/response-fields.adoc[]
+
+
+[[MEMBER_006]]
+=== MEMBER_006
+
+==== HTTP Request
+include::{snippets}/MEMBER_006/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/MEMBER_006/http-response.adoc[]
+include::{snippets}/MEMBER_006/response-fields.adoc[]
+

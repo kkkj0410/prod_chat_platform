@@ -66,7 +66,7 @@ class OAuth2Controller(
         request : OAuth2SignupRequest
     ) : ResponseEntity<ApiResponse<*>> {
 
-        val response = oAuth2Service.signup(request.toServiceRequest(), securityUtil.getMemberId())
+        oAuth2Service.signup(request.toServiceRequest(), securityUtil.getMemberId())
 
         return ResponseEntity.ok(ApiResponse.success("ok"))
     }

@@ -8,3 +8,14 @@ include::{snippets}/oauth2-login/request-fields.adoc[]
 ==== HTTP Response
 include::{snippets}/oauth2-login/http-response.adoc[]
 include::{snippets}/oauth2-login/response-fields.adoc[]
+
+[[oauth2-signup]]
+=== 소셜 회원가입
+
+==== HTTP Request
+include::{snippets}/oauth2-signup/http-request.adoc[]
+include::{snippets}/oauth2-signup/request-fields.adoc[]
+
+==== HTTP Response
+include::{snippets}/oauth2-signup/http-response.adoc[]
+include::{snippets}/oauth2-signup/response-fields.adoc[]

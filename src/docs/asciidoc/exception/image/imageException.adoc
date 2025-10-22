@@ -19,4 +19,14 @@ include::{snippets}/IMAGE_002/http-request.adoc[]
 include::{snippets}/IMAGE_002/http-response.adoc[]
 include::{snippets}/IMAGE_002/response-fields.adoc[]
 
+[[IMAGE_003]]
+=== IMAGE_003
+
+==== HTTP Request
+include::{snippets}/IMAGE_003/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/IMAGE_003/http-response.adoc[]
+include::{snippets}/IMAGE_003/response-fields.adoc[]
+
 

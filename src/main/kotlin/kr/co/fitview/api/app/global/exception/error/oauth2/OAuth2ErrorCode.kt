@@ -22,11 +22,7 @@ enum class OAuth2ErrorCode(
 
     KAKAO_POST_FAILED("010", "Failed to request Kakao profile with accessToken.", "카카오 accessToken으로 카카오 프로필 조회 요청. 하지만 프로필 조회에 실패. 사유 - 잘못된 accessToken 등"),
 
-    DUPLICATE_SOCIAL_MEMBER("013", "Duplicate social member signup", "소셜 로그인 회원가입을 중복해서 하면 회원 정보 등록을 거부함"),
-    NICKNAME_TOO_LONG("014", "Nickname exceeds max length", "소셜 로그인 회원가입 시, 별명이 10글자를 넘어서면 회원가입에 실패함"),
-    HEIGHT_OUT_OF_RANGE("015", "Height out of range", "소셜 로그인 회원가입 시, 키 제한은 0~300cm 범위를 벗어나면 회원가입 실패"),
-    WEIGHT_OUT_OF_RANGE("016", "Weight out of range", "소셜 로그인 회원가입 시, 체중 제한은 0~200kg 범위를 벗어나면 회원가입 실패"),
-    INTRO_TOO_LONG("017", "Intro exceeds max length", "소셜 로그인 회원가입 시, 자기소개 필드는 500자 이내여야 함"),
+    DUPLICATE_SOCIAL_MEMBER("011", "Duplicate social member signup", "소셜 로그인 회원가입을 중복해서 하면 회원 정보 등록을 거부함"),
 
     ;
 

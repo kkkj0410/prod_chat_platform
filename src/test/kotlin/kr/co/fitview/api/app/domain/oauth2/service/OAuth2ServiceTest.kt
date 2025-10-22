@@ -29,6 +29,7 @@ import kr.co.fitview.api.app.global.entity.OAuth2Provider
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.member.MemberErrorCode
+import kr.co.fitview.api.app.global.exception.error.oauth2.OAuth2ErrorCode
 import kr.co.fitview.api.app.global.id.IdGenerator
 import kr.co.fitview.api.app.global.jwt.JwtTokenProvider
 import kr.co.fitview.api.app.global.time.Time
@@ -294,8 +295,8 @@ class OAuth2ServiceTest @Autowired constructor(
 
         // then
         assertThat(responseMember)
-            .extracting("nickname", "gender", "birthday", "height")
-            .contains(request.nickname, request.gender, request.birthday, request.height)
+            .extracting("nickname", "gender", "birthday", "height", "isSignup", "gender")
+            .contains(request.nickname, request.gender, request.birthday, request.height, true, request.gender)
 
         val findTerms = termRepository.findByMemberId(memberId)
         assertThat(findTerms)
@@ -339,13 +340,6 @@ class OAuth2ServiceTest @Autowired constructor(
             )
     }
 
-//    DUPLICATE_SOCIAL_MEMBER("013", "Duplicate social member signup", "소셜 로그인 회원가입을 중복해서 하면 회원 정보 등록을 거부함"),
-//    NICKNAME_TOO_LONG("014", "Nickname exceeds max length", "소셜 로그인 회원가입 시, 별명이 10글자를 넘어서면 회원가입에 실패함"),
-//    HEIGHT_OUT_OF_RANGE("015", "Height out of range", "소셜 로그인 회원가입 시, 키 제한은 0~300cm 범위를 벗어나면 회원가입 실패"),
-//    WEIGHT_OUT_OF_RANGE("016", "Weight out of range", "소셜 로그인 회원가입 시, 체중 제한은 0~200kg 범위를 벗어나면 회원가입 실패"),
-//    INTRO_TOO_LONG("017", "Intro exceeds max length", "소셜 로그인 회원가입 시, 자기소개 필드는 500자 이내여야 함"),
-
-
     @DisplayName("소셜 로그인 회원가입을 중복해서 하면 회원 정보 등록을 거부한다.")
     @Test
     fun signupDuplicatedSignup() {
@@ -354,12 +348,23 @@ class OAuth2ServiceTest @Autowired constructor(
             email = "email",
             password = "password",
             role = Role.USER,
+            isSignup = true
         )
         val savedMember = memberRepository.save(member)
 
-        // when
+        val request = createOAuth2SignupServiceRequest()
 
-        // then
+        //when & then
+        assertThatThrownBy {
+            oAuth2Service.signup(request, savedMember.id!!)
+        }
+            .isInstanceOf(GlobalException::class.java)
+            .satisfies(ThrowingConsumer { ex ->
+                val globalEx = ex as GlobalException
+                assertThat(globalEx.errorCode)
+                    .isEqualTo(OAuth2ErrorCode.DUPLICATE_SOCIAL_MEMBER)
+            })
+
 
     }
 
@@ -367,14 +372,20 @@ class OAuth2ServiceTest @Autowired constructor(
     @Test
     fun signupInvalidNickname() {
         // given
-        val memberId = 1L
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        val savedMember = memberRepository.save(member)
+
         val request = createOAuth2SignupServiceRequest(
             nickname = "nickname nickname nickname 10 exceed"
         )
 
         // when & then
         assertThatThrownBy {
-            oAuth2Service.signup(request, memberId)
+            oAuth2Service.signup(request, savedMember.id!!)
         }
             .isInstanceOf(GlobalException::class.java)
             .satisfies(ThrowingConsumer { ex ->
@@ -389,10 +400,27 @@ class OAuth2ServiceTest @Autowired constructor(
     @ParameterizedTest
     fun signupInvalidHeight(height : Int) {
         // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        val savedMember = memberRepository.save(member)
 
-        // when
+        val request = createOAuth2SignupServiceRequest(
+            height = height
+        )
 
-        // then
+        // when & then
+        assertThatThrownBy {
+            oAuth2Service.signup(request, savedMember.id!!)
+        }
+            .isInstanceOf(GlobalException::class.java)
+            .satisfies(ThrowingConsumer { ex ->
+                val globalEx = ex as GlobalException
+                assertThat(globalEx.errorCode)
+                    .isEqualTo(MemberErrorCode.MEMBER_HEIGHT_OUT_OF_RANGE)
+            })
     }
 
     @DisplayName("소셜 로그인 회원가입 시, 체중 제한은 0~200이다.")
@@ -400,22 +428,54 @@ class OAuth2ServiceTest @Autowired constructor(
     @ParameterizedTest
     fun signupInvalidWeight(weight : Int) {
         // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        val savedMember = memberRepository.save(member)
 
-        // when
+        val request = createOAuth2SignupServiceRequest(
+            weight = weight
+        )
 
-        // then
-
+        // when & then
+        assertThatThrownBy {
+            oAuth2Service.signup(request, savedMember.id!!)
+        }
+            .isInstanceOf(GlobalException::class.java)
+            .satisfies(ThrowingConsumer { ex ->
+                val globalEx = ex as GlobalException
+                assertThat(globalEx.errorCode)
+                    .isEqualTo(MemberErrorCode.MEMBER_WEIGHT_OUT_OF_RANGE)
+            })
     }
 
     @DisplayName("소셜 로그인 회원가입 시, 자기소개 필드는 500자 이내여야 한다.")
     @Test
     fun signupInvalidIntro() {
         // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        val savedMember = memberRepository.save(member)
 
-        // when
+        val request = createOAuth2SignupServiceRequest(
+            intro = "a".repeat(501)
+        )
 
-        // then
-
+        // when & then
+        assertThatThrownBy {
+            oAuth2Service.signup(request, savedMember.id!!)
+        }
+            .isInstanceOf(GlobalException::class.java)
+            .satisfies(ThrowingConsumer { ex ->
+                val globalEx = ex as GlobalException
+                assertThat(globalEx.errorCode)
+                    .isEqualTo(MemberErrorCode.MEMBER_INTRO_TOO_LONG)
+            })
     }
 
 
