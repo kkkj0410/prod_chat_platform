@@ -16,7 +16,6 @@ import kr.co.fitview.api.app.domain.image.repository.MemberImageRepository
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.entity.enums.*
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
-import kr.co.fitview.api.app.domain.member.repository.WorkoutDayRepository
 import kr.co.fitview.api.app.domain.member.repository.WorkoutTimeRepository
 import kr.co.fitview.api.app.domain.oauth2.config.AppleConfig
 import kr.co.fitview.api.app.domain.oauth2.dto.request.*
@@ -56,7 +55,6 @@ class OAuth2ServiceTest @Autowired constructor(
     val refreshTokenRepository : RefreshTokenRepository,
     val termRepository : TermRepository,
     val memberImageRepository: MemberImageRepository,
-    val workoutDayRepository : WorkoutDayRepository,
     val workoutTimeRepository : WorkoutTimeRepository,
 ) : IntegrationTestSupport(){
 
@@ -243,7 +241,6 @@ class OAuth2ServiceTest @Autowired constructor(
         weight: Int = 65,
         workoutExperience: MemberWorkoutExperience = MemberWorkoutExperience.JUST_STARTED,
         workoutStyle: MemberWorkoutStyle = MemberWorkoutStyle.STRENGTH,
-        workoutDays: List<WorkoutDayName> = listOf(WorkoutDayName.MON, WorkoutDayName.WED),
         workoutTimes: List<WorkoutTimeName> = listOf(WorkoutTimeName.WEEKDAY_DAWN, WorkoutTimeName.WEEKDAY_EVENING),
         workoutGoal: MemberWorkoutGoal = MemberWorkoutGoal.PERFORMANCE_GOAL,
         workoutImageUrls: List<WorkoutImageUrlRequest> = listOf(
@@ -267,7 +264,6 @@ class OAuth2ServiceTest @Autowired constructor(
             weight = weight,
             workoutExperience = workoutExperience,
             workoutStyle = workoutStyle,
-            workoutDays = workoutDays,
             workoutTimes = workoutTimes,
             workoutGoal = workoutGoal,
             workoutImageUrls = workoutImageUrls,
@@ -321,14 +317,6 @@ class OAuth2ServiceTest @Autowired constructor(
             .containsExactlyInAnyOrder(
                 tuple(savedMember, MemberImageType.WORKOUT, "imageUrl1", 100),
                 tuple(savedMember, MemberImageType.WORKOUT, "imageUrl2", 200)
-            )
-
-        val findWorkoutDays = workoutDayRepository.findAllByMemberIdAndDeletedAtIsNull(savedMember.id!!)
-        assertThat(findWorkoutDays)
-            .extracting("member", "name")
-            .containsExactlyInAnyOrder(
-                tuple(savedMember, WorkoutDayName.MON),
-                tuple(savedMember, WorkoutDayName.WED)
             )
 
         val findWorkoutTimes = workoutTimeRepository.findAllByMemberIdAndDeletedAtIsNull(savedMember.id!!)

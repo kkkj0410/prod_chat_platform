@@ -32,10 +32,6 @@ data class OAuth2SignupRequest(
     @field:NotNull(message = "workoutStyle is required")
     val workoutStyle : MemberWorkoutStyle?,
 
-    @field:NotNull(message = "workoutDays is required")
-    @field:Size(min = 1, message = "workoutDays cannot be empty")
-    val workoutDays : List<WorkoutDayName>?,
-
     @field:NotNull(message = "workoutTimes is required")
     @field:Size(min = 1, message = "workoutTimes cannot be empty")
     val workoutTimes : List<WorkoutTimeName>?,
@@ -61,7 +57,6 @@ data class OAuth2SignupRequest(
             weight = this.weight!!,
             workoutExperience = this.workoutExperience!!,
             workoutStyle = this.workoutStyle!!,
-            workoutDays = this.workoutDays!!,
             workoutTimes = this.workoutTimes!!,
             workoutGoal = this.workoutGoal!!,
             workoutImageUrls = this.workoutImageUrls,

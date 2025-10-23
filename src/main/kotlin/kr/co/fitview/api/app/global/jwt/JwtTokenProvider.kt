@@ -35,11 +35,28 @@ class JwtTokenProvider(
             .add(JwtConstant.JWT_HEADER_TYPE, JwtConstant.JWT_HEADER_TYPE_VALUE)
             .and()
             .subject(memberId.toString())
-//            .claim(JwtConstant.MEMBER_ID, memberId)
             .claim(JwtConstant.ROLE, role)
             .claim(JwtConstant.TYP, JwtConstant.TYP_ACCESS)
             .issuedAt(time.nowDate)
             .expiration(time.nowDatePlus(jwtConfig.accessTokenValidityInMs))
+            .signWith(jwtConfig.secretKeySpec)
+            .compact()
+    }
+
+    // API 문서 로그인을 위한 함수. createAccessToken에서 만료시간만 다름
+    fun createDocsToken(
+        memberId: Long, role: Role
+    ): String {
+
+        return Jwts.builder()
+            .header()
+            .add(JwtConstant.JWT_HEADER_TYPE, JwtConstant.JWT_HEADER_TYPE_VALUE)
+            .and()
+            .subject(memberId.toString())
+            .claim(JwtConstant.ROLE, role)
+            .claim(JwtConstant.TYP, JwtConstant.TYP_ACCESS)
+            .issuedAt(time.nowDate)
+            .expiration(time.nowDatePlus(jwtConfig.docsTokenValidityInMs))
             .signWith(jwtConfig.secretKeySpec)
             .compact()
     }
@@ -52,7 +69,6 @@ class JwtTokenProvider(
             .add(JwtConstant.JWT_HEADER_TYPE, JwtConstant.JWT_HEADER_TYPE_VALUE)
             .and()
             .subject(memberId.toString())
-//            .claim(JwtConstant.MEMBER_ID, memberId)
             .claim(JwtConstant.CLAIM_JTI, idGenerator.createUuid())
             .claim(JwtConstant.TYP, JwtConstant.TYP_REFRESH)
             .issuedAt(time.nowDate)

@@ -15,6 +15,7 @@ include::{snippets}/oauth2-login/response-fields.adoc[]
 ==== HTTP Request
 include::{snippets}/oauth2-signup/http-request.adoc[]
 include::{snippets}/oauth2-signup/request-fields.adoc[]
+include::{snippets}/oauth2-signup/request-headers.adoc[]
 
 ==== HTTP Response
 include::{snippets}/oauth2-signup/http-response.adoc[]

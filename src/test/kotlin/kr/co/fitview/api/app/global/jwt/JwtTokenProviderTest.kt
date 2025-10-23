@@ -40,6 +40,7 @@ class JwtTokenProviderTest
             "ofingjiofgjniofjgniofjgpgoibirtojoirjtpirotjiortpjyroitjyr",
             1000000L,
             2000000L,
+            3000000L,
         )
         return jwtConfig
     }

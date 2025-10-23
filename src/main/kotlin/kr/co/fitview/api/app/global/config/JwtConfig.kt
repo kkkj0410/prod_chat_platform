@@ -20,6 +20,9 @@ class JwtConfig(
     @Value("\${jwt.refresh-token-validity-in-ms}")
     val refreshTokenValidityInMs: Long,
 
+    @Value("\${jwt.docs-token-validity-in-ms}")
+    val docsTokenValidityInMs: Long,
+
     ) {
 
     final val algorithm = "HmacSHA256"
@@ -45,7 +48,7 @@ class JwtConfig(
     }
 
     private fun validateValidityInMs() {
-        if (accessTokenValidityInMs <= 0L || refreshTokenValidityInMs <= 0L) {
+        if (accessTokenValidityInMs <= 0L || refreshTokenValidityInMs <= 0L || docsTokenValidityInMs <= 0L ) {
             throw IllegalArgumentException("jwt 유효기간은 양수여야 합니다.")
         }
     }

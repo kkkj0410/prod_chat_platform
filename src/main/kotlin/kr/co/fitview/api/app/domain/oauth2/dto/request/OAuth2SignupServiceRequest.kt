@@ -22,8 +22,6 @@ data class OAuth2SignupServiceRequest(
 
     val workoutStyle : MemberWorkoutStyle,
 
-    val workoutDays : List<WorkoutDayName>,
-
     val workoutTimes : List<WorkoutTimeName>,
 
     val workoutGoal : MemberWorkoutGoal,

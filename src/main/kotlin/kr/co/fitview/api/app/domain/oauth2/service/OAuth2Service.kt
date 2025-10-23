@@ -72,8 +72,6 @@ class OAuth2Service(
             imageService.saveMemberImageWorkouts(findMember, WorkoutImageUrlRequest.toServiceRequest(request.workoutImageUrls!!))
         }
 
-        memberService.addWorkoutDays(findMember, request.workoutDays)
-
         memberService.addWorkoutTimes(findMember, request.workoutTimes)
 
         return findMember.apply{

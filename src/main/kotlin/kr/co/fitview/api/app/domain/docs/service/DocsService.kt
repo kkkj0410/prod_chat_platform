@@ -22,9 +22,9 @@ class DocsService(
     fun login(request: DocsLoginServiceRequest): HttpHeaders {
         val findMember = findMember(request.email, request.password)
 
-        val accessToken = jwtTokenProvider.createAccessToken(findMember.id!!, findMember.role!!)
+        val docsToken = jwtTokenProvider.createDocsToken(findMember.id!!, findMember.role!!)
 
-        return convertCookieHeader(accessToken)
+        return convertCookieHeader(docsToken)
     }
 
     private fun findMember(loginId : String, password : String) : Member {
