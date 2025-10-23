@@ -31,15 +31,16 @@ class JwtConfigTest : IntegrationTestSupport(){
         val secretKeyString = "2dudmLM6NiXS1rCdBKpZagux5mZuqwrLedyfsuGqnCaCX0vero"
         val accessTokenValidityInMs = 10000L
         val refreshTokenValidityInMs = 20000L
+        val docsTokenValidityInMs = 30000L
 
         // when
-        val jwtConfig = JwtConfig(secretKeyString, accessTokenValidityInMs, refreshTokenValidityInMs)
+        val jwtConfig = JwtConfig(secretKeyString, accessTokenValidityInMs, refreshTokenValidityInMs, docsTokenValidityInMs)
 
 
         // then
         assertThat(jwtConfig)
-            .extracting("secretKeyString", "accessTokenValidityInMs", "refreshTokenValidityInMs")
-            .contains(secretKeyString, accessTokenValidityInMs, refreshTokenValidityInMs)
+            .extracting("secretKeyString", "accessTokenValidityInMs", "refreshTokenValidityInMs", "docsTokenValidityInMs")
+            .contains(secretKeyString, accessTokenValidityInMs, refreshTokenValidityInMs, docsTokenValidityInMs)
 
     }
 
@@ -50,10 +51,11 @@ class JwtConfigTest : IntegrationTestSupport(){
         val secretKeyString = "failSecret"
         val accessTokenValidityInMs = 10000L
         val refreshTokenValidityInMs = 20000L
+        val docsTokenValidityInMs = 30000L
 
         // when & then
         assertThatThrownBy {
-            JwtConfig(secretKeyString, accessTokenValidityInMs, refreshTokenValidityInMs)
+            JwtConfig(secretKeyString, accessTokenValidityInMs, refreshTokenValidityInMs, docsTokenValidityInMs)
         }
             .isInstanceOf(IllegalArgumentException::class.java)
             .hasMessage("jwt 비밀키는 32바이트 이상이어야 합니다.")
@@ -62,15 +64,15 @@ class JwtConfigTest : IntegrationTestSupport(){
 
 
     @DisplayName("jwt 만료시간이 0이하이면 jwt 설정에 실패한다.")
-    @CsvSource("-1, 100", "100, -1")
+    @CsvSource("-1, 100, -1", "100, -1, 100")
     @ParameterizedTest
-    fun constructorWithValidityInMs(accessTokenValidityInMs : Long, refreshTokenValidityInMs : Long) {
+    fun constructorWithValidityInMs(accessTokenValidityInMs : Long, refreshTokenValidityInMs : Long, docsTokenValidityInMs : Long) {
         // given
         val secretKeyString = "2dudmLM6NiXS1rCdBKpZagux5mZuqwrLedyfsuGqnCaCX0vero"
 
         // when & then
         assertThatThrownBy {
-            JwtConfig(secretKeyString, accessTokenValidityInMs, refreshTokenValidityInMs)
+            JwtConfig(secretKeyString, accessTokenValidityInMs, refreshTokenValidityInMs, docsTokenValidityInMs)
         }
             .isInstanceOf(IllegalArgumentException::class.java)
             .hasMessage("jwt 유효기간은 양수여야 합니다.")

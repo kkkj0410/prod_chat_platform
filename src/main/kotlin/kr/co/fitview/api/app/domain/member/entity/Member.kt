@@ -89,9 +89,6 @@ class Member(
     var memberImages: MutableSet<MemberImage> = mutableSetOf()
 
     @OneToMany(mappedBy = "member")
-    var workoutDays: MutableSet<WorkoutDay> = mutableSetOf()
-
-    @OneToMany(mappedBy = "member")
     var workoutTimes: MutableSet<WorkoutTime> = mutableSetOf()
 
 

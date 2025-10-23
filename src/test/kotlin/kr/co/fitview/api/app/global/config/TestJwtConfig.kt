@@ -19,7 +19,9 @@ class TestJwtConfig {
         val testJwtConfig = JwtConfig(
             "ofingjiofgjniofjgniofjgpgoibirtojoirjtpirotjiortpjyroitjyr",
             1000000L,
-            2000000L
+            2000000L,
+            3000000L
+
         )
         val testIdGenerator = TestIdGenerator("test-uuid")
         val testTime = TestTime(LocalDateTime.of(3000,1,1,0,0,0))

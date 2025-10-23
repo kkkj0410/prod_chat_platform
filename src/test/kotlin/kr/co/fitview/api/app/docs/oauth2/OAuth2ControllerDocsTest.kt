@@ -1,5 +1,6 @@
 package kr.co.fitview.api.app.docs.oauth2
 
+import kr.co.fitview.api.app.docs.RestDocsHeaders
 import kr.co.fitview.api.app.docs.RestDocsSupport
 import kr.co.fitview.api.app.domain.member.entity.enums.*
 import kr.co.fitview.api.app.domain.oauth2.controller.OAuth2Controller
@@ -11,6 +12,7 @@ import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
 import kr.co.fitview.api.app.domain.term.entity.enums.TermName
 import kr.co.fitview.api.app.global.entity.Gender
 import kr.co.fitview.api.app.global.entity.OAuth2Provider
+import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.util.SecurityUtil
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -18,6 +20,7 @@ import org.mockito.Mockito.mock
 import org.mockito.kotlin.any
 import org.mockito.kotlin.given
 import org.springframework.http.MediaType
+import org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document
 import org.springframework.restdocs.operation.preprocess.Preprocessors.*
 import org.springframework.restdocs.payload.JsonFieldType
@@ -206,7 +209,6 @@ class OAuth2ControllerDocsTest : RestDocsSupport() {
         weight: Int = 65,
         workoutExperience: MemberWorkoutExperience = MemberWorkoutExperience.JUST_STARTED,
         workoutStyle: MemberWorkoutStyle = MemberWorkoutStyle.STRENGTH,
-        workoutDays: List<WorkoutDayName> = listOf(WorkoutDayName.MON, WorkoutDayName.WED),
         workoutTimes: List<WorkoutTimeName> = listOf(WorkoutTimeName.WEEKDAY_DAWN, WorkoutTimeName.WEEKDAY_EVENING),
         workoutGoal: MemberWorkoutGoal = MemberWorkoutGoal.PERFORMANCE_GOAL,
         workoutImageUrls: List<WorkoutImageUrlRequest> = listOf(
@@ -230,7 +232,6 @@ class OAuth2ControllerDocsTest : RestDocsSupport() {
             weight = weight,
             workoutExperience = workoutExperience,
             workoutStyle = workoutStyle,
-            workoutDays = workoutDays,
             workoutTimes = workoutTimes,
             workoutGoal = workoutGoal,
             workoutImageUrls = workoutImageUrls,
@@ -252,12 +253,17 @@ class OAuth2ControllerDocsTest : RestDocsSupport() {
             post("/api/v1/oauth2/signup")
                 .content(objectMapper.writeValueAsString(request))
                 .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer jwt-token")
         )
             .andDo(print())
             .andExpect(status().isOk())
             .andDo(document("oauth2-signup",
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
+
+                requestHeaders(
+                    RestDocsHeaders.authorizationHeader(Role.USER)
+                ),
 
                 requestFields(
                     fieldWithPath("profileImageUrl").type(JsonFieldType.STRING)
@@ -276,8 +282,6 @@ class OAuth2ControllerDocsTest : RestDocsSupport() {
                         .description(MemberWorkoutExperience.allDescription()),
                     fieldWithPath("workoutStyle").type(JsonFieldType.STRING)
                         .description(MemberWorkoutStyle.allDescription()),
-                    fieldWithPath("workoutDays").type(JsonFieldType.ARRAY)
-                        .description(WorkoutDayName.allDescription()),
                     fieldWithPath("workoutTimes").type(JsonFieldType.ARRAY)
                         .description(WorkoutTimeName.allDescription()),
                     fieldWithPath("workoutGoal").type(JsonFieldType.STRING)

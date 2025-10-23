@@ -2,9 +2,7 @@ package kr.co.fitview.api.app.domain.member.repository
 
 import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.member.entity.Member
-import kr.co.fitview.api.app.domain.member.entity.WorkoutDay
 import kr.co.fitview.api.app.domain.member.entity.WorkoutTime
-import kr.co.fitview.api.app.domain.member.entity.enums.WorkoutDayName
 import kr.co.fitview.api.app.domain.member.entity.enums.WorkoutTimeName
 import kr.co.fitview.api.app.domain.term.entity.enums.TermName
 import kr.co.fitview.api.app.global.entity.Role

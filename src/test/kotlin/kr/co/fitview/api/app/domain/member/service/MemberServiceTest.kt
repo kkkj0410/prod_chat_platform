@@ -2,13 +2,10 @@ package kr.co.fitview.api.app.domain.member.service
 
 import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.member.entity.Member
-import kr.co.fitview.api.app.domain.member.entity.WorkoutDay
 import kr.co.fitview.api.app.domain.member.entity.WorkoutTime
-import kr.co.fitview.api.app.domain.member.entity.enums.WorkoutDayName
 import kr.co.fitview.api.app.domain.member.entity.enums.WorkoutTimeName
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
-import kr.co.fitview.api.app.domain.member.repository.WorkoutDayRepository
 import kr.co.fitview.api.app.domain.member.repository.WorkoutTimeRepository
 import kr.co.fitview.api.app.global.entity.OAuth2Provider
 import kr.co.fitview.api.app.global.exception.GlobalException
@@ -22,7 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired
 class MemberServiceTest @Autowired constructor(
     val memberService : MemberService,
     val memberRepository : MemberRepository,
-    val workoutDayRepository: WorkoutDayRepository,
     val workoutTimeRepository : WorkoutTimeRepository
 ) : IntegrationTestSupport() {
 
@@ -259,108 +255,6 @@ class MemberServiceTest @Autowired constructor(
         assertThat(findMember).isNull()
     }
 
-    @DisplayName("회원은 선호 운동요일을 기록하고, 회원의 전체 선호운동요일을 반환한다.")
-    @Test
-    fun addWorkoutDays() {
-        // given
-        val member = Member(
-            email = "email",
-            password = "password",
-            role = Role.USER,
-        )
-        val savedMember = memberRepository.save(member)
-
-        val workoutDayNames = listOf(
-                WorkoutDayName.FRI,
-                WorkoutDayName.SUN
-        )
-
-        // when
-        val workoutDays = memberService.addWorkoutDays(savedMember, workoutDayNames)
-
-        // then
-        assertThat(workoutDays)
-            .allSatisfy { workoutDay ->
-                assertThat(workoutDay.id).isNotNull()
-            }
-
-        assertThat(workoutDays)
-            .extracting("member", "name")
-            .containsExactlyInAnyOrder(
-                tuple(savedMember, WorkoutDayName.FRI),
-                tuple(savedMember, WorkoutDayName.SUN),
-            )
-
-    }
-
-    @DisplayName("회원이 선호 운동요일을 기록하는데, 이미 DB에 있으면 저장하지 않는다.")
-    @Test
-    fun addWorkoutDaysDuplicatedWorkoutDay() {
-        // given
-        val member = Member(
-            email = "email",
-            password = "password",
-            role = Role.USER,
-        )
-        val savedMember = memberRepository.save(member)
-
-        val workoutDays = listOf(
-            WorkoutDay(
-                savedMember,
-                WorkoutDayName.FRI
-            ),
-            WorkoutDay(
-                savedMember,
-                WorkoutDayName.SUN
-            )
-        )
-        workoutDayRepository.saveAll(workoutDays)
-
-        val workoutDayNames = listOf(
-            WorkoutDayName.FRI,
-            WorkoutDayName.MON
-        )
-
-        // when
-        val returnWorkoutDays = memberService.addWorkoutDays(savedMember, workoutDayNames)
-
-        // then
-        assertThat(returnWorkoutDays)
-            .allSatisfy { workoutDay ->
-                assertThat(workoutDay.id).isNotNull()
-            }
-
-        assertThat(returnWorkoutDays)
-            .extracting("member", "name")
-            .containsExactlyInAnyOrder(
-                tuple(savedMember, WorkoutDayName.FRI),
-                tuple(savedMember, WorkoutDayName.SUN),
-                tuple(savedMember, WorkoutDayName.MON),
-            )
-
-        assertThat(returnWorkoutDays)
-            .extracting("name")
-            .doesNotHaveDuplicates()
-
-        val findWorkoutDays = workoutDayRepository.findAllByMemberIdAndDeletedAtIsNull(savedMember.id!!)
-
-        assertThat(findWorkoutDays)
-            .allSatisfy { workoutDay ->
-                assertThat(workoutDay.id).isNotNull()
-            }
-
-        assertThat(findWorkoutDays)
-            .extracting("member", "name")
-            .containsExactlyInAnyOrder(
-                tuple(savedMember, WorkoutDayName.FRI),
-                tuple(savedMember, WorkoutDayName.SUN),
-                tuple(savedMember, WorkoutDayName.MON),
-            )
-
-        assertThat(findWorkoutDays)
-            .extracting("name")
-            .doesNotHaveDuplicates()
-    }
 
     @DisplayName("회원은 선호 운동시간을 기록하고, 회원의 전체 선호운동시간을 반환한다.")
     @Test

@@ -1,21 +1,16 @@
 package kr.co.fitview.api.app.domain.oauth2.controller
 
 import kr.co.fitview.api.app.ControllerTestSupport
-import kr.co.fitview.api.app.domain.auth.dto.request.MemberCreateRequest
 import kr.co.fitview.api.app.domain.member.entity.enums.*
 import kr.co.fitview.api.app.domain.oauth2.dto.request.*
 import kr.co.fitview.api.app.domain.term.entity.enums.TermName
 import kr.co.fitview.api.app.global.entity.Gender
 import kr.co.fitview.api.app.global.entity.OAuth2Provider
-import kr.co.fitview.api.app.global.exception.error.jwt.JwtErrorCode
 import kr.co.fitview.api.app.global.exception.error.request.RequestErrorCode
-import kr.co.fitview.api.app.global.util.SecurityUtil
-import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
@@ -115,23 +110,22 @@ class OAuth2ControllerTest : ControllerTestSupport(){
     }
 
     fun createOAuth2SignupRequest(
-        profileImageUrl: String = "profileImageUrl",
-        nickname: String = "nickname",
-        gender: Gender = Gender.MALE,
-        birthday: LocalDate = LocalDate.of(2000, 1, 1),
-        height: Int = 170,
-        weight: Int = 65,
-        workoutExperience: MemberWorkoutExperience = MemberWorkoutExperience.JUST_STARTED,
-        workoutStyle: MemberWorkoutStyle = MemberWorkoutStyle.STRENGTH,
-        workoutDays: List<WorkoutDayName> = listOf(WorkoutDayName.MON, WorkoutDayName.WED),
-        workoutTimes: List<WorkoutTimeName> = listOf(WorkoutTimeName.WEEKDAY_DAWN, WorkoutTimeName.WEEKDAY_EVENING),
-        workoutGoal: MemberWorkoutGoal = MemberWorkoutGoal.PERFORMANCE_GOAL,
-        workoutImageUrls: List<WorkoutImageUrlRequest> = listOf(
+        profileImageUrl: String? = "profileImageUrl",
+        nickname: String? = "nickname",
+        gender: Gender? = Gender.MALE,
+        birthday: LocalDate? = LocalDate.of(2000, 1, 1),
+        height: Int? = 170,
+        weight: Int? = 65,
+        workoutExperience: MemberWorkoutExperience? = MemberWorkoutExperience.JUST_STARTED,
+        workoutStyle: MemberWorkoutStyle? = MemberWorkoutStyle.STRENGTH,
+        workoutTimes: List<WorkoutTimeName>? = listOf(WorkoutTimeName.WEEKDAY_DAWN, WorkoutTimeName.WEEKDAY_EVENING),
+        workoutGoal: MemberWorkoutGoal? = MemberWorkoutGoal.PERFORMANCE_GOAL,
+        workoutImageUrls: List<WorkoutImageUrlRequest>? = listOf(
             WorkoutImageUrlRequest("imageUrl1", 1),
             WorkoutImageUrlRequest("imageUrl2", 2)
         ),
         intro: String? = "intro",
-        terms: List<TermRequest> = listOf(
+        terms: List<TermRequest>? = listOf(
             TermRequest(TermName.AGE_OVER_14, true),
             TermRequest(TermName.PRIVACY_POLICY, true),
             TermRequest(TermName.TERMS_OF_SERVICE, true),
@@ -147,7 +141,6 @@ class OAuth2ControllerTest : ControllerTestSupport(){
             weight = weight,
             workoutExperience = workoutExperience,
             workoutStyle = workoutStyle,
-            workoutDays = workoutDays,
             workoutTimes = workoutTimes,
             workoutGoal = workoutGoal,
             workoutImageUrls = workoutImageUrls,
@@ -156,7 +149,7 @@ class OAuth2ControllerTest : ControllerTestSupport(){
         )
     }
 
-    @DisplayName("")
+    @DisplayName("회원은 소셜 회원가입한다.")
     @Test
     fun oAuth2Signup() {
         val request = createOAuth2SignupRequest()
@@ -170,6 +163,149 @@ class OAuth2ControllerTest : ControllerTestSupport(){
             .andDo(print())
             .andExpect(status().isOk())
     }
+
+    @DisplayName("소셜 회원가입 시, 회원 키 값은 필수이다.")
+    @Test
+    fun oAuth2SignupWithoutHeight() {
+        // given
+        val request = createOAuth2SignupRequest(
+            height = null
+        )
+
+        // when // then
+        mockMvc.perform(
+            post("/api/v1/oauth2/signup")
+                .content(objectMapper.writeValueAsString(request))
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andDo(print())
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value(RequestErrorCode.REQ_FIELD_NOT_VALID.code))
+            .andExpect(jsonPath("$.status").value("400"))
+            .andExpect(jsonPath("$.message").value("height is required"))
+            .andExpect(jsonPath("$.data").isEmpty())
+    }
+
+    @Test
+    @DisplayName("소셜 회원가입 시, 프로필 이미지 URL은 필수이다.")
+    fun oAuth2SignupWithoutProfileImageUrl() {
+        // given
+        val request = createOAuth2SignupRequest(profileImageUrl = null)
+
+        // when // then
+        mockMvc.perform(
+            post("/api/v1/oauth2/signup")
+                .content(objectMapper.writeValueAsString(request))
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andDo(print())
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value(RequestErrorCode.REQ_FIELD_NOT_VALID.code))
+            .andExpect(jsonPath("$.status").value("400"))
+            .andExpect(jsonPath("$.message").value("profileImageUrl is required"))
+            .andExpect(jsonPath("$.data").isEmpty())
+    }
+
+    @Test
+    @DisplayName("소셜 회원가입 시, 닉네임은 필수이다.")
+    fun oAuth2SignupWithoutNickname() {
+        // given
+        val request = createOAuth2SignupRequest(nickname = null)
+
+        // when // then
+        mockMvc.perform(
+            post("/api/v1/oauth2/signup")
+                .content(objectMapper.writeValueAsString(request))
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andDo(print())
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value(RequestErrorCode.REQ_FIELD_NOT_VALID.code))
+            .andExpect(jsonPath("$.status").value("400"))
+            .andExpect(jsonPath("$.message").value("nickname is required"))
+            .andExpect(jsonPath("$.data").isEmpty())
+    }
+
+    @Test
+    @DisplayName("소셜 회원가입 시, 성별은 필수이다.")
+    fun oAuth2SignupWithoutGender() {
+        // given
+        val request = createOAuth2SignupRequest(gender = null)
+
+        // when // then
+        mockMvc.perform(
+            post("/api/v1/oauth2/signup")
+                .content(objectMapper.writeValueAsString(request))
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andDo(print())
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value(RequestErrorCode.REQ_FIELD_NOT_VALID.code))
+            .andExpect(jsonPath("$.status").value("400"))
+            .andExpect(jsonPath("$.message").value("gender is required"))
+            .andExpect(jsonPath("$.data").isEmpty())
+    }
+
+    @Test
+    @DisplayName("소셜 회원가입 시, 약관 동의 정보는 필수이다.")
+    fun oAuth2SignupWithoutTerms() {
+        // given
+        val request = createOAuth2SignupRequest(terms = null)
+
+        // when // then
+        mockMvc.perform(
+            post("/api/v1/oauth2/signup")
+                .content(objectMapper.writeValueAsString(request))
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andDo(print())
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value(RequestErrorCode.REQ_FIELD_NOT_VALID.code))
+            .andExpect(jsonPath("$.status").value("400"))
+            .andExpect(jsonPath("$.message").value("terms is required"))
+            .andExpect(jsonPath("$.data").isEmpty())
+    }
+
+    @Test
+    @DisplayName("소셜 회원가입 시, 운동 시간 정보는 필수이다.")
+    fun oAuth2SignupWithoutWorkoutTimes() {
+        // given
+        val request = createOAuth2SignupRequest(workoutTimes = null)
+
+        // when // then
+        mockMvc.perform(
+            post("/api/v1/oauth2/signup")
+                .content(objectMapper.writeValueAsString(request))
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andDo(print())
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value(RequestErrorCode.REQ_FIELD_NOT_VALID.code))
+            .andExpect(jsonPath("$.status").value("400"))
+            .andExpect(jsonPath("$.message").value("workoutTimes is required"))
+            .andExpect(jsonPath("$.data").isEmpty())
+    }
+
+    @Test
+    @DisplayName("소셜 회원가입 시, 운동 시간 정보는 1개 이상이어야한다.")
+    fun oAuth2SignupWithoutWorkoutTimesSize() {
+        // given
+        val request = createOAuth2SignupRequest(workoutTimes = listOf())
+
+        // when // then
+        mockMvc.perform(
+            post("/api/v1/oauth2/signup")
+                .content(objectMapper.writeValueAsString(request))
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andDo(print())
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value(RequestErrorCode.REQ_FIELD_NOT_VALID.code))
+            .andExpect(jsonPath("$.status").value("400"))
+            .andExpect(jsonPath("$.message").value("workoutTimes cannot be empty"))
+            .andExpect(jsonPath("$.data").isEmpty())
+    }
+
 
 
 }
