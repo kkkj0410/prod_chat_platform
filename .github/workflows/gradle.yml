@@ -2,11 +2,9 @@
 name: fitview-be-dev-CI/CD
 
 #on : 어떤 경우에 깃허브 액션을 실행할지 정함
-#(아래는 push, pull_requeset 발생 시, 깃허브 액션을 수행. 즉, 아래 명령어들 실행)
+#(아래는 push 발생 시, 깃허브 액션을 수행. 즉, 아래 명령어들 실행)
 on:
   push:
-    branches: [ "develop" ]
-  pull_request:
     branches: [ "develop" ]
 
 # env : 변수 선언
