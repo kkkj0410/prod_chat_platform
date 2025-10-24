@@ -32,14 +32,14 @@ class KakaoServiceTest @Autowired constructor(
     fun loginKakaoWithAdd() {
         // given
         val email = "email"
-        val providerId = "providerId"
+        val providerId = 1234L
 
         val member = Member(
             email = email,
             password = "password",
             role = Role.USER,
             provider = OAuth2Provider.KAKAO,
-            providerId = providerId
+            providerId = providerId.toString()
         )
         val savedMember = memberRepository.save(member)
 
@@ -69,7 +69,7 @@ class KakaoServiceTest @Autowired constructor(
     @DisplayName("카카오 회원 프로필을 조회하여, DB에 없으면 회원가입한다.")
     @Test
     fun loginKakaoWithAddWithoutMember() {
-        val providerId = "providerId"
+        val providerId = 1234L
         val email = "email"
 
         val request = KakaoLoginServiceRequest(
@@ -90,7 +90,7 @@ class KakaoServiceTest @Autowired constructor(
         val response = kakaoService.loginKakaoWithAdd(request)
 
         // then
-        val findMember = memberRepository.findByProviderIdAndDeletedAtIsNull(providerId)
+        val findMember = memberRepository.findByProviderIdAndDeletedAtIsNull(providerId.toString())
 
         assertThat(response)
             .extracting("id", "provider", "providerId", "email")
