@@ -136,7 +136,7 @@ class JwtTokenProvider(
         return cookieProvider.createRestrictCookie(
             JwtConstant.DOCS_TOKEN_COOKIE_NAME,
             accessToken,
-            jwtConfig.accessTokenValidityInMs
+            jwtConfig.docsTokenValidityInMs
         )
     }
 
