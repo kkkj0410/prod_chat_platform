@@ -66,4 +66,19 @@ class NetworkService(
     fun getJwkSet(url : String) : JWKSet{
         return JWKSet.load(URI(url).toURL())
     }
+
+    fun getByWebClient(url: String, headers: Map<String, String>): Map<String, Any> {
+        val client = WebClient.create()
+
+        return client.get()
+            .uri(url)
+            .headers { httpHeaders ->
+                headers.forEach { (key, value) ->
+                    httpHeaders.set(key, value)
+                }
+            }
+            .retrieve()
+            .bodyToMono(Map::class.java)
+            .block() as Map<String, Any>
+    }
 }

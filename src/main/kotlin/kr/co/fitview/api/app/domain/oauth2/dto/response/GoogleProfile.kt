@@ -1,7 +1,7 @@
 package kr.co.fitview.api.app.domain.oauth2.dto.response
 
-data class KakaoProfile(
-    val id : String,
+data class GoogleProfile(
+
+    val googleId : String,
     val email : String
 )
-

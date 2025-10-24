@@ -61,3 +61,13 @@ include::{snippets}/MEMBER_006/http-request.adoc[]
 include::{snippets}/MEMBER_006/http-response.adoc[]
 include::{snippets}/MEMBER_006/response-fields.adoc[]
 
+[[MEMBER_007]]
+=== MEMBER_007
+
+==== HTTP Request
+include::{snippets}/MEMBER_007/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/MEMBER_007/http-response.adoc[]
+include::{snippets}/MEMBER_007/response-fields.adoc[]
+

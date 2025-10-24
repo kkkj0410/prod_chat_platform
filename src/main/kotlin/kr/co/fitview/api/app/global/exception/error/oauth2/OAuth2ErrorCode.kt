@@ -24,6 +24,33 @@ enum class OAuth2ErrorCode(
 
     DUPLICATE_SOCIAL_MEMBER("011", "Duplicate social member signup", "소셜 로그인 회원가입을 중복해서 하면 회원 정보 등록을 거부함"),
 
+    GOOGLE_AUTH_CODE_EXCHANGE_FAILED("012", "Failed to exchange authCode for accessToken.", "구글 authCode를 이용해 accessToken 발급 요청을 시도했지만 실패함. 사유 - 잘못된 authCode 또는 클라이언트 설정 불일치 등"),
+    GOOGLE_ACCESS_TOKEN_PARSE_FAILED("013", "Failed to parse accessToken from Google response.", "구글로부터 accessToken 발급 응답을 받았지만, 응답 내에서 accessToken 값을 파싱하지 못함. 사유 - 응답 포맷 변경 또는 JSON 파싱 오류 등"),
+    GOOGLE_PROFILE_REQUEST_FAILED("014", "Failed to request Google profile with accessToken.", "구글 accessToken으로 구글 프로필 조회 요청을 시도했지만 실패함. 사유 - 만료되었거나 잘못된 accessToken 등"),
+    GOOGLE_PROFILE_ID_MISSING("015", "Google profile does not contain a unique ID.", "구글 프로필 응답을 받았지만 고유 식별자(id) 필드가 존재하지 않음. 사유 - 잘못된 scope 설정 또는 응답 포맷 오류 등"),
+    GOOGLE_PROFILE_EMAIL_MISSING("016", "Google profile does not contain an email.", "구글 프로필 응답을 받았지만 이메일(email) 필드가 존재하지 않음. 사유 - 사용자 이메일 비공개 설정 또는 scope 누락 등"),
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     ;
 
     override val prefix: String

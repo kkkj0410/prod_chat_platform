@@ -1,6 +1,5 @@
 package kr.co.fitview.api.app.domain.image.service
 
-import kr.co.fitview.api.app.domain.image.dto.request.WorkoutImageUrlServiceRequest
 import kr.co.fitview.api.app.domain.image.entity.Image
 import kr.co.fitview.api.app.domain.image.entity.MemberImage
 import kr.co.fitview.api.app.domain.image.entity.enums.MemberImageType
@@ -39,8 +38,8 @@ class ImageService(
 
 
     @Transactional
-    fun saveMemberImageWorkouts(member : Member, requests : List<WorkoutImageUrlServiceRequest>) : List<MemberImage>{
-        if(isMemberImageWorkoutLimitExceeded(requests)){
+    fun saveMemberImageWorkouts(member : Member, imageUrls : List<String>) : List<MemberImage>{
+        if(isMemberImageWorkoutLimitExceeded(imageUrls)){
             throw GlobalException(ImageErrorCode.MEMBER_WORKOUT_IMAGE_LIMIT)
         }
 
@@ -48,25 +47,22 @@ class ImageService(
 
         deleteMemberImages(findMemberImages)
 
-        return addWorkoutMemberImages(requests, member)
+        return addWorkoutMemberImages(imageUrls, member)
     }
 
     private fun addWorkoutMemberImages(
-        requests: List<WorkoutImageUrlServiceRequest>,
+        imageUrls: List<String>,
         member: Member
     ): List<MemberImage> {
-        val imageUrls = requests.map { request -> request.imageUrl }
 
         val savedImages = addImages(imageUrls)
 
         val savedImagesMap = savedImages.associateBy { it.url }
 
-        val sortedRequests = requests.sortedBy { it.seq }
-
-        val memberImages = sortedRequests.mapIndexed { index, request ->
+        val memberImages = imageUrls.mapIndexed { index, request ->
             MemberImage(
                 member = member,
-                image = savedImagesMap[request.imageUrl]!!,
+                image = savedImagesMap[request]!!,
                 type = MemberImageType.WORKOUT,
                 seq = (index + 1) * 100
             )
@@ -81,8 +77,8 @@ class ImageService(
         }
     }
 
-    private fun isMemberImageWorkoutLimitExceeded(requests: List<WorkoutImageUrlServiceRequest>) =
-        requests.size > maxMemberImageWorkout
+    private fun isMemberImageWorkoutLimitExceeded(imageUrls: List<String>) =
+        imageUrls.size > maxMemberImageWorkout
 
     private fun createMemberImage(
         profileImageUrl: String,

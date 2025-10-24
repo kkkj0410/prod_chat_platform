@@ -359,4 +359,88 @@ class MemberServiceTest @Autowired constructor(
             .doesNotHaveDuplicates()
     }
 
+    @DisplayName("소셜 회원을 저장한다.")
+    @Test
+    fun addMemberByOAuth2() {
+        // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+            provider = OAuth2Provider.APPLE,
+            providerId = "1234"
+        )
+
+        // when
+        val savedMember = memberService.addMemberByOAuth2(member)
+
+        // then
+        assertThat(savedMember)
+            .extracting("email", "password", "role", "provider", "providerId")
+            .contains(member.email, member.password, member.role, member.provider, member.providerId)
+
+    }
+
+    @DisplayName("소셜 회원의 소셜 id가 중복되면 저장하지 않는다.")
+    @Test
+    fun addMemberByOAuth2DuplicatedProviderId() {
+        // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+            provider = OAuth2Provider.APPLE,
+            providerId = "1234"
+        )
+        memberRepository.save(member)
+
+
+        // when & then
+        assertThatThrownBy {
+            memberService.addMemberByOAuth2(member)
+        }
+            .isInstanceOf(GlobalException::class.java)
+            .satisfies(ThrowingConsumer { ex ->
+                val globalEx = ex as GlobalException
+                assertThat(globalEx.errorCode)
+                    .isEqualTo(MemberErrorCode.MEMBER_DUPLICATE_PROVIDER)
+            })
+    }
+
+    @DisplayName("소셜 회원은 이메일이 중복되더라도 소셜 id가 다르다면 각 회원을 모두 저장한다.")
+    @Test
+    fun addMemberByOAuth2DuplicatedEmail() {
+        // given
+        val email = "email"
+        val member1 = Member(
+            email = email,
+            password = "password",
+            role = Role.USER,
+            provider = OAuth2Provider.APPLE,
+            providerId = "1234"
+        )
+        val member2= Member(
+            email = email,
+            password = "password",
+            role = Role.USER,
+            provider = OAuth2Provider.APPLE,
+            providerId = "9876"
+        )
+
+        // when
+        val findMember1 = memberService.addMemberByOAuth2(member1)
+        val findMember2 = memberService.addMemberByOAuth2(member2)
+
+        // then
+        assertThat(findMember1)
+            .extracting("email", "password", "role", "provider", "providerId")
+            .contains(member1.email, member1.password, member1.role, member1.provider, member1.providerId)
+
+        assertThat(findMember2)
+            .extracting("email", "password", "role", "provider", "providerId")
+            .contains(member2.email, member2.password, member2.role, member2.provider, member2.providerId)
+
+
+    }
+
 }

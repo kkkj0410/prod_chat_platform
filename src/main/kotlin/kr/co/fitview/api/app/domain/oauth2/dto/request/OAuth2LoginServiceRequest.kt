@@ -24,4 +24,10 @@ data class OAuth2LoginServiceRequest(
         )
     }
 
+    fun toGoogleServiceRequest(): GoogleLoginServiceRequest {
+       return GoogleLoginServiceRequest(
+           googleAuthCode = providerToken
+       )
+    }
+
 }

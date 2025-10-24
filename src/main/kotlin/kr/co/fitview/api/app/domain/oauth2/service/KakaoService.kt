@@ -23,7 +23,6 @@ class KakaoService(
     val memberService : MemberService,
     val idGenerator: IdGenerator,
     val jwtTokenProvider: JwtTokenProvider,
-    val refreshTokenService: RefreshTokenService
 ) {
     val requestUrlFromKakao = "https://kapi.kakao.com/v2/user/me"
 
@@ -38,23 +37,29 @@ class KakaoService(
             findMember = kakaoSignup(kakaoProfile)
         }
 
-
         return findMember!!
     }
 
 
     private fun getKakaoProfile(request: KakaoLoginServiceRequest): KakaoProfile {
 
-        try{
-            val kakaoProfile = networkService.postKakaoProfile(
-                url = requestUrlFromKakao,
-                accessToken = request.kakaoAccessToken
-            )
-            return kakaoProfile
-        }
-        catch(ex : Exception){
+        val header = createAccessTokenHeader(request.kakaoAccessToken)
+
+        val response = try {
+            networkService.getByWebClient(requestUrlFromKakao, header)
+        } catch (e: Exception) {
             throw GlobalException(OAuth2ErrorCode.KAKAO_POST_FAILED)
         }
+
+        val kakaoId = response["id"] as String
+        val kakaoEmail = (response["kakao_account"] as Map<*, *>)["email"] as String
+
+        return KakaoProfile(kakaoId, kakaoEmail)
+    }
+
+    private fun createAccessTokenHeader(accessToken: String): Map<String, String> {
+        val headers = mapOf("Authorization" to "Bearer $accessToken")
+        return headers
     }
 
     private fun isNull(member: Member?) = member == null
@@ -63,8 +68,8 @@ class KakaoService(
     private fun kakaoSignup(
         kakaoProfile: KakaoProfile,
     ): Member {
-        val member = createKakaoMember(kakaoProfile.id, kakaoProfile.kakao_account.email)
-        return memberService.addMember(member)
+        val member = createKakaoMember(kakaoProfile.id, kakaoProfile.email)
+        return memberService.addMemberByOAuth2(member)
     }
 
     private fun createKakaoMember(providerId: String, email: String)

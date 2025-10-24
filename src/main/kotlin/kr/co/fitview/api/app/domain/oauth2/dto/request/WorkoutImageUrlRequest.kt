@@ -10,16 +10,12 @@ data class WorkoutImageUrlRequest(
     @field:NotNull(message = "imageUrl is required")
     val imageUrl : String?,
 
-    @field:NotNull(message = "sequence is required")
-    @field:Min(value = 0, message = "sequence must be 0 or positive")
-    val seq : Int?
 ) {
 
 
     fun toServiceRequest() : WorkoutImageUrlServiceRequest{
         return WorkoutImageUrlServiceRequest(
             imageUrl = imageUrl!!,
-            seq = seq!!
         )
     }
 

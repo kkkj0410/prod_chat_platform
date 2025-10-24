@@ -175,9 +175,9 @@ class OAuth2ControllerDocsTest : RestDocsSupport() {
 
                 requestFields(
                     fieldWithPath("provider").type(JsonFieldType.STRING)
-                        .description("플랫폼 - APPLE, KAKAO"),
+                        .description("플랫폼 - APPLE, KAKAO, GOOGLE"),
                     fieldWithPath("providerToken").type(JsonFieldType.STRING)
-                        .description("APPLE = authCode, KAKAO = accessToken")
+                        .description("APPLE = authCode, KAKAO = accessToken, GOOGLE = authCode")
                 ),
 
 
@@ -211,9 +211,8 @@ class OAuth2ControllerDocsTest : RestDocsSupport() {
         workoutStyle: MemberWorkoutStyle = MemberWorkoutStyle.STRENGTH,
         workoutTimes: List<WorkoutTimeName> = listOf(WorkoutTimeName.WEEKDAY_DAWN, WorkoutTimeName.WEEKDAY_EVENING),
         workoutGoal: MemberWorkoutGoal = MemberWorkoutGoal.PERFORMANCE_GOAL,
-        workoutImageUrls: List<WorkoutImageUrlRequest> = listOf(
-            WorkoutImageUrlRequest("imageUrl1", 1),
-            WorkoutImageUrlRequest("imageUrl2", 2)
+        workoutImageUrls: List<String> = listOf(
+            "imageUrl1", "imageUrl2"
         ),
         intro: String? = "intro",
         terms: List<TermRequest> = listOf(
@@ -246,7 +245,7 @@ class OAuth2ControllerDocsTest : RestDocsSupport() {
         // given
         val request = createOAuth2SignupRequest()
 
-        print(objectMapper.writeValueAsString(request))
+        println(objectMapper.writeValueAsString(request))
 
         // when & then
         mockMvc.perform(
@@ -287,11 +286,9 @@ class OAuth2ControllerDocsTest : RestDocsSupport() {
                     fieldWithPath("workoutGoal").type(JsonFieldType.STRING)
                         .description(MemberWorkoutGoal.allDescription()),
                     fieldWithPath("workoutImageUrls").type(JsonFieldType.ARRAY).optional()
-                        .description("운동 이미지 리스트, 각 요소에 url과 순서번호 포함"),
-                    fieldWithPath("workoutImageUrls[].imageUrl").type(JsonFieldType.STRING)
+                        .description("운동 이미지 리스트. 리스트에 담긴 인덱스 순서대로 이미지 순서번호가 부여됨"),
+                    fieldWithPath("workoutImageUrls[].").type(JsonFieldType.ARRAY)
                         .description("운동 이미지 URL"),
-                    fieldWithPath("workoutImageUrls[].seq").type(JsonFieldType.NUMBER)
-                        .description("이미지 순서 - 그냥 3 5 7, 1 2 5 이런 식으로 순서 차이 나게끔 서버로 보내주면 알아서 순서번호 지정해서 저장함(값은 0보다 커야함. 각 seq 값은 아무거나 상관없음. 어차피 정렬 용도로만 사용)"),
                     fieldWithPath("intro").type(JsonFieldType.STRING).optional()
                         .description("회원 소개, 최대 500자"),
                     fieldWithPath("terms").type(JsonFieldType.ARRAY)

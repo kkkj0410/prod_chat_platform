@@ -117,4 +117,53 @@ include::{snippets}/OAUTH2_011/http-request.adoc[]
 include::{snippets}/OAUTH2_011/http-response.adoc[]
 include::{snippets}/OAUTH2_011/response-fields.adoc[]
 
+[[OAUTH2_012]]
+=== OAUTH2_012
+
+==== HTTP Request
+include::{snippets}/OAUTH2_012/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/OAUTH2_012/http-response.adoc[]
+include::{snippets}/OAUTH2_012/response-fields.adoc[]
+
+[[OAUTH2_013]]
+=== OAUTH2_013
+
+==== HTTP Request
+include::{snippets}/OAUTH2_013/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/OAUTH2_013/http-response.adoc[]
+include::{snippets}/OAUTH2_013/response-fields.adoc[]
+
+[[OAUTH2_014]]
+=== OAUTH2_014
+
+==== HTTP Request
+include::{snippets}/OAUTH2_014/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/OAUTH2_014/http-response.adoc[]
+include::{snippets}/OAUTH2_014/response-fields.adoc[]
+
+[[OAUTH2_015]]
+=== OAUTH2_015
+
+==== HTTP Request
+include::{snippets}/OAUTH2_015/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/OAUTH2_015/http-response.adoc[]
+include::{snippets}/OAUTH2_015/response-fields.adoc[]
+
+[[OAUTH2_016]]
+=== OAUTH2_016
+
+==== HTTP Request
+include::{snippets}/OAUTH2_016/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/OAUTH2_016/http-response.adoc[]
+include::{snippets}/OAUTH2_016/response-fields.adoc[]
 

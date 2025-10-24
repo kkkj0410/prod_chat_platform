@@ -39,7 +39,8 @@ data class OAuth2SignupRequest(
     @field:NotNull(message = "workoutGoal is required")
     val workoutGoal : MemberWorkoutGoal?,
 
-    val workoutImageUrls : List<WorkoutImageUrlRequest>?,
+    @field:Size(min = 1, message = "workoutImageUrls cannot be empty")
+    val workoutImageUrls : List<String>?,
 
     val intro : String?,
 

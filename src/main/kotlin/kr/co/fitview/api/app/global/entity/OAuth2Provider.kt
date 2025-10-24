@@ -3,7 +3,7 @@ package kr.co.fitview.api.app.global.entity
 import com.fasterxml.jackson.annotation.JsonCreator
 
 enum class OAuth2Provider {
-    APPLE, KAKAO;
+    APPLE, KAKAO, GOOGLE;
 
 //    companion object {
 //        fun from(value: String): OAuth2Provider {

@@ -26,7 +26,7 @@ data class OAuth2SignupServiceRequest(
 
     val workoutGoal : MemberWorkoutGoal,
 
-    val workoutImageUrls : List<WorkoutImageUrlRequest>?,
+    val workoutImageUrls : List<String>?,
 
     val intro : String?,
 

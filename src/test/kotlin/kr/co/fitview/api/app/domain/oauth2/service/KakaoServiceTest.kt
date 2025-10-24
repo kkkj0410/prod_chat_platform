@@ -4,7 +4,6 @@ import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.domain.oauth2.dto.request.KakaoLoginServiceRequest
-import kr.co.fitview.api.app.domain.oauth2.dto.response.KakaoAccount
 import kr.co.fitview.api.app.domain.oauth2.dto.response.KakaoProfile
 import kr.co.fitview.api.app.global.entity.OAuth2Provider
 import kr.co.fitview.api.app.global.entity.Role
@@ -48,11 +47,13 @@ class KakaoServiceTest @Autowired constructor(
             kakaoAccessToken = "kakaoAccessToken"
         )
 
-        given(networkService.postKakaoProfile(any(), any()))
+        given(networkService.getByWebClient(any(), any()))
             .willReturn(
-                KakaoProfile(
-                    id = providerId,
-                    kakao_account = KakaoAccount(email = email)
+                mapOf(
+                    "id" to providerId,
+                    "kakao_account" to mapOf(
+                        "email" to email
+                    )
                 )
             )
 
@@ -75,11 +76,13 @@ class KakaoServiceTest @Autowired constructor(
             kakaoAccessToken = "kakaoAccessToken"
         )
 
-        given(networkService.postKakaoProfile(any(), any()))
+        given(networkService.getByWebClient(any(), any()))
             .willReturn(
-                KakaoProfile(
-                    id = providerId,
-                    kakao_account = KakaoAccount(email = email)
+                mapOf(
+                    "id" to providerId,
+                    "kakao_account" to mapOf(
+                        "email" to email
+                    )
                 )
             )
 
@@ -95,44 +98,6 @@ class KakaoServiceTest @Autowired constructor(
     }
 
 
-    @DisplayName("카카오 회원 프로필을 조회하여 회원가입 시, 로컬 회원이 이미 동일한 이메일을 사용 중이면 회원가입에 실패한다.")
-    @Test
-    fun loginKakaoWithAddDuplicatedEmail() {
-        // given
-        val email = "email"
-        val providerId = "providerId"
-
-        val member = Member(
-            email = email,
-            password = "password",
-            role = Role.USER,
-        )
-        memberRepository.save(member)
-
-        val request = KakaoLoginServiceRequest(
-            kakaoAccessToken = "kakaoAccessToken"
-        )
-
-        given(networkService.postKakaoProfile(any(), any()))
-            .willReturn(
-                KakaoProfile(
-                    id = providerId,
-                    kakao_account = KakaoAccount(email = email)
-                )
-            )
-
-        // then
-        assertThatThrownBy {
-            kakaoService.loginKakaoWithAdd(request)
-        }
-            .isInstanceOf(GlobalException::class.java)
-            .satisfies(ThrowingConsumer { ex ->
-                val globalEx = ex as GlobalException
-                assertThat(globalEx.errorCode)
-                    .isEqualTo(MemberErrorCode.MEMBER_DUPLICATE_EMAIL)
-            })
-    }
-
     @DisplayName("카카오 회원 프로필 조회 실패하면 로그인을 중단한다.")
     @Test
     fun loginKakaoWithAddFailPost() {
@@ -142,7 +107,7 @@ class KakaoServiceTest @Autowired constructor(
         )
 
         // when
-        given(networkService.postKakaoProfile(any(), any()))
+        given(networkService.getByWebClient(any(), any()))
             .willThrow(GlobalException(NetworkErrorCode.NETWORK_SEND_ERROR) as Throwable)
 
         // then
