@@ -142,14 +142,14 @@ class OAuth2ServiceTest @Autowired constructor(
     fun loginWithAddByKakao() {
         // given
         val email = "email"
-        val providerId = "providerId"
+        val providerId = 1234L
 
         val member = Member(
             email = email,
             password = "password",
             role = Role.USER,
             provider = OAuth2Provider.KAKAO,
-            providerId = providerId
+            providerId = providerId.toString()
         )
         val savedMember = memberRepository.save(member)
 

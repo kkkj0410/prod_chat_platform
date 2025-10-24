@@ -51,7 +51,7 @@ class KakaoService(
             throw GlobalException(OAuth2ErrorCode.KAKAO_POST_FAILED)
         }
 
-        val kakaoId = response["id"] as String
+        val kakaoId = (response["id"] as Long).toString()
         val kakaoEmail = (response["kakao_account"] as Map<*, *>)["email"] as String
 
         return KakaoProfile(kakaoId, kakaoEmail)
