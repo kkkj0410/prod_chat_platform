@@ -104,20 +104,14 @@ class ImageServiceTest @Autowired constructor(
         val savedMember = memberRepository.save(member)
 
         val requests = listOf(
-            WorkoutImageUrlServiceRequest(
-                imageUrl = imageUrl1,
-                seq = 1
-            ),
-            WorkoutImageUrlServiceRequest(
-                imageUrl = imageUrl2,
-                seq = 2
-            ),
+            imageUrl1,
+            imageUrl2,
         )
 
         // when
         val findMemberImages = imageService.saveMemberImageWorkouts(
             member = savedMember,
-            requests = requests
+            imageUrls = requests
         )
 
         // then
@@ -141,28 +135,16 @@ class ImageServiceTest @Autowired constructor(
         val savedMember = memberRepository.save(member)
 
         val requests = listOf(
-            WorkoutImageUrlServiceRequest(
-                imageUrl = "imageUrl1",
-                seq = 1
-            ),
-            WorkoutImageUrlServiceRequest(
-                imageUrl = "imageUrl2",
-                seq = 2
-            ),
-            WorkoutImageUrlServiceRequest(
-                imageUrl = "imageUrl3",
-                seq = 3
-            ),
-            WorkoutImageUrlServiceRequest(
-                imageUrl = "imageUrl4",
-                seq = 4
-            ),
+            "imageUrl1",
+            "imageUrl2",
+            "imageUrl3",
+            "imageUrl4",
         )
 
         assertThatThrownBy {
             imageService.saveMemberImageWorkouts(
                 member = savedMember,
-                requests = requests
+                imageUrls = requests
             )
         }
         .isInstanceOf(GlobalException::class.java)
@@ -208,24 +190,15 @@ class ImageServiceTest @Autowired constructor(
         memberImageRepository.save(memberImage2)
 
         val requests = listOf(
-            WorkoutImageUrlServiceRequest(
-                imageUrl = "imageUrl1",
-                seq = 1
-            ),
-            WorkoutImageUrlServiceRequest(
-                imageUrl = "imageUrl2",
-                seq = 2
-            ),
-            WorkoutImageUrlServiceRequest(
-                imageUrl = "imageUrl3",
-                seq = 3
-            ),
+            "imageUrl1",
+            "imageUrl2",
+            "imageUrl3",
         )
 
         // when
         val responseMemberImages = imageService.saveMemberImageWorkouts(
             member = savedMember,
-            requests = requests
+            imageUrls = requests
         )
 
         // then

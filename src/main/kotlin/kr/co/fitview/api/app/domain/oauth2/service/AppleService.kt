@@ -101,7 +101,7 @@ class AppleService(
         appleProfile: AppleProfile,
     ): Member {
         val member = createAppleMember(appleProfile.appleId, appleProfile.email!!)
-        return memberService.addMember(member)
+        return memberService.addMemberByOAuth2(member)
     }
 
 

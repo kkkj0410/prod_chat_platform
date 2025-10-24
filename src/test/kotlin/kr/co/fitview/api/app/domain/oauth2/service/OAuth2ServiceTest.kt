@@ -19,7 +19,6 @@ import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.domain.member.repository.WorkoutTimeRepository
 import kr.co.fitview.api.app.domain.oauth2.config.AppleConfig
 import kr.co.fitview.api.app.domain.oauth2.dto.request.*
-import kr.co.fitview.api.app.domain.oauth2.dto.response.KakaoAccount
 import kr.co.fitview.api.app.domain.oauth2.dto.response.KakaoProfile
 import kr.co.fitview.api.app.domain.term.entity.enums.TermName
 import kr.co.fitview.api.app.domain.term.repository.TermRepository
@@ -159,11 +158,13 @@ class OAuth2ServiceTest @Autowired constructor(
             providerToken = "kakaoAccessToken"
         )
 
-        given(networkService.postKakaoProfile(any(), any()))
+        given(networkService.getByWebClient(any(), any()))
             .willReturn(
-                KakaoProfile(
-                    id = providerId,
-                    kakao_account = KakaoAccount(email = email)
+                mapOf(
+                    "id" to providerId,
+                    "kakao_account" to mapOf(
+                        "email" to email
+                    )
                 )
             )
 
@@ -181,6 +182,59 @@ class OAuth2ServiceTest @Autowired constructor(
             .extracting("id", "id", "role")
             .contains(findMemberIdByAccessToken, findMemberIdByRefreshToken, findRole)
         assertThat(findRefreshTokenEntity.id).isEqualTo(findUuid)
+    }
+
+    @DisplayName("구글 로그인을 하면 jwt 토큰을 반환한다.")
+    @Test
+    fun loginWithAddByGoogle() {
+        // given
+        val email = "email"
+        val providerId = "providerId"
+
+        val member = Member(
+            email = email,
+            password = "password",
+            role = Role.USER,
+            provider = OAuth2Provider.GOOGLE,
+            providerId = providerId
+        )
+        val savedMember = memberRepository.save(member)
+
+        val request = OAuth2LoginServiceRequest(
+            provider = OAuth2Provider.GOOGLE,
+            providerToken = "googleAccessToken"
+        )
+
+        given(networkService.postByWebClient(any(), any()))
+            .willReturn(
+                mapOf(
+                    "access_token" to "googleAccessToken"
+                )
+            )
+
+        given(networkService.getByWebClient(any(), any()))
+            .willReturn(
+                mapOf(
+                    "id" to providerId,
+                    "email" to email
+                )
+            )
+
+        // when
+        val response = oAuth2Service.loginWithAdd(request)
+
+        // then
+        val findMemberIdByAccessToken = jwtTokenProvider.extractMemberIdFrom(response.accessToken)
+        val findMemberIdByRefreshToken = jwtTokenProvider.extractMemberIdFrom(response.refreshToken)
+        val findRole = jwtTokenProvider.extractRoleFrom(response.accessToken)
+        val findUuid = jwtTokenProvider.extractUuidFrom(response.refreshToken)
+        val findRefreshTokenEntity : RefreshToken = refreshTokenRepository.findById(findUuid).orElseThrow()
+
+        assertThat(savedMember)
+            .extracting("id", "id", "role")
+            .contains(findMemberIdByAccessToken, findMemberIdByRefreshToken, findRole)
+        assertThat(findRefreshTokenEntity.id).isEqualTo(findUuid)
+
     }
 
 //    @field:NotNull(message = "profileImageUrl is required")
@@ -243,9 +297,9 @@ class OAuth2ServiceTest @Autowired constructor(
         workoutStyle: MemberWorkoutStyle = MemberWorkoutStyle.STRENGTH,
         workoutTimes: List<WorkoutTimeName> = listOf(WorkoutTimeName.WEEKDAY_DAWN, WorkoutTimeName.WEEKDAY_EVENING),
         workoutGoal: MemberWorkoutGoal = MemberWorkoutGoal.PERFORMANCE_GOAL,
-        workoutImageUrls: List<WorkoutImageUrlRequest> = listOf(
-            WorkoutImageUrlRequest("imageUrl1", 1),
-            WorkoutImageUrlRequest("imageUrl2", 2)
+        workoutImageUrls: List<String> = listOf(
+            "imageUrl1",
+            "imageUrl2",
         ),
         intro: String? = "intro",
         terms: List<TermRequest> = listOf(

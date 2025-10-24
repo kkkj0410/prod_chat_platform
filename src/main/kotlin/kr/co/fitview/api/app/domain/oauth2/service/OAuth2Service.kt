@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional
 class OAuth2Service(
     private val appleService: AppleService,
     private val kakaoService: KakaoService,
+    private val googleService: GoogleService,
     private val jwtTokenProvider : JwtTokenProvider,
     private val refreshTokenService : RefreshTokenService,
     private val termService: TermService,
@@ -42,6 +43,11 @@ class OAuth2Service(
 
         else if(request.provider == OAuth2Provider.KAKAO) {
             findMember = kakaoService.loginKakaoWithAdd(request.toKakaoServiceRequest())
+        }
+
+        else if(request.provider == OAuth2Provider.GOOGLE){
+            findMember = googleService.loginGoogleWithAdd(request.toGoogleServiceRequest())
+
         }
 
         val accessToken = jwtTokenProvider.createAccessToken(findMember!!.id!!, findMember.role!!)
@@ -69,7 +75,7 @@ class OAuth2Service(
         imageService.saveMemberImageProfile(findMember, request.profileImageUrl)
 
         if(isNotNull(request.workoutImageUrls)){
-            imageService.saveMemberImageWorkouts(findMember, WorkoutImageUrlRequest.toServiceRequest(request.workoutImageUrls!!))
+            imageService.saveMemberImageWorkouts(findMember, request.workoutImageUrls!!)
         }
 
         memberService.addWorkoutTimes(findMember, request.workoutTimes)

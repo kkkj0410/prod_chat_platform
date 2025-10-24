@@ -27,6 +27,13 @@ class MemberService(
     }
 
     @Transactional
+    fun addMemberByOAuth2(member : Member) : Member{
+        validateDuplicatedProviderId(member)
+
+        return memberRepository.save(member)
+    }
+
+    @Transactional
     fun addWorkoutTimes(member : Member, workoutTimeNames : List<WorkoutTimeName>) : List<WorkoutTime>{
 
         val findWorkoutTimes = workoutTimeRepository.findAllByMemberIdAndDeletedAtIsNull(member.id!!)
@@ -66,6 +73,12 @@ class MemberService(
     private fun validateDuplicatedEmail(member: Member) {
         findMemberFromLoginId(member.email!!)?.let {
             throw GlobalException(MemberErrorCode.MEMBER_DUPLICATE_EMAIL)
+        }
+    }
+
+    private fun validateDuplicatedProviderId(member: Member) {
+        findMemberFromProviderId(member.providerId!!)?.let {
+            throw GlobalException(MemberErrorCode.MEMBER_DUPLICATE_PROVIDER)
         }
     }
 

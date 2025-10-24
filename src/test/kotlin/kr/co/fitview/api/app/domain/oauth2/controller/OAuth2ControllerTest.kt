@@ -120,9 +120,9 @@ class OAuth2ControllerTest : ControllerTestSupport(){
         workoutStyle: MemberWorkoutStyle? = MemberWorkoutStyle.STRENGTH,
         workoutTimes: List<WorkoutTimeName>? = listOf(WorkoutTimeName.WEEKDAY_DAWN, WorkoutTimeName.WEEKDAY_EVENING),
         workoutGoal: MemberWorkoutGoal? = MemberWorkoutGoal.PERFORMANCE_GOAL,
-        workoutImageUrls: List<WorkoutImageUrlRequest>? = listOf(
-            WorkoutImageUrlRequest("imageUrl1", 1),
-            WorkoutImageUrlRequest("imageUrl2", 2)
+        workoutImageUrls: List<String>? = listOf(
+            "imageUrl1",
+            "imageUrl2",
         ),
         intro: String? = "intro",
         terms: List<TermRequest>? = listOf(
@@ -306,6 +306,25 @@ class OAuth2ControllerTest : ControllerTestSupport(){
             .andExpect(jsonPath("$.data").isEmpty())
     }
 
+    @DisplayName("소셜 회원가입 시, 회원 운동 사진은 빈 배열이면 안된다. (null 이거나, 리스트 안에 값이 있거나)")
+    @Test
+    fun oAuth2SignupWithoutWorkoutImageUrls() {
+        // given
+        val request = createOAuth2SignupRequest(workoutImageUrls = listOf())
+
+        // when // then
+        mockMvc.perform(
+            post("/api/v1/oauth2/signup")
+                .content(objectMapper.writeValueAsString(request))
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andDo(print())
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value(RequestErrorCode.REQ_FIELD_NOT_VALID.code))
+            .andExpect(jsonPath("$.status").value("400"))
+            .andExpect(jsonPath("$.message").value("workoutImageUrls cannot be empty"))
+            .andExpect(jsonPath("$.data").isEmpty())
+    }
 
 
 }
