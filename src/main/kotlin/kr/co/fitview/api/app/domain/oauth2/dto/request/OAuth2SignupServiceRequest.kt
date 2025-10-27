@@ -1,5 +1,6 @@
 package kr.co.fitview.api.app.domain.oauth2.dto.request
 
+import kr.co.fitview.api.app.domain.address.dto.request.AddressCreateServiceRequest
 import kr.co.fitview.api.app.domain.member.entity.enums.*
 import kr.co.fitview.api.app.global.entity.Gender
 import java.time.LocalDate
@@ -30,8 +31,9 @@ data class OAuth2SignupServiceRequest(
 
     val intro : String?,
 
-    val terms : List<TermRequest>
+    val terms : List<TermRequest>,
 
+    val address : AddressCreateServiceRequest
 
     ){
 

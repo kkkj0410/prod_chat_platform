@@ -6,6 +6,7 @@ import kr.co.fitview.api.app.global.exception.GlobalExceptionController
 import kr.co.fitview.api.app.global.exception.GlobalExceptionHandler
 import kr.co.fitview.api.app.global.exception.GlobalExceptionService
 import kr.co.fitview.api.app.global.exception.error.ErrorCode
+import kr.co.fitview.api.app.global.exception.error.address.AddressErrorCode
 import kr.co.fitview.api.app.global.exception.error.auth.AuthErrorCode
 import kr.co.fitview.api.app.global.exception.error.image.ImageErrorCode
 import kr.co.fitview.api.app.global.exception.error.jwt.JwtErrorCode
@@ -95,7 +96,8 @@ class GlobalExceptionHandlerDocsTest  : RestDocsSupport() {
                     OAuth2ErrorCode.entries +
                     NetworkErrorCode.entries +
                     ImageErrorCode.entries +
-                    TermErrorCode.entries
+                    TermErrorCode.entries +
+                    AddressErrorCode.entries
         }
     }
 

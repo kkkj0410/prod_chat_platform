@@ -1,0 +1,11 @@
+[[ADDRESS_001]]
+=== ADDRESS_001
+
+==== HTTP Request
+include::{snippets}/ADDRESS_001/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/ADDRESS_001/http-response.adoc[]
+include::{snippets}/ADDRESS_001/response-fields.adoc[]
+
+

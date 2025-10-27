@@ -9,6 +9,8 @@ import com.nimbusds.jose.jwk.gen.RSAKeyGenerator
 import com.nimbusds.jwt.JWTClaimsSet
 import com.nimbusds.jwt.SignedJWT
 import kr.co.fitview.api.app.IntegrationTestSupport
+import kr.co.fitview.api.app.domain.address.dto.request.AddressCreateServiceRequest
+import kr.co.fitview.api.app.domain.address.repository.AddressRepository
 import kr.co.fitview.api.app.domain.auth.entity.RefreshToken
 import kr.co.fitview.api.app.domain.auth.repository.RefreshTokenRepository
 import kr.co.fitview.api.app.domain.image.entity.enums.MemberImageType
@@ -55,6 +57,7 @@ class OAuth2ServiceTest @Autowired constructor(
     val termRepository : TermRepository,
     val memberImageRepository: MemberImageRepository,
     val workoutTimeRepository : WorkoutTimeRepository,
+    val addressRepository: AddressRepository
 ) : IntegrationTestSupport(){
 
 
@@ -307,6 +310,15 @@ class OAuth2ServiceTest @Autowired constructor(
             TermRequest(TermName.PRIVACY_POLICY, true),
             TermRequest(TermName.TERMS_OF_SERVICE, true),
             TermRequest(TermName.LOCATION_SERVICE, true)
+        ),
+        address : AddressCreateServiceRequest = AddressCreateServiceRequest(
+            siDo = "서울특별시",
+            siGunGu = "강남구",
+            eupMyeonDong = "역삼동",
+            postalCode = "06236",
+            lat = 37.4979,
+            lng = 127.0276,
+            roadAddress = "서울특별시 강남구 테헤란로 123"
         )
     ): OAuth2SignupServiceRequest {
         return OAuth2SignupServiceRequest(
@@ -322,7 +334,8 @@ class OAuth2ServiceTest @Autowired constructor(
             workoutGoal = workoutGoal,
             workoutImageUrls = workoutImageUrls,
             intro = intro,
-            terms = terms
+            terms = terms,
+            address = address
         )
     }
 
@@ -380,6 +393,13 @@ class OAuth2ServiceTest @Autowired constructor(
                 tuple(savedMember, WorkoutTimeName.WEEKDAY_DAWN),
                 tuple(savedMember, WorkoutTimeName.WEEKDAY_EVENING)
             )
+
+
+        val findAddresses = addressRepository.findAllByMemberIdAndDeletedAtIsNull(savedMember.id!!)
+        assertThat(findAddresses).hasSize(1)
+        assertThat(findAddresses[0])
+            .extracting("member", "siDo", "siGunGu", "eupMyeonDong", "postalCode", "lat", "lng", "roadAddress")
+            .containsExactly(savedMember, "서울특별시", "강남구", "역삼동", "06236", 37.4979, 127.0276, "서울특별시 강남구 테헤란로 123")
     }
 
     @DisplayName("소셜 로그인 회원가입을 중복해서 하면 회원 정보 등록을 거부한다.")
