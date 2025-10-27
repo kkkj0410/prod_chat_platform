@@ -3,6 +3,7 @@ package kr.co.fitview.api.app.domain.member.entity
 import jakarta.persistence.*
 import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
+import kr.co.fitview.api.app.domain.address.entity.Address
 import kr.co.fitview.api.app.domain.image.entity.MemberImage
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutExperience
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutGoal
@@ -91,5 +92,6 @@ class Member(
     @OneToMany(mappedBy = "member")
     var workoutTimes: MutableSet<WorkoutTime> = mutableSetOf()
 
-
+    @OneToMany(mappedBy = "member")
+    var addresses: MutableSet<Address> = mutableSetOf()
 }

@@ -1,5 +1,6 @@
 package kr.co.fitview.api.app.domain.oauth2.service
 
+import kr.co.fitview.api.app.domain.address.service.AddressService
 import kr.co.fitview.api.app.domain.auth.service.RefreshTokenService
 import kr.co.fitview.api.app.domain.image.service.ImageService
 import kr.co.fitview.api.app.domain.member.entity.Member
@@ -29,7 +30,8 @@ class OAuth2Service(
     private val refreshTokenService : RefreshTokenService,
     private val termService: TermService,
     private val imageService: ImageService,
-    private val memberService: MemberService
+    private val memberService: MemberService,
+    private val addressService: AddressService
 ) {
 
     @Transactional
@@ -79,6 +81,8 @@ class OAuth2Service(
         }
 
         memberService.addWorkoutTimes(findMember, request.workoutTimes)
+
+        addressService.addAddress(findMember, request.address)
 
         return findMember.apply{
             nickname = request.nickname

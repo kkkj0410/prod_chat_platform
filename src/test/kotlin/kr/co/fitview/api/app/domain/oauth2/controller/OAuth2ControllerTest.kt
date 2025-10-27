@@ -130,6 +130,15 @@ class OAuth2ControllerTest : ControllerTestSupport(){
             TermRequest(TermName.PRIVACY_POLICY, true),
             TermRequest(TermName.TERMS_OF_SERVICE, true),
             TermRequest(TermName.LOCATION_SERVICE, true)
+        ),
+        address : AddressCreateRequest? = AddressCreateRequest(
+            siDo = "서울특별시",
+            siGunGu = "강남구",
+            eupMyeonDong = "역삼동",
+            postalCode = "06236",
+            lat = 37.4979,
+            lng = 127.0276,
+            roadAddress = "서울특별시 강남구 테헤란로 123"
         )
     ): OAuth2SignupRequest {
         return OAuth2SignupRequest(
@@ -145,7 +154,8 @@ class OAuth2ControllerTest : ControllerTestSupport(){
             workoutGoal = workoutGoal,
             workoutImageUrls = workoutImageUrls,
             intro = intro,
-            terms = terms
+            terms = terms,
+            address = address
         )
     }
 
@@ -325,6 +335,28 @@ class OAuth2ControllerTest : ControllerTestSupport(){
             .andExpect(jsonPath("$.message").value("workoutImageUrls cannot be empty"))
             .andExpect(jsonPath("$.data").isEmpty())
     }
+
+    @DisplayName("소셜 회원가입 시, 회원의 주소는 필수다.")
+    @Test
+    fun oAuth2SignupWithoutAddress() {
+        // given
+        val request = createOAuth2SignupRequest(address = null)
+
+        // when // then
+        mockMvc.perform(
+            post("/api/v1/oauth2/signup")
+                .content(objectMapper.writeValueAsString(request))
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andDo(print())
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value(RequestErrorCode.REQ_FIELD_NOT_VALID.code))
+            .andExpect(jsonPath("$.status").value("400"))
+            .andExpect(jsonPath("$.message").value("address is required"))
+            .andExpect(jsonPath("$.data").isEmpty())
+    }
+
+
 
 
 }

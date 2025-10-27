@@ -1,0 +1,65 @@
+package kr.co.fitview.api.app.domain.address.repository
+
+import kr.co.fitview.api.app.IntegrationTestSupport
+import kr.co.fitview.api.app.domain.address.entity.Address
+import kr.co.fitview.api.app.domain.member.entity.Member
+import kr.co.fitview.api.app.domain.member.repository.MemberRepository
+import kr.co.fitview.api.app.domain.term.entity.enums.TermName
+import kr.co.fitview.api.app.global.entity.Role
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.tuple
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
+
+class AddressRepositoryTest @Autowired constructor(
+    val memberRepository: MemberRepository,
+    val addressRepository: AddressRepository
+) : IntegrationTestSupport(){
+
+    @DisplayName("해당 회원의 모든 주소를 조회한다.")
+    @Test
+    fun findAllByMemberIdAndDeletedAtIsNull() {
+        // given
+        val member = Member(
+            email = "email1",
+            password = "password",
+            role = Role.USER,
+        )
+        val savedMember = memberRepository.save(member)
+
+        val address1 = Address(
+            member = member,
+            siDo = "siDo1",
+            siGunGu = "siGunGu1",
+            eupMyeonDong = "테헤란로",
+            postalCode = "1234",
+            lat = 10.123,
+            lng = 10.234,
+            roadAddress = "roadAddress"
+        )
+        val address2 = Address(
+            member = member,
+            siDo = "siDo2",
+            siGunGu = "siGunGu2",
+            eupMyeonDong = "테헤란로2",
+            postalCode = "123445564",
+            lat = 10.123,
+            lng = 10.234,
+            roadAddress = "roadAddress"
+        )
+        addressRepository.save(address1)
+        addressRepository.save(address2)
+
+        // when
+        val findAddresses = addressRepository.findAllByMemberIdAndDeletedAtIsNull(savedMember.id!!)
+
+        // then
+        assertThat(findAddresses)
+            .extracting("member", "siDo", "siGunGu")
+            .containsExactlyInAnyOrder(
+                tuple(savedMember, "siDo1", "siGunGu1"),
+                tuple(savedMember, "siDo2", "siGunGu2"),
+            )
+    }
+}
