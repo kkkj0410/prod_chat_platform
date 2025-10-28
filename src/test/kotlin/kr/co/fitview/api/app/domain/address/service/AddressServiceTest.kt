@@ -6,15 +6,12 @@ import kr.co.fitview.api.app.domain.address.entity.Address
 import kr.co.fitview.api.app.domain.address.repository.AddressRepository
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
-import kr.co.fitview.api.app.global.entity.OAuth2Provider
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.address.AddressErrorCode
-import kr.co.fitview.api.app.global.exception.error.member.MemberErrorCode
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.assertj.core.api.ThrowingConsumer
-import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -103,8 +100,9 @@ class AddressServiceTest @Autowired constructor(
     }
 
     @DisplayName("회원의 주소 저장 시, 시/도가 표준에 맞지 않으면 표준으로 바꿔서 저장한다.")
-    @Test
-    fun addAddressOtherSiDo() {
+    @ParameterizedTest
+    @CsvSource("충청남도, 충청남도", "충남, 충청남도", "충엥남도, 충청남도", "강원도, 강원특별자치도", "강원, 강원특별자치도")
+    fun addAddressOtherSiDo(siDo : String, standardSiDo : String) {
         // given
         val member = Member(
             email = "email",
@@ -114,7 +112,7 @@ class AddressServiceTest @Autowired constructor(
         memberRepository.save(member)
 
         val request = AddressCreateServiceRequest(
-            siDo = "서울",
+            siDo = siDo,
             siGunGu = "강남구",
             eupMyeonDong = "역삼동",
             postalCode = "1234",
@@ -130,7 +128,7 @@ class AddressServiceTest @Autowired constructor(
         assertThat(savedAddress.id).isNotNull()
         assertThat(savedAddress)
             .extracting("siDo", "siGunGu", "eupMyeonDong", "postalCode", "lat", "lng", "roadAddress")
-            .contains("서울특별시", request.siGunGu, request.eupMyeonDong, request.postalCode, request.lat, request.lng, request.roadAddress)
+            .contains(standardSiDo, request.siGunGu, request.eupMyeonDong, request.postalCode, request.lat, request.lng, request.roadAddress)
     }
 
     @DisplayName("회원의 주소 저장 시, 시/도가 한국 특정 시/도 장소로 추정할 수 없으면 저장하지 않는다.")
