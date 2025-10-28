@@ -39,8 +39,12 @@ class AddressService(
         return addressRepository.save(address)
     }
 
-    private fun convertToStandardSiDo(input: String): String {
-        val mapping = mapOf(
+    private fun convertToStandardSiDo(inputSiDo: String?): String? {
+        if(inputSiDo == null){
+            return null
+        }
+
+        val siDoMap = mapOf(
             "서울" to "서울특별시",
             "부산" to "부산광역시",
             "인천" to "인천광역시",
@@ -60,11 +64,51 @@ class AddressService(
             "제주" to "제주특별자치도"
         )
 
-        val matchedEntry = mapping.entries.firstOrNull { (key, _) ->
-            input.contains(key)
+        if(containsFullSiDo(inputSiDo, siDoMap)){
+            return getFullSiDo(inputSiDo, siDoMap)
         }
 
-        return matchedEntry?.value
-            ?: throw GlobalException(AddressErrorCode.INVALID_SI_DO)
+        if(containsKeySiDo(inputSiDo, siDoMap)){
+            return getValueSiDoByKey(inputSiDo, siDoMap)
+        }
+
+        if(containsKeyFuzzySiDo(inputSiDo, siDoMap)){
+            return getKeyFuzzySiDoValue(inputSiDo, siDoMap)
+        }
+
+        throw GlobalException(AddressErrorCode.INVALID_SI_DO)
     }
+
+    private fun containsFullSiDo(inputSiDo: String, siDoMap: Map<String, String>): Boolean {
+        return siDoMap.values.any { inputSiDo.contains(it) }
+    }
+
+    private fun getFullSiDo(inputSiDo: String, siDoMap: Map<String, String>): String {
+        return siDoMap.values.first { inputSiDo.contains(it) }
+    }
+
+    private fun containsKeySiDo(inputSiDo: String, siDoMap: Map<String, String>): Boolean {
+        return siDoMap.keys.any { inputSiDo.contains(it) }
+    }
+
+    private fun getValueSiDoByKey(inputSiDo: String, siDoMap: Map<String, String>): String {
+        val matchedKey = siDoMap.keys.first { inputSiDo.contains(it) }
+        return siDoMap[matchedKey]!!
+    }
+
+    private fun containsKeyFuzzySiDo(inputSiDo: String, siDoMap: Map<String, String>): Boolean {
+        return siDoMap.keys.any { key ->
+            val pattern = key.toCharArray().joinToString(".*") { Regex.escape(it.toString()) }
+            Regex(pattern, RegexOption.DOT_MATCHES_ALL).containsMatchIn(inputSiDo)
+        }
+    }
+
+    private fun getKeyFuzzySiDoValue(inputSiDo: String, siDoMap: Map<String, String>): String {
+        val entry = siDoMap.entries.first { (key, _) ->
+            val pattern = key.toCharArray().joinToString(".*") { Regex.escape(it.toString()) }
+            Regex(pattern, RegexOption.DOT_MATCHES_ALL).containsMatchIn(inputSiDo)
+        }
+        return entry.value
+    }
+
 }

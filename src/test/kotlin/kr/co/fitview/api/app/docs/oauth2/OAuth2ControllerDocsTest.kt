@@ -222,13 +222,13 @@ class OAuth2ControllerDocsTest : RestDocsSupport() {
             TermRequest(TermName.LOCATION_SERVICE, true)
         ),
         address : AddressCreateRequest = AddressCreateRequest(
-            siDo = "서울특별시",
-            siGunGu = "강남구",
-            eupMyeonDong = "역삼동",
-            postalCode = "06236",
+            siDo = null,
+            siGunGu = null,
+            eupMyeonDong = null,
+            postalCode = null,
             lat = 37.4979,
             lng = 127.0276,
-            roadAddress = "서울특별시 강남구 테헤란로 123"
+            roadAddress = null
         )
     ): OAuth2SignupRequest {
         return OAuth2SignupRequest(
@@ -307,19 +307,20 @@ class OAuth2ControllerDocsTest : RestDocsSupport() {
                         .description(TermName.allDescription()),
                     fieldWithPath("terms[].isAgreed").type(JsonFieldType.BOOLEAN)
                         .description("동의 여부"),
-                    fieldWithPath("address.siDo").type(JsonFieldType.STRING)
-                        .description("시/도 (입력값에 반드시 포함되어야 하는 키워드: 서울, 부산, 인천, 대구, 대전, 광주, 울산, 세종, 경기, 충북, 충남, 전남, 전북, 경북, 경남, 강원, 제주)"),
-                    fieldWithPath("address.siGunGu").type(JsonFieldType.STRING)
+                    fieldWithPath("address.siDo").type(JsonFieldType.STRING).optional()
+                        .description("시/도 (입력값에 반드시 포함되어야 하는 키워드: 서울, 부산, 인천, 대구, 대전, 광주, 울산, 세종, 경기, 충북, 충남, 전남, 전북, 경북, 경남, 강원, 제주) " +
+                                "ex)충청남도 -> 충청남도, 충남 -> 충청남도, 충엥남도 -> 충청남도, 강원도 -> 강원특별자치도, 강원 -> 강원특별자치도 로 변환해서 저장"),
+                    fieldWithPath("address.siGunGu").type(JsonFieldType.STRING).optional()
                         .description("시/군/구"),
-                    fieldWithPath("address.eupMyeonDong").type(JsonFieldType.STRING)
+                    fieldWithPath("address.eupMyeonDong").type(JsonFieldType.STRING).optional()
                         .description("읍/면/동"),
-                    fieldWithPath("address.postalCode").type(JsonFieldType.STRING)
+                    fieldWithPath("address.postalCode").type(JsonFieldType.STRING).optional()
                         .description("우편번호"),
                     fieldWithPath("address.lat").type(JsonFieldType.NUMBER)
                         .description("위도"),
                     fieldWithPath("address.lng").type(JsonFieldType.NUMBER)
                         .description("경도"),
-                    fieldWithPath("address.roadAddress").type(JsonFieldType.STRING)
+                    fieldWithPath("address.roadAddress").type(JsonFieldType.STRING).optional()
                         .description("도로명 전체 주소")
                 ),
 
