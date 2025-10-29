@@ -21,6 +21,10 @@ class AddressService(
     @Transactional
     fun addAddress(member : Member, request : AddressCreateServiceRequest) : Address {
 
+        validateIsNullAllAddress(request)
+
+        validateIsNotNullAllAddress(request)
+
         val findAddresses = addressRepository.findAllByMemberIdAndDeletedAtIsNull(member.id!!)
 
         findAddresses.forEach{ address -> address.delete(time.nowLocalDateTime)}
@@ -33,11 +37,30 @@ class AddressService(
             postalCode = request.postalCode,
             lat = request.lat,
             lng = request.lng,
-            roadAddress = request.roadAddress
+            roadAddress = request.roadAddress,
+            inputAddress = request.inputAddress
         )
 
         return addressRepository.save(address)
     }
+
+    private fun validateIsNotNullAllAddress(request: AddressCreateServiceRequest) {
+        if (isNotNull(request.roadAddress) && isNotNull(request.inputAddress)) {
+            throw GlobalException(AddressErrorCode.INPUT_AND_ROAD_ADDRESS_BOTH_PRESENT)
+        }
+    }
+
+    private fun validateIsNullAllAddress(request: AddressCreateServiceRequest) {
+        if (isNull(request.roadAddress) && isNull(request.inputAddress)) {
+            throw GlobalException(AddressErrorCode.INPUT_AND_ROAD_ADDRESS_BOTH_NULL)
+        }
+    }
+
+    private fun isNull(value : Any?) =
+        value == null
+
+    private fun isNotNull(value : Any?) =
+        value != null
 
     private fun convertToStandardSiDo(inputSiDo: String?): String? {
         if(inputSiDo == null){

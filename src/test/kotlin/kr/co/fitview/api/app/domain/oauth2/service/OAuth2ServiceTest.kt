@@ -318,7 +318,8 @@ class OAuth2ServiceTest @Autowired constructor(
             postalCode = "06236",
             lat = 37.4979,
             lng = 127.0276,
-            roadAddress = "서울특별시 강남구 테헤란로 123"
+            roadAddress = "서울특별시 강남구 테헤란로 123",
+            inputAddress = null
         )
     ): OAuth2SignupServiceRequest {
         return OAuth2SignupServiceRequest(

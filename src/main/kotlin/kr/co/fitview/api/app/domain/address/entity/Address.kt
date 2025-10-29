@@ -1,5 +1,6 @@
 package kr.co.fitview.api.app.domain.address.entity
 
+import jakarta.annotation.Nullable
 import jakarta.persistence.*
 import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
@@ -19,22 +20,18 @@ class Address(
     var member: Member? = null,
 
     @Size(max = 50)
-    @NotNull
     @Column(name = "si_do", nullable = false, length = 50)
     var siDo: String? = null,
 
     @Size(max = 100)
-    @NotNull
     @Column(name = "si_gun_gu", nullable = false, length = 100)
     var siGunGu: String? = null,
 
     @Size(max = 100)
-    @NotNull
     @Column(name = "eup_myeon_dong", nullable = false, length = 100)
     var eupMyeonDong: String? = null,
 
     @Size(max = 20)
-    @NotNull
     @Column(name = "postal_code", nullable = false, length = 20)
     var postalCode: String? = null,
 
@@ -47,9 +44,12 @@ class Address(
     var lng: Double? = null,
 
     @Size(max = 255)
-    @NotNull
     @Column(name = "road_address", nullable = false)
-    var roadAddress: String? = null
+    var roadAddress: String? = null,
+
+    @Size(max = 255)
+    @Column(name = "input_address")
+    var inputAddress: String? = null
 
 ) : BaseEntity() {
     @Id
