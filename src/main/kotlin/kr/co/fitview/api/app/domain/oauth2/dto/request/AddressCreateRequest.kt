@@ -6,16 +6,12 @@ import kr.co.fitview.api.app.domain.address.dto.request.AddressCreateServiceRequ
 
 data class AddressCreateRequest(
 
-//    @field:NotBlank(message = "siDo is required")
     val siDo: String?,
 
-//    @field:NotBlank(message = "siGunGu is required")
     val siGunGu: String?,
 
-//    @field:NotBlank(message = "eupMyeonDong is required")
     val eupMyeonDong: String?,
 
-//    @field:NotBlank(message = "postalCode is required")
     val postalCode: String?,
 
     @field:NotNull(message = "lat is required")
@@ -24,8 +20,9 @@ data class AddressCreateRequest(
     @field:NotNull(message = "lng is required")
     val lng: Double?,
 
-//    @field:NotBlank(message = "roadAddress is required")
-    val roadAddress: String?
+    val roadAddress: String?,
+
+    val inputAddress : String?
 
     ){
     fun toServiceRequest(): AddressCreateServiceRequest {
@@ -36,7 +33,8 @@ data class AddressCreateRequest(
             postalCode = postalCode,
             lat = lat!!,
             lng = lng!!,
-            roadAddress = roadAddress
+            roadAddress = roadAddress,
+            inputAddress = inputAddress
         )
     }
 }

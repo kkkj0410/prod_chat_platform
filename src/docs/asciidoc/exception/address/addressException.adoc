@@ -8,4 +8,23 @@ include::{snippets}/ADDRESS_001/http-request.adoc[]
 include::{snippets}/ADDRESS_001/http-response.adoc[]
 include::{snippets}/ADDRESS_001/response-fields.adoc[]
 
+[[ADDRESS_002]]
+=== ADDRESS_002
+
+==== HTTP Request
+include::{snippets}/ADDRESS_002/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/ADDRESS_002/http-response.adoc[]
+include::{snippets}/ADDRESS_002/response-fields.adoc[]
+
+[[ADDRESS_003]]
+=== ADDRESS_003
+
+==== HTTP Request
+include::{snippets}/ADDRESS_003/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/ADDRESS_003/http-response.adoc[]
+include::{snippets}/ADDRESS_003/response-fields.adoc[]
 

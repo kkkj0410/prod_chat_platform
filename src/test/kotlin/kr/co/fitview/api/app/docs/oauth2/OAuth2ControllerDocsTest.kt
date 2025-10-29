@@ -228,7 +228,8 @@ class OAuth2ControllerDocsTest : RestDocsSupport() {
             postalCode = null,
             lat = 37.4979,
             lng = 127.0276,
-            roadAddress = null
+            roadAddress = null,
+            inputAddress = null
         )
     ): OAuth2SignupRequest {
         return OAuth2SignupRequest(
@@ -321,7 +322,9 @@ class OAuth2ControllerDocsTest : RestDocsSupport() {
                     fieldWithPath("address.lng").type(JsonFieldType.NUMBER)
                         .description("경도"),
                     fieldWithPath("address.roadAddress").type(JsonFieldType.STRING).optional()
-                        .description("도로명 전체 주소")
+                        .description("도로명 전체 주소"),
+                    fieldWithPath("address.inputAddress").type(JsonFieldType.STRING).optional()
+                        .description("사용자 입력 주소. 주소 API 썼을 때, 도로명 주소(roadAddress)가 없는데 주소가 조회되기는 한다면 roadAddress를 비우고 inputAddress 에다가 조회된 주소를 채움(화면에다가 도로명 주소 값이 없으면 inputAddress 값으로 채울 예정). roadAddress, inputAddress가 전부 null이거나, 전부 채워져있다면 오류 발생 ")
                 ),
 
                 responseFields(

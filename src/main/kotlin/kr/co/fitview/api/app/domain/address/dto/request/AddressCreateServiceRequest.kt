@@ -7,5 +7,6 @@ data class AddressCreateServiceRequest(
     val postalCode : String?,
     val lat : Double,
     val lng : Double,
-    val roadAddress : String?
+    val roadAddress : String?,
+    val inputAddress : String?
 )
