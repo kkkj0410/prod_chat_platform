@@ -1,8 +1,10 @@
 package kr.co.fitview.api.app.domain.address.service
 
 import kr.co.fitview.api.app.domain.address.dto.request.AddressCreateServiceRequest
+import kr.co.fitview.api.app.domain.address.dto.response.AddressResponse
 import kr.co.fitview.api.app.domain.address.entity.Address
 import kr.co.fitview.api.app.domain.address.repository.AddressRepository
+import kr.co.fitview.api.app.domain.member.dto.response.MemberMeResponse
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.address.AddressErrorCode
@@ -42,6 +44,10 @@ class AddressService(
         )
 
         return addressRepository.save(address)
+    }
+
+    fun findAddressFrom(addressId: Long): AddressResponse {
+        TODO("Not yet implemented")
     }
 
     private fun validateIsNotNullAllAddress(request: AddressCreateServiceRequest) {

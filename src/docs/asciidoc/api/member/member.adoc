@@ -8,3 +8,36 @@ include::{snippets}/member-me/request-headers.adoc[]
 ==== HTTP Response
 include::{snippets}/member-me/http-response.adoc[]
 include::{snippets}/member-me/response-fields.adoc[]
+
+[[member-address-details]]
+=== 본인 주소 조회 API
+
+==== HTTP Request
+include::{snippets}/member-address-details/http-request.adoc[]
+include::{snippets}/member-address-details/request-headers.adoc[]
+
+==== HTTP Response
+include::{snippets}/member-address-details/http-response.adoc[]
+include::{snippets}/member-address-details/response-fields.adoc[]
+
+[[member-recommendation]]
+=== 추천 핏버디 API
+
+==== HTTP Request
+include::{snippets}/member-recommendation/http-request.adoc[]
+include::{snippets}/member-recommendation/request-headers.adoc[]
+
+==== HTTP Response
+include::{snippets}/member-recommendation/http-response.adoc[]
+include::{snippets}/member-recommendation/response-fields.adoc[]
+
+[[member-local]]
+=== 우리 동네 핏버디 API
+
+==== HTTP Request
+include::{snippets}/member-local/http-request.adoc[]
+include::{snippets}/member-local/request-headers.adoc[]
+
+==== HTTP Response
+include::{snippets}/member-local/http-response.adoc[]
+include::{snippets}/member-local/response-fields.adoc[]

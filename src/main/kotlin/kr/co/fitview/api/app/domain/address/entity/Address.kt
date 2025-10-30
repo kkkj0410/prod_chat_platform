@@ -49,14 +49,17 @@ class Address(
 
     @Size(max = 255)
     @Column(name = "input_address")
-    var inputAddress: String? = null
+    var inputAddress: String? = null,
+
+    @ColumnDefault("5")
+    @Column(name = "radius")
+    var radius: Double? = null
 
 ) : BaseEntity() {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "address_id", nullable = false)
     var id: Long? = null
-
 
     fun delete(now : LocalDateTime) : Address{
         this.deletedAt = now
