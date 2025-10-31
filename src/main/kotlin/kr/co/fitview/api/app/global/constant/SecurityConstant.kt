@@ -16,6 +16,7 @@ object SecurityConstant {
         "$API_BASE/members/**",
         "$API_BASE/images/presign",
         "$API_BASE/oauth2/signup",
+        "$API_BASE/addresses/**",
     )
 
     val PERMIT_ALL_URIS: List<String> = listOf(

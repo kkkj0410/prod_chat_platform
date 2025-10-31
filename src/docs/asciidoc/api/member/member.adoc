@@ -8,3 +8,39 @@ include::{snippets}/member-me/request-headers.adoc[]
 ==== HTTP Response
 include::{snippets}/member-me/http-response.adoc[]
 include::{snippets}/member-me/response-fields.adoc[]
+
+[[member-address-details]]
+=== 본인 주소 조회 API
+
+==== HTTP Request
+include::{snippets}/member-address-details/http-request.adoc[]
+include::{snippets}/member-address-details/request-headers.adoc[]
+
+==== HTTP Response
+include::{snippets}/member-address-details/http-response.adoc[]
+include::{snippets}/member-address-details/response-fields.adoc[]
+
+[[member-recommendation]]
+=== 추천 핏버디 API
+홈 화면 - 추천 핏버디. 회원 좌표 인근 반경안에 있는 회원 조회(정책에 따라, 반경 안에 없는 회원도 조회될 수 있음. 최대 10개 조회)
+
+==== HTTP Request
+include::{snippets}/member-recommendation/http-request.adoc[]
+include::{snippets}/member-recommendation/request-headers.adoc[]
+
+==== HTTP Response
+include::{snippets}/member-recommendation/http-response.adoc[]
+include::{snippets}/member-recommendation/response-fields.adoc[]
+
+[[member-local]]
+=== 우리 동네 핏버디 API
+홈 화면 - 우리 동네 핏버디. 회원 좌표 인근 반경안에 있는 회원 조회(정책에 따라, 반경 안에 없는 회원도 조회될 수 있음.)
+
+==== HTTP Request
+include::{snippets}/member-local/http-request.adoc[]
+include::{snippets}/member-local/request-headers.adoc[]
+include::{snippets}/member-local/query-parameters.adoc[]
+
+==== HTTP Response
+include::{snippets}/member-local/http-response.adoc[]
+include::{snippets}/member-local/response-fields.adoc[]

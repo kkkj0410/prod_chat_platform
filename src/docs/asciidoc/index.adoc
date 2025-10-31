@@ -30,5 +30,10 @@ include::api/member/member.adoc[]
 
 include::api/image/image.adoc[]
 
+[[Address-API]]
+== Address API
+
+include::api/address/address.adoc[]
+
 
 
