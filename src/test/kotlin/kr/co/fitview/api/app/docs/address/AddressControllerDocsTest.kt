@@ -167,7 +167,7 @@ class AddressControllerDocsTest : RestDocsSupport() {
 
         // when // then
         mockMvc.perform(
-            patch("/api/v1/addresses/{addressId}", 1)
+            patch("/api/v1/addresses/{addressId}/radius", 1)
                 .content(objectMapper.writeValueAsString(request))
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Bearer jwt-token")

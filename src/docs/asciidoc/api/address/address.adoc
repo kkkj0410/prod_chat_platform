@@ -10,7 +10,7 @@ include::{snippets}/address-detail/http-response.adoc[]
 include::{snippets}/address-detail/response-fields.adoc[]
 
 [[address-update]]
-=== 회원 전체 주소 변경 API
+=== 회원 주소 변경 API
 
 ==== HTTP Request
 include::{snippets}/address-update/http-request.adoc[]
@@ -22,7 +22,7 @@ include::{snippets}/address-update/http-response.adoc[]
 include::{snippets}/address-update/response-fields.adoc[]
 
 [[address-radius-update]]
-=== 회원 전체 주소 변경 API
+=== 회원 주소 반경 변경 API
 
 ==== HTTP Request
 include::{snippets}/address-radius-update/http-request.adoc[]

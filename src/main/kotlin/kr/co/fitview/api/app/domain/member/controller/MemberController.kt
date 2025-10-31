@@ -1,5 +1,7 @@
 package kr.co.fitview.api.app.domain.member.controller
 
+import kr.co.fitview.api.app.domain.member.condition.MemberLocalCondition
+import kr.co.fitview.api.app.domain.member.dto.request.Age
 import kr.co.fitview.api.app.domain.member.dto.response.MemberAddressResponse
 import kr.co.fitview.api.app.domain.member.dto.response.MemberLocalResponse
 import kr.co.fitview.api.app.domain.member.dto.response.MemberMeResponse
@@ -62,24 +64,8 @@ class MemberController(
 
     @GetMapping("/local")
     fun memberLocalList(
-
-        @RequestParam(defaultValue = "10")
-        size : Int,
-
-        @RequestParam(defaultValue = "1")
-        page : Int,
-
-        @RequestParam
-        workoutExperience: List<MemberWorkoutExperience>,
-
-        @RequestParam
-        workoutStyle: MemberWorkoutStyle,
-
-        @RequestParam
-        workoutGoal : MemberWorkoutGoal,
-
-        // QnA 이후 진행
-
+        @ModelAttribute
+        condition : MemberLocalCondition
 
         ) : ResponseEntity<ApiResponse<SuccessPagedResponse<MemberLocalResponse>>> {
         val response = listOf(

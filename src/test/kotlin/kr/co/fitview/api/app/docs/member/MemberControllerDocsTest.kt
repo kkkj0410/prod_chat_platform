@@ -11,6 +11,7 @@ import kr.co.fitview.api.app.domain.auth.dto.request.MemberLoginRequest
 import kr.co.fitview.api.app.domain.auth.dto.response.MemberLoginResponse
 import kr.co.fitview.api.app.domain.auth.service.AuthService
 import kr.co.fitview.api.app.domain.member.controller.MemberController
+import kr.co.fitview.api.app.domain.member.dto.request.Age
 import kr.co.fitview.api.app.domain.member.dto.request.MemberLoginServiceRequest
 import kr.co.fitview.api.app.domain.member.dto.response.MemberMeResponse
 import kr.co.fitview.api.app.domain.member.dto.response.MemberRecommendationResponse
@@ -37,6 +38,9 @@ import org.springframework.restdocs.payload.JsonFieldType
 import org.springframework.restdocs.payload.PayloadDocumentation.*
 import org.springframework.restdocs.request.RequestDocumentation.parameterWithName
 import org.springframework.restdocs.request.RequestDocumentation.pathParameters
+
+import org.springframework.restdocs.request.RequestDocumentation.queryParameters
+
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
@@ -187,6 +191,17 @@ class MemberControllerDocsTest : RestDocsSupport() {
         mockMvc.perform(
             get("/api/v1/members/local")
                 .header("Authorization", "Bearer jwt-token")
+                .param("size", "10")
+                .param("page", "1")
+                .param("workoutExperienceStart", "JUST_STARTED")
+                .param("workoutExperienceEnd", "ONE_TO_THREE_YEARS")
+                .param("workoutStyle", "CARDIO", "PERFORMANCE")
+                .param("workoutGoal", "WEIGHT_LOSS", "STRENGTH_GAIN")
+                .param("age", "TWENTIES_EARLY", "TWENTIES_MID")
+                .param("heightStart", "170")
+                .param("heightEnd", "180")
+                .param("weightStart", "60")
+                .param("weightEnd", "75")
         )
             .andDo(print())
             .andExpect(status().isOk())
@@ -196,6 +211,31 @@ class MemberControllerDocsTest : RestDocsSupport() {
 
                 requestHeaders(
                     RestDocsHeaders.authorizationHeader(Role.USER)
+                ),
+
+                queryParameters(
+                    parameterWithName("size").optional()
+                        .description("(Optional - default 10) 조회 크기"),
+                    parameterWithName("page").optional()
+                        .description("(Optional - default 1) 조회 페이지 - 시작 1page"),
+                    parameterWithName("workoutExperienceStart").optional()
+                        .description("(Optional) 운동 경험 시작 지점" + MemberWorkoutExperience.allDescription()),
+                    parameterWithName("workoutExperienceEnd").optional()
+                        .description("(Optional) 운동 경험 끝 지점" + MemberWorkoutExperience.allDescription()),
+                    parameterWithName("workoutStyle").optional()
+                        .description("(Optional)" + MemberWorkoutStyle.allDescription()),
+                    parameterWithName("workoutGoal").optional()
+                        .description("(Optional)" + MemberWorkoutGoal.allDescription()),
+                    parameterWithName("age").optional()
+                        .description("(Optional)" + Age.allDescription()),
+                    parameterWithName("heightStart").optional()
+                        .description("(Optional) 키 최소값"),
+                    parameterWithName("heightEnd").optional()
+                        .description("(Optional) 키 최대값"),
+                    parameterWithName("weightStart").optional()
+                        .description("(Optional) 몸무게 최소값"),
+                    parameterWithName("weightEnd").optional()
+                        .description("(Optional) 몸무게 최대값")
                 ),
 
                 responseFields(
