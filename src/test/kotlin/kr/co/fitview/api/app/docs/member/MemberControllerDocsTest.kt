@@ -135,6 +135,8 @@ class MemberControllerDocsTest : RestDocsSupport() {
                         .description("에러 메시지"),
                     fieldWithPath("data").type(JsonFieldType.OBJECT)
                         .description("응답 데이터"),
+                    fieldWithPath("data.addressId").type(JsonFieldType.NUMBER)
+                        .description("해당 주소 id"),
                     fieldWithPath("data.address").type(JsonFieldType.STRING)
                         .description("회원 전체 주소. 도로명 주소 or 사용자가 입력한 주소값이 해당 장소에 옴. 서울 외 지역 사람은 서울시 서초구 서초동으로 반환"),
                 )
