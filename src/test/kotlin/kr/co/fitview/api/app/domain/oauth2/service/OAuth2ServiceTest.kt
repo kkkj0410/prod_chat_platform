@@ -315,11 +315,9 @@ class OAuth2ServiceTest @Autowired constructor(
             siDo = "서울특별시",
             siGunGu = "강남구",
             eupMyeonDong = "역삼동",
-            postalCode = "06236",
             lat = 37.4979,
             lng = 127.0276,
-            roadAddress = "서울특별시 강남구 테헤란로 123",
-            inputAddress = null
+            fullAddress = "서울특별시 강남구 테헤란로 123"
         )
     ): OAuth2SignupServiceRequest {
         return OAuth2SignupServiceRequest(
@@ -399,8 +397,8 @@ class OAuth2ServiceTest @Autowired constructor(
         val findAddresses = addressRepository.findAllByMemberIdAndDeletedAtIsNull(savedMember.id!!)
         assertThat(findAddresses).hasSize(1)
         assertThat(findAddresses[0])
-            .extracting("member", "siDo", "siGunGu", "eupMyeonDong", "postalCode", "lat", "lng", "roadAddress")
-            .containsExactly(savedMember, "서울특별시", "강남구", "역삼동", "06236", 37.4979, 127.0276, "서울특별시 강남구 테헤란로 123")
+            .extracting("member", "siDo", "siGunGu", "eupMyeonDong", "lat", "lng", "fullAddress")
+            .containsExactly(savedMember, "서울특별시", "강남구", "역삼동", 37.4979, 127.0276, "서울특별시 강남구 테헤란로 123")
     }
 
     @DisplayName("소셜 로그인 회원가입을 중복해서 하면 회원 정보 등록을 거부한다.")

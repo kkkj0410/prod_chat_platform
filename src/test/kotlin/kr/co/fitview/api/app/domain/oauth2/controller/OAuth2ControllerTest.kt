@@ -135,11 +135,9 @@ class OAuth2ControllerTest : ControllerTestSupport(){
             siDo = "서울특별시",
             siGunGu = "강남구",
             eupMyeonDong = "역삼동",
-            postalCode = "06236",
             lat = 37.4979,
             lng = 127.0276,
-            roadAddress = "서울특별시 강남구 테헤란로 123",
-            inputAddress = null
+            fullAddress = "서울특별시 강남구 테헤란로 123",
         )
     ): OAuth2SignupRequest {
         return OAuth2SignupRequest(

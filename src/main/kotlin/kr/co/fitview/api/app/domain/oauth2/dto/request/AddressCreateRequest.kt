@@ -12,17 +12,14 @@ data class AddressCreateRequest(
 
     val eupMyeonDong: String?,
 
-    val postalCode: String?,
-
     @field:NotNull(message = "lat is required")
     val lat: Double?,
 
     @field:NotNull(message = "lng is required")
     val lng: Double?,
 
-    val roadAddress: String?,
-
-    val inputAddress : String?
+    @field:NotBlank(message = "fullAddress is required")
+    val fullAddress: String
 
     ){
     fun toServiceRequest(): AddressCreateServiceRequest {
@@ -30,11 +27,9 @@ data class AddressCreateRequest(
             siDo = siDo,
             siGunGu = siGunGu,
             eupMyeonDong = eupMyeonDong,
-            postalCode = postalCode,
             lat = lat!!,
             lng = lng!!,
-            roadAddress = roadAddress,
-            inputAddress = inputAddress
+            fullAddress = fullAddress,
         )
     }
 }

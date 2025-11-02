@@ -31,10 +31,6 @@ class Address(
     @Column(name = "eup_myeon_dong", nullable = false, length = 100)
     var eupMyeonDong: String? = null,
 
-    @Size(max = 20)
-    @Column(name = "postal_code", nullable = false, length = 20)
-    var postalCode: String? = null,
-
     @NotNull
     @Column(name = "lat", nullable = false)
     var lat: Double? = null,
@@ -44,12 +40,9 @@ class Address(
     var lng: Double? = null,
 
     @Size(max = 255)
-    @Column(name = "road_address", nullable = false)
-    var roadAddress: String? = null,
-
-    @Size(max = 255)
-    @Column(name = "input_address")
-    var inputAddress: String? = null,
+    @NotNull
+    @Column(name = "full_address", nullable = false)
+    var fullAddress: String? = null,
 
     @ColumnDefault("5")
     @Column(name = "radius")
@@ -60,6 +53,7 @@ class Address(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "address_id", nullable = false)
     var id: Long? = null
+
 
     fun delete(now : LocalDateTime) : Address{
         this.deletedAt = now

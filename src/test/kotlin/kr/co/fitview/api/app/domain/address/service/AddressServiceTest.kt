@@ -40,11 +40,9 @@ class AddressServiceTest @Autowired constructor(
             siDo = "서울특별시",
             siGunGu = "강남구",
             eupMyeonDong = "역삼동",
-            postalCode = "1234",
             lat = 123.123,
             lng = 987.987,
-            roadAddress = "roadAddress",
-            inputAddress = null
+            fullAddress = "fullAddress"
         )
 
         // when
@@ -53,8 +51,8 @@ class AddressServiceTest @Autowired constructor(
         // then
         assertThat(savedAddress.id).isNotNull()
         assertThat(savedAddress)
-            .extracting("siDo", "siGunGu", "eupMyeonDong", "postalCode", "lat", "lng", "roadAddress")
-            .contains(request.siDo, request.siGunGu, request.eupMyeonDong, request.postalCode, request.lat, request.lng, request.roadAddress)
+            .extracting("siDo", "siGunGu", "eupMyeonDong", "lat", "lng", "fullAddress")
+            .contains(request.siDo, request.siGunGu, request.eupMyeonDong, request.lat, request.lng, request.fullAddress)
     }
 
     @DisplayName("회원에게 이미 주소가 있다면, 해당 주소를 삭제하고 새로 만든다.")
@@ -73,10 +71,9 @@ class AddressServiceTest @Autowired constructor(
             siDo = "서울특별시",
             siGunGu = "강남구",
             eupMyeonDong = "테헤란로",
-            postalCode = "1234",
             lat = 10.123,
             lng = 10.234,
-            roadAddress = "roadAddress"
+            fullAddress = "fullAddress"
         )
         addressRepository.save(address)
 
@@ -84,11 +81,9 @@ class AddressServiceTest @Autowired constructor(
             siDo = "서울특별시",
             siGunGu = "강남구",
             eupMyeonDong = "역삼동",
-            postalCode = "1234",
             lat = 123.123,
             lng = 987.987,
-            roadAddress = "roadAddress",
-            inputAddress = null
+            fullAddress = "fullAddress"
         )
 
         // when
@@ -97,8 +92,8 @@ class AddressServiceTest @Autowired constructor(
         // then
         assertThat(savedAddress.id).isNotNull()
         assertThat(savedAddress)
-            .extracting("siDo", "siGunGu", "eupMyeonDong", "postalCode", "lat", "lng", "roadAddress")
-            .contains(request.siDo, request.siGunGu, request.eupMyeonDong, request.postalCode, request.lat, request.lng, request.roadAddress)
+            .extracting("siDo", "siGunGu", "eupMyeonDong", "lat", "lng", "fullAddress")
+            .contains(request.siDo, request.siGunGu, request.eupMyeonDong, request.lat, request.lng, request.fullAddress)
     }
 
     @DisplayName("회원의 주소 저장 시, 시/도가 표준에 맞지 않으면 표준으로 바꿔서 저장한다.")
@@ -117,11 +112,9 @@ class AddressServiceTest @Autowired constructor(
             siDo = siDo,
             siGunGu = "강남구",
             eupMyeonDong = "역삼동",
-            postalCode = "1234",
             lat = 123.123,
             lng = 987.987,
-            roadAddress = "roadAddress",
-            inputAddress = null
+            fullAddress = "fullAddress",
         )
 
         // when
@@ -130,8 +123,8 @@ class AddressServiceTest @Autowired constructor(
         // then
         assertThat(savedAddress.id).isNotNull()
         assertThat(savedAddress)
-            .extracting("siDo", "siGunGu", "eupMyeonDong", "postalCode", "lat", "lng", "roadAddress")
-            .contains(standardSiDo, request.siGunGu, request.eupMyeonDong, request.postalCode, request.lat, request.lng, request.roadAddress)
+            .extracting("siDo", "siGunGu", "eupMyeonDong", "lat", "lng", "fullAddress")
+            .contains(standardSiDo, request.siGunGu, request.eupMyeonDong, request.lat, request.lng, request.fullAddress)
     }
 
     @DisplayName("회원의 주소 저장 시, 시/도가 한국 특정 시/도 장소로 추정할 수 없으면 저장하지 않는다.")
@@ -150,11 +143,9 @@ class AddressServiceTest @Autowired constructor(
             siDo = siDo,
             siGunGu = "강남구",
             eupMyeonDong = "역삼동",
-            postalCode = "1234",
             lat = 123.123,
             lng = 987.987,
-            roadAddress = "roadAddress",
-            inputAddress = null
+            fullAddress = "fullAddress"
         )
 
         // when & then
@@ -169,74 +160,72 @@ class AddressServiceTest @Autowired constructor(
             })
     }
 
-    @DisplayName("회원의 주소 저장 시, 도로명 주소와 사용자 입력 주소 모두 비어있으면 안된다")
-    @Test
-    fun addAddressRoadAddressOrInputAddress() {
+//    @DisplayName("회원의 주소 저장 시, 도로명 주소와 사용자 입력 주소 모두 비어있으면 안된다")
+//    @Test
+//    fun addAddressRoadAddressOrInputAddress() {
+//
+//        // given
+//        val member = Member(
+//            email = "email",
+//            password = "password",
+//            role = Role.USER,
+//        )
+//        memberRepository.save(member)
+//
+//        val request = AddressCreateServiceRequest(
+//            siDo = "서울특별시",
+//            siGunGu = "강남구",
+//            eupMyeonDong = "역삼동",
+//            lat = 123.123,
+//            lng = 987.987,
+//            fullAddress = "fullAddress"
+//        )
+//
+//        // when & then
+//        assertThatThrownBy {
+//            addressService.addAddress(member, request)
+//        }
+//            .isInstanceOf(GlobalException::class.java)
+//            .satisfies(ThrowingConsumer { ex ->
+//                val globalEx = ex as GlobalException
+//                assertThat(globalEx.errorCode)
+//                    .isEqualTo(AddressErrorCode.INPUT_AND_ROAD_ADDRESS_BOTH_NULL)
+//            })
+//    }
 
-        // given
-        val member = Member(
-            email = "email",
-            password = "password",
-            role = Role.USER,
-        )
-        memberRepository.save(member)
-
-        val request = AddressCreateServiceRequest(
-            siDo = "서울특별시",
-            siGunGu = "강남구",
-            eupMyeonDong = "역삼동",
-            postalCode = "1234",
-            lat = 123.123,
-            lng = 987.987,
-            roadAddress = null,
-            inputAddress = null
-        )
-
-        // when & then
-        assertThatThrownBy {
-            addressService.addAddress(member, request)
-        }
-            .isInstanceOf(GlobalException::class.java)
-            .satisfies(ThrowingConsumer { ex ->
-                val globalEx = ex as GlobalException
-                assertThat(globalEx.errorCode)
-                    .isEqualTo(AddressErrorCode.INPUT_AND_ROAD_ADDRESS_BOTH_NULL)
-            })
-    }
-
-    @DisplayName("회원의 주소 저장 시, 도로명 주소와 사용자 입력 주소가 모두 비어있으면 안된다.")
-    @Test
-    fun addAddressIsNullRoadAddressAndInputAddress() {
-        // given
-        val member = Member(
-            email = "email",
-            password = "password",
-            role = Role.USER,
-        )
-        memberRepository.save(member)
-
-        val request = AddressCreateServiceRequest(
-            siDo = "서울특별시",
-            siGunGu = "강남구",
-            eupMyeonDong = "역삼동",
-            postalCode = "1234",
-            lat = 123.123,
-            lng = 987.987,
-            roadAddress = "roadAddress",
-            inputAddress = "inputAddress"
-        )
-
-        // when & then
-        assertThatThrownBy {
-            addressService.addAddress(member, request)
-        }
-            .isInstanceOf(GlobalException::class.java)
-            .satisfies(ThrowingConsumer { ex ->
-                val globalEx = ex as GlobalException
-                assertThat(globalEx.errorCode)
-                    .isEqualTo(AddressErrorCode.INPUT_AND_ROAD_ADDRESS_BOTH_PRESENT)
-            })
-    }
+//    @DisplayName("회원의 주소 저장 시, 도로명 주소와 사용자 입력 주소가 모두 비어있으면 안된다.")
+//    @Test
+//    fun addAddressIsNullRoadAddressAndInputAddress() {
+//        // given
+//        val member = Member(
+//            email = "email",
+//            password = "password",
+//            role = Role.USER,
+//        )
+//        memberRepository.save(member)
+//
+//        val request = AddressCreateServiceRequest(
+//            siDo = "서울특별시",
+//            siGunGu = "강남구",
+//            eupMyeonDong = "역삼동",
+//            postalCode = "1234",
+//            lat = 123.123,
+//            lng = 987.987,
+//            roadAddress = "roadAddress",
+//            inputAddress = "inputAddress"
+//        )
+//
+//        // when & then
+//        assertThatThrownBy {
+//            addressService.addAddress(member, request)
+//        }
+//            .isInstanceOf(GlobalException::class.java)
+//            .satisfies(ThrowingConsumer { ex ->
+//                val globalEx = ex as GlobalException
+//                assertThat(globalEx.errorCode)
+//                    .isEqualTo(AddressErrorCode.INPUT_AND_ROAD_ADDRESS_BOTH_PRESENT)
+//            })
+//    }
 
 
 

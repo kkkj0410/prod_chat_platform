@@ -75,8 +75,8 @@ class AddressControllerDocsTest : RestDocsSupport() {
                     .description("에러 메시지"),
                 fieldWithPath("data").type(JsonFieldType.OBJECT)
                     .description("응답 데이터"),
-                fieldWithPath("data.address").type(JsonFieldType.STRING)
-                    .description("회원 전체 주소. 도로명 주소 or 사용자가 입력한 주소값이 해당 장소에 옴. 서울 외 지역 사람은 서울시 서초구 서초동으로 반환"),
+                fieldWithPath("data.fullAddress").type(JsonFieldType.STRING)
+                    .description("회원 전체 주소. 서울 외 지역 사람은 서울시 서초구 서초동으로 반환"),
                 fieldWithPath("data.lat").type(JsonFieldType.NUMBER)
                     .description("위도. 서울 외 지역 사람은 37.4900861966502"),
                 fieldWithPath("data.lng").type(JsonFieldType.NUMBER)
@@ -94,11 +94,9 @@ class AddressControllerDocsTest : RestDocsSupport() {
             siDo = "서울특별시",
             siGunGu = "강남구",
             eupMyeonDong = "역삼동",
-            postalCode = "06234",
             lat = 37.4995539438207,
             lng = 127.031393491745,
-            roadAddress = "서울 강남구 테헤란로 123",
-            inputAddress = null
+            fullAddress = "서울 강남구 테헤란로 123",
         )
 
         // when // then
@@ -136,10 +134,8 @@ class AddressControllerDocsTest : RestDocsSupport() {
                     .description("위도"),
                 fieldWithPath("lng").type(JsonFieldType.NUMBER)
                     .description("경도"),
-                fieldWithPath("roadAddress").type(JsonFieldType.STRING).optional()
-                    .description("도로명 전체 주소"),
-                fieldWithPath("inputAddress").type(JsonFieldType.STRING).optional()
-                    .description("사용자 입력 주소. 주소 API 썼을 때, 도로명 주소(roadAddress)가 없는데 주소가 조회되기는 한다면 roadAddress를 비우고 inputAddress 에다가 조회된 주소를 채움(화면에다가 도로명 주소 값이 없으면 inputAddress 값으로 채울 예정). roadAddress, inputAddress가 전부 null이거나, 전부 채워져있다면 오류 발생 ")
+                fieldWithPath("fullAddress").type(JsonFieldType.STRING).optional()
+                    .description("전체 주소. 상세 주소(oo아파트 몇호) 제외. 법정동/행정동/도로명 기반 구분없이 전체 주소 받음"),
             ),
 
             responseFields(

@@ -33,20 +33,18 @@ class AddressRepositoryTest @Autowired constructor(
             siDo = "siDo1",
             siGunGu = "siGunGu1",
             eupMyeonDong = "테헤란로",
-            postalCode = "1234",
             lat = 10.123,
             lng = 10.234,
-            roadAddress = "roadAddress"
+            fullAddress = "fullAddress"
         )
         val address2 = Address(
             member = member,
             siDo = "siDo2",
             siGunGu = "siGunGu2",
             eupMyeonDong = "테헤란로2",
-            postalCode = "123445564",
             lat = 10.123,
             lng = 10.234,
-            roadAddress = "roadAddress"
+            fullAddress = "fullAddress"
         )
         addressRepository.save(address1)
         addressRepository.save(address2)
