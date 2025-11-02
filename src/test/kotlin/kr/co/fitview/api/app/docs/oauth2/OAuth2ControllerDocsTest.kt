@@ -313,8 +313,6 @@ class OAuth2ControllerDocsTest : RestDocsSupport() {
                         .description("시/군/구"),
                     fieldWithPath("address.eupMyeonDong").type(JsonFieldType.STRING).optional()
                         .description("읍/면/동"),
-                    fieldWithPath("address.postalCode").type(JsonFieldType.STRING).optional()
-                        .description("우편번호"),
                     fieldWithPath("address.lat").type(JsonFieldType.NUMBER)
                         .description("위도"),
                     fieldWithPath("address.lng").type(JsonFieldType.NUMBER)
