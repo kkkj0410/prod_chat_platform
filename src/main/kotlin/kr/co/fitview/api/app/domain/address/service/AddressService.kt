@@ -1,10 +1,8 @@
 package kr.co.fitview.api.app.domain.address.service
 
 import kr.co.fitview.api.app.domain.address.dto.request.AddressCreateServiceRequest
-import kr.co.fitview.api.app.domain.address.dto.response.AddressResponse
 import kr.co.fitview.api.app.domain.address.entity.Address
 import kr.co.fitview.api.app.domain.address.repository.AddressRepository
-import kr.co.fitview.api.app.domain.member.dto.response.MemberMeResponse
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.address.AddressErrorCode
@@ -23,9 +21,9 @@ class AddressService(
     @Transactional
     fun addAddress(member : Member, request : AddressCreateServiceRequest) : Address {
 
-        validateIsNullAllAddress(request)
+//        validateIsNullAllAddress(request)
 
-        validateIsNotNullAllAddress(request)
+//        validateIsNotNullAllAddress(request)
 
         val findAddresses = addressRepository.findAllByMemberIdAndDeletedAtIsNull(member.id!!)
 
@@ -36,37 +34,35 @@ class AddressService(
             siDo = convertToStandardSiDo(request.siDo),
             siGunGu = request.siGunGu,
             eupMyeonDong = request.eupMyeonDong,
-            postalCode = request.postalCode,
             lat = request.lat,
             lng = request.lng,
-            roadAddress = request.roadAddress,
-            inputAddress = request.inputAddress
+            fullAddress = request.fullAddress
         )
 
         return addressRepository.save(address)
     }
 
-    fun findAddressFrom(addressId: Long): AddressResponse {
-        TODO("Not yet implemented")
-    }
+//    fun findAddressFrom(addressId: Long): AddressResponse {
+//        TODO("Not yet implemented")
+//    }
 
-    private fun validateIsNotNullAllAddress(request: AddressCreateServiceRequest) {
-        if (isNotNull(request.roadAddress) && isNotNull(request.inputAddress)) {
-            throw GlobalException(AddressErrorCode.INPUT_AND_ROAD_ADDRESS_BOTH_PRESENT)
-        }
-    }
+//    private fun validateIsNotNullAllAddress(request: AddressCreateServiceRequest) {
+//        if (isNotNull(request.roadAddress) && isNotNull(request.inputAddress)) {
+//            throw GlobalException(AddressErrorCode.INPUT_AND_ROAD_ADDRESS_BOTH_PRESENT)
+//        }
+//    }
 
-    private fun validateIsNullAllAddress(request: AddressCreateServiceRequest) {
-        if (isNull(request.roadAddress) && isNull(request.inputAddress)) {
-            throw GlobalException(AddressErrorCode.INPUT_AND_ROAD_ADDRESS_BOTH_NULL)
-        }
-    }
+//    private fun validateIsNullAllAddress(request: AddressCreateServiceRequest) {
+//        if (isNull(request.roadAddress) && isNull(request.inputAddress)) {
+//            throw GlobalException(AddressErrorCode.INPUT_AND_ROAD_ADDRESS_BOTH_NULL)
+//        }
+//    }
 
-    private fun isNull(value : Any?) =
-        value == null
-
-    private fun isNotNull(value : Any?) =
-        value != null
+//    private fun isNull(value : Any?) =
+//        value == null
+//
+//    private fun isNotNull(value : Any?) =
+//        value != null
 
     private fun convertToStandardSiDo(inputSiDo: String?): String? {
         if(inputSiDo == null){

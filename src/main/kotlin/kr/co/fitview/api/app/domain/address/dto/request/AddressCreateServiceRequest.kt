@@ -4,9 +4,7 @@ data class AddressCreateServiceRequest(
     val siDo : String?,
     val siGunGu : String?,
     val eupMyeonDong : String?,
-    val postalCode : String?,
     val lat : Double,
     val lng : Double,
-    val roadAddress : String?,
-    val inputAddress : String?
+    val fullAddress : String
 )

@@ -4,10 +4,7 @@ import kr.co.fitview.api.app.domain.address.dto.request.AddressRadiusRequest
 import kr.co.fitview.api.app.domain.address.dto.request.AddressUpdateRequest
 import kr.co.fitview.api.app.domain.address.dto.response.AddressResponse
 import kr.co.fitview.api.app.domain.address.service.AddressService
-import kr.co.fitview.api.app.domain.member.dto.response.MemberMeResponse
-import kr.co.fitview.api.app.domain.member.service.MemberService
 import kr.co.fitview.api.app.global.dto.ApiResponse
-import kr.co.fitview.api.app.global.util.SecurityUtil
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
@@ -26,7 +23,7 @@ class AddressController(
 //        val response = addressService.findAddressFrom(addressId)
 
         val response = AddressResponse(
-            address = "서울특별시 강남구 역삼동 테헤란로 123",
+            fullAddress = "서울특별시 강남구 역삼동 테헤란로 123",
             lat = 37.4995539438207,
             lng = 127.031393491745
         )
