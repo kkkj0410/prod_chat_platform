@@ -128,13 +128,11 @@ class AddressControllerDocsTest : RestDocsSupport() {
                     .description("시/군/구"),
                 fieldWithPath("eupMyeonDong").type(JsonFieldType.STRING).optional()
                     .description("읍/면/동"),
-                fieldWithPath("postalCode").type(JsonFieldType.STRING).optional()
-                    .description("우편번호"),
                 fieldWithPath("lat").type(JsonFieldType.NUMBER)
                     .description("위도"),
                 fieldWithPath("lng").type(JsonFieldType.NUMBER)
                     .description("경도"),
-                fieldWithPath("fullAddress").type(JsonFieldType.STRING).optional()
+                fieldWithPath("fullAddress").type(JsonFieldType.STRING)
                     .description("전체 주소. 상세 주소(oo아파트 몇호) 제외. 법정동/행정동/도로명 기반 구분없이 전체 주소 받음"),
             ),
 

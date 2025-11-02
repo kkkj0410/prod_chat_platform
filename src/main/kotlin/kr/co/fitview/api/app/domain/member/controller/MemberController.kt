@@ -1,8 +1,6 @@
 package kr.co.fitview.api.app.domain.member.controller
 
-import kr.co.fitview.api.app.domain.address.entity.QAddress.address
 import kr.co.fitview.api.app.domain.member.condition.MemberLocalCondition
-import kr.co.fitview.api.app.domain.member.dto.request.Age
 import kr.co.fitview.api.app.domain.member.dto.response.MemberAddressResponse
 import kr.co.fitview.api.app.domain.member.dto.response.MemberLocalResponse
 import kr.co.fitview.api.app.domain.member.dto.response.MemberMeResponse
@@ -42,7 +40,7 @@ class MemberController(
     ) : ResponseEntity<ApiResponse<MemberAddressResponse>> {
         val response = MemberAddressResponse(
             addressId = 100L,
-            address = "서울특별시 강남구 테헤란로 123"
+            fullAddress = "서울특별시 강남구 테헤란로 123"
         )
         return ResponseEntity.ok(ApiResponse.success(response))
     }
