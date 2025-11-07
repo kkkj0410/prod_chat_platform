@@ -67,7 +67,7 @@ class MemberService(
 
     fun findMemberMe(memberId: Long): MemberMeResponse {
         val findMember = findMemberOrElseThrow(memberId)
-        return MemberMeResponse(findMember.email!!, findMember.role!!)
+        return MemberMeResponse(findMember.id!!, findMember.email!!, findMember.role!!)
     }
 
     private fun validateDuplicatedEmail(member: Member) {

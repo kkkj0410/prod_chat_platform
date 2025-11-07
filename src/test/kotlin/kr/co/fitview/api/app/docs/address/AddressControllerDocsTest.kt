@@ -75,8 +75,12 @@ class AddressControllerDocsTest : RestDocsSupport() {
                     .description("에러 메시지"),
                 fieldWithPath("data").type(JsonFieldType.OBJECT)
                     .description("응답 데이터"),
-                fieldWithPath("data.fullAddress").type(JsonFieldType.STRING)
-                    .description("회원 전체 주소. 서울 외 지역 사람은 서울시 서초구 서초동으로 반환"),
+                fieldWithPath("data.siDo").type(JsonFieldType.STRING)
+                    .description("회원 시/도. 서울 외 지역 사람은 서울특별시로 반환"),
+                fieldWithPath("data.siGunGu").type(JsonFieldType.STRING)
+                    .description("회원 시/군/구. 서울 외 지역 사람은 서초구로 반환"),
+                fieldWithPath("data.eupMyeonDong").type(JsonFieldType.STRING)
+                    .description("회원 읍/면/동. 서울 외 지역 사람은 서초동으로 반환"),
                 fieldWithPath("data.lat").type(JsonFieldType.NUMBER)
                     .description("위도. 서울 외 지역 사람은 37.4900861966502"),
                 fieldWithPath("data.lng").type(JsonFieldType.NUMBER)
