@@ -1,6 +1,7 @@
 package kr.co.fitview.api.app.domain.member.controller
 
 import kr.co.fitview.api.app.ControllerTestSupport
+import kr.co.fitview.api.app.domain.address.dto.response.AddressResponse
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.exception.error.jwt.JwtErrorCode
 import kr.co.fitview.api.app.global.exception.error.request.RequestErrorCode
@@ -8,7 +9,12 @@ import kr.co.fitview.api.app.global.security.UserPrincipal
 import kr.co.fitview.api.app.global.util.SecurityUtil
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
+import org.mockito.kotlin.given
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.restdocs.payload.JsonFieldType
+import org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath
+import org.springframework.restdocs.payload.PayloadDocumentation.responseFields
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
@@ -40,6 +46,39 @@ class MemberControllerTest : ControllerTestSupport(){
         )
             .andDo(print())
             .andExpect(status().isOk())
+    }
+
+    @DisplayName("회원 id로 해당 회원의 주소를 조회한다.")
+    @Test
+    fun memberAddressDetails() {
+        given(addressService.findAddressFromMemberId(any()))
+            .willReturn(
+                AddressResponse(
+                    addressId = 1L,
+                    siDo = "서울특별시",
+                    siGunGu = "강남구",
+                    eupMyeonDong = "역삼동"
+                )
+            )
+
+        // when // then
+        mockMvc.perform(
+            get("/api/v1/members/{memberId}/addresses", 1)
+                .header("Authorization", "Bearer jwt-token")
+        )
+            .andDo(print())
+            .andExpect(status().isOk())
+
+            responseFields(
+                fieldWithPath("status").type(JsonFieldType.NUMBER),
+                fieldWithPath("code").type(JsonFieldType.STRING),
+                fieldWithPath("message").type(JsonFieldType.STRING),
+                fieldWithPath("data").type(JsonFieldType.OBJECT),
+                fieldWithPath("data.addressId").type(JsonFieldType.NUMBER),
+                fieldWithPath("data.siDo").type(JsonFieldType.STRING),
+                fieldWithPath("data.siGunGu").type(JsonFieldType.STRING),
+                fieldWithPath("data.eupMyeonDong").type(JsonFieldType.STRING)
+            )
     }
 
 //    @DisplayName("인증된 jwt 토큰이 없다면 회원 정보를 조회하지 못한다.")

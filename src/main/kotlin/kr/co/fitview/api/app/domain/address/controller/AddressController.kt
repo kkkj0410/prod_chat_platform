@@ -2,9 +2,10 @@ package kr.co.fitview.api.app.domain.address.controller
 
 import kr.co.fitview.api.app.domain.address.dto.request.AddressRadiusRequest
 import kr.co.fitview.api.app.domain.address.dto.request.AddressUpdateRequest
-import kr.co.fitview.api.app.domain.address.dto.response.AddressResponse
+import kr.co.fitview.api.app.domain.address.dto.response.AddressDetailResponse
 import kr.co.fitview.api.app.domain.address.service.AddressService
 import kr.co.fitview.api.app.global.dto.ApiResponse
+import kr.co.fitview.api.app.global.util.SecurityUtil
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
@@ -12,23 +13,16 @@ import org.springframework.web.bind.annotation.*
 @RestController
 @RequestMapping("/api/v1/addresses")
 class AddressController(
-    val addressService : AddressService
+    val addressService : AddressService,
+    val securityUtil : SecurityUtil
 ) {
 
     @GetMapping("/{addressId}")
     fun addressDetail(
         @PathVariable
         addressId: Long
-    ) : ResponseEntity<ApiResponse<AddressResponse>> {
-//        val response = addressService.findAddressFrom(addressId)
-
-        val response = AddressResponse(
-            siDo = "서울특별시",
-            siGunGu = "강남구",
-            eupMyeonDong = "역삼동",
-            lat = 37.4995539438207,
-            lng = 127.031393491745
-        )
+    ) : ResponseEntity<ApiResponse<AddressDetailResponse>> {
+        val response = addressService.findAddressFromAddressId(addressId)
 
         return ResponseEntity.ok(ApiResponse.success(response))
     }
@@ -42,10 +36,12 @@ class AddressController(
         request : AddressUpdateRequest
 
     ) : ResponseEntity<ApiResponse<*>> {
+        addressService.modifyAddress(securityUtil.getMemberId(), addressId, request.toServiceRequest())
+
         return ResponseEntity.ok(ApiResponse.success("ok"))
     }
 
-    @PatchMapping("/{addressId}/radius")
+    @PatchMapping("/{addressId}/radius-km")
     fun addressRadiusModify(
         @PathVariable
         addressId: Long,
@@ -54,6 +50,8 @@ class AddressController(
         request : AddressRadiusRequest
 
     ) : ResponseEntity<ApiResponse<*>> {
+        addressService.modifyRadiusKm(securityUtil.getMemberId(), addressId, request.toServiceRequest())
+
         return ResponseEntity.ok(ApiResponse.success("ok"))
     }
 

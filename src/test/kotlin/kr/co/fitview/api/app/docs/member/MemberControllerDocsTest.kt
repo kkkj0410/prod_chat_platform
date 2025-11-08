@@ -3,18 +3,11 @@ package kr.co.fitview.api.app.docs.member
 import kr.co.fitview.api.app.docs.RestDocsHeaders
 import kr.co.fitview.api.app.docs.RestDocsPagination
 import kr.co.fitview.api.app.docs.RestDocsSupport
-import kr.co.fitview.api.app.domain.auth.HeaderClientType
-import kr.co.fitview.api.app.domain.auth.constant.AuthConstant
-import kr.co.fitview.api.app.domain.auth.controller.AuthController
-import kr.co.fitview.api.app.domain.auth.dto.request.MemberCreateRequest
-import kr.co.fitview.api.app.domain.auth.dto.request.MemberLoginRequest
-import kr.co.fitview.api.app.domain.auth.dto.response.MemberLoginResponse
-import kr.co.fitview.api.app.domain.auth.service.AuthService
+import kr.co.fitview.api.app.domain.address.dto.response.AddressResponse
+import kr.co.fitview.api.app.domain.address.service.AddressService
 import kr.co.fitview.api.app.domain.member.controller.MemberController
 import kr.co.fitview.api.app.domain.member.dto.request.Age
-import kr.co.fitview.api.app.domain.member.dto.request.MemberLoginServiceRequest
 import kr.co.fitview.api.app.domain.member.dto.response.MemberMeResponse
-import kr.co.fitview.api.app.domain.member.dto.response.MemberRecommendationResponse
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutExperience
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutGoal
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutStyle
@@ -23,14 +16,9 @@ import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.util.SecurityUtil
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.mockito.BDDMockito.willReturn
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.any
 import org.mockito.kotlin.given
-import org.springframework.http.MediaType
-import org.springframework.restdocs.cookies.CookieDocumentation.cookieWithName
-import org.springframework.restdocs.cookies.CookieDocumentation.responseCookies
-import org.springframework.restdocs.headers.HeaderDocumentation.headerWithName
 import org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document
 import org.springframework.restdocs.operation.preprocess.Preprocessors.*
@@ -41,7 +29,6 @@ import org.springframework.restdocs.request.RequestDocumentation.pathParameters
 
 import org.springframework.restdocs.request.RequestDocumentation.queryParameters
 
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
@@ -52,10 +39,11 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 class MemberControllerDocsTest : RestDocsSupport() {
 
     private val memberService: MemberService = mock(MemberService::class.java)
+    private val addressService: AddressService = mock(AddressService::class.java)
     private val securityUtil: SecurityUtil = mock(SecurityUtil::class.java)
 
     override fun initController(): Any {
-        return MemberController(memberService, securityUtil)
+        return MemberController(memberService, addressService, securityUtil)
     }
 
     @DisplayName("사용자 본인 조회 API")
@@ -109,6 +97,16 @@ class MemberControllerDocsTest : RestDocsSupport() {
     @DisplayName("본인 주소 조회 API")
     @Test
     fun memberAddressDetails() {
+
+        given(addressService.findAddressFromMemberId(any()))
+            .willReturn(
+                AddressResponse(
+                    addressId = 100L,
+                    siDo = "서울특별시",
+                    siGunGu = "강남구",
+                    eupMyeonDong = "역삼동"
+                )
+            )
 
         // when & then
         mockMvc.perform(

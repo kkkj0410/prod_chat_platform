@@ -70,6 +70,7 @@ class MemberService(
         return MemberMeResponse(findMember.id!!, findMember.email!!, findMember.role!!)
     }
 
+
     private fun validateDuplicatedEmail(member: Member) {
         findMemberFromLoginId(member.email!!)?.let {
             throw GlobalException(MemberErrorCode.MEMBER_DUPLICATE_EMAIL)
