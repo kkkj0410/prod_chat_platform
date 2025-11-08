@@ -125,12 +125,6 @@ class OAuth2ControllerTest : ControllerTestSupport(){
             "imageUrl2",
         ),
         intro: String? = "intro",
-        terms: List<TermRequest>? = listOf(
-            TermRequest(TermName.AGE_OVER_14, true),
-            TermRequest(TermName.PRIVACY_POLICY, true),
-            TermRequest(TermName.TERMS_OF_SERVICE, true),
-            TermRequest(TermName.LOCATION_SERVICE, true)
-        ),
         address : AddressCreateRequest? = AddressCreateRequest(
             siDo = "서울특별시",
             siGunGu = "강남구",
@@ -153,7 +147,6 @@ class OAuth2ControllerTest : ControllerTestSupport(){
             workoutGoal = workoutGoal,
             workoutImageUrls = workoutImageUrls,
             intro = intro,
-            terms = terms,
             address = address
         )
     }
@@ -255,25 +248,25 @@ class OAuth2ControllerTest : ControllerTestSupport(){
             .andExpect(jsonPath("$.data").isEmpty())
     }
 
-    @Test
-    @DisplayName("소셜 회원가입 시, 약관 동의 정보는 필수이다.")
-    fun oAuth2SignupWithoutTerms() {
-        // given
-        val request = createOAuth2SignupRequest(terms = null)
-
-        // when // then
-        mockMvc.perform(
-            post("/api/v1/oauth2/signup")
-                .content(objectMapper.writeValueAsString(request))
-                .contentType(MediaType.APPLICATION_JSON)
-        )
-            .andDo(print())
-            .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.code").value(RequestErrorCode.REQ_FIELD_NOT_VALID.code))
-            .andExpect(jsonPath("$.status").value("400"))
-            .andExpect(jsonPath("$.message").value("terms is required"))
-            .andExpect(jsonPath("$.data").isEmpty())
-    }
+//    @Test
+//    @DisplayName("소셜 회원가입 시, 약관 동의 정보는 필수이다.")
+//    fun oAuth2SignupWithoutTerms() {
+//        // given
+//        val request = createOAuth2SignupRequest(terms = null)
+//
+//        // when // then
+//        mockMvc.perform(
+//            post("/api/v1/oauth2/signup")
+//                .content(objectMapper.writeValueAsString(request))
+//                .contentType(MediaType.APPLICATION_JSON)
+//        )
+//            .andDo(print())
+//            .andExpect(status().isBadRequest())
+//            .andExpect(jsonPath("$.code").value(RequestErrorCode.REQ_FIELD_NOT_VALID.code))
+//            .andExpect(jsonPath("$.status").value("400"))
+//            .andExpect(jsonPath("$.message").value("terms is required"))
+//            .andExpect(jsonPath("$.data").isEmpty())
+//    }
 
     @Test
     @DisplayName("소셜 회원가입 시, 운동 시간 정보는 필수이다.")

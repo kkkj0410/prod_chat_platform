@@ -7,8 +7,6 @@ import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.service.MemberService
 import kr.co.fitview.api.app.domain.oauth2.dto.request.OAuth2LoginServiceRequest
 import kr.co.fitview.api.app.domain.oauth2.dto.request.OAuth2SignupServiceRequest
-import kr.co.fitview.api.app.domain.oauth2.dto.request.TermRequest
-import kr.co.fitview.api.app.domain.oauth2.dto.request.WorkoutImageUrlRequest
 import kr.co.fitview.api.app.domain.oauth2.dto.response.OAuth2LoginResponse
 import kr.co.fitview.api.app.domain.term.service.TermService
 import kr.co.fitview.api.app.global.entity.OAuth2Provider
@@ -72,7 +70,7 @@ class OAuth2Service(
 
         validateIsSignup(findMember.isSignup!!)
 
-        termService.addTerms(findMember, TermRequest.toServiceRequest(request.terms))
+        termService.addRequiredTerms(findMember)
 
         imageService.saveMemberImageProfile(findMember, request.profileImageUrl)
 
