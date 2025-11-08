@@ -54,3 +54,8 @@ include::exception/image/imageException.adoc[]
 == <ADDRESS>
 
 include::exception/address/addressException.adoc[]
+
+[[TERM]]
+== <TERM>
+
+include::exception/term/termException.adoc[]
