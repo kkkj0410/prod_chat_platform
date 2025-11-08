@@ -1,6 +1,7 @@
 package kr.co.fitview.api.app.domain.address.service
 
 import kr.co.fitview.api.app.domain.address.dto.request.AddressCreateServiceRequest
+import kr.co.fitview.api.app.domain.address.dto.request.AddressRadiusServiceRequest
 import kr.co.fitview.api.app.domain.address.dto.response.AddressDetailResponse
 import kr.co.fitview.api.app.domain.address.dto.response.AddressResponse
 import kr.co.fitview.api.app.domain.address.entity.Address
@@ -16,16 +17,16 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 @Transactional(readOnly = true)
 class AddressService(
-    private val addressRepository : AddressRepository,
-    private val time : Time
+    private val addressRepository: AddressRepository,
+    private val time: Time
 ) {
 
     @Transactional
-    fun addAddress(member : Member, request : AddressCreateServiceRequest) : Address {
+    fun addAddress(member: Member, request: AddressCreateServiceRequest): Address {
 
         val findAddresses = addressRepository.findAllByMemberIdAndDeletedAtIsNull(member.id!!)
 
-        findAddresses.forEach{ address -> address.delete(time.nowLocalDateTime)}
+        findAddresses.forEach { address -> address.delete(time.nowLocalDateTime) }
 
         val address = Address.of(member, request)
 
@@ -33,22 +34,41 @@ class AddressService(
     }
 
     @Transactional
-    fun modifyAddress(memberId : Long, addressId: Long, request: AddressCreateServiceRequest) : Address {
+    fun modifyAddress(memberId: Long, addressId: Long, request: AddressCreateServiceRequest): Address {
         val findAddress = addressRepository.findByIdAndMemberIdAndDeletedAtIsNull(
             addressId = addressId,
             memberId = memberId
         )
 
-        if(isNull(findAddress)){
+        if (isNull(findAddress)) {
             throw GlobalException(AddressErrorCode.MEMBER_ADDRESS_NOT_FOUND)
         }
 
         return findAddress!!.update(request)
     }
 
-    fun findAddressFromMemberId(memberId: Long) : AddressResponse{
+    @Transactional
+    fun modifyRadiusKm(memberId: Long, addressId: Long, request: AddressRadiusServiceRequest) : Address {
+        if(isNegativeNumber(request.radiusKm)){
+            throw GlobalException(AddressErrorCode.NEGATIVE_RADIUS)
+        }
+
+        val findAddress = addressRepository.findByIdAndMemberIdAndDeletedAtIsNull(
+            addressId = addressId,
+            memberId = memberId
+        )
+
+        if (isNull(findAddress)) {
+            throw GlobalException(AddressErrorCode.MEMBER_ADDRESS_NOT_FOUND)
+        }
+
+        return findAddress!!.updateRadiusKm(request.radiusKm)
+    }
+
+
+    fun findAddressFromMemberId(memberId: Long): AddressResponse {
         val findAddress = addressRepository.findByMemberIdAndDeletedAtIsNull(memberId)
-        if(isNull(findAddress)){
+        if (isNull(findAddress)) {
             throw GlobalException(AddressErrorCode.MEMBER_ADDRESS_NOT_FOUND)
         }
 
@@ -57,16 +77,17 @@ class AddressService(
 
     fun findAddressFromAddressId(addressId: Long): AddressDetailResponse {
         val findAddress = addressRepository.findByIdAndDeletedAtIsNull(addressId)
-        if(isNull(findAddress)){
+        if (isNull(findAddress)) {
             throw GlobalException(AddressErrorCode.ADDRESS_NOT_FOUND)
         }
 
         return AddressDetailResponse.from(findAddress!!)
     }
 
-    private fun isNull(value : Any?) =
+    private fun isNull(value: Any?) =
         value == null
 
-
+    private fun isNegativeNumber(number : Int) =
+        number < 0
 
 }

@@ -8,4 +8,45 @@ include::{snippets}/ADDRESS_001/http-request.adoc[]
 include::{snippets}/ADDRESS_001/http-response.adoc[]
 include::{snippets}/ADDRESS_001/response-fields.adoc[]
 
+[[ADDRESS_002]]
+=== ADDRESS_002
+
+==== HTTP Request
+include::{snippets}/ADDRESS_002/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/ADDRESS_002/http-response.adoc[]
+include::{snippets}/ADDRESS_002/response-fields.adoc[]
+
+[[ADDRESS_003]]
+=== ADDRESS_001
+
+==== HTTP Request
+include::{snippets}/ADDRESS_003/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/ADDRESS_003/http-response.adoc[]
+include::{snippets}/ADDRESS_003/response-fields.adoc[]
+
+[[ADDRESS_004]]
+=== ADDRESS_004
+
+==== HTTP Request
+include::{snippets}/ADDRESS_004/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/ADDRESS_004/http-response.adoc[]
+include::{snippets}/ADDRESS_004/response-fields.adoc[]
+
+[[ADDRESS_005]]
+=== ADDRESS_005
+
+==== HTTP Request
+include::{snippets}/ADDRESS_005/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/ADDRESS_005/http-response.adoc[]
+include::{snippets}/ADDRESS_005/response-fields.adoc[]
+
+
 

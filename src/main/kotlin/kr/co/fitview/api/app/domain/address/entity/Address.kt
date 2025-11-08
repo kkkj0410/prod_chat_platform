@@ -1,6 +1,5 @@
 package kr.co.fitview.api.app.domain.address.entity
 
-import jakarta.annotation.Nullable
 import jakarta.persistence.*
 import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
@@ -10,7 +9,6 @@ import kr.co.fitview.api.app.global.entity.BaseEntity
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.address.AddressErrorCode
 import org.hibernate.annotations.ColumnDefault
-import java.time.Instant
 import java.time.LocalDateTime
 
 @Entity
@@ -48,8 +46,8 @@ class Address(
     var fullAddress: String? = null,
 
     @ColumnDefault("5")
-    @Column(name = "radius")
-    var radius: Double? = null
+    @Column(name = "radius_km")
+    var radiusKm: Double? = null
 
 ) : BaseEntity() {
     @Id
@@ -58,7 +56,7 @@ class Address(
     var id: Long? = null
 
 
-    fun update(request: AddressCreateServiceRequest) : Address {
+    fun update(request: AddressCreateServiceRequest): Address {
         this.siDo = convertToStandardSiDo(request.siDo)
         this.siGunGu = request.siGunGu
         this.eupMyeonDong = request.eupMyeonDong
@@ -68,24 +66,31 @@ class Address(
         return this
     }
 
-    fun delete(now : LocalDateTime) : Address{
+    fun updateRadiusKm(radiusKm: Int): Address {
+        this.radiusKm = radiusKm.toDouble()
+        return this
+    }
+
+    fun delete(now: LocalDateTime): Address {
         this.deletedAt = now
         return this
     }
 
-    companion object{ fun of(member: Member, request: AddressCreateServiceRequest): Address {
-        return Address(
-            member = member,
-            siDo = convertToStandardSiDo(request.siDo),
-            siGunGu = request.siGunGu,
-            eupMyeonDong = request.eupMyeonDong,
-            lat = request.lat,
-            lng = request.lng,
-            fullAddress = request.fullAddress
+    companion object {
+        fun of(member: Member, request: AddressCreateServiceRequest): Address {
+            return Address(
+                member = member,
+                siDo = convertToStandardSiDo(request.siDo),
+                siGunGu = request.siGunGu,
+                eupMyeonDong = request.eupMyeonDong,
+                lat = request.lat,
+                lng = request.lng,
+                fullAddress = request.fullAddress
             )
         }
+
         private fun convertToStandardSiDo(inputSiDo: String?): String? {
-            if(inputSiDo == null){
+            if (inputSiDo == null) {
                 return null
             }
 
@@ -109,15 +114,15 @@ class Address(
                 "제주" to "제주특별자치도"
             )
 
-            if(containsFullSiDo(inputSiDo, siDoMap)){
+            if (containsFullSiDo(inputSiDo, siDoMap)) {
                 return getFullSiDo(inputSiDo, siDoMap)
             }
 
-            if(containsKeySiDo(inputSiDo, siDoMap)){
+            if (containsKeySiDo(inputSiDo, siDoMap)) {
                 return getValueSiDoByKey(inputSiDo, siDoMap)
             }
 
-            if(containsKeyFuzzySiDo(inputSiDo, siDoMap)){
+            if (containsKeyFuzzySiDo(inputSiDo, siDoMap)) {
                 return getKeyFuzzySiDoValue(inputSiDo, siDoMap)
             }
 

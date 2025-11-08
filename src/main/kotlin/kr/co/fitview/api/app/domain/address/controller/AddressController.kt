@@ -41,7 +41,7 @@ class AddressController(
         return ResponseEntity.ok(ApiResponse.success("ok"))
     }
 
-    @PatchMapping("/{addressId}/radius")
+    @PatchMapping("/{addressId}/radius-km")
     fun addressRadiusModify(
         @PathVariable
         addressId: Long,
@@ -50,6 +50,8 @@ class AddressController(
         request : AddressRadiusRequest
 
     ) : ResponseEntity<ApiResponse<*>> {
+        addressService.modifyRadiusKm(securityUtil.getMemberId(), addressId, request.toServiceRequest())
+
         return ResponseEntity.ok(ApiResponse.success("ok"))
     }
 
