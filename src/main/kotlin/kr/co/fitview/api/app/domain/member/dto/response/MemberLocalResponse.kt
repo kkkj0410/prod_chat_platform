@@ -9,5 +9,6 @@ data class MemberLocalResponse(
     val nickname : String,
     val workoutExperience : MemberWorkoutExperience,
     val workoutStyle: MemberWorkoutStyle,
-    val workoutGoal: MemberWorkoutGoal
+    val workoutGoal: MemberWorkoutGoal,
+    val profileImageUrl : String
 )

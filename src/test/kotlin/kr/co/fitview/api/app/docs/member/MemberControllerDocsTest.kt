@@ -65,6 +65,7 @@ class MemberControllerDocsTest : RestDocsSupport() {
         given(memberService.findMemberMe(any()))
             .willReturn(
                 MemberMeResponse(
+                    memberId = 1L,
                     email = "email",
                     role = Role.USER
                 )
@@ -95,6 +96,8 @@ class MemberControllerDocsTest : RestDocsSupport() {
                     .description("에러 메시지"),
                 fieldWithPath("data").type(JsonFieldType.OBJECT)
                     .description("응답 데이터"),
+                fieldWithPath("data.memberId").type(JsonFieldType.NUMBER)
+                    .description("회원 id"),
                 fieldWithPath("data.email").type(JsonFieldType.STRING)
                     .description("로그인 id"),
                 fieldWithPath("data.role").type(JsonFieldType.STRING)
@@ -137,8 +140,12 @@ class MemberControllerDocsTest : RestDocsSupport() {
                         .description("응답 데이터"),
                     fieldWithPath("data.addressId").type(JsonFieldType.NUMBER)
                         .description("해당 주소 id"),
-                    fieldWithPath("data.fullAddress").type(JsonFieldType.STRING)
-                        .description("회원 전체 주소. 서울 외 지역 사람은 서울시 서초구 서초동으로 반환"),
+                    fieldWithPath("data.siDo").type(JsonFieldType.STRING)
+                        .description("회원 시/도. 서울 외 지역 사람은 서울특별시로 반환"),
+                    fieldWithPath("data.siGunGu").type(JsonFieldType.STRING)
+                        .description("회원 시/군/구. 서울 외 지역 사람은 서초구로 반환"),
+                    fieldWithPath("data.eupMyeonDong").type(JsonFieldType.STRING)
+                        .description("회원 읍/면/동. 서울 외 지역 사람은 서초동으로 반환"),
                 )
             ))
     }
@@ -181,6 +188,10 @@ class MemberControllerDocsTest : RestDocsSupport() {
                         .description("조회 대상 회원 운동 스타일"),
                     fieldWithPath("data[].workoutGoal").type(JsonFieldType.STRING)
                         .description("조회 대상 회원 운동 목표"),
+                    fieldWithPath("data[].profileImageUrl").type(JsonFieldType.STRING)
+                        .description("조회 대상 회원 프로필 이미지"),
+                    fieldWithPath("data[].workoutImageUrl").type(JsonFieldType.STRING)
+                        .description("조회 대상 회원 운동 사진"),
                 )
             ))
     }
@@ -195,15 +206,15 @@ class MemberControllerDocsTest : RestDocsSupport() {
                 .header("Authorization", "Bearer jwt-token")
                 .param("size", "10")
                 .param("page", "1")
-                .param("workoutExperienceStart", "JUST_STARTED")
-                .param("workoutExperienceEnd", "ONE_TO_THREE_YEARS")
+                .param("minWorkoutExperience", "JUST_STARTED")
+                .param("maxWorkoutExperience", "ONE_TO_THREE_YEARS")
                 .param("workoutStyle", "CARDIO", "PERFORMANCE")
                 .param("workoutGoal", "WEIGHT_LOSS", "STRENGTH_GAIN")
                 .param("age", "TWENTIES_EARLY", "TWENTIES_MID")
-                .param("heightStart", "170")
-                .param("heightEnd", "180")
-                .param("weightStart", "60")
-                .param("weightEnd", "75")
+                .param("minHeight", "170")
+                .param("maxHeight", "180")
+                .param("minWeight", "60")
+                .param("maxWeight", "75")
         )
             .andDo(print())
             .andExpect(status().isOk())
@@ -220,9 +231,9 @@ class MemberControllerDocsTest : RestDocsSupport() {
                         .description("(Optional - default 10) 조회 크기"),
                     parameterWithName("page").optional()
                         .description("(Optional - default 1) 조회 페이지 - 시작 1page"),
-                    parameterWithName("workoutExperienceStart").optional()
+                    parameterWithName("minWorkoutExperience").optional()
                         .description("(Optional) 운동 경험 시작 지점" + MemberWorkoutExperience.allDescription()),
-                    parameterWithName("workoutExperienceEnd").optional()
+                    parameterWithName("maxWorkoutExperience").optional()
                         .description("(Optional) 운동 경험 끝 지점" + MemberWorkoutExperience.allDescription()),
                     parameterWithName("workoutStyle").optional()
                         .description("(Optional)" + MemberWorkoutStyle.allDescription()),
@@ -230,13 +241,13 @@ class MemberControllerDocsTest : RestDocsSupport() {
                         .description("(Optional)" + MemberWorkoutGoal.allDescription()),
                     parameterWithName("age").optional()
                         .description("(Optional)" + Age.allDescription()),
-                    parameterWithName("heightStart").optional()
+                    parameterWithName("minHeight").optional()
                         .description("(Optional) 키 최소값"),
-                    parameterWithName("heightEnd").optional()
+                    parameterWithName("maxHeight").optional()
                         .description("(Optional) 키 최대값"),
-                    parameterWithName("weightStart").optional()
+                    parameterWithName("minWeight").optional()
                         .description("(Optional) 몸무게 최소값"),
-                    parameterWithName("weightEnd").optional()
+                    parameterWithName("maxWeight").optional()
                         .description("(Optional) 몸무게 최대값")
                 ),
 
@@ -261,6 +272,8 @@ class MemberControllerDocsTest : RestDocsSupport() {
                         .description("조회 대상 회원 운동 스타일"),
                     fieldWithPath("data.content[].workoutGoal").type(JsonFieldType.STRING)
                         .description("조회 대상 회원 운동 목표"),
+                    fieldWithPath("data.content[].profileImageUrl").type(JsonFieldType.STRING)
+                        .description("조회 대상 회원 프로필 이미지"),
 
                     *RestDocsPagination.paginationFields()
                 )

@@ -21,7 +21,6 @@ import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.domain.member.repository.WorkoutTimeRepository
 import kr.co.fitview.api.app.domain.oauth2.config.AppleConfig
 import kr.co.fitview.api.app.domain.oauth2.dto.request.*
-import kr.co.fitview.api.app.domain.oauth2.dto.response.KakaoProfile
 import kr.co.fitview.api.app.domain.term.entity.enums.TermName
 import kr.co.fitview.api.app.domain.term.repository.TermRepository
 import kr.co.fitview.api.app.global.entity.Gender
@@ -240,55 +239,6 @@ class OAuth2ServiceTest @Autowired constructor(
 
     }
 
-//    @field:NotNull(message = "profileImageUrl is required")
-//    val profileImageUrl : String?,
-//
-//    @field:NotNull(message = "nickname is required")
-//    val nickname : String?,
-//
-//    @field:NotNull(message = "gender is required")
-//    val gender : Gender?,
-//
-//    @field:NotNull(message = "birthday is required")
-//    val birthday : LocalDate?,
-//
-//    @field:NotNull(message = "height is required")
-//    val height : Int?,
-//
-//    @field:NotNull(message = "weight is required")
-//    val weight : Int?,
-//
-//    @field:NotNull(message = "workoutExperience is required")
-//    val workoutExperience : MemberWorkoutExperience?,
-//
-//    @field:NotNull(message = "workoutStyle is required")
-//    val workoutStyle : MemberWorkoutStyle?,
-//
-//    @field:NotNull(message = "workoutDays is required")
-//    val workoutDays : List<WorkoutDayName>?,
-//
-//    @field:NotNull(message = "workoutTimes is required")
-//    val workoutTimes : List<WorkoutTimeName>?,
-//
-//    @field:NotNull(message = "workoutGoal is required")
-//    val workoutGoal : MemberWorkoutGoal?,
-//
-//    val workoutImageUrls : List<WorkoutImageUrl>?,
-//
-//    val intro : String?,
-//
-//    @field:NotNull(message = "ageOver14 is required")
-//    val ageOver14 : Boolean?,
-//
-//    @field:NotNull(message = "privacyPolicy is required")
-//    val privacyPolicy : Boolean?,
-//
-//    @field:NotNull(message = "termsOfService is required")
-//    val termsOfService : Boolean?,
-//
-//    @field:NotNull(message = "locationService is required")
-//    val locationService : Boolean?,
-
     fun createOAuth2SignupServiceRequest(
         profileImageUrl: String = "profileImageUrl",
         nickname: String = "nickname",
@@ -305,12 +255,6 @@ class OAuth2ServiceTest @Autowired constructor(
             "imageUrl2",
         ),
         intro: String? = "intro",
-        terms: List<TermRequest> = listOf(
-            TermRequest(TermName.AGE_OVER_14, true),
-            TermRequest(TermName.PRIVACY_POLICY, true),
-            TermRequest(TermName.TERMS_OF_SERVICE, true),
-            TermRequest(TermName.LOCATION_SERVICE, true)
-        ),
         address : AddressCreateServiceRequest = AddressCreateServiceRequest(
             siDo = "서울특별시",
             siGunGu = "강남구",
@@ -333,7 +277,6 @@ class OAuth2ServiceTest @Autowired constructor(
             workoutGoal = workoutGoal,
             workoutImageUrls = workoutImageUrls,
             intro = intro,
-            terms = terms,
             address = address
         )
     }
@@ -360,7 +303,7 @@ class OAuth2ServiceTest @Autowired constructor(
             .extracting("nickname", "gender", "birthday", "height", "isSignup", "gender")
             .contains(request.nickname, request.gender, request.birthday, request.height, true, request.gender)
 
-        val findTerms = termRepository.findByMemberId(memberId)
+        val findTerms = termRepository.findAllByMemberIdAndDeletedAtIsNull(memberId)
         assertThat(findTerms)
             .extracting("name", "isAgreed")
             .containsExactlyInAnyOrder(

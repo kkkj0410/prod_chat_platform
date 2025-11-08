@@ -40,7 +40,9 @@ class MemberController(
     ) : ResponseEntity<ApiResponse<MemberAddressResponse>> {
         val response = MemberAddressResponse(
             addressId = 100L,
-            fullAddress = "서울특별시 강남구 테헤란로 123"
+            siDo = "서울특별시",
+            siGunGu = "강남구",
+            eupMyeonDong = "역삼동"
         )
         return ResponseEntity.ok(ApiResponse.success(response))
     }
@@ -54,7 +56,9 @@ class MemberController(
                 nickname = "nickname",
                 workoutExperience = MemberWorkoutExperience.JUST_STARTED,
                 workoutStyle = MemberWorkoutStyle.CARDIO,
-                workoutGoal = MemberWorkoutGoal.PERFORMANCE_GOAL
+                workoutGoal = MemberWorkoutGoal.PERFORMANCE_GOAL,
+                profileImageUrl = "profileImageUrl",
+                workoutImageUrl = "workoutImageUrl"
             )
         )
         // 최대 10개 응답
@@ -74,7 +78,8 @@ class MemberController(
                 nickname = "nickname",
                 workoutExperience = MemberWorkoutExperience.JUST_STARTED,
                 workoutStyle = MemberWorkoutStyle.CARDIO,
-                workoutGoal = MemberWorkoutGoal.PERFORMANCE_GOAL
+                workoutGoal = MemberWorkoutGoal.PERFORMANCE_GOAL,
+                profileImageUrl = "profileImageUrl"
             )
         )
 

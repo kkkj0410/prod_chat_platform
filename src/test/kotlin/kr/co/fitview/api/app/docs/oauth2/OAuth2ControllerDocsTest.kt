@@ -215,16 +215,10 @@ class OAuth2ControllerDocsTest : RestDocsSupport() {
             "imageUrl1", "imageUrl2"
         ),
         intro: String? = "intro",
-        terms: List<TermRequest> = listOf(
-            TermRequest(TermName.AGE_OVER_14, true),
-            TermRequest(TermName.PRIVACY_POLICY, true),
-            TermRequest(TermName.TERMS_OF_SERVICE, true),
-            TermRequest(TermName.LOCATION_SERVICE, true)
-        ),
         address : AddressCreateRequest = AddressCreateRequest(
-            siDo = null,
-            siGunGu = null,
-            eupMyeonDong = null,
+            siDo = "서울특별시",
+            siGunGu = "강남구",
+            eupMyeonDong = "역삼동",
             lat = 37.4979,
             lng = 127.0276,
             fullAddress = "서울특별시 강남구 테헤란로 123"
@@ -243,7 +237,6 @@ class OAuth2ControllerDocsTest : RestDocsSupport() {
             workoutGoal = workoutGoal,
             workoutImageUrls = workoutImageUrls,
             intro = intro,
-            terms = terms,
             address = address
         )
     }
@@ -300,18 +293,18 @@ class OAuth2ControllerDocsTest : RestDocsSupport() {
                         .description("운동 이미지 URL"),
                     fieldWithPath("intro").type(JsonFieldType.STRING).optional()
                         .description("회원 소개, 최대 500자"),
-                    fieldWithPath("terms").type(JsonFieldType.ARRAY)
-                        .description("약관 동의항목 전체 - 모든 약관 동의항목이 해당 배열에 모두 있어야 통과"),
-                    fieldWithPath("terms[].termName").type(JsonFieldType.STRING)
-                        .description(TermName.allDescription()),
-                    fieldWithPath("terms[].isAgreed").type(JsonFieldType.BOOLEAN)
-                        .description("동의 여부"),
-                    fieldWithPath("address.siDo").type(JsonFieldType.STRING).optional()
+//                    fieldWithPath("terms").type(JsonFieldType.ARRAY)
+//                        .description("약관 동의항목 전체 - 모든 약관 동의항목이 해당 배열에 모두 있어야 통과"),
+//                    fieldWithPath("terms[].termName").type(JsonFieldType.STRING)
+//                        .description(TermName.allDescription()),
+//                    fieldWithPath("terms[].isAgreed").type(JsonFieldType.BOOLEAN)
+//                        .description("동의 여부"),
+                    fieldWithPath("address.siDo").type(JsonFieldType.STRING)
                         .description("시/도 (입력값에 반드시 포함되어야 하는 키워드: 서울, 부산, 인천, 대구, 대전, 광주, 울산, 세종, 경기, 충북, 충남, 전남, 전북, 경북, 경남, 강원, 제주) " +
                                 "ex)충청남도 -> 충청남도, 충남 -> 충청남도, 충엥남도 -> 충청남도, 강원도 -> 강원특별자치도, 강원 -> 강원특별자치도 로 변환해서 저장"),
-                    fieldWithPath("address.siGunGu").type(JsonFieldType.STRING).optional()
+                    fieldWithPath("address.siGunGu").type(JsonFieldType.STRING)
                         .description("시/군/구"),
-                    fieldWithPath("address.eupMyeonDong").type(JsonFieldType.STRING).optional()
+                    fieldWithPath("address.eupMyeonDong").type(JsonFieldType.STRING)
                         .description("읍/면/동"),
                     fieldWithPath("address.lat").type(JsonFieldType.NUMBER)
                         .description("위도"),

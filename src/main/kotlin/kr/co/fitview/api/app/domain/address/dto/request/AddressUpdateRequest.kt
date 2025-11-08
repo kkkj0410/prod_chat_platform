@@ -5,10 +5,13 @@ import jakarta.validation.constraints.NotNull
 
 data class AddressUpdateRequest(
 
+    @field:NotBlank(message = "siDo is required")
     val siDo: String?,
 
+    @field:NotBlank(message = "siGunGu is required")
     val siGunGu: String?,
 
+    @field:NotBlank(message = "eupMyeonDong is required")
     val eupMyeonDong: String?,
 
     @field:NotNull(message = "lat is required")
@@ -23,9 +26,9 @@ data class AddressUpdateRequest(
     ){
     fun toServiceRequest(): AddressCreateServiceRequest {
         return AddressCreateServiceRequest(
-            siDo = siDo,
-            siGunGu = siGunGu,
-            eupMyeonDong = eupMyeonDong,
+            siDo = siDo!!,
+            siGunGu = siGunGu!!,
+            eupMyeonDong = eupMyeonDong!!,
             lat = lat!!,
             lng = lng!!,
             fullAddress = fullAddress!!

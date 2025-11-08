@@ -31,8 +31,6 @@ data class OAuth2SignupServiceRequest(
 
     val intro : String?,
 
-    val terms : List<TermRequest>,
-
     val address : AddressCreateServiceRequest
 
     ){

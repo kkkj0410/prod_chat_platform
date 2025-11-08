@@ -44,9 +44,6 @@ data class OAuth2SignupRequest(
 
     val intro : String?,
 
-    @field:NotNull(message = "terms is required")
-    val terms : List<TermRequest>?,
-
     @field:NotNull(message = "address is required")
     val address : AddressCreateRequest?
 
@@ -65,7 +62,6 @@ data class OAuth2SignupRequest(
             workoutGoal = this.workoutGoal!!,
             workoutImageUrls = this.workoutImageUrls,
             intro = this.intro,
-            terms = this.terms!!,
             address = this.address!!.toServiceRequest()
         )
     }

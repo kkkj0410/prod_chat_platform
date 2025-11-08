@@ -23,7 +23,9 @@ class AddressController(
 //        val response = addressService.findAddressFrom(addressId)
 
         val response = AddressResponse(
-            fullAddress = "서울특별시 강남구 역삼동 테헤란로 123",
+            siDo = "서울특별시",
+            siGunGu = "강남구",
+            eupMyeonDong = "역삼동",
             lat = 37.4995539438207,
             lng = 127.031393491745
         )
