@@ -259,7 +259,216 @@ class AddressServiceTest @Autowired constructor(
             .satisfies(ThrowingConsumer { ex ->
                 val globalEx = ex as GlobalException
                 assertThat(globalEx.errorCode)
-                    .isEqualTo(AddressErrorCode.ADDRESS_ID_NOT_FOUND)
+                    .isEqualTo(AddressErrorCode.ADDRESS_NOT_FOUND)
+            })
+    }
+
+    @DisplayName("주소를 변경한다.")
+    @Test
+    fun modifyAddress() {
+        // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        val savedMember = memberRepository.save(member)
+
+        val address = Address(
+            member = member,
+            siDo = "서울특별시",
+            siGunGu = "강남구",
+            eupMyeonDong = "테헤란로",
+            lat = 10.123,
+            lng = 10.234,
+            fullAddress = "fullAddress"
+        )
+        val savedAddress = addressRepository.save(address)
+
+        val request = AddressCreateServiceRequest(
+            siDo = "부산광역시",
+            siGunGu = "해운대구",
+            eupMyeonDong = "우동",
+            lat = 35.1631,
+            lng = 129.1638,
+            fullAddress = "부산광역시 해운대구 우동 456-78"
+        )
+
+        // when
+        val modifyAddress = addressService.modifyAddress(savedMember.id!!, savedAddress.id!!, request)
+
+        // then
+        assertThat(modifyAddress)
+            .extracting("siDo", "siGunGu", "eupMyeonDong", "lat", "lng", "fullAddress")
+            .contains(
+                request.siDo,
+                request.siGunGu,
+                request.eupMyeonDong,
+                request.lat,
+                request.lng,
+                request.fullAddress
+            )
+    }
+
+    @DisplayName("주소가 없다면 주소를 변경할 수 없다.")
+    @Test
+    fun modifyAddressWithoutAddress() {
+        // given
+        val request = AddressCreateServiceRequest(
+            siDo = "부산광역시",
+            siGunGu = "해운대구",
+            eupMyeonDong = "우동",
+            lat = 35.1631,
+            lng = 129.1638,
+            fullAddress = "부산광역시 해운대구 우동 456-78"
+        )
+
+        // when & then
+        assertThatThrownBy {
+            addressService.modifyAddress(1L, 1L, request)
+        }
+            .isInstanceOf(GlobalException::class.java)
+            .satisfies(ThrowingConsumer { ex ->
+                val globalEx = ex as GlobalException
+                assertThat(globalEx.errorCode)
+                    .isEqualTo(AddressErrorCode.MEMBER_ADDRESS_NOT_FOUND)
+            })
+
+    }
+
+    @DisplayName("해당 회원의 주소가 아니면 해당 주소를 변경할 수 없다.")
+    @Test
+    fun modifyAddressInvalidMemberId() {
+        // given
+        val member = Member(
+            email = "email1",
+            password = "password",
+            role = Role.USER,
+        )
+        val otherMember = Member(
+            email = "email2",
+            password = "password",
+            role = Role.USER,
+        )
+        memberRepository.save(member)
+        val savedOtherMember = memberRepository.save(otherMember)
+
+        val address = Address(
+            member = member,
+            siDo = "서울특별시",
+            siGunGu = "강남구",
+            eupMyeonDong = "테헤란로",
+            lat = 10.123,
+            lng = 10.234,
+            fullAddress = "fullAddress"
+        )
+        val savedAddress = addressRepository.save(address)
+
+        val request = AddressCreateServiceRequest(
+            siDo = "부산광역시",
+            siGunGu = "해운대구",
+            eupMyeonDong = "우동",
+            lat = 35.1631,
+            lng = 129.1638,
+            fullAddress = "부산광역시 해운대구 우동 456-78"
+        )
+
+        // when & then
+        assertThatThrownBy {
+            addressService.modifyAddress(savedOtherMember.id!!, savedAddress.id!!, request)
+        }
+            .isInstanceOf(GlobalException::class.java)
+            .satisfies(ThrowingConsumer { ex ->
+                val globalEx = ex as GlobalException
+                assertThat(globalEx.errorCode)
+                    .isEqualTo(AddressErrorCode.MEMBER_ADDRESS_NOT_FOUND)
+            })
+
+    }
+
+    @DisplayName("회원의 주소 수정 시, 시/도가 표준에 맞지 않으면 표준으로 바꿔서 저장한다.")
+    @ParameterizedTest
+    @CsvSource("충청남도, 충청남도", "충남, 충청남도", "충엥남도, 충청남도", "강원도, 강원특별자치도", "강원, 강원특별자치도")
+    fun modifyAddressOtherSiDo(siDo : String, standardSiDo : String) {
+        // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        val savedMember = memberRepository.save(member)
+
+        val address = Address(
+            member = member,
+            siDo = "서울특별시",
+            siGunGu = "강남구",
+            eupMyeonDong = "테헤란로",
+            lat = 10.123,
+            lng = 10.234,
+            fullAddress = "fullAddress"
+        )
+        val savedAddress = addressRepository.save(address)
+
+        val request = AddressCreateServiceRequest(
+            siDo = siDo,
+            siGunGu = "해운대구",
+            eupMyeonDong = "우동",
+            lat = 35.1631,
+            lng = 129.1638,
+            fullAddress = "부산광역시 해운대구 우동 456-78"
+        )
+
+        // when
+        val modifyAddress = addressService.modifyAddress(savedMember.id!!, savedAddress.id!!, request)
+
+        // then
+        assertThat(modifyAddress.id).isNotNull()
+        assertThat(modifyAddress)
+            .extracting("siDo", "siGunGu", "eupMyeonDong", "lat", "lng", "fullAddress")
+            .contains(standardSiDo, request.siGunGu, request.eupMyeonDong, request.lat, request.lng, request.fullAddress)
+    }
+
+    @DisplayName("회원의 주소 수정 시, 시/도가 한국 특정 시/도 장소로 추정할 수 없으면 저장하지 않는다.")
+    @ParameterizedTest
+    @CsvSource("invalidSiDo", "충청도", "경상도", "전라도", "한국")
+    fun modifyAddressInvalidSiDo(siDo: String) {
+        // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        val savedMember = memberRepository.save(member)
+
+        val address = Address(
+            member = member,
+            siDo = "서울특별시",
+            siGunGu = "강남구",
+            eupMyeonDong = "테헤란로",
+            lat = 10.123,
+            lng = 10.234,
+            fullAddress = "fullAddress"
+        )
+        val savedAddress = addressRepository.save(address)
+
+        val request = AddressCreateServiceRequest(
+            siDo = siDo,
+            siGunGu = "해운대구",
+            eupMyeonDong = "우동",
+            lat = 35.1631,
+            lng = 129.1638,
+            fullAddress = "부산광역시 해운대구 우동 456-78"
+        )
+
+        // when & then
+        assertThatThrownBy {
+            addressService.modifyAddress(savedMember.id!!, savedAddress.id!!, request)
+        }
+            .isInstanceOf(GlobalException::class.java)
+            .satisfies(ThrowingConsumer { ex ->
+                val globalEx = ex as GlobalException
+                assertThat(globalEx.errorCode)
+                    .isEqualTo(AddressErrorCode.INVALID_SI_DO)
             })
     }
 

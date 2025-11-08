@@ -9,9 +9,4 @@
 //
 //
 //
-//    override fun findAddressByMemberIdAndDeletedAtIsNull(memberId: Long): AddressResponse {
-//
-//
-//        TODO("Not yet implemented")
-//    }
 //}

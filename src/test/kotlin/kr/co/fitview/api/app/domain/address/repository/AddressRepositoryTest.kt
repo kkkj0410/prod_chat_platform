@@ -124,4 +124,39 @@ class AddressRepositoryTest @Autowired constructor(
             .contains(savedMember, savedAddress.siDo, savedAddress.siGunGu)
 
     }
+
+    @DisplayName("해당 회원의 주소를 조회한다.")
+    @Test
+    fun findByIdAndMemberIdAndDeletedAtIsNull() {
+        // given
+        val member = Member(
+            email = "email1",
+            password = "password",
+            role = Role.USER,
+        )
+        val savedMember = memberRepository.save(member)
+
+        val address = Address(
+            member = member,
+            siDo = "siDo1",
+            siGunGu = "siGunGu1",
+            eupMyeonDong = "테헤란로",
+            lat = 10.123,
+            lng = 10.234,
+            fullAddress = "fullAddress"
+        )
+        val savedAddress = addressRepository.save(address)
+
+        // when
+        val findAddress = addressRepository.findByIdAndMemberIdAndDeletedAtIsNull(
+            addressId = savedAddress.id!!,
+            memberId = savedMember.id!!
+        )
+
+        // then
+        assertThat(findAddress)
+            .extracting("member", "siDo", "siGunGu")
+            .contains(savedMember, savedAddress.siDo, savedAddress.siGunGu)
+
+    }
 }

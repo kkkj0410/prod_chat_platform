@@ -10,6 +10,7 @@ import kr.co.fitview.api.app.domain.address.dto.response.AddressResponse
 import kr.co.fitview.api.app.domain.address.service.AddressService
 
 import kr.co.fitview.api.app.global.entity.Role
+import kr.co.fitview.api.app.global.util.SecurityUtil
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
@@ -33,9 +34,10 @@ import org.springframework.restdocs.request.RequestDocumentation.pathParameters
 class AddressControllerDocsTest : RestDocsSupport() {
 
     private val addressService: AddressService = mock(AddressService::class.java)
+    private val securityUtil : SecurityUtil = mock(SecurityUtil::class.java)
 
     override fun initController(): Any {
-        return AddressController(addressService)
+        return AddressController(addressService, securityUtil)
     }
 
     @DisplayName("특정 주소 조회 API")

@@ -10,4 +10,6 @@ interface AddressRepository : JpaRepository<Address, Long> {
     fun findByMemberIdAndDeletedAtIsNull(memberId : Long) : Address?
 
     fun findByIdAndDeletedAtIsNull(addressId: Long): Address?
+
+    fun findByIdAndMemberIdAndDeletedAtIsNull(addressId : Long, memberId : Long) : Address?
 }
