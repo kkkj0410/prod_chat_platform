@@ -1,7 +1,8 @@
 package kr.co.fitview.api.app.domain.member.controller
 
+import kr.co.fitview.api.app.domain.address.service.AddressService
 import kr.co.fitview.api.app.domain.member.condition.MemberLocalCondition
-import kr.co.fitview.api.app.domain.member.dto.response.MemberAddressResponse
+import kr.co.fitview.api.app.domain.address.dto.response.AddressResponse
 import kr.co.fitview.api.app.domain.member.dto.response.MemberLocalResponse
 import kr.co.fitview.api.app.domain.member.dto.response.MemberMeResponse
 import kr.co.fitview.api.app.domain.member.dto.response.MemberRecommendationResponse
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/api/v1/members")
 class MemberController(
     val memberService : MemberService,
+    val addressService : AddressService,
     val securityUtil : SecurityUtil
 ) {
 
@@ -37,13 +39,10 @@ class MemberController(
     fun memberAddressDetails(
         @PathVariable
         memberId : Long,
-    ) : ResponseEntity<ApiResponse<MemberAddressResponse>> {
-        val response = MemberAddressResponse(
-            addressId = 100L,
-            siDo = "서울특별시",
-            siGunGu = "강남구",
-            eupMyeonDong = "역삼동"
-        )
+    ) : ResponseEntity<ApiResponse<AddressResponse>> {
+
+        val response = addressService.findAddressFromMemberId(memberId)
+
         return ResponseEntity.ok(ApiResponse.success(response))
     }
 

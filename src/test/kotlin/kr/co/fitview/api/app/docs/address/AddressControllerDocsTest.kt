@@ -5,32 +5,27 @@ import kr.co.fitview.api.app.docs.RestDocsSupport
 import kr.co.fitview.api.app.domain.address.controller.AddressController
 import kr.co.fitview.api.app.domain.address.dto.request.AddressRadiusRequest
 import kr.co.fitview.api.app.domain.address.dto.request.AddressUpdateRequest
+import kr.co.fitview.api.app.domain.address.dto.response.AddressDetailResponse
 import kr.co.fitview.api.app.domain.address.dto.response.AddressResponse
 import kr.co.fitview.api.app.domain.address.service.AddressService
-import kr.co.fitview.api.app.domain.auth.HeaderClientType
-import kr.co.fitview.api.app.domain.auth.constant.AuthConstant
 
 import kr.co.fitview.api.app.global.entity.Role
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
+import org.mockito.kotlin.any
+import org.mockito.kotlin.given
 import org.springframework.http.MediaType
-import org.springframework.restdocs.cookies.CookieDocumentation.cookieWithName
-import org.springframework.restdocs.cookies.CookieDocumentation.responseCookies
-import org.springframework.restdocs.headers.HeaderDocumentation.headerWithName
 import org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document
 import org.springframework.restdocs.operation.preprocess.Preprocessors.*
 import org.springframework.restdocs.payload.JsonFieldType
 import org.springframework.restdocs.payload.PayloadDocumentation.*
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
-import org.mockito.kotlin.any
-import org.mockito.kotlin.given
 import org.springframework.restdocs.request.RequestDocumentation.parameterWithName
 import org.springframework.restdocs.request.RequestDocumentation.pathParameters
 
@@ -46,6 +41,18 @@ class AddressControllerDocsTest : RestDocsSupport() {
     @DisplayName("특정 주소 조회 API")
     @Test
     fun addressDetail() {
+
+        given(addressService.findAddressFromAddressId(any()))
+            .willReturn(
+                AddressDetailResponse(
+                    siDo = "서울특별시",
+                    siGunGu = "강남구",
+                    eupMyeonDong = "역삼동",
+                    lat = 37.4995539438207,
+                    lng = 127.031393491745
+                )
+            )
+
         // when // then
         mockMvc.perform(
             get("/api/v1/addresses/{addressId}", 1)

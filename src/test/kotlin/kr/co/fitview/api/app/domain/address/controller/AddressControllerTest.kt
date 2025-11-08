@@ -1,6 +1,7 @@
-package kr.co.fitview.api.app.domain.member.controller
+package kr.co.fitview.api.app.domain.address.controller
 
 import kr.co.fitview.api.app.ControllerTestSupport
+import kr.co.fitview.api.app.domain.address.dto.response.AddressDetailResponse
 import kr.co.fitview.api.app.domain.address.dto.response.AddressResponse
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.exception.error.jwt.JwtErrorCode
@@ -24,46 +25,25 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPat
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 
-class MemberControllerTest : ControllerTestSupport(){
+class AddressControllerTest : ControllerTestSupport(){
 
-//    private fun setMemberFromSecurity() {
-//        val userPrincipal = UserPrincipal(1L, Role.USER)
-//        val newAuthentication = UsernamePasswordAuthenticationToken(userPrincipal, null, userPrincipal.authorities)
-//        SecurityContextHolder.getContext().authentication = newAuthentication
-//    }
-
-
-    @DisplayName("인증된 jwt 토큰으로 회원 정보를 조회한다.")
+    @DisplayName("주소 id로 해당 주소를 조회한다.")
     @Test
-    fun memberMe() {
-        // given
-//        setMemberFromSecurity()
-
-        // when // then
-        mockMvc.perform(
-            get("/api/v1/members/me")
-            .header("Authorization", "Bearer jwt-token")
-        )
-            .andDo(print())
-            .andExpect(status().isOk())
-    }
-
-    @DisplayName("회원 id로 해당 회원의 주소를 조회한다.")
-    @Test
-    fun memberAddressDetails() {
-        given(addressService.findAddressFromMemberId(any()))
+    fun addressDetail() {
+        given(addressService.findAddressFromAddressId(any()))
             .willReturn(
-                AddressResponse(
-                    addressId = 1L,
+                AddressDetailResponse(
                     siDo = "서울특별시",
                     siGunGu = "강남구",
-                    eupMyeonDong = "역삼동"
+                    eupMyeonDong = "역삼동",
+                    lat = 37.4995539438207,
+                    lng = 127.031393491745
                 )
             )
 
         // when // then
         mockMvc.perform(
-            get("/api/v1/members/{memberId}/addresses", 1)
+            get("/api/v1/addresses/{addressId}", 1)
                 .header("Authorization", "Bearer jwt-token")
         )
             .andDo(print())
@@ -74,28 +54,12 @@ class MemberControllerTest : ControllerTestSupport(){
                 fieldWithPath("code").type(JsonFieldType.STRING),
                 fieldWithPath("message").type(JsonFieldType.STRING),
                 fieldWithPath("data").type(JsonFieldType.OBJECT),
-                fieldWithPath("data.addressId").type(JsonFieldType.NUMBER),
                 fieldWithPath("data.siDo").type(JsonFieldType.STRING),
                 fieldWithPath("data.siGunGu").type(JsonFieldType.STRING),
-                fieldWithPath("data.eupMyeonDong").type(JsonFieldType.STRING)
+                fieldWithPath("data.eupMyeonDong").type(JsonFieldType.STRING),
+                fieldWithPath("data.lat").type(JsonFieldType.NUMBER),
+                fieldWithPath("data.lng").type(JsonFieldType.NUMBER)
             )
     }
-
-//    @DisplayName("인증된 jwt 토큰이 없다면 회원 정보를 조회하지 못한다.")
-//    @Test
-//    fun memberMeWithoutAuthentication() {
-//
-//        // when // then
-//        mockMvc.perform(
-//            get("/api/v1/members/me")
-//                .header("Authorization", "Bearer jwt-token")
-//        )
-//            .andDo(print())
-//            .andExpect(status().isUnauthorized())
-//            .andExpect(jsonPath("$.code").value(JwtErrorCode.JWT_TOKEN_INVALID.code))
-//            .andExpect(jsonPath("$.status").value("401"))
-//            .andExpect(jsonPath("$.message").value(JwtErrorCode.JWT_TOKEN_INVALID.message))
-//            .andExpect(jsonPath("$.data").isEmpty())
-//    }
 
 }

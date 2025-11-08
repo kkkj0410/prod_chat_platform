@@ -6,4 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository
 interface AddressRepository : JpaRepository<Address, Long> {
 
     fun findAllByMemberIdAndDeletedAtIsNull(memberId : Long) : List<Address>
+
+    fun findByMemberIdAndDeletedAtIsNull(memberId : Long) : Address?
+
+    fun findByIdAndDeletedAtIsNull(addressId: Long): Address?
 }

@@ -60,4 +60,68 @@ class AddressRepositoryTest @Autowired constructor(
                 tuple(savedMember, "siDo2", "siGunGu2"),
             )
     }
+
+    @DisplayName("해당 회원의 1개 주소를 조회한다.")
+    @Test
+    fun findByMemberIdAndDeletedAtIsNull() {
+        // given
+        val member = Member(
+            email = "email1",
+            password = "password",
+            role = Role.USER,
+        )
+        val savedMember = memberRepository.save(member)
+
+        val address = Address(
+            member = member,
+            siDo = "siDo1",
+            siGunGu = "siGunGu1",
+            eupMyeonDong = "테헤란로",
+            lat = 10.123,
+            lng = 10.234,
+            fullAddress = "fullAddress"
+        )
+        addressRepository.save(address)
+
+        // when
+        val findAddress = addressRepository.findByMemberIdAndDeletedAtIsNull(savedMember.id!!)
+
+        // then
+        assertThat(findAddress)
+            .extracting("member", "siDo", "siGunGu")
+            .contains(savedMember, "siDo1", "siGunGu1")
+    }
+
+
+    @DisplayName("주소 id로 해당 주소를 조회한다.")
+    @Test
+    fun findByIdAndDeletedAtIsNull() {
+        // given
+        val member = Member(
+            email = "email1",
+            password = "password",
+            role = Role.USER,
+        )
+        val savedMember = memberRepository.save(member)
+
+        val address = Address(
+            member = member,
+            siDo = "siDo1",
+            siGunGu = "siGunGu1",
+            eupMyeonDong = "테헤란로",
+            lat = 10.123,
+            lng = 10.234,
+            fullAddress = "fullAddress"
+        )
+        val savedAddress = addressRepository.save(address)
+
+        // when
+        val findAddress = addressRepository.findByIdAndDeletedAtIsNull(savedAddress.id!!)
+
+        // then
+        assertThat(findAddress)
+            .extracting("member", "siDo", "siGunGu")
+            .contains(savedMember, savedAddress.siDo, savedAddress.siGunGu)
+
+    }
 }

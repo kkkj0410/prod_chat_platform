@@ -160,73 +160,108 @@ class AddressServiceTest @Autowired constructor(
             })
     }
 
-//    @DisplayName("회원의 주소 저장 시, 도로명 주소와 사용자 입력 주소 모두 비어있으면 안된다")
-//    @Test
-//    fun addAddressRoadAddressOrInputAddress() {
-//
-//        // given
-//        val member = Member(
-//            email = "email",
-//            password = "password",
-//            role = Role.USER,
-//        )
-//        memberRepository.save(member)
-//
-//        val request = AddressCreateServiceRequest(
-//            siDo = "서울특별시",
-//            siGunGu = "강남구",
-//            eupMyeonDong = "역삼동",
-//            lat = 123.123,
-//            lng = 987.987,
-//            fullAddress = "fullAddress"
-//        )
-//
-//        // when & then
-//        assertThatThrownBy {
-//            addressService.addAddress(member, request)
-//        }
-//            .isInstanceOf(GlobalException::class.java)
-//            .satisfies(ThrowingConsumer { ex ->
-//                val globalEx = ex as GlobalException
-//                assertThat(globalEx.errorCode)
-//                    .isEqualTo(AddressErrorCode.INPUT_AND_ROAD_ADDRESS_BOTH_NULL)
-//            })
-//    }
 
-//    @DisplayName("회원의 주소 저장 시, 도로명 주소와 사용자 입력 주소가 모두 비어있으면 안된다.")
-//    @Test
-//    fun addAddressIsNullRoadAddressAndInputAddress() {
-//        // given
-//        val member = Member(
-//            email = "email",
-//            password = "password",
-//            role = Role.USER,
-//        )
-//        memberRepository.save(member)
-//
-//        val request = AddressCreateServiceRequest(
-//            siDo = "서울특별시",
-//            siGunGu = "강남구",
-//            eupMyeonDong = "역삼동",
-//            postalCode = "1234",
-//            lat = 123.123,
-//            lng = 987.987,
-//            roadAddress = "roadAddress",
-//            inputAddress = "inputAddress"
-//        )
-//
-//        // when & then
-//        assertThatThrownBy {
-//            addressService.addAddress(member, request)
-//        }
-//            .isInstanceOf(GlobalException::class.java)
-//            .satisfies(ThrowingConsumer { ex ->
-//                val globalEx = ex as GlobalException
-//                assertThat(globalEx.errorCode)
-//                    .isEqualTo(AddressErrorCode.INPUT_AND_ROAD_ADDRESS_BOTH_PRESENT)
-//            })
-//    }
+    @DisplayName("회원 id로 주소 조회 시, 주소를 반환한다.")
+    @Test
+    fun findAddressFromMemberId() {
+        // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        memberRepository.save(member)
 
+        val address = Address(
+            member = member,
+            siDo = "서울특별시",
+            siGunGu = "강남구",
+            eupMyeonDong = "테헤란로",
+            lat = 10.123,
+            lng = 10.234,
+            fullAddress = "fullAddress"
+        )
+        val savedAddress = addressRepository.save(address)
+
+        // when
+        val response = addressService.findAddressFromMemberId(member.id!!)
+
+        // then
+        assertThat(response)
+            .extracting("addressId", "siDo", "siGunGu", "eupMyeonDong")
+            .contains(savedAddress.id, savedAddress.siDo, savedAddress.siGunGu, savedAddress.eupMyeonDong)
+    }
+
+    @DisplayName("회원 id로 주소 조회 시, 회원이 주소가 없다면 주소 조회에 실패한다.")
+    @Test
+    fun findAddressFromMemberIdWithoutAddressMemberId() {
+        // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        memberRepository.save(member)
+
+        // when & then
+        assertThatThrownBy {
+            addressService.findAddressFromMemberId(member.id!!)
+        }
+            .isInstanceOf(GlobalException::class.java)
+            .satisfies(ThrowingConsumer { ex ->
+                val globalEx = ex as GlobalException
+                assertThat(globalEx.errorCode)
+                    .isEqualTo(AddressErrorCode.MEMBER_ADDRESS_NOT_FOUND)
+            })
+    }
+
+    @DisplayName("주소 id로 주소 조회 시, 주소를 반환한다.")
+    @Test
+    fun findAddressFromAddressId() {
+        // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        memberRepository.save(member)
+
+        val address = Address(
+            member = member,
+            siDo = "서울특별시",
+            siGunGu = "강남구",
+            eupMyeonDong = "테헤란로",
+            lat = 10.123,
+            lng = 10.234,
+            fullAddress = "fullAddress"
+        )
+        val savedAddress = addressRepository.save(address)
+
+        // when
+        val response = addressService.findAddressFromAddressId(savedAddress.id!!)
+
+        // then
+        assertThat(response)
+            .extracting("siDo", "siGunGu", "eupMyeonDong", "lat", "lng")
+            .contains(savedAddress.siDo, savedAddress.siGunGu, savedAddress.eupMyeonDong, savedAddress.lat, savedAddress.lng)
+    }
+
+    @DisplayName("주소 id로 주소 조회 시, 주소가 없다면 주소 조회에 실패한다.")
+    @Test
+    fun findAddressFromAddressIdWithoutAddressMemberId() {
+        // given
+
+        // when & then
+        assertThatThrownBy {
+            addressService.findAddressFromAddressId(1L)
+        }
+            .isInstanceOf(GlobalException::class.java)
+            .satisfies(ThrowingConsumer { ex ->
+                val globalEx = ex as GlobalException
+                assertThat(globalEx.errorCode)
+                    .isEqualTo(AddressErrorCode.ADDRESS_ID_NOT_FOUND)
+            })
+    }
 
 
 }

@@ -1,6 +1,8 @@
 package kr.co.fitview.api.app.domain.address.service
 
 import kr.co.fitview.api.app.domain.address.dto.request.AddressCreateServiceRequest
+import kr.co.fitview.api.app.domain.address.dto.response.AddressDetailResponse
+import kr.co.fitview.api.app.domain.address.dto.response.AddressResponse
 import kr.co.fitview.api.app.domain.address.entity.Address
 import kr.co.fitview.api.app.domain.address.repository.AddressRepository
 import kr.co.fitview.api.app.domain.member.entity.Member
@@ -42,24 +44,26 @@ class AddressService(
         return addressRepository.save(address)
     }
 
-//    fun findAddressFrom(addressId: Long): AddressResponse {
-//        TODO("Not yet implemented")
-//    }
+    fun findAddressFromMemberId(memberId: Long) : AddressResponse{
+        val findAddress = addressRepository.findByMemberIdAndDeletedAtIsNull(memberId)
+        if(isNull(findAddress)){
+            throw GlobalException(AddressErrorCode.MEMBER_ADDRESS_NOT_FOUND)
+        }
 
-//    private fun validateIsNotNullAllAddress(request: AddressCreateServiceRequest) {
-//        if (isNotNull(request.roadAddress) && isNotNull(request.inputAddress)) {
-//            throw GlobalException(AddressErrorCode.INPUT_AND_ROAD_ADDRESS_BOTH_PRESENT)
-//        }
-//    }
+        return AddressResponse.from(findAddress!!)
+    }
 
-//    private fun validateIsNullAllAddress(request: AddressCreateServiceRequest) {
-//        if (isNull(request.roadAddress) && isNull(request.inputAddress)) {
-//            throw GlobalException(AddressErrorCode.INPUT_AND_ROAD_ADDRESS_BOTH_NULL)
-//        }
-//    }
+    fun findAddressFromAddressId(addressId: Long): AddressDetailResponse {
+        val findAddress = addressRepository.findByIdAndDeletedAtIsNull(addressId)
+        if(isNull(findAddress)){
+            throw GlobalException(AddressErrorCode.ADDRESS_ID_NOT_FOUND)
+        }
 
-//    private fun isNull(value : Any?) =
-//        value == null
+        return AddressDetailResponse.from(findAddress!!)
+    }
+
+    private fun isNull(value : Any?) =
+        value == null
 //
 //    private fun isNotNull(value : Any?) =
 //        value != null
@@ -135,5 +139,6 @@ class AddressService(
         }
         return entry.value
     }
+
 
 }

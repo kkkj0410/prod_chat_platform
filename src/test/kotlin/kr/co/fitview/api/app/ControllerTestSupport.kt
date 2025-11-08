@@ -1,6 +1,8 @@
 package kr.co.fitview.api.app
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import kr.co.fitview.api.app.domain.address.controller.AddressController
+import kr.co.fitview.api.app.domain.address.service.AddressService
 import kr.co.fitview.api.app.domain.auth.controller.AuthController
 import kr.co.fitview.api.app.domain.auth.service.AuthService
 import kr.co.fitview.api.app.domain.auth.service.RefreshTokenService
@@ -42,6 +44,7 @@ import software.amazon.awssdk.services.s3.presigner.S3Presigner
     MemberController::class,
     OAuth2Controller::class,
     ImageController::class,
+    AddressController::class,
     GlobalExceptionHandler::class
 ],
 excludeFilters = [
@@ -67,21 +70,24 @@ abstract class ControllerTestSupport {
     protected lateinit var objectMapper: ObjectMapper
 
     @MockitoBean
-    private lateinit var authService: AuthService
+    protected lateinit var authService: AuthService
 
     @MockitoBean
-    private lateinit var memberService: MemberService
+    protected lateinit var memberService: MemberService
 
     @MockitoBean
-    private lateinit var refreshTokenService: RefreshTokenService
+    protected lateinit var refreshTokenService: RefreshTokenService
 
     @MockitoBean
-    private lateinit var oAuth2Service: OAuth2Service
+    protected lateinit var oAuth2Service: OAuth2Service
 
     @MockitoBean
-    private lateinit var s3Service: S3Service
+    protected lateinit var addressService: AddressService
 
     @MockitoBean
-    private lateinit var securityUtil: SecurityUtil
+    protected lateinit var s3Service: S3Service
+
+    @MockitoBean
+    protected lateinit var securityUtil: SecurityUtil
 
 }
