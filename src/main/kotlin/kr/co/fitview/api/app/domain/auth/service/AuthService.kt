@@ -2,6 +2,7 @@ package kr.co.fitview.api.app.domain.auth.service
 
 import kr.co.fitview.api.app.domain.auth.HeaderClientType
 import kr.co.fitview.api.app.domain.auth.dto.request.AccessTokenRefreshServiceRequest
+import kr.co.fitview.api.app.domain.auth.dto.request.AuthSignupRequestTest
 import kr.co.fitview.api.app.domain.auth.dto.response.MemberLoginResponse
 import kr.co.fitview.api.app.domain.auth.dto.response.AccessTokenRefreshResponse
 import kr.co.fitview.api.app.domain.member.dto.request.MemberCreateServiceRequest
@@ -66,7 +67,6 @@ class AuthService(
         return AccessTokenRefreshResponse(accessToken)
     }
 
-
     private fun createMember(
         request: MemberCreateServiceRequest,
         encryptedPassword: String
@@ -115,6 +115,7 @@ class AuthService(
     private fun convertHeader(refreshTokenCookie: String) : HttpHeaders {
         return HttpHeaders().apply { add(HttpHeaders.SET_COOKIE, refreshTokenCookie) }
     }
+
 
 
 }

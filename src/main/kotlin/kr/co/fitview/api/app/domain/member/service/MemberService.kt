@@ -1,5 +1,7 @@
 package kr.co.fitview.api.app.domain.member.service
 
+import kr.co.fitview.api.app.domain.member.condition.MemberLocalCondition
+import kr.co.fitview.api.app.domain.member.dto.response.MemberLocalResponse
 import kr.co.fitview.api.app.domain.member.dto.response.MemberMeResponse
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.entity.WorkoutTime
@@ -8,8 +10,12 @@ import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.domain.member.repository.WorkoutTimeRepository
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.member.MemberErrorCode
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import kotlin.random.Random
 
 
 @Service
@@ -70,6 +76,28 @@ class MemberService(
         return MemberMeResponse(findMember.id!!, findMember.email!!, findMember.role!!)
     }
 
+    fun findRandomMemberWithinLocal(
+        memberId: Long,
+        condition: MemberLocalCondition,
+        seed: Long
+    ): Page<MemberLocalResponse> {
+
+        val findMembers = memberRepository.findMemberWithinLocal(memberId, condition)
+
+        val random = Random(seed)
+        val shuffledMembers = findMembers.shuffled(random)
+
+        val page = (condition.page ?: 1).coerceAtLeast(1)
+        val size = condition.size ?: 10
+
+        val fromIndex = (page - 1) * size
+        val toIndex = (fromIndex + size).coerceAtMost(shuffledMembers.size)
+
+        val pageContent = if (fromIndex >= shuffledMembers.size) emptyList()
+        else shuffledMembers.subList(fromIndex, toIndex)
+
+        return PageImpl(pageContent, PageRequest.of(page - 1, size), shuffledMembers.size.toLong())
+    }
 
     private fun validateDuplicatedEmail(member: Member) {
         findMemberFromLoginId(member.email!!)?.let {

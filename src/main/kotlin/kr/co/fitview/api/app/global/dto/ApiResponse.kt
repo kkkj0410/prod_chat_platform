@@ -20,12 +20,23 @@ data class ApiResponse<T>(
             return ApiResponse(HttpStatus.OK.value(), "ok", "ok", data)
         }
 
-        fun <T> successWithPagination(data: List<T>, pagination: Pagination): ApiResponse<SuccessPagedResponse<T>> {
+        fun <T> successWithPagination(page: Page<T>): ApiResponse<SuccessPagedResponse<T>> {
+            val pagination = Pagination.from(page) // Page → Pagination
             return ApiResponse(
                 HttpStatus.OK.value(),
                 "ok",
                 HttpStatus.OK.reasonPhrase,
-                SuccessPagedResponse(data, pagination)
+                SuccessPagedResponse(page.content, pagination)
+            )
+        }
+
+        fun <T> successWithPagination(slice: Slice<T>): ApiResponse<SuccessPagedResponse<T>> {
+            val pagination = Pagination.from(slice)
+            return ApiResponse(
+                HttpStatus.OK.value(),
+                "ok",
+                HttpStatus.OK.reasonPhrase,
+                SuccessPagedResponse(slice.content, pagination)
             )
         }
 
@@ -52,7 +63,7 @@ data class Pagination(
 ) {
     companion object {
         fun from(page: Page<*>) = Pagination(
-            page.number,
+            page.number + 1,
             page.size,
             page.totalElements,
             page.totalPages,
@@ -61,7 +72,7 @@ data class Pagination(
         )
 
         fun from(slice: Slice<*>) = Pagination(
-            slice.number,
+            slice.number + 1,
             slice.size,
             null,
             null,
