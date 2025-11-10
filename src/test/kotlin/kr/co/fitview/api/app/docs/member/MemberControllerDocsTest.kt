@@ -7,6 +7,7 @@ import kr.co.fitview.api.app.domain.address.dto.response.AddressResponse
 import kr.co.fitview.api.app.domain.address.service.AddressService
 import kr.co.fitview.api.app.domain.member.controller.MemberController
 import kr.co.fitview.api.app.domain.member.dto.request.Age
+import kr.co.fitview.api.app.domain.member.dto.response.MemberLocalResponse
 import kr.co.fitview.api.app.domain.member.dto.response.MemberMeResponse
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutExperience
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutGoal
@@ -16,9 +17,13 @@ import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.util.SecurityUtil
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.mockito.BDDMockito.willReturn
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.any
 import org.mockito.kotlin.given
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.PageRequest
 import org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document
 import org.springframework.restdocs.operation.preprocess.Preprocessors.*
@@ -198,9 +203,46 @@ class MemberControllerDocsTest : RestDocsSupport() {
     @DisplayName("우리 동네 핏버디 API")
     @Test
     fun memberLocalList() {
+
+        val mockMembers = listOf(
+            MemberLocalResponse(
+                memberId = 1L,
+                nickname = "ironman",
+                workoutExperience = MemberWorkoutExperience.UNDER_ONE_YEAR,
+                workoutStyle = MemberWorkoutStyle.CARDIO,
+                workoutGoal = MemberWorkoutGoal.WEIGHT_LOSS,
+                profileImageUrl = "https://static.fitview.co.kr/member/profile/0cca097d-630a-46cb-9da6-685be5d3e1f2"
+            ),
+            MemberLocalResponse(
+                memberId = 2L,
+                nickname = "hulk",
+                workoutExperience = MemberWorkoutExperience.ONE_TO_THREE_YEARS,
+                workoutStyle = MemberWorkoutStyle.BALANCE,
+                workoutGoal = MemberWorkoutGoal.PERFORMANCE_GOAL,
+                profileImageUrl = "https://static.fitview.co.kr/member/profile/0cca097d-630a-46cb-9da6-685be5d3e1f2"
+            ),
+            MemberLocalResponse(
+                memberId = 3L,
+                nickname = "thor",
+                workoutExperience = MemberWorkoutExperience.FOUR_TO_SIX_YEARS,
+                workoutStyle = MemberWorkoutStyle.BALANCE,
+                workoutGoal = MemberWorkoutGoal.ENDURANCE,
+                profileImageUrl = "https://static.fitview.co.kr/member/profile/0cca097d-630a-46cb-9da6-685be5d3e1f2"
+            )
+        )
+
+        val mockPage: Page<MemberLocalResponse> = PageImpl(
+            mockMembers,
+            PageRequest.of(1, 3),
+            mockMembers.size.toLong()
+        )
+
+        given(memberService.findRandomMemberWithinLocal(any(), any(), any()))
+            .willReturn(mockPage)
+
         // when & then
         mockMvc.perform(
-            get("/api/v1/members/local")
+            get("/api/v1/members/local/{seed}", 1233424)
                 .header("Authorization", "Bearer jwt-token")
                 .param("size", "10")
                 .param("page", "1")
@@ -273,7 +315,7 @@ class MemberControllerDocsTest : RestDocsSupport() {
                     fieldWithPath("data.content[].profileImageUrl").type(JsonFieldType.STRING)
                         .description("조회 대상 회원 프로필 이미지"),
 
-                    *RestDocsPagination.paginationFields()
+                    *RestDocsPagination.paginationByPage()
                 )
             ))
     }
