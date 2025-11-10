@@ -12,6 +12,7 @@ import kr.co.fitview.api.app.domain.auth.dto.response.AccessTokenRefreshResponse
 import kr.co.fitview.api.app.domain.auth.dto.response.MemberLoginResponse
 import kr.co.fitview.api.app.domain.auth.service.AuthService
 import kr.co.fitview.api.app.domain.auth.service.RefreshTokenService
+import kr.co.fitview.api.app.domain.auth.service.TestAuthService
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
@@ -36,9 +37,10 @@ class AuthControllerDocsTest : RestDocsSupport() {
 
     private val authService: AuthService = mock(AuthService::class.java)
     private val refreshTokenService : RefreshTokenService = mock(RefreshTokenService::class.java)
+    private val testAuthService: TestAuthService = mock(TestAuthService::class.java)
 
     override fun initController(): Any {
-        return AuthController(authService, refreshTokenService)
+        return AuthController(authService, refreshTokenService, testAuthService)
     }
 
     @DisplayName("사용자 회원가입 API")

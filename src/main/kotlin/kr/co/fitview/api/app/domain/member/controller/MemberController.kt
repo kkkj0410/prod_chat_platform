@@ -11,12 +11,8 @@ import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutGoal
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutStyle
 import kr.co.fitview.api.app.domain.member.service.MemberService
 import kr.co.fitview.api.app.global.dto.ApiResponse
-import kr.co.fitview.api.app.global.dto.Pagination
 import kr.co.fitview.api.app.global.dto.SuccessPagedResponse
 import kr.co.fitview.api.app.global.util.SecurityUtil
-import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Slice
-import org.springframework.data.domain.SliceImpl
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
@@ -49,6 +45,9 @@ class MemberController(
     @GetMapping("/recommendations")
     fun memberRecommendationList(
     ) : ResponseEntity<ApiResponse<List<MemberRecommendationResponse>>> {
+
+
+
         val response = listOf(
             MemberRecommendationResponse(
                 memberId = 100L,
@@ -65,35 +64,20 @@ class MemberController(
     }
 
 
-    @GetMapping("/local")
+    @GetMapping("/local/{seed}")
     fun memberLocalList(
         @ModelAttribute
-        condition : MemberLocalCondition
+        condition : MemberLocalCondition,
+
+        @PathVariable
+        seed : Long
 
         ) : ResponseEntity<ApiResponse<SuccessPagedResponse<MemberLocalResponse>>> {
-        val response = listOf(
-            MemberLocalResponse(
-                memberId = 100L,
-                nickname = "nickname",
-                workoutExperience = MemberWorkoutExperience.JUST_STARTED,
-                workoutStyle = MemberWorkoutStyle.CARDIO,
-                workoutGoal = MemberWorkoutGoal.PERFORMANCE_GOAL,
-                profileImageUrl = "profileImageUrl"
-            )
-        )
 
-        val slice = Pagination.from(
-            createSampleSlice()
-        )
+        val response = memberService.findRandomMemberWithinLocal(securityUtil.getMemberId(), condition, seed)
 
-        // 최대 10개 응답
-        return ResponseEntity.ok(ApiResponse.successWithPagination(response, slice))
+        return ResponseEntity.ok(ApiResponse.successWithPagination(response))
     }
-    fun createSampleSlice(): Slice<String> {
-        val content = listOf("A", "B", "C") // 임의 데이터
-        val pageRequest = PageRequest.of(1, 3)
-        val hasNext = true  // 다음 페이지 존재 여부
-        return SliceImpl(content, pageRequest, hasNext)
-    }
+
 
 }

@@ -3,14 +3,12 @@ package kr.co.fitview.api.app.domain.auth.controller
 import jakarta.validation.Valid
 import kr.co.fitview.api.app.domain.auth.HeaderClientType
 import kr.co.fitview.api.app.domain.auth.constant.AuthConstant
-import kr.co.fitview.api.app.domain.auth.dto.request.MemberCreateRequest
-import kr.co.fitview.api.app.domain.auth.dto.request.MemberLoginRequest
-import kr.co.fitview.api.app.domain.auth.dto.request.AccessTokenRefreshRequest
-import kr.co.fitview.api.app.domain.auth.dto.request.MemberLogoutRequest
+import kr.co.fitview.api.app.domain.auth.dto.request.*
 import kr.co.fitview.api.app.domain.auth.dto.response.AccessTokenRefreshResponse
 import kr.co.fitview.api.app.domain.auth.dto.response.MemberLoginResponse
 import kr.co.fitview.api.app.domain.auth.service.AuthService
 import kr.co.fitview.api.app.domain.auth.service.RefreshTokenService
+import kr.co.fitview.api.app.domain.auth.service.TestAuthService
 import kr.co.fitview.api.app.global.dto.ApiResponse
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -20,7 +18,8 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/api/v1/auth")
 class AuthController(
     val authService : AuthService,
-    val refreshTokenService : RefreshTokenService
+    val refreshTokenService : RefreshTokenService,
+    val testAuthService: TestAuthService
 ) {
 
     @PostMapping("/signup")
@@ -30,6 +29,19 @@ class AuthController(
         request: MemberCreateRequest
     ): ResponseEntity<ApiResponse<*>> {
         authService.signup(request.toServiceRequest())
+        return ResponseEntity.ok(ApiResponse.success("ok"))
+    }
+
+    //해당 API는 가짜 데이터를 넣기위한 용도로 사용
+    @PostMapping("/signup/test")
+    fun memberSaveTest(
+        @Valid
+        @RequestBody
+        request: AuthSignupRequestTest,
+
+        @RequestParam(required = false) minHeight: Int?
+    ): ResponseEntity<ApiResponse<*>> {
+        testAuthService.signup(request)
         return ResponseEntity.ok(ApiResponse.success("ok"))
     }
 

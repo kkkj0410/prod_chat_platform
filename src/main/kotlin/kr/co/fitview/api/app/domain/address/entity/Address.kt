@@ -85,7 +85,8 @@ class Address(
                 eupMyeonDong = request.eupMyeonDong,
                 lat = request.lat,
                 lng = request.lng,
-                fullAddress = request.fullAddress
+                fullAddress = request.fullAddress,
+                radiusKm = 5.toDouble()
             )
         }
 

@@ -6,6 +6,7 @@ import kr.co.fitview.api.app.domain.address.service.AddressService
 import kr.co.fitview.api.app.domain.auth.controller.AuthController
 import kr.co.fitview.api.app.domain.auth.service.AuthService
 import kr.co.fitview.api.app.domain.auth.service.RefreshTokenService
+import kr.co.fitview.api.app.domain.auth.service.TestAuthService
 import kr.co.fitview.api.app.domain.image.controller.ImageController
 import kr.co.fitview.api.app.domain.image.service.S3Service
 import kr.co.fitview.api.app.domain.member.controller.MemberController
@@ -83,6 +84,9 @@ abstract class ControllerTestSupport {
 
     @MockitoBean
     protected lateinit var addressService: AddressService
+
+    @MockitoBean
+    protected lateinit var testAuthService: TestAuthService
 
     @MockitoBean
     protected lateinit var s3Service: S3Service
