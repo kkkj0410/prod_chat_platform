@@ -63,7 +63,7 @@ class MemberControllerTest : ControllerTestSupport(){
 
         // when // then
         mockMvc.perform(
-            get("/api/v1/members/{memberId}/addresses", 1)
+            get("/api/v1/members/addresses", 1)
                 .header("Authorization", "Bearer jwt-token")
         )
             .andDo(print())
