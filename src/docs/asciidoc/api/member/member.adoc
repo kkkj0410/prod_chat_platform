@@ -40,6 +40,7 @@ include::{snippets}/member-recommendation/response-fields.adoc[]
 ==== HTTP Request
 include::{snippets}/member-local/http-request.adoc[]
 include::{snippets}/member-local/request-headers.adoc[]
+include::{snippets}/member-local/path-parameters.adoc[]
 include::{snippets}/member-local/query-parameters.adoc[]
 
 ==== HTTP Response
