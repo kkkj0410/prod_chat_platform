@@ -36,6 +36,7 @@ import org.springframework.restdocs.request.RequestDocumentation.pathParameters
 import org.springframework.restdocs.request.RequestDocumentation.queryParameters
 
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
@@ -100,6 +101,39 @@ class MemberControllerDocsTest : RestDocsSupport() {
             ))
     }
 
+    @DisplayName("사용자 본인 삭제 API")
+    @Test
+    fun memberMeDelete() {
+
+        // when & then
+        mockMvc.perform(
+            delete("/api/v1/members/me")
+                .header("Authorization", "Bearer jwt-token")
+
+        )
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andDo(document("member-delete",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+
+                requestHeaders(
+                    RestDocsHeaders.authorizationHeader(Role.USER)
+                ),
+
+                responseFields(
+                    fieldWithPath("status").type(JsonFieldType.NUMBER)
+                        .description("상태"),
+                    fieldWithPath("code").type(JsonFieldType.STRING)
+                        .description("코드"),
+                    fieldWithPath("message").type(JsonFieldType.STRING)
+                        .description("에러 메시지"),
+                    fieldWithPath("data").type(JsonFieldType.STRING)
+                        .description("응답 데이터"),
+                )
+            ))
+    }
+
     @DisplayName("본인 주소 조회 API")
     @Test
     fun memberAddressDetails() {
@@ -116,7 +150,7 @@ class MemberControllerDocsTest : RestDocsSupport() {
 
         // when & then
         mockMvc.perform(
-            get("/api/v1/members/{memberId}/addresses", 1)
+            get("/api/v1/members/addresses", 1)
                 .header("Authorization", "Bearer jwt-token")
         )
             .andDo(print())
@@ -127,10 +161,6 @@ class MemberControllerDocsTest : RestDocsSupport() {
 
                 requestHeaders(
                     RestDocsHeaders.authorizationHeader(Role.USER)
-                ),
-
-                pathParameters(
-                    parameterWithName("memberId").description("조회 대상 회원 id")
                 ),
 
                 responseFields(

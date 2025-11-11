@@ -37,13 +37,11 @@ class MemberController(
         return ResponseEntity.ok(ApiResponse.success("ok"))
     }
 
-    @GetMapping("/{memberId}/addresses")
+    @GetMapping("/addresses")
     fun memberAddressDetails(
-        @PathVariable
-        memberId : Long,
     ) : ResponseEntity<ApiResponse<AddressResponse>> {
 
-        val response = addressService.findAddressFromMemberId(memberId)
+        val response = addressService.findAddressFromMemberId(securityUtil.getMemberId())
 
         return ResponseEntity.ok(ApiResponse.success(response))
     }
