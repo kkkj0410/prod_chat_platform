@@ -1,9 +1,11 @@
 package kr.co.fitview.api.app.domain.address.service
 
 import kr.co.fitview.api.app.IntegrationTestSupport
+import kr.co.fitview.api.app.domain.address.constant.AddressConstant
 import kr.co.fitview.api.app.domain.address.dto.request.AddressCreateServiceRequest
 import kr.co.fitview.api.app.domain.address.dto.request.AddressRadiusServiceRequest
 import kr.co.fitview.api.app.domain.address.entity.Address
+import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
 import kr.co.fitview.api.app.domain.address.repository.AddressRepository
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
@@ -237,6 +239,42 @@ class AddressServiceTest @Autowired constructor(
             })
     }
 
+    @DisplayName("회원 id로 주소 조회 시, 서울 외 지역 사람은 서울 기본 주소로 조회한다.")
+    @Test
+    fun findAddressFromMemberIdNotSeoul() {
+        // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        memberRepository.save(member)
+
+        val address = Address(
+            member = member,
+            siDo = AddressSiDo.JEJU.fullName,
+            siGunGu = "siGunGu",
+            eupMyeonDong = "eupMyeonDong",
+            lat = 10.123,
+            lng = 10.234,
+            fullAddress = "fullAddress"
+        )
+        val savedAddress = addressRepository.save(address)
+
+        // when
+        val response = addressService.findAddressFromMemberId(member.id!!)
+
+        // then
+        assertThat(response)
+            .extracting("addressId", "siDo", "siGunGu", "eupMyeonDong")
+            .contains(savedAddress.id,
+                AddressConstant.DEFAULT_SIDO,
+                AddressConstant.DEFAULT_SIGUNGU,
+                AddressConstant.DEFAULT_EUPMYEONDONG
+            )
+
+    }
+
     @DisplayName("주소 id로 주소 조회 시, 주소를 반환한다.")
     @Test
     fun findAddressFromAddressId() {
@@ -289,6 +327,44 @@ class AddressServiceTest @Autowired constructor(
                 assertThat(globalEx.errorCode)
                     .isEqualTo(AddressErrorCode.ADDRESS_NOT_FOUND)
             })
+    }
+
+    @DisplayName("주소 id로 주소 조회 시, 서울 외 지역 사람은 기본 서울 주소로 반환한다.")
+    @Test
+    fun findAddressFromAddressIdNotSeoul() {
+        // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        memberRepository.save(member)
+
+        val address = Address(
+            member = member,
+            siDo = AddressSiDo.INCHEON.fullName,
+            siGunGu = "siGunGu",
+            eupMyeonDong = "eupMyeonDong",
+            lat = 10.123,
+            lng = 10.234,
+            fullAddress = "fullAddress"
+        )
+        val savedAddress = addressRepository.save(address)
+
+        // when
+        val response = addressService.findAddressFromAddressId(savedAddress.id!!)
+
+        // then
+        assertThat(response)
+            .extracting("siDo", "siGunGu", "eupMyeonDong", "lat", "lng")
+            .contains(
+                AddressConstant.DEFAULT_SIDO,
+                AddressConstant.DEFAULT_SIGUNGU,
+                AddressConstant.DEFAULT_EUPMYEONDONG,
+                AddressConstant.DEFAULT_LAT,
+                AddressConstant.DEFAULT_LNG,
+            )
+
     }
 
     @DisplayName("주소를 변경한다.")

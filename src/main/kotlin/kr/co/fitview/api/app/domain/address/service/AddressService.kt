@@ -1,5 +1,6 @@
 package kr.co.fitview.api.app.domain.address.service
 
+import kr.co.fitview.api.app.domain.address.constant.AddressConstant
 import kr.co.fitview.api.app.domain.address.dto.request.AddressCreateServiceRequest
 import kr.co.fitview.api.app.domain.address.dto.request.AddressRadiusServiceRequest
 import kr.co.fitview.api.app.domain.address.dto.response.AddressDetailResponse
@@ -72,7 +73,11 @@ class AddressService(
             throw GlobalException(AddressErrorCode.MEMBER_ADDRESS_NOT_FOUND)
         }
 
-        return AddressResponse.from(findAddress!!)
+        if (isNotSeoul(findAddress!!)){
+            return AddressResponse.fromDefault(findAddress.id!!)
+        }
+
+        return AddressResponse.from(findAddress)
     }
 
     fun findAddressFromAddressId(addressId: Long): AddressDetailResponse {
@@ -81,7 +86,11 @@ class AddressService(
             throw GlobalException(AddressErrorCode.ADDRESS_NOT_FOUND)
         }
 
-        return AddressDetailResponse.from(findAddress!!)
+        if (isNotSeoul(findAddress!!)){
+            return AddressDetailResponse.fromDefault(findAddress.id!!)
+        }
+
+        return AddressDetailResponse.from(findAddress)
     }
 
     private fun isNull(value: Any?) =
@@ -89,5 +98,8 @@ class AddressService(
 
     private fun isNegativeNumber(number : Int) =
         number < 0
+
+    private fun isNotSeoul(findAddress: Address) =
+        findAddress.siDo != AddressConstant.DEFAULT_SIDO
 
 }
