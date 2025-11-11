@@ -31,6 +31,12 @@ class MemberController(
         return ResponseEntity.ok(ApiResponse.success(response))
     }
 
+    @DeleteMapping("/me")
+    fun memberMeDelete() : ResponseEntity<ApiResponse<*>> {
+        memberService.deleteMember(securityUtil.getMemberId())
+        return ResponseEntity.ok(ApiResponse.success("ok"))
+    }
+
     @GetMapping("/{memberId}/addresses")
     fun memberAddressDetails(
         @PathVariable
@@ -44,21 +50,23 @@ class MemberController(
 
     @GetMapping("/recommendations")
     fun memberRecommendationList(
+
     ) : ResponseEntity<ApiResponse<List<MemberRecommendationResponse>>> {
 
 
+        val response = memberService.findRandomMemberWithinRecommendation(securityUtil.getMemberId())
 
-        val response = listOf(
-            MemberRecommendationResponse(
-                memberId = 100L,
-                nickname = "nickname",
-                workoutExperience = MemberWorkoutExperience.JUST_STARTED,
-                workoutStyle = MemberWorkoutStyle.CARDIO,
-                workoutGoal = MemberWorkoutGoal.PERFORMANCE_GOAL,
-                profileImageUrl = "profileImageUrl",
-                workoutImageUrl = "workoutImageUrl"
-            )
-        )
+//        val response = listOf(
+//            MemberRecommendationResponse(
+//                memberId = 100L,
+//                nickname = "nickname",
+//                workoutExperience = MemberWorkoutExperience.JUST_STARTED,
+//                workoutStyle = MemberWorkoutStyle.CARDIO,
+//                workoutGoal = MemberWorkoutGoal.PERFORMANCE_GOAL,
+//                profileImageUrl = "profileImageUrl",
+//                workoutImageUrl = "workoutImageUrl"
+//            )
+//        )
         // 최대 10개 응답
         return ResponseEntity.ok(ApiResponse.success(response))
     }

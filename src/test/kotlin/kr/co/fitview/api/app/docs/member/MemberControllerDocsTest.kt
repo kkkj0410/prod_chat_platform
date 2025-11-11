@@ -9,6 +9,7 @@ import kr.co.fitview.api.app.domain.member.controller.MemberController
 import kr.co.fitview.api.app.domain.member.dto.request.Age
 import kr.co.fitview.api.app.domain.member.dto.response.MemberLocalResponse
 import kr.co.fitview.api.app.domain.member.dto.response.MemberMeResponse
+import kr.co.fitview.api.app.domain.member.dto.response.MemberRecommendationResponse
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutExperience
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutGoal
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutStyle
@@ -157,6 +158,30 @@ class MemberControllerDocsTest : RestDocsSupport() {
     @DisplayName("추천 핏버디 API")
     @Test
     fun memberRecommendationList() {
+        given(memberService.findRandomMemberWithinRecommendation(any()))
+            .willReturn(
+                listOf(
+                    MemberRecommendationResponse(
+                        memberId = 1L,
+                        nickname = "홍길동",
+                        workoutExperience = MemberWorkoutExperience.FOUR_TO_SIX_YEARS,
+                        workoutStyle = MemberWorkoutStyle.CARDIO,
+                        workoutGoal = MemberWorkoutGoal.WEIGHT_LOSS,
+                        profileImageUrl = "https://example.com/profile/1.jpg",
+                        workoutImageUrl = "https://example.com/workout/1.jpg"
+                    ),
+                    MemberRecommendationResponse(
+                        memberId = 2L,
+                        nickname = "김철수",
+                        workoutExperience = MemberWorkoutExperience.UNDER_ONE_YEAR,
+                        workoutStyle = MemberWorkoutStyle.BALANCE,
+                        workoutGoal = MemberWorkoutGoal.PERFORMANCE_GOAL,
+                        profileImageUrl = "https://example.com/profile/2.jpg",
+                        workoutImageUrl = null
+                    )
+                )
+            )
+
         // when & then
         mockMvc.perform(
             get("/api/v1/members/recommendations")
@@ -193,7 +218,7 @@ class MemberControllerDocsTest : RestDocsSupport() {
                         .description("조회 대상 회원 운동 목표"),
                     fieldWithPath("data[].profileImageUrl").type(JsonFieldType.STRING)
                         .description("조회 대상 회원 프로필 이미지"),
-                    fieldWithPath("data[].workoutImageUrl").type(JsonFieldType.STRING)
+                    fieldWithPath("data[].workoutImageUrl").type(JsonFieldType.STRING).optional()
                         .description("조회 대상 회원 운동 사진"),
                 )
             ))
@@ -234,7 +259,7 @@ class MemberControllerDocsTest : RestDocsSupport() {
         val mockPage: Page<MemberLocalResponse> = PageImpl(
             mockMembers,
             PageRequest.of(1, 3),
-            mockMembers.size.toLong()
+            10L
         )
 
         given(memberService.findRandomMemberWithinLocal(any(), any(), any()))
@@ -242,7 +267,7 @@ class MemberControllerDocsTest : RestDocsSupport() {
 
         // when & then
         mockMvc.perform(
-            get("/api/v1/members/local/{seed}", 1233424)
+            get("/api/v1/members/local/{seed}", 1762798279123)
                 .header("Authorization", "Bearer jwt-token")
                 .param("size", "10")
                 .param("page", "1")
@@ -264,6 +289,10 @@ class MemberControllerDocsTest : RestDocsSupport() {
 
                 requestHeaders(
                     RestDocsHeaders.authorizationHeader(Role.USER)
+                ),
+
+                pathParameters(
+                    parameterWithName("seed").description("랜덤 정렬을 위한 seed. 다른 정렬을 보이기 위해서는 seed를 바꾸면 된다. Date.now(ex - 1762798279123)를 seed로 사용하는 것츨 권장한다. 서로 다른 회원 간의 seed가 겹쳐도 된다.")
                 ),
 
                 queryParameters(
