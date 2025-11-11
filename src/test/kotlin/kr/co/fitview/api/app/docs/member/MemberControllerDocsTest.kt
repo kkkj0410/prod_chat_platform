@@ -159,7 +159,7 @@ class MemberControllerDocsTest : RestDocsSupport() {
     fun memberRecommendationList() {
         // when & then
         mockMvc.perform(
-            get("/api/v1/members/recommendations")
+            get("/api/v1/members/recommendations/{seed}", 1762798279123)
                 .header("Authorization", "Bearer jwt-token")
         )
             .andDo(print())
@@ -170,6 +170,10 @@ class MemberControllerDocsTest : RestDocsSupport() {
 
                 requestHeaders(
                     RestDocsHeaders.authorizationHeader(Role.USER)
+                ),
+
+                pathParameters(
+                    parameterWithName("seed").description("랜덤 정렬을 위한 seed. 다른 정렬을 보이기 위해서는 seed를 바꾸면 된다. Date.now(ex - 1762798279123)를 seed로 사용하는 것츨 권장한다. 서로 다른 회원 간의 seed가 겹쳐도 된다.")
                 ),
 
                 responseFields(
@@ -234,7 +238,7 @@ class MemberControllerDocsTest : RestDocsSupport() {
         val mockPage: Page<MemberLocalResponse> = PageImpl(
             mockMembers,
             PageRequest.of(1, 3),
-            mockMembers.size.toLong()
+            10L
         )
 
         given(memberService.findRandomMemberWithinLocal(any(), any(), any()))
@@ -242,7 +246,7 @@ class MemberControllerDocsTest : RestDocsSupport() {
 
         // when & then
         mockMvc.perform(
-            get("/api/v1/members/local/{seed}", 1233424)
+            get("/api/v1/members/local/{seed}", 1762798279123)
                 .header("Authorization", "Bearer jwt-token")
                 .param("size", "10")
                 .param("page", "1")
@@ -264,6 +268,10 @@ class MemberControllerDocsTest : RestDocsSupport() {
 
                 requestHeaders(
                     RestDocsHeaders.authorizationHeader(Role.USER)
+                ),
+
+                pathParameters(
+                    parameterWithName("seed").description("랜덤 정렬을 위한 seed. 다른 정렬을 보이기 위해서는 seed를 바꾸면 된다. Date.now(ex - 1762798279123)를 seed로 사용하는 것츨 권장한다. 서로 다른 회원 간의 seed가 겹쳐도 된다.")
                 ),
 
                 queryParameters(

@@ -3,6 +3,7 @@ package kr.co.fitview.api.app.domain.member.service
 import kr.co.fitview.api.app.domain.member.condition.MemberLocalCondition
 import kr.co.fitview.api.app.domain.member.dto.response.MemberLocalResponse
 import kr.co.fitview.api.app.domain.member.dto.response.MemberMeResponse
+import kr.co.fitview.api.app.domain.member.dto.response.MemberRecommendationResponse
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.entity.WorkoutTime
 import kr.co.fitview.api.app.domain.member.entity.enums.WorkoutTimeName
@@ -15,6 +16,7 @@ import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.util.*
 import kotlin.random.Random
 
 
@@ -99,6 +101,27 @@ class MemberService(
         return PageImpl(pageContent, PageRequest.of(page - 1, size), shuffledMembers.size.toLong())
     }
 
+    fun findRandomMemberWithinRecommendation(memberId: Long) : List<MemberRecommendationResponse>{
+        val seed: Long = System.currentTimeMillis()
+
+        val findMemberIds = memberRepository.findAllMemberIdWithinRecommendation(memberId)
+
+        if(findMemberIds.size >= 10){
+            val random = Random(seed)
+            val shuffledMemberIds = findMemberIds.shuffled(random).take(10)
+            return memberRepository.findRecommendationMemberByIdIn(shuffledMemberIds)
+
+        }
+        else{
+            val findCount = 10 - findMemberIds.size
+
+            val findRandomMemberIds = memberRepository.findAllRandomMemberIdByCountAndSeoul(findCount, seed)
+
+            return memberRepository.findRecommendationMemberByIdIn(findMemberIds + findRandomMemberIds)
+        }
+    }
+
+
     private fun validateDuplicatedEmail(member: Member) {
         findMemberFromLoginId(member.email!!)?.let {
             throw GlobalException(MemberErrorCode.MEMBER_DUPLICATE_EMAIL)
@@ -121,7 +144,6 @@ class MemberService(
     ) = workoutTimeNames
         .filterNot { it in findWorkoutNameSet }
         .map { WorkoutTime(member = member, name = it) }
-
 
 
 }
