@@ -1,5 +1,6 @@
 package kr.co.fitview.api.app.domain.address.dto.response
 
+import kr.co.fitview.api.app.domain.address.constant.AddressConstant
 import kr.co.fitview.api.app.domain.address.entity.Address
 
 
@@ -17,6 +18,15 @@ data class AddressResponse(
                 siDo = address.siDo!!,
                 siGunGu = address.siGunGu!!,
                 eupMyeonDong = address.eupMyeonDong!!
+            )
+        }
+
+        fun fromDefault(addressId: Long): AddressResponse {
+            return AddressResponse(
+                addressId = addressId,
+                siDo = AddressConstant.DEFAULT_SIDO,
+                siGunGu = AddressConstant.DEFAULT_SIGUNGU,
+                eupMyeonDong = AddressConstant.DEFAULT_EUPMYEONDONG,
             )
         }
     }
