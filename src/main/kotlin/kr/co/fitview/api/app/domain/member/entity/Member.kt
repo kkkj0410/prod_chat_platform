@@ -14,6 +14,7 @@ import kr.co.fitview.api.app.global.entity.OAuth2Provider
 import kr.co.fitview.api.app.global.entity.Role
 import org.hibernate.annotations.ColumnDefault
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 @Entity
 @Table(name = "member")
@@ -94,4 +95,9 @@ class Member(
 
     @OneToMany(mappedBy = "member")
     var addresses: MutableSet<Address> = mutableSetOf()
+
+    fun delete(now : LocalDateTime) : Member{
+        this.deletedAt = now
+        return this
+    }
 }

@@ -31,6 +31,12 @@ class MemberController(
         return ResponseEntity.ok(ApiResponse.success(response))
     }
 
+    @DeleteMapping("/me")
+    fun memberMeDelete() : ResponseEntity<ApiResponse<*>> {
+        memberService.deleteMember(securityUtil.getMemberId())
+        return ResponseEntity.ok(ApiResponse.success("ok"))
+    }
+
     @GetMapping("/{memberId}/addresses")
     fun memberAddressDetails(
         @PathVariable

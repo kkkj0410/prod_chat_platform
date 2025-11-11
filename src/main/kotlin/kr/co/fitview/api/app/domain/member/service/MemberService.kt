@@ -11,6 +11,8 @@ import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.domain.member.repository.WorkoutTimeRepository
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.member.MemberErrorCode
+import kr.co.fitview.api.app.global.time.Time
+import kr.co.fitview.api.app.global.time.TimeProvider
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
@@ -24,7 +26,8 @@ import kotlin.random.Random
 @Transactional(readOnly = true)
 class MemberService(
     private val memberRepository : MemberRepository,
-    private val workoutTimeRepository: WorkoutTimeRepository
+    private val workoutTimeRepository: WorkoutTimeRepository,
+    private val time : Time
 ) {
 
     @Transactional
@@ -53,6 +56,14 @@ class MemberService(
         workoutTimeRepository.saveAll(newWorkoutTimes)
 
         return findWorkoutTimes + newWorkoutTimes
+    }
+
+    @Transactional
+    fun deleteMember(memberId : Long){
+        val findMember = memberRepository.findByIdAndDeletedAtIsNull(memberId)
+            ?: throw GlobalException(MemberErrorCode.MEMBER_NOT_FOUND)
+
+        findMember.delete(time.nowLocalDateTime)
     }
 
     fun findMemberFromLoginId(loginId : String) : Member?{
