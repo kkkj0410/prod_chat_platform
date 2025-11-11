@@ -103,7 +103,7 @@ class MemberControllerDocsTest : RestDocsSupport() {
 
     @DisplayName("사용자 본인 삭제 API")
     @Test
-    fun memberMeDelete() {
+    fun memberRemove() {
 
         // when & then
         mockMvc.perform(

@@ -6,9 +6,6 @@ import kr.co.fitview.api.app.domain.address.dto.response.AddressResponse
 import kr.co.fitview.api.app.domain.member.dto.response.MemberLocalResponse
 import kr.co.fitview.api.app.domain.member.dto.response.MemberMeResponse
 import kr.co.fitview.api.app.domain.member.dto.response.MemberRecommendationResponse
-import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutExperience
-import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutGoal
-import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutStyle
 import kr.co.fitview.api.app.domain.member.service.MemberService
 import kr.co.fitview.api.app.global.dto.ApiResponse
 import kr.co.fitview.api.app.global.dto.SuccessPagedResponse
@@ -32,8 +29,8 @@ class MemberController(
     }
 
     @DeleteMapping("/me")
-    fun memberMeDelete() : ResponseEntity<ApiResponse<*>> {
-        memberService.deleteMember(securityUtil.getMemberId())
+    fun memberRemove() : ResponseEntity<ApiResponse<*>> {
+        memberService.removeMember(securityUtil.getMemberId())
         return ResponseEntity.ok(ApiResponse.success("ok"))
     }
 

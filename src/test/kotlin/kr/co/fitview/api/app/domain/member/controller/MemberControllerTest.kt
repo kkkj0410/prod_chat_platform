@@ -1,6 +1,7 @@
 package kr.co.fitview.api.app.domain.member.controller
 
 import kr.co.fitview.api.app.ControllerTestSupport
+import kr.co.fitview.api.app.docs.RestDocsHeaders
 import kr.co.fitview.api.app.domain.address.dto.response.AddressResponse
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.exception.error.jwt.JwtErrorCode
@@ -12,11 +13,15 @@ import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.given
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders
+import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document
+import org.springframework.restdocs.operation.preprocess.Preprocessors.*
 import org.springframework.restdocs.payload.JsonFieldType
 import org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath
 import org.springframework.restdocs.payload.PayloadDocumentation.responseFields
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
@@ -46,6 +51,28 @@ class MemberControllerTest : ControllerTestSupport(){
         )
             .andDo(print())
             .andExpect(status().isOk())
+    }
+
+    @DisplayName("회원 본인을 삭제한다.")
+    @Test
+    fun memberRemove() {
+
+        // when & then
+        mockMvc.perform(
+            delete("/api/v1/members/me")
+                .header("Authorization", "Bearer jwt-token")
+
+        )
+            .andDo(print())
+            .andExpect(status().isOk())
+
+            responseFields(
+                fieldWithPath("status").type(JsonFieldType.NUMBER),
+                fieldWithPath("code").type(JsonFieldType.STRING),
+                fieldWithPath("message").type(JsonFieldType.STRING),
+                fieldWithPath("data").type(JsonFieldType.STRING)
+            )
+
     }
 
     @DisplayName("회원 id로 해당 회원의 주소를 조회한다.")
