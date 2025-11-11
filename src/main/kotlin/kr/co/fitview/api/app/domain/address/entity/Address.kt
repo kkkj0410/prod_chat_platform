@@ -47,7 +47,7 @@ class Address(
 
     @ColumnDefault("5")
     @Column(name = "radius_km")
-    var radiusKm: Double? = null
+    var radiusKm: Double? = 5.0
 
 ) : BaseEntity() {
     @Id

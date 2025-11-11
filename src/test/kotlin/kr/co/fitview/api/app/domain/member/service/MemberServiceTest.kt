@@ -439,8 +439,40 @@ class MemberServiceTest @Autowired constructor(
         assertThat(findMember2)
             .extracting("email", "password", "role", "provider", "providerId")
             .contains(member2.email, member2.password, member2.role, member2.provider, member2.providerId)
+    }
 
 
+    @DisplayName("회원을 삭제한다.")
+    @Test
+    fun removeMember() {
+        // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        memberRepository.save(member)
+
+        // when
+        val deletedMember = memberService.removeMember(member.id!!)
+
+        // then
+        assertThat(deletedMember.deletedAt).isNotNull()
+    }
+
+    @DisplayName("회원을 삭제하려고 했으나, 조회되는 회원이 없으면 삭제하지 못한다.")
+    @Test
+    fun removeMemberWithoutMember() {
+        // when & then
+        assertThatThrownBy {
+            memberService.removeMember(1L)
+        }
+            .isInstanceOf(GlobalException::class.java)
+            .satisfies(ThrowingConsumer { ex ->
+                val globalEx = ex as GlobalException
+                assertThat(globalEx.errorCode)
+                    .isEqualTo(MemberErrorCode.MEMBER_NOT_FOUND)
+            })
     }
 
 }

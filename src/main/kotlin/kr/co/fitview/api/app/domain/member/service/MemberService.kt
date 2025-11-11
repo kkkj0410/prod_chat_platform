@@ -12,13 +12,11 @@ import kr.co.fitview.api.app.domain.member.repository.WorkoutTimeRepository
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.member.MemberErrorCode
 import kr.co.fitview.api.app.global.time.Time
-import kr.co.fitview.api.app.global.time.TimeProvider
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.util.*
 import kotlin.random.Random
 
 
@@ -59,11 +57,11 @@ class MemberService(
     }
 
     @Transactional
-    fun deleteMember(memberId : Long){
+    fun removeMember(memberId : Long) : Member{
         val findMember = memberRepository.findByIdAndDeletedAtIsNull(memberId)
             ?: throw GlobalException(MemberErrorCode.MEMBER_NOT_FOUND)
 
-        findMember.delete(time.nowLocalDateTime)
+        return findMember.delete(time.nowLocalDateTime)
     }
 
     fun findMemberFromLoginId(loginId : String) : Member?{
