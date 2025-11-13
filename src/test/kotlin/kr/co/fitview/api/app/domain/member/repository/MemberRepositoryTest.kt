@@ -2,6 +2,7 @@ package kr.co.fitview.api.app.domain.member.repository
 
 import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.address.entity.Address
+import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
 import kr.co.fitview.api.app.domain.address.repository.AddressRepository
 import kr.co.fitview.api.app.domain.image.entity.enums.MemberImageType
 import kr.co.fitview.api.app.domain.member.condition.MemberLocalCondition
@@ -145,7 +146,7 @@ class MemberRepositoryTest@Autowired constructor(
 
         val address = Address(
             member = member,
-            siDo = "siDo",
+            siDo = AddressSiDo.SEOUL,
             siGunGu = "siGunGu",
             eupMyeonDong = "eupMyeonDong",
             lat = lat,
@@ -227,7 +228,6 @@ class MemberRepositoryTest@Autowired constructor(
 //                tuple(savedMember, savedImage2, MemberImageType.WORKOUT),
 //            )
     }
-
 
 
 

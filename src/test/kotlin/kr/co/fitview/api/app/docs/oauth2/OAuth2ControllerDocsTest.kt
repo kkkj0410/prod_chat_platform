@@ -2,6 +2,7 @@ package kr.co.fitview.api.app.docs.oauth2
 
 import kr.co.fitview.api.app.docs.RestDocsHeaders
 import kr.co.fitview.api.app.docs.RestDocsSupport
+import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
 import kr.co.fitview.api.app.domain.member.entity.enums.*
 import kr.co.fitview.api.app.domain.oauth2.controller.OAuth2Controller
 import kr.co.fitview.api.app.domain.oauth2.dto.request.*
@@ -216,7 +217,7 @@ class OAuth2ControllerDocsTest : RestDocsSupport() {
         ),
         intro: String? = "intro",
         address : AddressCreateRequest = AddressCreateRequest(
-            siDo = "서울특별시",
+            siDo = AddressSiDo.SEOUL,
             siGunGu = "강남구",
             eupMyeonDong = "역삼동",
             lat = 37.4979,

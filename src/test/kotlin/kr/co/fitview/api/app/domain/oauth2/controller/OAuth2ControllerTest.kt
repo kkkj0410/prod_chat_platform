@@ -1,6 +1,7 @@
 package kr.co.fitview.api.app.domain.oauth2.controller
 
 import kr.co.fitview.api.app.ControllerTestSupport
+import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
 import kr.co.fitview.api.app.domain.member.entity.enums.*
 import kr.co.fitview.api.app.domain.oauth2.dto.request.*
 import kr.co.fitview.api.app.domain.term.entity.enums.TermName
@@ -126,7 +127,7 @@ class OAuth2ControllerTest : ControllerTestSupport(){
         ),
         intro: String? = "intro",
         address : AddressCreateRequest? = AddressCreateRequest(
-            siDo = "서울특별시",
+            siDo = AddressSiDo.SEOUL,
             siGunGu = "강남구",
             eupMyeonDong = "역삼동",
             lat = 37.4979,
@@ -347,6 +348,53 @@ class OAuth2ControllerTest : ControllerTestSupport(){
             .andExpect(jsonPath("$.message").value("address is required"))
             .andExpect(jsonPath("$.data").isEmpty())
     }
+
+
+    fun createOAuth2SignupRequestMap(siDo: String): Map<String, Any?> {
+        return mapOf(
+            "profileImageUrl" to "profileImageUrl",
+            "nickname" to "nickname",
+            "gender" to "MALE",
+            "birthday" to "2000-01-01",
+            "height" to 170,
+            "weight" to 65,
+            "workoutExperience" to "JUST_STARTED",
+            "workoutStyle" to "STRENGTH",
+            "workoutTimes" to listOf("WEEKDAY_DAWN", "WEEKDAY_EVENING"),
+            "workoutGoal" to "PERFORMANCE_GOAL",
+            "workoutImageUrls" to listOf("imageUrl1", "imageUrl2"),
+            "intro" to "intro",
+            "address" to mapOf(
+                "siDo" to siDo,
+                "siGunGu" to "강남구",
+                "eupMyeonDong" to "역삼동",
+                "lat" to 37.4979,
+                "lng" to 127.0276,
+                "fullAddress" to "서울특별시 강남구 테헤란로 123"
+            )
+        )
+    }
+
+    @ParameterizedTest(name = "소셜 회원가입 시, 회원 주소의 시/도가 규정에 맞지 않으면 요청을 거부한다.")
+    @CsvSource("없는시도", "서울특별시", "부산광역시", "강원특별자치도")
+    fun oAuth2SignupInvalidAddressSiDo(invalidSiDo : String) {
+        // given
+        val request = createOAuth2SignupRequestMap(siDo = invalidSiDo)
+
+        // when // then
+        mockMvc.perform(
+            post("/api/v1/oauth2/signup")
+                .content(objectMapper.writeValueAsString(request))
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andDo(print())
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value(RequestErrorCode.REQ_ENUM_MISMATCH.code))
+            .andExpect(jsonPath("$.status").value("400"))
+            .andExpect(jsonPath("$.message").value(RequestErrorCode.REQ_ENUM_MISMATCH.message))
+            .andExpect(jsonPath("$.data").isEmpty())
+    }
+
 
 
 

@@ -9,6 +9,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory
 import jakarta.persistence.EntityManager
 import kr.co.fitview.api.app.domain.address.entity.QAddress
 import kr.co.fitview.api.app.domain.address.entity.QAddress.address
+import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
 import kr.co.fitview.api.app.domain.image.entity.QImage
 import kr.co.fitview.api.app.domain.image.entity.QImage.image
 import kr.co.fitview.api.app.domain.image.entity.QMemberImage.memberImage
@@ -54,22 +55,22 @@ class MemberRepositoryImpl(
         val subAddress4 = QAddress("subAddress4")
 
         val subLat1 = CaseBuilder()
-            .`when`(subAddress1.siDo.eq("서울특별시"))
+            .`when`(subAddress1.siDo.eq(AddressSiDo.SEOUL))
             .then(subAddress1.lat)
             .otherwise(defaultLat)
 
         val subLat2 = CaseBuilder()
-            .`when`(subAddress2.siDo.eq("서울특별시"))
+            .`when`(subAddress2.siDo.eq(AddressSiDo.SEOUL))
             .then(subAddress2.lat)
             .otherwise(defaultLat)
 
         val subLng3 = CaseBuilder()
-            .`when`(subAddress3.siDo.eq("서울특별시"))
+            .`when`(subAddress3.siDo.eq(AddressSiDo.SEOUL))
             .then(subAddress3.lng)
             .otherwise(defaultLng)
 
         val subLng4 = CaseBuilder()
-            .`when`(subAddress4.siDo.eq("서울특별시"))
+            .`when`(subAddress4.siDo.eq(AddressSiDo.SEOUL))
             .then(subAddress4.lng)
             .otherwise(defaultLng)
 
@@ -98,6 +99,7 @@ class MemberRepositoryImpl(
                 inWorkoutStyle(condition.workoutStyle),
                 betweenWorkoutExperience(condition.minWorkoutExperience, condition.maxWorkoutExperience),
                 member.id.ne(memberId),
+                address.siDo.eq(AddressSiDo.SEOUL),
 
                 address.lat.between(
                     JPAExpressions.select(subLat1.subtract(subAddress1.radiusKm.divide(111)))
@@ -205,7 +207,7 @@ class MemberRepositoryImpl(
             .join(address).on(address.member.eq(member))
             .join(subMember).on(subMember.id.eq(memberId))
             .where(
-                address.siDo.eq("서울특별시"),
+                address.siDo.eq(AddressSiDo.SEOUL),
                 matchCount.goe(2)
             )
             .fetch()
@@ -405,7 +407,7 @@ class MemberRepositoryImpl(
         SELECT m.member_id
         FROM member m
         JOIN address a ON a.member_id = m.member_id
-        WHERE a.si_do = '서울특별시'
+        WHERE a.si_do = '서울'
         ORDER BY RAND(:seed)
         LIMIT :count
         """.trimIndent()

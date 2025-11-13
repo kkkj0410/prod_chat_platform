@@ -3,11 +3,12 @@ package kr.co.fitview.api.app.domain.oauth2.dto.request
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 import kr.co.fitview.api.app.domain.address.dto.request.AddressCreateServiceRequest
+import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
 
 data class AddressCreateRequest(
 
     @field:NotBlank(message = "siDo is required")
-    val siDo: String?,
+    val siDo: AddressSiDo?,
 
     @field:NotBlank(message = "siGunGu is required")
     val siGunGu: String?,

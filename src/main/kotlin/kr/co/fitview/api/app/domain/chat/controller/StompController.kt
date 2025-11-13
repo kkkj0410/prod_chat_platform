@@ -1,18 +1,29 @@
 package kr.co.fitview.api.app.domain.chat.controller
 
+import kr.co.fitview.api.app.domain.chat.config.StompPrincipal
 import kr.co.fitview.api.app.domain.chat.dto.request.ChatMessageRequest
+import kr.co.fitview.api.app.global.security.UserPrincipal
+import kr.co.fitview.api.app.global.util.SecurityUtil
 import org.springframework.messaging.handler.annotation.DestinationVariable
 import org.springframework.messaging.handler.annotation.MessageMapping
+import org.springframework.messaging.handler.annotation.Payload
 import org.springframework.messaging.handler.annotation.SendTo
+import org.springframework.messaging.simp.SimpMessageHeaderAccessor
 import org.springframework.messaging.simp.SimpMessageSendingOperations
+import org.springframework.messaging.simp.stomp.StompHeaderAccessor
+import org.springframework.security.core.Authentication
+import org.springframework.security.core.annotation.AuthenticationPrincipal
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import java.security.Principal
 
 
 @RestController
 //@RequestMapping("/api/v1/chats")
 class StompController(
-    val messageTemplate : SimpMessageSendingOperations
+    val messageTemplate : SimpMessageSendingOperations,
+    val securityUtil: SecurityUtil
 ) {
 
 
@@ -47,6 +58,39 @@ class StompController(
         println(request)
 
         //@SendTo 어노테이션을 대신하는 함수
-        messageTemplate.convertAndSend("/topic/$roomId", request)
+        messageTemplate.convertAndSend("/api/v1/topic/$roomId", request)
     }
+
+    @MessageMapping("/chats/messages")
+    fun sendPrivateMessage(
+        @Payload
+        message: PrivateMessageDto,
+
+        principal: Principal
+
+    ) {
+
+        val senderId = principal.name
+        val recipientId = message.recipientId // "userB"
+
+        println("Sending private message from $senderId to $recipientId")
+
+
+        messageTemplate.convertAndSendToUser(
+            recipientId,
+            "/v1/queue/chats/messages",
+            message
+        )
+
+        messageTemplate.convertAndSendToUser(
+            senderId,
+            "/v1/queue/chats/messages",
+            message
+        )
+    }
+
+    data class PrivateMessageDto(
+        val recipientId: String,
+        val content: String
+    )
 }

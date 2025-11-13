@@ -1,5 +1,6 @@
 package kr.co.fitview.api.app.global.config
 
+import kr.co.fitview.api.app.global.constant.CorsConstant
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.cors.CorsConfiguration
 import org.springframework.web.cors.CorsConfigurationSource
@@ -14,12 +15,7 @@ class CorsConfig {
 
         //리소스를 허용할 URL 지정
         configuration.setAllowedOriginPatterns(
-            listOf(
-                "http://localhost:*",
-                "http://127.0.0.1:*",
-                "https://fitview-8757f.web.app:*",
-                "https://fitview.kr:*"
-            )
+            CorsConstant.ALLOW_ORIGIN_URIS
         )
 
         //허용하는 HTTP METHOD 지정

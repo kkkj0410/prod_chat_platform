@@ -10,6 +10,7 @@ import com.nimbusds.jwt.JWTClaimsSet
 import com.nimbusds.jwt.SignedJWT
 import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.address.dto.request.AddressCreateServiceRequest
+import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
 import kr.co.fitview.api.app.domain.address.repository.AddressRepository
 import kr.co.fitview.api.app.domain.auth.entity.RefreshToken
 import kr.co.fitview.api.app.domain.auth.repository.RefreshTokenRepository
@@ -256,7 +257,7 @@ class OAuth2ServiceTest @Autowired constructor(
         ),
         intro: String? = "intro",
         address : AddressCreateServiceRequest = AddressCreateServiceRequest(
-            siDo = "서울특별시",
+            siDo = AddressSiDo.SEOUL,
             siGunGu = "강남구",
             eupMyeonDong = "역삼동",
             lat = 37.4979,
@@ -341,7 +342,7 @@ class OAuth2ServiceTest @Autowired constructor(
         assertThat(findAddresses).hasSize(1)
         assertThat(findAddresses[0])
             .extracting("member", "siDo", "siGunGu", "eupMyeonDong", "lat", "lng", "fullAddress")
-            .containsExactly(savedMember, "서울특별시", "강남구", "역삼동", 37.4979, 127.0276, "서울특별시 강남구 테헤란로 123")
+            .containsExactly(savedMember, AddressSiDo.SEOUL, "강남구", "역삼동", 37.4979, 127.0276, "서울특별시 강남구 테헤란로 123")
     }
 
     @DisplayName("소셜 로그인 회원가입을 중복해서 하면 회원 정보 등록을 거부한다.")
