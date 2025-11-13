@@ -2,6 +2,7 @@ package kr.co.fitview.api.app.domain.address.repository
 
 import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.address.entity.Address
+import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.domain.term.entity.enums.TermName
@@ -30,7 +31,7 @@ class AddressRepositoryTest @Autowired constructor(
 
         val address1 = Address(
             member = member,
-            siDo = "siDo1",
+            siDo = AddressSiDo.SEOUL,
             siGunGu = "siGunGu1",
             eupMyeonDong = "테헤란로",
             lat = 10.123,
@@ -39,7 +40,7 @@ class AddressRepositoryTest @Autowired constructor(
         )
         val address2 = Address(
             member = member,
-            siDo = "siDo2",
+            siDo = AddressSiDo.SEOUL,
             siGunGu = "siGunGu2",
             eupMyeonDong = "테헤란로2",
             lat = 10.123,
@@ -56,8 +57,8 @@ class AddressRepositoryTest @Autowired constructor(
         assertThat(findAddresses)
             .extracting("member", "siDo", "siGunGu")
             .containsExactlyInAnyOrder(
-                tuple(savedMember, "siDo1", "siGunGu1"),
-                tuple(savedMember, "siDo2", "siGunGu2"),
+                tuple(savedMember, AddressSiDo.SEOUL, "siGunGu1"),
+                tuple(savedMember, AddressSiDo.SEOUL, "siGunGu2"),
             )
     }
 
@@ -74,7 +75,7 @@ class AddressRepositoryTest @Autowired constructor(
 
         val address = Address(
             member = member,
-            siDo = "siDo1",
+            siDo = AddressSiDo.SEOUL,
             siGunGu = "siGunGu1",
             eupMyeonDong = "테헤란로",
             lat = 10.123,
@@ -89,7 +90,7 @@ class AddressRepositoryTest @Autowired constructor(
         // then
         assertThat(findAddress)
             .extracting("member", "siDo", "siGunGu")
-            .contains(savedMember, "siDo1", "siGunGu1")
+            .contains(savedMember, AddressSiDo.SEOUL, "siGunGu1")
     }
 
 
@@ -106,7 +107,7 @@ class AddressRepositoryTest @Autowired constructor(
 
         val address = Address(
             member = member,
-            siDo = "siDo1",
+            siDo = AddressSiDo.SEOUL,
             siGunGu = "siGunGu1",
             eupMyeonDong = "테헤란로",
             lat = 10.123,
@@ -138,7 +139,7 @@ class AddressRepositoryTest @Autowired constructor(
 
         val address = Address(
             member = member,
-            siDo = "siDo1",
+            siDo = AddressSiDo.SEOUL,
             siGunGu = "siGunGu1",
             eupMyeonDong = "테헤란로",
             lat = 10.123,
@@ -159,4 +160,6 @@ class AddressRepositoryTest @Autowired constructor(
             .contains(savedMember, savedAddress.siDo, savedAddress.siGunGu)
 
     }
+
+
 }

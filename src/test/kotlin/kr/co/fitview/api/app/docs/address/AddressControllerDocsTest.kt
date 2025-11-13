@@ -6,6 +6,7 @@ import kr.co.fitview.api.app.domain.address.controller.AddressController
 import kr.co.fitview.api.app.domain.address.dto.request.AddressRadiusRequest
 import kr.co.fitview.api.app.domain.address.dto.request.AddressUpdateRequest
 import kr.co.fitview.api.app.domain.address.dto.response.AddressDetailResponse
+import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
 import kr.co.fitview.api.app.domain.address.service.AddressService
 
 import kr.co.fitview.api.app.global.entity.Role
@@ -46,7 +47,7 @@ class AddressControllerDocsTest : RestDocsSupport() {
         given(addressService.findAddressFromAddressId(any()))
             .willReturn(
                 AddressDetailResponse(
-                    siDo = "서울특별시",
+                    siDo = AddressSiDo.SEOUL,
                     siGunGu = "강남구",
                     eupMyeonDong = "역삼동",
                     lat = 37.4995539438207,
@@ -106,7 +107,7 @@ class AddressControllerDocsTest : RestDocsSupport() {
     fun addressModify() {
         // given
         val request = AddressUpdateRequest(
-            siDo = "서울특별시",
+            siDo = AddressSiDo.SEOUL,
             siGunGu = "강남구",
             eupMyeonDong = "역삼동",
             lat = 37.4995539438207,

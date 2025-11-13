@@ -3,7 +3,9 @@ package kr.co.fitview.api.app.domain.address.entity
 import jakarta.persistence.*
 import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
+import kr.co.fitview.api.app.domain.address.converter.AddressSiDoConverter
 import kr.co.fitview.api.app.domain.address.dto.request.AddressCreateServiceRequest
+import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.global.entity.BaseEntity
 import kr.co.fitview.api.app.global.exception.GlobalException
@@ -22,7 +24,8 @@ class Address(
 
     @Size(max = 50)
     @Column(name = "si_do", nullable = false, length = 50)
-    var siDo: String? = null,
+    @Convert(converter = AddressSiDoConverter::class)
+    var siDo: AddressSiDo? = null,
 
     @Size(max = 100)
     @Column(name = "si_gun_gu", nullable = false, length = 100)
@@ -57,7 +60,7 @@ class Address(
 
 
     fun update(request: AddressCreateServiceRequest): Address {
-        this.siDo = convertToStandardSiDo(request.siDo)
+        this.siDo = request.siDo
         this.siGunGu = request.siGunGu
         this.eupMyeonDong = request.eupMyeonDong
         this.lat = request.lat
@@ -80,7 +83,7 @@ class Address(
         fun of(member: Member, request: AddressCreateServiceRequest): Address {
             return Address(
                 member = member,
-                siDo = convertToStandardSiDo(request.siDo),
+                siDo = request.siDo,
                 siGunGu = request.siGunGu,
                 eupMyeonDong = request.eupMyeonDong,
                 lat = request.lat,

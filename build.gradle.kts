@@ -85,6 +85,9 @@ dependencies {
 
 	// java time/datetime
 	implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
+
+	// spring security - WebSocket
+	implementation("org.springframework.security:spring-security-messaging")
 }
 
 kotlin {

@@ -5,6 +5,8 @@ object SecurityConstant {
 
     const val API_BASE: String = "/api/*"
 
+    val WS_STOMP_URI = "/ws-stomp"
+
     val ADMIN_URIS: List<String> = listOf(
         "$API_BASE/admin/**",
         "/webjars/**",
@@ -24,7 +26,7 @@ object SecurityConstant {
         "$API_BASE/docs/**",
         "$API_BASE/exception/**",
         "$API_BASE/oauth2/login",
-//        "/connect/**",
+        "$WS_STOMP_URI/**",
 
         "/css/**",
         "/js/**",

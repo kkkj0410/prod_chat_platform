@@ -3,6 +3,7 @@ package kr.co.fitview.api.app.domain.member.controller
 import kr.co.fitview.api.app.ControllerTestSupport
 import kr.co.fitview.api.app.docs.RestDocsHeaders
 import kr.co.fitview.api.app.domain.address.dto.response.AddressResponse
+import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.exception.error.jwt.JwtErrorCode
 import kr.co.fitview.api.app.global.exception.error.request.RequestErrorCode
@@ -82,7 +83,7 @@ class MemberControllerTest : ControllerTestSupport(){
             .willReturn(
                 AddressResponse(
                     addressId = 1L,
-                    siDo = "서울특별시",
+                    siDo = AddressSiDo.SEOUL,
                     siGunGu = "강남구",
                     eupMyeonDong = "역삼동"
                 )

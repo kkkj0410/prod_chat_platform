@@ -7,14 +7,18 @@ import kr.co.fitview.api.app.domain.address.dto.request.AddressUpdateRequest
 import kr.co.fitview.api.app.domain.address.dto.response.AddressDetailResponse
 import kr.co.fitview.api.app.domain.address.dto.response.AddressResponse
 import kr.co.fitview.api.app.domain.address.entity.Address
+import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.global.entity.Role
+import kr.co.fitview.api.app.global.exception.error.address.AddressErrorCode
 import kr.co.fitview.api.app.global.exception.error.jwt.JwtErrorCode
 import kr.co.fitview.api.app.global.exception.error.request.RequestErrorCode
 import kr.co.fitview.api.app.global.security.UserPrincipal
 import kr.co.fitview.api.app.global.util.SecurityUtil
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.kotlin.any
 import org.mockito.kotlin.given
 import org.springframework.beans.factory.annotation.Autowired
@@ -44,7 +48,7 @@ class AddressControllerTest : ControllerTestSupport() {
         given(addressService.findAddressFromAddressId(any()))
             .willReturn(
                 AddressDetailResponse(
-                    siDo = "서울특별시",
+                    siDo = AddressSiDo.SEOUL,
                     siGunGu = "강남구",
                     eupMyeonDong = "역삼동",
                     lat = 37.4995539438207,
@@ -86,7 +90,7 @@ class AddressControllerTest : ControllerTestSupport() {
             .willReturn(
                 Address(
                     member = member,
-                    siDo = "서울특별시",
+                    siDo = AddressSiDo.SEOUL,
                     siGunGu = "강남구",
                     eupMyeonDong = "역삼동",
                     lat = 37.4995539438207,
@@ -95,13 +99,13 @@ class AddressControllerTest : ControllerTestSupport() {
                 )
             )
 
-        val request = AddressUpdateRequest(
-            siDo = "서울특별시",
-            siGunGu = "강남구",
-            eupMyeonDong = "역삼동",
-            lat = 37.4995539438207,
-            lng = 127.031393491745,
-            fullAddress = "서울 강남구 테헤란로 123",
+        val request = mapOf(
+            "siDo" to "서울",
+            "siGunGu" to "강남구",
+            "eupMyeonDong" to "역삼동",
+            "lat" to 37.4995539438207,
+            "lng" to 127.031393491745,
+            "fullAddress" to "서울 강남구 테헤란로 123"
         )
 
         // when // then
@@ -120,6 +124,55 @@ class AddressControllerTest : ControllerTestSupport() {
             fieldWithPath("message").type(JsonFieldType.STRING),
             fieldWithPath("data").type(JsonFieldType.STRING)
         )
+    }
+
+    @ParameterizedTest(name = "회원 주소 수정 시, 시/도가 규정에 맞지 않으면 요청을 거부한다.")
+    @CsvSource("없는시도", "서울특별시", "부산광역시", "강원특별자치도")
+    fun addressModifyInvalidSiDo(invalidSiDo : String) {
+        val member = Member(
+            email = "email1",
+            password = "password",
+            role = Role.USER,
+        )
+
+        given(addressService.modifyAddress(any(), any(), any()))
+            .willReturn(
+                Address(
+                    member = member,
+                    siDo = AddressSiDo.SEOUL,
+                    siGunGu = "강남구",
+                    eupMyeonDong = "역삼동",
+                    lat = 37.4995539438207,
+                    lng = 127.031393491745,
+                    fullAddress = "서울 강남구 테헤란로 123"
+                )
+            )
+
+
+        val request = mapOf(
+            "siDo" to invalidSiDo,
+            "siGunGu" to "강남구",
+            "eupMyeonDong" to "역삼동",
+            "lat" to 37.4995539438207,
+            "lng" to 127.031393491745,
+            "fullAddress" to "서울 강남구 테헤란로 123"
+        )
+
+        // when // then
+        mockMvc.perform(
+            patch("/api/v1/addresses/{addressId}", 1)
+                .content(objectMapper.writeValueAsString(request))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer jwt-token")
+        )
+            .andDo(print())
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value(RequestErrorCode.REQ_ENUM_MISMATCH.code))
+            .andExpect(jsonPath("$.status").value("400"))
+            .andExpect(jsonPath("$.message").value(RequestErrorCode.REQ_ENUM_MISMATCH.message))
+            .andExpect(jsonPath("$.data").isEmpty())
+
+
     }
 
     @DisplayName("회원 주소 탐색 반경 변경")

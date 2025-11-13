@@ -2,11 +2,12 @@ package kr.co.fitview.api.app.domain.address.dto.response
 
 import kr.co.fitview.api.app.domain.address.constant.AddressConstant
 import kr.co.fitview.api.app.domain.address.entity.Address
+import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
 
 
 data class AddressResponse(
     val addressId : Long,
-    val siDo: String,
+    val siDo: AddressSiDo,
     val siGunGu: String,
     val eupMyeonDong: String
 
