@@ -2,6 +2,7 @@ package kr.co.fitview.api.app.domain.address.entity.enums
 
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonValue
+import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutGoal
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.address.AddressErrorCode
 
@@ -31,6 +32,11 @@ enum class AddressSiDo(@get:JsonValue val fullName: String) {
         fun from(value: String): AddressSiDo =
             entries.find { it.fullName == value }
                 ?: throw GlobalException(AddressErrorCode.INVALID_SI_DO)
+
+        fun allDescription(): List<String> {
+            return AddressSiDo.entries.map { it.fullName }
+        }
     }
+
 
 }
