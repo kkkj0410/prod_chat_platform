@@ -11,19 +11,21 @@ import org.springframework.messaging.handler.annotation.SendTo
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor
 import org.springframework.messaging.simp.SimpMessageSendingOperations
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor
+import org.springframework.messaging.simp.user.SimpUserRegistry
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.core.context.SecurityContextHolder
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.stereotype.Controller
+import org.springframework.web.bind.annotation.*
 import java.security.Principal
+import java.time.LocalDateTime
 
 
 @RestController
 //@RequestMapping("/api/v1/chats")
 class StompController(
-    val messageTemplate : SimpMessageSendingOperations,
-    val securityUtil: SecurityUtil
+    private val messageTemplate : SimpMessageSendingOperations,
+    private val simpUserRegistry: SimpUserRegistry
 ) {
 
 
@@ -87,6 +89,32 @@ class StompController(
             "/v1/queue/chats/messages",
             message
         )
+    }
+
+    @GetMapping("/api/v1/test/{memberId}")
+    fun test(
+        @PathVariable
+        memberId : Long
+    ){
+        println("$memberId, ${simpUserRegistry.getUser(memberId.toString()) != null}",)
+
+    }
+
+    @PostMapping("/api/v1/test/time")
+    fun test2(
+        @RequestBody
+        time : TestRequest
+    ){
+        println("$time")
+
+    }
+
+
+    fun isMemberConnected(memberId: String): Boolean {
+
+        // 2. getUser() 함수를 사용하여 해당 Principal(memberId)의 존재 여부 확인
+        // memberId는 STOMP 연결 시 설정한 Principal.name과 동일합니다.
+        return simpUserRegistry.getUser(memberId) != null
     }
 
     data class PrivateMessageDto(

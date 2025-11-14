@@ -301,8 +301,7 @@ class OAuth2ControllerDocsTest : RestDocsSupport() {
 //                    fieldWithPath("terms[].isAgreed").type(JsonFieldType.BOOLEAN)
 //                        .description("동의 여부"),
                     fieldWithPath("address.siDo").type(JsonFieldType.STRING)
-                        .description("시/도 (입력값에 반드시 포함되어야 하는 키워드: 서울, 부산, 인천, 대구, 대전, 광주, 울산, 세종, 경기, 충북, 충남, 전남, 전북, 경북, 경남, 강원, 제주) " +
-                                "ex)충청남도 -> 충청남도, 충남 -> 충청남도, 충엥남도 -> 충청남도, 강원도 -> 강원특별자치도, 강원 -> 강원특별자치도 로 변환해서 저장"),
+                        .description(AddressSiDo.allDescription()),
                     fieldWithPath("address.siGunGu").type(JsonFieldType.STRING)
                         .description("시/군/구"),
                     fieldWithPath("address.eupMyeonDong").type(JsonFieldType.STRING)
