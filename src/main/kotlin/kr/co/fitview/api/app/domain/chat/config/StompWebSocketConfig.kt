@@ -2,9 +2,11 @@ package kr.co.fitview.api.app.domain.chat.config
 
 import kr.co.fitview.api.app.global.constant.CorsConstant
 import kr.co.fitview.api.app.global.constant.SecurityConstant
+import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.messaging.simp.config.ChannelRegistration
 import org.springframework.messaging.simp.config.MessageBrokerRegistry
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer
@@ -15,7 +17,8 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 class StompWebSocketConfig(
     val stompHandler : StompHandler,
     val handshakeInterceptor : UserHandshakeInterceptor,
-    val customHandshakeHandler: CustomHandshakeHandler
+    val customHandshakeHandler: CustomHandshakeHandler,
+//    val threadPoolTaskScheduler : ThreadPoolTaskScheduler
 ) : WebSocketMessageBrokerConfigurer {
 
 
@@ -36,6 +39,9 @@ class StompWebSocketConfig(
 
         // /topic/1 형태로 메시지를 수신(subscribe)해야 함을 설정
         registry.enableSimpleBroker("/v1/queue")
+            .setHeartbeatValue(longArrayOf(10000L, 10000L))
+            .setTaskScheduler(stompHeartbeatScheduler())
+
 
         registry.setUserDestinationPrefix("/user")
 
@@ -49,6 +55,16 @@ class StompWebSocketConfig(
         registration.interceptors(stompHandler)
 
     }
+
+    @Bean
+    fun stompHeartbeatScheduler(): ThreadPoolTaskScheduler {
+        val scheduler = ThreadPoolTaskScheduler()
+        scheduler.poolSize = 1
+//        scheduler.threadNamePrefix = "wss-heartbeat-"
+        scheduler.initialize()
+        return scheduler
+    }
+
 
 
 }
