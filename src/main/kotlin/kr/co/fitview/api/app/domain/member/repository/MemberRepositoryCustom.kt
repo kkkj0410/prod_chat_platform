@@ -5,7 +5,6 @@ import kr.co.fitview.api.app.domain.member.dto.response.MemberLocalResponse
 import kr.co.fitview.api.app.domain.member.dto.response.MemberRecommendationResponse
 
 interface MemberRepositoryCustom {
-    fun findMemberWithinLocal(memberId: Long, condition: MemberLocalCondition) : List<MemberLocalResponse>
 
     fun findAllMemberIdWithinRecommendation(memberId: Long) : List<Long>
 
