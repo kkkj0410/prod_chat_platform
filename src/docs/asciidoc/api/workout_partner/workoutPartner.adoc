@@ -18,6 +18,7 @@ include::{snippets}/workout-partner-add/response-fields.adoc[]
 include::{snippets}/workout-partner-update/http-request.adoc[]
 include::{snippets}/workout-partner-update/request-fields.adoc[]
 include::{snippets}/workout-partner-update/request-headers.adoc[]
+include::{snippets}/workout-partner-update/path-parameters.adoc[]
 
 ==== HTTP Response
 include::{snippets}/workout-partner-update/http-response.adoc[]
