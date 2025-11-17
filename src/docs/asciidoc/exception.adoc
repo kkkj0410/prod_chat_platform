@@ -64,3 +64,8 @@ include::exception/term/termException.adoc[]
 == <WORKOUT_PARTNER>
 
 include::exception/workout_partner/workoutPartnerException.adoc[]
+
+[[GLOBAL]]
+== <GLOBAL>
+
+include::exception/global/globalException.adoc[]

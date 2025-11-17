@@ -11,3 +11,16 @@ include::{snippets}/workout-partner-add/http-response.adoc[]
 include::{snippets}/workout-partner-add/response-fields.adoc[]
 
 
+[[workout-partner-update]]
+=== 핏버디 요청 응답 API
+
+==== HTTP Request
+include::{snippets}/workout-partner-update/http-request.adoc[]
+include::{snippets}/workout-partner-update/request-fields.adoc[]
+include::{snippets}/workout-partner-update/request-headers.adoc[]
+
+==== HTTP Response
+include::{snippets}/workout-partner-update/http-response.adoc[]
+include::{snippets}/workout-partner-update/response-fields.adoc[]
+
+
