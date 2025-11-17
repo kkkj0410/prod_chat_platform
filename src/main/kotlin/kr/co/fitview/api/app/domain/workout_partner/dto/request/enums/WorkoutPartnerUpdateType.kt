@@ -12,7 +12,7 @@ enum class WorkoutPartnerUpdateType(val description : String) {
 
     companion object {
         fun allDescription(): List<String> {
-            return Age.entries.map { it.toString() }
+            return WorkoutPartnerUpdateType.entries.map { it.toString() }
         }
     }
 }

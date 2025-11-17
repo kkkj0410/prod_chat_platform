@@ -46,11 +46,11 @@ class WorkoutPartnerService(
 
         validateUpdateWorkoutPartner(findWorkoutPartner)
 
-        if(request.type == WorkoutPartnerUpdateType.ACCEPT){
+        if(isWorkoutPartnerAccept(request)){
             findWorkoutPartner.accept(time.nowLocalDateTime)
         }
 
-        else if(request.type == WorkoutPartnerUpdateType.REJECT){
+        else if(isWorkoutPartnerReject(request)){
             findWorkoutPartner.reject(time.nowLocalDateTime)
         }
 
@@ -77,6 +77,12 @@ class WorkoutPartnerService(
             throw GlobalException(WorkoutPartnerErrorCode.PARTNER_REQUEST_ALREADY_FINALIZED)
         }
     }
+
+    private fun isWorkoutPartnerAccept(request: WorkoutPartnerUpdateServiceRequest) =
+        request.type == WorkoutPartnerUpdateType.ACCEPT
+
+    private fun isWorkoutPartnerReject(request: WorkoutPartnerUpdateServiceRequest) =
+        request.type == WorkoutPartnerUpdateType.REJECT
 
     private fun isNotExpire24Hour(workoutPartner: WorkoutPartner) =
         workoutPartner.requestedAt!!.isAfter(time.nowLocalDateTime.minusHours(24))

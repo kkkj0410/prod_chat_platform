@@ -31,6 +31,8 @@ import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document
 import org.springframework.restdocs.operation.preprocess.Preprocessors.*
 import org.springframework.restdocs.payload.JsonFieldType
 import org.springframework.restdocs.payload.PayloadDocumentation.*
+import org.springframework.restdocs.request.RequestDocumentation.parameterWithName
+import org.springframework.restdocs.request.RequestDocumentation.pathParameters
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
@@ -118,6 +120,10 @@ class WorkoutPartnerControllerDocsTest : RestDocsSupport() {
 
                     requestHeaders(
                         RestDocsHeaders.authorizationHeader(Role.USER)
+                    ),
+
+                    pathParameters(
+                        parameterWithName("workoutPartnerId").description("해당 운동 파트너 요청 id.")
                     ),
 
                     requestFields(
