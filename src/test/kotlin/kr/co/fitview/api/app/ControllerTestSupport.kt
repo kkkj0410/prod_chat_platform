@@ -15,6 +15,8 @@ import kr.co.fitview.api.app.domain.oauth2.controller.OAuth2Controller
 import kr.co.fitview.api.app.domain.oauth2.service.AppleService
 import kr.co.fitview.api.app.domain.oauth2.service.KakaoService
 import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
+import kr.co.fitview.api.app.domain.workout_partner.controller.WorkoutPartnerController
+import kr.co.fitview.api.app.domain.workout_partner.service.WorkoutPartnerService
 import kr.co.fitview.api.app.global.config.JacksonConfig
 import kr.co.fitview.api.app.global.config.SecurityConfig
 import kr.co.fitview.api.app.global.config.TestSecurityConfig
@@ -46,6 +48,7 @@ import software.amazon.awssdk.services.s3.presigner.S3Presigner
     OAuth2Controller::class,
     ImageController::class,
     AddressController::class,
+    WorkoutPartnerController::class,
     GlobalExceptionHandler::class
 ],
 excludeFilters = [
@@ -84,6 +87,9 @@ abstract class ControllerTestSupport {
 
     @MockitoBean
     protected lateinit var addressService: AddressService
+
+    @MockitoBean
+    protected lateinit var workoutPartnerService: WorkoutPartnerService
 
     @MockitoBean
     protected lateinit var testAuthService: TestAuthService

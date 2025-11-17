@@ -59,3 +59,8 @@ include::exception/address/addressException.adoc[]
 == <TERM>
 
 include::exception/term/termException.adoc[]
+
+[[WORKOUT_PARTNER]]
+== <WORKOUT_PARTNER>
+
+include::exception/workout_partner/workoutPartnerException.adoc[]

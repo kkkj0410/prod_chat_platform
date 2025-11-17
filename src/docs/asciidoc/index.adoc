@@ -35,5 +35,10 @@ include::api/image/image.adoc[]
 
 include::api/address/address.adoc[]
 
+[[WorkoutPartner-API]]
+== WorkoutPartner API
+
+include::api/workout_partner/workoutPartner.adoc[]
+
 
 
