@@ -1,5 +1,7 @@
 package kr.co.fitview.api.app.domain.member.service
 
+import jakarta.persistence.EntityManager
+import jakarta.persistence.EntityNotFoundException
 import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.entity.WorkoutTime
@@ -12,6 +14,7 @@ import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.member.MemberErrorCode
 import org.assertj.core.api.Assertions.*
 import org.assertj.core.api.ThrowingConsumer
+import org.hibernate.proxy.HibernateProxy
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -19,7 +22,8 @@ import org.springframework.beans.factory.annotation.Autowired
 class MemberServiceTest @Autowired constructor(
     val memberService : MemberService,
     val memberRepository : MemberRepository,
-    val workoutTimeRepository : WorkoutTimeRepository
+    val workoutTimeRepository : WorkoutTimeRepository,
+    val em : EntityManager
 ) : IntegrationTestSupport() {
 
     @DisplayName("사용자 정보를 저장한다")
@@ -473,6 +477,45 @@ class MemberServiceTest @Autowired constructor(
                 assertThat(globalEx.errorCode)
                     .isEqualTo(MemberErrorCode.MEMBER_NOT_FOUND)
             })
+    }
+
+    @DisplayName("회원을 프록시로 가져온다.")
+    @Test
+    fun findMemberReferenceFrom() {
+        // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        val savedMember = memberRepository.save(member)
+
+        em.flush()
+        em.clear()
+
+        // when
+        val memberProxy = memberRepository.getReferenceById(savedMember.id!!)
+
+        // then
+        assertThat(memberProxy).isInstanceOf(HibernateProxy::class.java)
+        assertThat(memberProxy::class.simpleName!!).contains("Member")
+        assertThat(memberProxy)
+            .extracting("email", "password", "role")
+            .contains(member.email, member.password, member.role)
+    }
+
+    @DisplayName("없는 회원을 프록시로 가져오면 필드 조회에 실패한다.")
+    @Test
+    fun findMemberReferenceFromWithoutMember() {
+        // when
+        val memberProxy = memberRepository.getReferenceById(1L)
+
+        // then
+        assertThat(memberProxy).isInstanceOf(HibernateProxy::class.java)
+        assertThatThrownBy {
+            memberProxy.email
+        }
+        .isInstanceOf(EntityNotFoundException::class.java)
     }
 
 }

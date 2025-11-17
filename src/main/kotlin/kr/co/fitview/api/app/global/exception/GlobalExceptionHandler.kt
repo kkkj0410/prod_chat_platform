@@ -1,5 +1,6 @@
 package kr.co.fitview.api.app.global.exception
 
+import jakarta.persistence.EntityNotFoundException
 import kr.co.fitview.api.app.global.dto.ApiResponse
 import kr.co.fitview.api.app.global.exception.error.request.RequestErrorCode
 import org.springframework.http.HttpStatus

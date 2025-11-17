@@ -87,6 +87,10 @@ class MemberService(
         return MemberMeResponse(findMember.id!!, findMember.email!!, findMember.role!!)
     }
 
+    fun findMemberReferenceFrom(memberId : Long)  : Member{
+        return memberRepository.getReferenceById(memberId)
+    }
+
     fun findRandomMemberWithinLocal(
         memberId: Long,
         condition: MemberLocalCondition,

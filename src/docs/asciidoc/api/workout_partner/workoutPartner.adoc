@@ -1,0 +1,13 @@
+[[workout-partner-add]]
+=== 핏버디 요청 API
+
+==== HTTP Request
+include::{snippets}/workout-partner-add/http-request.adoc[]
+include::{snippets}/workout-partner-add/request-fields.adoc[]
+include::{snippets}/workout-partner-add/request-headers.adoc[]
+
+==== HTTP Response
+include::{snippets}/workout-partner-add/http-response.adoc[]
+include::{snippets}/workout-partner-add/response-fields.adoc[]
+
+
