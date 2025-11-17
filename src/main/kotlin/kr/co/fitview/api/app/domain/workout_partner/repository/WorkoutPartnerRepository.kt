@@ -10,5 +10,9 @@ interface WorkoutPartnerRepository : JpaRepository<WorkoutPartner, Long> {
         toMemberId: Long
     ): WorkoutPartner?
 
+    fun findByIdAndToMemberIdAndDeletedAtIsNull(
+        workoutPartnerId : Long,
+        toMemberId : Long
+    ) : WorkoutPartner?
 
 }

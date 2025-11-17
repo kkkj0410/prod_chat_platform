@@ -1,0 +1,11 @@
+[[GLOBAL_001]]
+=== GLOBAL_001
+
+==== HTTP Request
+include::{snippets}/GLOBAL_001/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/GLOBAL_001/http-response.adoc[]
+include::{snippets}/GLOBAL_001/response-fields.adoc[]
+
+

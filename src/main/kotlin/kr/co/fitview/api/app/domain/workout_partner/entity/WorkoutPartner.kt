@@ -34,7 +34,6 @@ class WorkoutPartner(
     @Column(name = "workout_partner_id", nullable = false)
     var id: Long? = null
 
-
     @Column(name = "rejected_at")
     var rejectedAt: LocalDateTime? = null
 

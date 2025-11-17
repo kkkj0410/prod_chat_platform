@@ -1,5 +1,5 @@
-[[TERM_001]]
-=== TERM_001
+[[WORKOUT_PARTNER_001]]
+=== WORKOUT_PARTNER_001
 
 ==== HTTP Request
 include::{snippets}/WORKOUT_PARTNER_001/http-request.adoc[]
@@ -18,3 +18,13 @@ include::{snippets}/WORKOUT_PARTNER_002/http-request.adoc[]
 include::{snippets}/WORKOUT_PARTNER_002/http-response.adoc[]
 include::{snippets}/WORKOUT_PARTNER_002/response-fields.adoc[]
 
+
+[[WORKOUT_PARTNER_003]]
+=== WORKOUT_PARTNER_003
+
+==== HTTP Request
+include::{snippets}/WORKOUT_PARTNER_003/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/WORKOUT_PARTNER_003/http-response.adoc[]
+include::{snippets}/WORKOUT_PARTNER_003/response-fields.adoc[]
