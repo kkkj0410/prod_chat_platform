@@ -3,17 +3,16 @@ package kr.co.fitview.api.app.domain.workout_partner.repository
 import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.service.MemberService
-import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartner
+import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartnerRequest
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.time.Time
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
-class WorkoutPartnerRepositoryTest @Autowired constructor(
-    val workoutPartnerRepository : WorkoutPartnerRepository,
+class WorkoutPartnerRequestRepositoryTest @Autowired constructor(
+    val workoutPartnerRequestRepository : WorkoutPartnerRequestRepository,
     val memberService : MemberService,
     val time : Time
 ) : IntegrationTestSupport(){
@@ -38,27 +37,27 @@ class WorkoutPartnerRepositoryTest @Autowired constructor(
         val savedFromMember = memberService.addMember(fromMember)
         val savedToMember = memberService.addMember(toMember)
 
-        val workoutPartner1 = WorkoutPartner(
-            savedFromMember,
-            savedToMember,
-            time.nowLocalDateTime.minusHours(1)
+        val workoutPartnerRequest1 = WorkoutPartnerRequest.of(
+            fromMember = savedFromMember,
+            toMember = savedToMember,
+            now = time.nowLocalDateTime.minusHours(1)
         )
-        val workoutPartner2 = WorkoutPartner(
-            savedFromMember,
-            savedToMember,
-            time.nowLocalDateTime
+        val workoutPartnerRequest2 = WorkoutPartnerRequest.of(
+            fromMember = savedFromMember,
+            toMember = savedToMember,
+            now = time.nowLocalDateTime
         )
-        workoutPartnerRepository.save(workoutPartner1)
-        workoutPartnerRepository.save(workoutPartner2)
+        workoutPartnerRequestRepository.save(workoutPartnerRequest1)
+        workoutPartnerRequestRepository.save(workoutPartnerRequest2)
 
         // when
-        val findWorkPartner = workoutPartnerRepository.findTop1ByFromMemberIdAndToMemberIdAndDeletedAtIsNullOrderByRequestedAtDesc(
+        val findWorkPartnerRequest = workoutPartnerRequestRepository.findTop1ByFromMemberIdAndToMemberIdAndDeletedAtIsNullOrderByRequestedAtDesc(
             fromMemberId = fromMember.id!!,
             toMemberId = toMember.id!!,
         )
 
         // then
-        assertThat(findWorkPartner)
+        assertThat(findWorkPartnerRequest)
             .extracting("fromMember", "toMember", "requestedAt")
             .contains(fromMember, toMember, time.nowLocalDateTime)
     }

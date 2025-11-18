@@ -1,12 +1,10 @@
 package kr.co.fitview.api.app.domain.workout_partner.controller
 
 import kr.co.fitview.api.app.ControllerTestSupport
-import kr.co.fitview.api.app.domain.oauth2.dto.request.OAuth2LoginRequest
 import kr.co.fitview.api.app.domain.workout_partner.dto.request.WorkoutPartnerCreateRequest
 import kr.co.fitview.api.app.domain.workout_partner.dto.request.WorkoutPartnerUpdateRequest
-import kr.co.fitview.api.app.domain.workout_partner.dto.request.enums.WorkoutPartnerUpdateType
+import kr.co.fitview.api.app.domain.workout_partner.dto.request.enums.WorkoutPartnerRequestUpdateStatus
 import kr.co.fitview.api.app.global.exception.error.request.RequestErrorCode
-import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -65,7 +63,7 @@ class WorkoutPartnerControllerTest : ControllerTestSupport(){
     fun workoutPartnerModify() {
         // given
         val request = WorkoutPartnerUpdateRequest(
-            type = WorkoutPartnerUpdateType.ACCEPT
+            type = WorkoutPartnerRequestUpdateStatus.ACCEPT
         )
 
         // when // then

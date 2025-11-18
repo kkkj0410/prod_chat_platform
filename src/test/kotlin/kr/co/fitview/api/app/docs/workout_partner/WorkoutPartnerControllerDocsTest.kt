@@ -2,29 +2,16 @@ package kr.co.fitview.api.app.docs.workout_partner
 
 import kr.co.fitview.api.app.docs.RestDocsHeaders
 import kr.co.fitview.api.app.docs.RestDocsSupport
-import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
-import kr.co.fitview.api.app.domain.member.entity.enums.*
-import kr.co.fitview.api.app.domain.oauth2.controller.OAuth2Controller
-import kr.co.fitview.api.app.domain.oauth2.dto.request.*
-import kr.co.fitview.api.app.domain.oauth2.dto.response.OAuth2LoginResponse
-import kr.co.fitview.api.app.domain.oauth2.service.AppleService
-import kr.co.fitview.api.app.domain.oauth2.service.KakaoService
-import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
-import kr.co.fitview.api.app.domain.term.entity.enums.TermName
 import kr.co.fitview.api.app.domain.workout_partner.controller.WorkoutPartnerController
 import kr.co.fitview.api.app.domain.workout_partner.dto.request.WorkoutPartnerCreateRequest
 import kr.co.fitview.api.app.domain.workout_partner.dto.request.WorkoutPartnerUpdateRequest
-import kr.co.fitview.api.app.domain.workout_partner.dto.request.enums.WorkoutPartnerUpdateType
+import kr.co.fitview.api.app.domain.workout_partner.dto.request.enums.WorkoutPartnerRequestUpdateStatus
 import kr.co.fitview.api.app.domain.workout_partner.service.WorkoutPartnerService
-import kr.co.fitview.api.app.global.entity.Gender
-import kr.co.fitview.api.app.global.entity.OAuth2Provider
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.util.SecurityUtil
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
-import org.mockito.kotlin.any
-import org.mockito.kotlin.given
 import org.springframework.http.MediaType
 import org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document
@@ -36,7 +23,6 @@ import org.springframework.restdocs.request.RequestDocumentation.pathParameters
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
-import java.time.LocalDate
 
 
 class WorkoutPartnerControllerDocsTest : RestDocsSupport() {
@@ -100,7 +86,7 @@ class WorkoutPartnerControllerDocsTest : RestDocsSupport() {
     fun workoutPartnerModify() {
         // given
         val request = WorkoutPartnerUpdateRequest(
-            type = WorkoutPartnerUpdateType.ACCEPT
+            type = WorkoutPartnerRequestUpdateStatus.ACCEPT
         )
 
         // when & then
@@ -128,7 +114,7 @@ class WorkoutPartnerControllerDocsTest : RestDocsSupport() {
 
                     requestFields(
                         fieldWithPath("type").type(JsonFieldType.STRING)
-                            .description("응답 유형" + WorkoutPartnerUpdateType.allDescription()),
+                            .description("응답 유형" + WorkoutPartnerRequestUpdateStatus.allDescription()),
                     ),
 
                     responseFields(

@@ -7,6 +7,8 @@ import kr.co.fitview.api.app.domain.auth.controller.AuthController
 import kr.co.fitview.api.app.domain.auth.service.AuthService
 import kr.co.fitview.api.app.domain.auth.service.RefreshTokenService
 import kr.co.fitview.api.app.domain.auth.service.TestAuthService
+import kr.co.fitview.api.app.domain.chat.controller.ChatController
+import kr.co.fitview.api.app.domain.chat.service.ChatService
 import kr.co.fitview.api.app.domain.image.controller.ImageController
 import kr.co.fitview.api.app.domain.image.service.S3Service
 import kr.co.fitview.api.app.domain.member.controller.MemberController
@@ -49,6 +51,7 @@ import software.amazon.awssdk.services.s3.presigner.S3Presigner
     ImageController::class,
     AddressController::class,
     WorkoutPartnerController::class,
+    ChatController::class,
     GlobalExceptionHandler::class
 ],
 excludeFilters = [
@@ -99,5 +102,8 @@ abstract class ControllerTestSupport {
 
     @MockitoBean
     protected lateinit var securityUtil: SecurityUtil
+
+    @MockitoBean
+    protected lateinit var chatService: ChatService
 
 }

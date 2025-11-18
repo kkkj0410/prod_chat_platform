@@ -22,5 +22,4 @@ abstract class IntegrationTestSupport {
     @MockitoBean
     lateinit var networkService: NetworkService
 
-
 }
