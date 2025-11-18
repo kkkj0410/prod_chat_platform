@@ -2,6 +2,7 @@ package kr.co.fitview.api.app.domain.chat.controller
 
 import kr.co.fitview.api.app.domain.chat.config.StompPrincipal
 import kr.co.fitview.api.app.domain.chat.dto.request.ChatMessageRequest
+import kr.co.fitview.api.app.domain.chat.service.ChatService
 import kr.co.fitview.api.app.global.security.UserPrincipal
 import kr.co.fitview.api.app.global.util.SecurityUtil
 import org.springframework.messaging.handler.annotation.DestinationVariable
@@ -22,10 +23,10 @@ import java.time.LocalDateTime
 
 
 @RestController
-//@RequestMapping("/api/v1/chats")
 class StompController(
     private val messageTemplate : SimpMessageSendingOperations,
-    private val simpUserRegistry: SimpUserRegistry
+    private val simpUserRegistry: SimpUserRegistry,
+    private val chatService : ChatService
 ) {
 
 

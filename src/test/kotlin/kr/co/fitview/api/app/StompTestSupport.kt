@@ -4,6 +4,7 @@ import kr.co.fitview.api.app.domain.oauth2.service.AppleAuthService
 import kr.co.fitview.api.app.global.config.TestJwtConfig
 import kr.co.fitview.api.app.global.network.NetworkService
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.test.context.SpringBootTest.WebEnvironment
 import org.springframework.context.annotation.Import
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.bean.override.mockito.MockitoBean
@@ -12,14 +13,8 @@ import software.amazon.awssdk.services.s3.presigner.S3Presigner
 
 
 @ActiveProfiles("test")
-@Import(
-    TestJwtConfig::class,
-)
-@Transactional
-@SpringBootTest
-abstract class IntegrationTestSupport {
+@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
+abstract class StompTestSupport {
 
-    @MockitoBean
-    lateinit var networkService: NetworkService
 
 }

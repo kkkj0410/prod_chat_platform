@@ -1,8 +1,6 @@
 package kr.co.fitview.api.app.domain.workout_partner.dto.request.enums
 
-import kr.co.fitview.api.app.domain.member.dto.request.Age
-
-enum class WorkoutPartnerUpdateType(val description : String) {
+enum class WorkoutPartnerRequestUpdateStatus(val description : String) {
     ACCEPT("수락"),
     REJECT("거절");
 
@@ -12,7 +10,7 @@ enum class WorkoutPartnerUpdateType(val description : String) {
 
     companion object {
         fun allDescription(): List<String> {
-            return WorkoutPartnerUpdateType.entries.map { it.toString() }
+            return WorkoutPartnerRequestUpdateStatus.entries.map { it.toString() }
         }
     }
 }

@@ -2,109 +2,95 @@ package kr.co.fitview.api.app.domain.workout_partner.entity
 
 import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.member.entity.Member
+import kr.co.fitview.api.app.domain.member.repository.MemberRepository
+import kr.co.fitview.api.app.domain.member.service.MemberService
+import kr.co.fitview.api.app.domain.workout_partner.entity.enums.WorkoutPartnerRequestStatus
 import kr.co.fitview.api.app.global.entity.Role
-import kr.co.fitview.api.app.global.time.Time
+import kr.co.fitview.api.app.global.exception.GlobalException
+import kr.co.fitview.api.app.global.exception.error.workout_partner.WorkoutPartnerErrorCode
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
 class WorkoutPartnerTest @Autowired constructor(
-    val time : Time
+    private val memberRepository : MemberRepository
 ) : IntegrationTestSupport(){
 
-
-    @DisplayName("핏버디 요청을 거부한다.")
+    @DisplayName("운동 요청을 만든다.")
     @Test
-    fun reject() {
+    fun of() {
         // given
-        val fromMember = Member(
-            email = "email1",
-            password = "password1",
+        val member1 = Member(
+            email = "email",
+            password = "password",
             role = Role.USER,
         )
-
-        val toMember = Member(
-            email = "email2",
-            password = "password2",
+        val member2 = Member(
+            email = "email",
+            password = "password",
             role = Role.USER,
         )
-
-        val workoutPartner = WorkoutPartner(
-            fromMember,
-            toMember,
-            time.nowLocalDateTime
-        )
+        memberRepository.save(member1)
+        memberRepository.save(member2)
 
         // when
-        workoutPartner.reject(time.nowLocalDateTime)
+        val workoutPartner = WorkoutPartner.of(member1, member2)
 
         // then
         assertThat(workoutPartner)
-            .extracting("fromMember", "toMember", "requestedAt", "rejectedAt")
-            .contains(fromMember, toMember, time.nowLocalDateTime, time.nowLocalDateTime)
+            .extracting("memberOne", "memberTwo")
+            .contains(member1, member2)
     }
 
-    @DisplayName("핏버디 요청을 수락한다.")
+    @DisplayName("운동 요청의 회원을 순서대로 정렬해서 만든다.")
     @Test
-    fun accept() {
+    fun ofOrdered() {
         // given
-        val fromMember = Member(
-            email = "email1",
-            password = "password1",
+        val member1 = Member(
+            email = "email",
+            password = "password",
             role = Role.USER,
         )
-
-        val toMember = Member(
-            email = "email2",
-            password = "password2",
+        val member2 = Member(
+            email = "email",
+            password = "password",
             role = Role.USER,
         )
-
-        val workoutPartner = WorkoutPartner(
-            fromMember,
-            toMember,
-            time.nowLocalDateTime
-        )
+        memberRepository.save(member1)
+        memberRepository.save(member2)
 
         // when
-        workoutPartner.accept(time.nowLocalDateTime)
+        val workoutPartner = WorkoutPartner.of(member2, member1)
 
         // then
         assertThat(workoutPartner)
-            .extracting("fromMember", "toMember", "requestedAt", "acceptedAt")
-            .contains(fromMember, toMember, time.nowLocalDateTime, time.nowLocalDateTime)
+            .extracting("memberOne", "memberTwo")
+            .contains(member1, member2)
     }
 
-    @DisplayName("핏버디 요청을 본인 스스로 취소한다.")
+    @DisplayName("id가 없는 회원으로는 운동 요청을 만들지 않는다.")
     @Test
-    fun cancel() {
+    fun ofNotMemberId() {
         // given
-        val fromMember = Member(
-            email = "email1",
-            password = "password1",
+        val member1 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        val member2 = Member(
+            email = "email",
+            password = "password",
             role = Role.USER,
         )
 
-        val toMember = Member(
-            email = "email2",
-            password = "password2",
-            role = Role.USER,
-        )
-
-        val workoutPartner = WorkoutPartner(
-            fromMember,
-            toMember,
-            time.nowLocalDateTime
-        )
-
-        // when
-        workoutPartner.cancel(time.nowLocalDateTime)
-
-        // then
-        assertThat(workoutPartner)
-            .extracting("fromMember", "toMember", "requestedAt", "canceledAt")
-            .contains(fromMember, toMember, time.nowLocalDateTime, time.nowLocalDateTime)
+        // when & then
+        assertThatThrownBy {
+            WorkoutPartner.of(member1, member2)
+        }
+            .isInstanceOf(IllegalArgumentException::class.java)
+            .hasMessage("WorkoutPartner.of() requires both members to have non-null IDs")
     }
 }

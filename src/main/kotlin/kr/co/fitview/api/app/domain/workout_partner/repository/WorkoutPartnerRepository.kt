@@ -5,14 +5,18 @@ import org.springframework.data.jpa.repository.JpaRepository
 
 interface WorkoutPartnerRepository : JpaRepository<WorkoutPartner, Long> {
 
-    fun findTop1ByFromMemberIdAndToMemberIdAndDeletedAtIsNullOrderByRequestedAtDesc(
-        fromMemberId: Long,
-        toMemberId: Long
-    ): WorkoutPartner?
 
-    fun findByIdAndToMemberIdAndDeletedAtIsNull(
-        workoutPartnerId : Long,
-        toMemberId : Long
-    ) : WorkoutPartner?
+    fun findByMemberOneIdAndMemberTwoIdAndDeletedAtIsNull(memberOneId: Long, memberTwoId: Long): WorkoutPartner?
 
+}
+
+fun WorkoutPartnerRepository.findByOrderedMemberOneIdAndMemberTwoIdAndDeletedAtIsNull(memberOneId: Long, memberTwoId: Long): WorkoutPartner? {
+
+    val (firstId, secondId) = if (memberOneId < memberTwoId) {
+        memberOneId to memberTwoId
+    } else {
+        memberTwoId to memberOneId
+    }
+
+    return this.findByMemberOneIdAndMemberTwoIdAndDeletedAtIsNull(firstId, secondId)
 }

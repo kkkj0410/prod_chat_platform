@@ -1,8 +1,6 @@
 package kr.co.fitview.api.app.domain.workout_partner.controller
 
 import jakarta.validation.Valid
-import kr.co.fitview.api.app.domain.oauth2.dto.request.OAuth2LoginRequest
-import kr.co.fitview.api.app.domain.oauth2.dto.response.OAuth2LoginResponse
 import kr.co.fitview.api.app.domain.workout_partner.dto.request.WorkoutPartnerCreateRequest
 import kr.co.fitview.api.app.domain.workout_partner.dto.request.WorkoutPartnerUpdateRequest
 import kr.co.fitview.api.app.domain.workout_partner.service.WorkoutPartnerService
@@ -30,22 +28,22 @@ class WorkoutPartnerController(
         request : WorkoutPartnerCreateRequest
     ) : ResponseEntity<ApiResponse<*>> {
 
-        workoutPartnerService.addWorkoutPartner(securityUtil.getMemberId(), request.toServiceRequest())
+        workoutPartnerService.addWorkoutPartnerRequest(securityUtil.getMemberId(), request.toServiceRequest())
 
         return ResponseEntity.ok(ApiResponse.success("ok"))
     }
 
-    @PostMapping("/workout-partners/{workoutPartnerId}")
+    @PostMapping("/workout-partners/{workoutPartnerRequestId}")
     fun workoutPartnerModify(
         @PathVariable
-        workoutPartnerId : Long,
+        workoutPartnerRequestId : Long,
 
         @Valid
         @RequestBody
         request : WorkoutPartnerUpdateRequest
     ) : ResponseEntity<ApiResponse<*>> {
 
-        workoutPartnerService.updateWorkoutPartner(securityUtil.getMemberId(), workoutPartnerId, request.toServiceRequest())
+        workoutPartnerService.updateWorkoutPartnerRequest(securityUtil.getMemberId(), workoutPartnerRequestId, request.toServiceRequest())
 
         return ResponseEntity.ok(ApiResponse.success("ok"))
     }

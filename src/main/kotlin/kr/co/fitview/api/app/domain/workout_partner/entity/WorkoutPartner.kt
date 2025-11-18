@@ -4,9 +4,6 @@ import jakarta.persistence.*
 import jakarta.validation.constraints.NotNull
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.global.entity.BaseEntity
-import org.hibernate.annotations.ColumnDefault
-import java.time.Instant
-import java.time.LocalDateTime
 
 @Entity
 @Table(name = "workout_partner")
@@ -14,18 +11,13 @@ class WorkoutPartner(
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "from_member_id", nullable = false)
-    var fromMember: Member? = null,
+    @JoinColumn(name = "member_one_id", nullable = false)
+    var memberOne: Member? = null,
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "to_member_id", nullable = false)
-    var toMember: Member? = null,
-
-    @NotNull
-    @Column(name = "requested_at", nullable = false)
-    var requestedAt: LocalDateTime? = null
-
+    @JoinColumn(name = "member_two_id", nullable = false)
+    var memberTwo: Member? = null
 
 ) : BaseEntity() {
 
@@ -34,29 +26,17 @@ class WorkoutPartner(
     @Column(name = "workout_partner_id", nullable = false)
     var id: Long? = null
 
-    @Column(name = "rejected_at")
-    var rejectedAt: LocalDateTime? = null
-
-    @Column(name = "canceled_at")
-    var canceledAt: LocalDateTime? = null
-
-    @Column(name = "accepted_at")
-    var acceptedAt: LocalDateTime? = null
-
-
-    fun reject(now : LocalDateTime) : WorkoutPartner{
-        this.rejectedAt = now
-        return this
-    }
-
-    fun cancel(now : LocalDateTime) : WorkoutPartner{
-        this.canceledAt = now
-        return this
-    }
-
-    fun accept(now : LocalDateTime) : WorkoutPartner{
-        this.acceptedAt = now
-        return this
+    companion object {
+        fun of(memberOne: Member, memberTwo: Member): WorkoutPartner {
+            require(memberOne.id != null && memberTwo.id != null) {
+                "WorkoutPartner.of() requires both members to have non-null IDs"
+            }
+            return if (memberOne.id!! < memberTwo.id!!) {
+                WorkoutPartner(memberOne = memberOne, memberTwo = memberTwo)
+            } else {
+                WorkoutPartner(memberOne = memberTwo, memberTwo = memberOne)
+            }
+        }
     }
 
 }

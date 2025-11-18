@@ -3,9 +3,13 @@ package kr.co.fitview.api.app.domain.workout_partner.service
 import kr.co.fitview.api.app.domain.member.service.MemberService
 import kr.co.fitview.api.app.domain.workout_partner.dto.request.WorkoutPartnerCreateServiceRequest
 import kr.co.fitview.api.app.domain.workout_partner.dto.request.WorkoutPartnerUpdateServiceRequest
-import kr.co.fitview.api.app.domain.workout_partner.dto.request.enums.WorkoutPartnerUpdateType
+import kr.co.fitview.api.app.domain.workout_partner.dto.request.enums.WorkoutPartnerRequestUpdateStatus
 import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartner
+import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartnerRequest
+import kr.co.fitview.api.app.domain.workout_partner.entity.enums.WorkoutPartnerRequestStatus
 import kr.co.fitview.api.app.domain.workout_partner.repository.WorkoutPartnerRepository
+import kr.co.fitview.api.app.domain.workout_partner.repository.WorkoutPartnerRequestRepository
+import kr.co.fitview.api.app.domain.workout_partner.repository.findByOrderedMemberOneIdAndMemberTwoIdAndDeletedAtIsNull
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.global.GlobalErrorCode
 import kr.co.fitview.api.app.global.exception.error.workout_partner.WorkoutPartnerErrorCode
@@ -18,84 +22,112 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional(readOnly = true)
 class WorkoutPartnerService(
     private val workoutPartnerRepository: WorkoutPartnerRepository,
+    private val workoutPartnerRequestRepository : WorkoutPartnerRequestRepository,
     private val memberService : MemberService,
     private val time : Time
 ) {
 
 
     @Transactional
-    fun addWorkoutPartner(memberId : Long, request: WorkoutPartnerCreateServiceRequest): WorkoutPartner {
-        val findWorkoutPartner = workoutPartnerRepository.findTop1ByFromMemberIdAndToMemberIdAndDeletedAtIsNullOrderByRequestedAtDesc(memberId, request.memberId)
+    fun addWorkoutPartnerRequest(memberId : Long, request: WorkoutPartnerCreateServiceRequest): WorkoutPartnerRequest {
+        validateAlreadyWorkoutPartner(memberId, request.memberId)
+
+        val findWorkoutPartner = workoutPartnerRequestRepository.findTop1ByFromMemberIdAndToMemberIdAndDeletedAtIsNullOrderByRequestedAtDesc(memberId, request.memberId)
 
         // FE 편의상 validate 취소
         // 정식상으로 다시 validate 활성화 필요
-//        validateAddWorkoutPartner(findWorkoutPartner)
+//        validateAddWorkoutPartnerRequest(findWorkoutPartner)
 
-        val workoutPartner = WorkoutPartner(
+        val workoutPartner = WorkoutPartnerRequest(
             memberService.findMemberReferenceFrom(memberId),
             memberService.findMemberReferenceFrom(request.memberId),
+            WorkoutPartnerRequestStatus.PENDING,
             time.nowLocalDateTime
         )
-        return workoutPartnerRepository.save(workoutPartner)
+        return workoutPartnerRequestRepository.save(workoutPartner)
     }
 
     @Transactional
-    fun updateWorkoutPartner(memberId: Long, workoutPartnerId : Long, request: WorkoutPartnerUpdateServiceRequest) : WorkoutPartner {
-        val findWorkoutPartner = workoutPartnerRepository.findByIdAndToMemberIdAndDeletedAtIsNull(workoutPartnerId, memberId)
+    fun updateWorkoutPartnerRequest(memberId: Long, workoutPartnerRequestId : Long, request: WorkoutPartnerUpdateServiceRequest) : WorkoutPartnerRequest {
+        val findWorkoutPartnerRequest = workoutPartnerRequestRepository.findByIdAndToMemberIdAndDeletedAtIsNull(workoutPartnerRequestId, memberId)
                 ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
 
-        validateUpdateWorkoutPartner(findWorkoutPartner)
+        validateUpdateWorkoutPartnerRequest(findWorkoutPartnerRequest)
+
+        validateAlreadyWorkoutPartner(findWorkoutPartnerRequest.getFromMemberId(), findWorkoutPartnerRequest.getToMemberId())
 
         if(isWorkoutPartnerAccept(request)){
-            findWorkoutPartner.accept(time.nowLocalDateTime)
+            findWorkoutPartnerRequest.accept()
+
+            addWorkoutPartner(findWorkoutPartnerRequest)
+
+            return findWorkoutPartnerRequest
         }
 
-        else if(isWorkoutPartnerReject(request)){
-            findWorkoutPartner.reject(time.nowLocalDateTime)
-        }
-
-        return findWorkoutPartner
+        findWorkoutPartnerRequest.reject()
+        return findWorkoutPartnerRequest
     }
 
-    private fun validateAddWorkoutPartner(workoutPartner: WorkoutPartner?) {
-        if (isNotNull(workoutPartner)) {
-            if (isNotNull(workoutPartner!!.acceptedAt)) {
+    @Transactional
+    fun addWorkoutPartner(workoutPartnerRequest: WorkoutPartnerRequest) {
+        val workoutPartner =
+            WorkoutPartner.of(workoutPartnerRequest.fromMember!!, workoutPartnerRequest.toMember!!)
+        workoutPartnerRepository.save(workoutPartner)
+    }
+
+    fun isAcceptWorkoutPartner(fromMemberId: Long, toMemberId: Long): Boolean {
+//        workoutPartnerRepository.findTop1ByFromMemberIdAndToMemberIdAndDeletedAtIsNullOrderByRequestedAtDesc(fromMemberId, toMemberId)
+        return true
+    }
+
+
+    private fun validateAddWorkoutPartnerRequest(workoutPartnerRequest: WorkoutPartnerRequest?) {
+        if (isNotNull(workoutPartnerRequest)) {
+            if (workoutPartnerRequest!!.status == WorkoutPartnerRequestStatus.ACCEPT) {
                 throw GlobalException(WorkoutPartnerErrorCode.ALREADY_PARTNER_ACCEPTED)
             }
 
-            if (isNotExpire24Hour(workoutPartner) && isPending(workoutPartner)) {
+            if (isNotExpire24Hour(workoutPartnerRequest) && isPending(workoutPartnerRequest)) {
                 throw GlobalException(WorkoutPartnerErrorCode.PARTNER_REQUEST_COOLDOWN)
             }
         }
     }
 
-    private fun validateUpdateWorkoutPartner(findWorkoutPartner: WorkoutPartner) {
-        if (isNotNull(findWorkoutPartner.canceledAt) || isNotNull(findWorkoutPartner.rejectedAt) || isNotNull(
-                findWorkoutPartner.acceptedAt
-            )
-        ) {
+    private fun validateUpdateWorkoutPartnerRequest(workoutPartnerRequest: WorkoutPartnerRequest) {
+        if (isNotPending(workoutPartnerRequest) || isExpire24Hour(workoutPartnerRequest))
+        {
             throw GlobalException(WorkoutPartnerErrorCode.PARTNER_REQUEST_ALREADY_FINALIZED)
         }
     }
 
+    private fun isNotPending(workoutPartnerRequest: WorkoutPartnerRequest) =
+        workoutPartnerRequest.status != WorkoutPartnerRequestStatus.PENDING
+
     private fun isWorkoutPartnerAccept(request: WorkoutPartnerUpdateServiceRequest) =
-        request.type == WorkoutPartnerUpdateType.ACCEPT
+        request.type == WorkoutPartnerRequestUpdateStatus.ACCEPT
 
-    private fun isWorkoutPartnerReject(request: WorkoutPartnerUpdateServiceRequest) =
-        request.type == WorkoutPartnerUpdateType.REJECT
 
-    private fun isNotExpire24Hour(workoutPartner: WorkoutPartner) =
+    private fun isExpire24Hour(workoutPartner: WorkoutPartnerRequest) =
+        workoutPartner.requestedAt!!.isBefore(time.nowLocalDateTime.minusHours(24))
+
+    private fun isNotExpire24Hour(workoutPartner: WorkoutPartnerRequest) =
         workoutPartner.requestedAt!!.isAfter(time.nowLocalDateTime.minusHours(24))
 
-    private fun isPending(workoutPartner : WorkoutPartner) =
-        isNull(workoutPartner.rejectedAt) && isNull(workoutPartner.canceledAt)
+    private fun isPending(workoutPartnerRequest : WorkoutPartnerRequest) =
+        workoutPartnerRequest.status == WorkoutPartnerRequestStatus.PENDING
 
     private fun isNotNull(value: Any?) =
         value != null
 
-    private fun isNull(value: Any?) =
-        value == null
 
+    private fun validateAlreadyWorkoutPartner(
+        memberOneId: Long,
+        memberTwoId: Long
+    ) {
+        workoutPartnerRepository
+            .findByOrderedMemberOneIdAndMemberTwoIdAndDeletedAtIsNull(memberOneId, memberTwoId)
+            ?.let { throw GlobalException(WorkoutPartnerErrorCode.ALREADY_PARTNER_ACCEPTED) }
+    }
 
 
 }
