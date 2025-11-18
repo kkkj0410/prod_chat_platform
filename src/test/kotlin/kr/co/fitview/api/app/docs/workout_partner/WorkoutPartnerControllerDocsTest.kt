@@ -91,7 +91,7 @@ class WorkoutPartnerControllerDocsTest : RestDocsSupport() {
 
         // when & then
         mockMvc.perform(
-            post("/api/v1/workout-partners/{workoutPartnerId}", 123)
+            post("/api/v1/workout-partners/{workoutPartnerRequestId}", 123)
                 .content(objectMapper.writeValueAsString(request))
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Bearer jwt-token")
@@ -100,7 +100,7 @@ class WorkoutPartnerControllerDocsTest : RestDocsSupport() {
             .andExpect(status().isOk())
             .andDo(
                 document(
-                    "workout-partner-update",
+                    "workout-partner-request-update",
                     preprocessRequest(prettyPrint()),
                     preprocessResponse(prettyPrint()),
 
@@ -109,7 +109,7 @@ class WorkoutPartnerControllerDocsTest : RestDocsSupport() {
                     ),
 
                     pathParameters(
-                        parameterWithName("workoutPartnerId").description("해당 운동 파트너 요청 id.")
+                        parameterWithName("workoutPartnerRequestId").description("해당 운동 파트너 요청 id.")
                     ),
 
                     requestFields(
