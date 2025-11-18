@@ -132,7 +132,7 @@ class WorkoutPartnerRequestTest @Autowired constructor(
         // when
 
         // then
-
+//
     }
 
     @DisplayName("")
