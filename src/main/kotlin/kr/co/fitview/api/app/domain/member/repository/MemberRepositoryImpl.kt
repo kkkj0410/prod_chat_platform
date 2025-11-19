@@ -1,6 +1,5 @@
 package kr.co.fitview.api.app.domain.member.repository
 
-import com.querydsl.core.BooleanBuilder
 import com.querydsl.core.types.dsl.BooleanExpression
 import com.querydsl.core.types.dsl.CaseBuilder
 import com.querydsl.core.types.dsl.Expressions
@@ -10,7 +9,6 @@ import jakarta.persistence.EntityManager
 import kr.co.fitview.api.app.domain.address.entity.QAddress
 import kr.co.fitview.api.app.domain.address.entity.QAddress.address
 import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
-import kr.co.fitview.api.app.domain.image.entity.QImage
 import kr.co.fitview.api.app.domain.image.entity.QImage.image
 import kr.co.fitview.api.app.domain.image.entity.QMemberImage.memberImage
 import kr.co.fitview.api.app.domain.image.entity.enums.MemberImageType
@@ -19,6 +17,7 @@ import kr.co.fitview.api.app.domain.member.dto.request.Age
 import kr.co.fitview.api.app.domain.member.dto.response.*
 import kr.co.fitview.api.app.domain.member.entity.QMember
 import kr.co.fitview.api.app.domain.member.entity.QMember.member
+import kr.co.fitview.api.app.domain.member.entity.QWorkoutTime.workoutTime
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutExperience
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutGoal
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutStyle
@@ -84,7 +83,7 @@ class MemberRepositoryImpl(
             )
             .from(member)
             .join(address).on(member.id.eq(address.member.id))
-            .join(member.memberImages, memberImage)
+            .join(member.mutableMemberImages, memberImage)
             .join(memberImage.image, image)
             .where(
                 gteHeight(condition.minHeight),
@@ -419,8 +418,48 @@ class MemberRepositoryImpl(
         }
     }
 
-    override fun findMemberMeByDeletedAtIsNull(memberId: Long): MemberMeResponse {
-        TODO("Not yet implemented")
+    override fun findMemberProfileByDeletedAtIsNull(memberId: Long): MemberProfileResponse? {
+
+         val memberProfileFlats = queryFactory
+            .select(
+                QMemberProfileFlat(
+                    member.id,
+                    member.nickname,
+                    member.gender,
+                    address.siDo,
+                    address.siGunGu,
+                    address.eupMyeonDong,
+                    member.intro,
+                    member.height,
+                    member.weight,
+                    member.birthday,
+                    member.workoutExperience,
+                    member.workoutStyle,
+                    member.workoutGoal,
+                    workoutTime.name,
+                    member.score,
+                    image.url,
+                    memberImage.type
+                )
+            )
+            .from(member)
+            .join(member.mutableWorkoutTimes, workoutTime)
+            .join(member.mutableMemberImages, memberImage)
+            .join(memberImage.image, image)
+            .join(member.mutableAddresses, address)
+            .where(
+                member.id.eq(memberId),
+                member.deletedAt.isNull,
+                workoutTime.deletedAt.isNull,
+                memberImage.deletedAt.isNull,
+                image.deletedAt.isNull,
+                address.deletedAt.isNull
+            )
+            .fetch()
+
+
+
+        return MemberProfileResponse.fromFlat(memberProfileFlats)
     }
 
     private fun gteHeight(minHeight: Int?): BooleanExpression? {

@@ -14,11 +14,9 @@ import kr.co.fitview.api.app.domain.image.service.S3Service
 import kr.co.fitview.api.app.domain.member.controller.MemberController
 import kr.co.fitview.api.app.domain.member.service.MemberService
 import kr.co.fitview.api.app.domain.oauth2.controller.OAuth2Controller
-import kr.co.fitview.api.app.domain.oauth2.service.AppleService
-import kr.co.fitview.api.app.domain.oauth2.service.KakaoService
 import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
 import kr.co.fitview.api.app.domain.workout_partner.controller.WorkoutPartnerController
-import kr.co.fitview.api.app.domain.workout_partner.service.WorkoutPartnerService
+import kr.co.fitview.api.app.domain.workout_partner.service.WorkoutPartnerRequestService
 import kr.co.fitview.api.app.global.config.JacksonConfig
 import kr.co.fitview.api.app.global.config.SecurityConfig
 import kr.co.fitview.api.app.global.config.TestSecurityConfig
@@ -33,7 +31,6 @@ import org.springframework.context.annotation.FilterType
 import org.springframework.context.annotation.Import
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.web.servlet.MockMvc
-import software.amazon.awssdk.services.s3.presigner.S3Presigner
 
 
 @Import(
@@ -92,7 +89,7 @@ abstract class ControllerTestSupport {
     protected lateinit var addressService: AddressService
 
     @MockitoBean
-    protected lateinit var workoutPartnerService: WorkoutPartnerService
+    protected lateinit var workoutPartnerRequestService: WorkoutPartnerRequestService
 
     @MockitoBean
     protected lateinit var testAuthService: TestAuthService

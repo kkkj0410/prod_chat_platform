@@ -3,28 +3,18 @@ package kr.co.fitview.api.app.docs.workout_partner
 import kr.co.fitview.api.app.docs.RestDocsHeaders
 import kr.co.fitview.api.app.docs.RestDocsPagination
 import kr.co.fitview.api.app.docs.RestDocsSupport
-import kr.co.fitview.api.app.domain.member.dto.request.Age
-import kr.co.fitview.api.app.domain.member.dto.response.MemberLocalResponse
-import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutExperience
-import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutGoal
-import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutStyle
 import kr.co.fitview.api.app.domain.workout_partner.controller.WorkoutPartnerController
 import kr.co.fitview.api.app.domain.workout_partner.dto.request.WorkoutPartnerCreateRequest
 import kr.co.fitview.api.app.domain.workout_partner.dto.request.WorkoutPartnerUpdateRequest
 import kr.co.fitview.api.app.domain.workout_partner.dto.request.enums.WorkoutPartnerRequestType
 import kr.co.fitview.api.app.domain.workout_partner.dto.request.enums.WorkoutPartnerRequestUpdateStatus
 import kr.co.fitview.api.app.domain.workout_partner.dto.response.enums.WorkoutPartnerRequestStatusForResponse
-import kr.co.fitview.api.app.domain.workout_partner.service.WorkoutPartnerService
+import kr.co.fitview.api.app.domain.workout_partner.service.WorkoutPartnerRequestService
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.util.SecurityUtil
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
-import org.mockito.kotlin.any
-import org.mockito.kotlin.given
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageImpl
-import org.springframework.data.domain.PageRequest
 import org.springframework.http.MediaType
 import org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document
@@ -40,11 +30,11 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 class WorkoutPartnerControllerDocsTest : RestDocsSupport() {
 
-    private val workoutPartnerService: WorkoutPartnerService = mock(WorkoutPartnerService::class.java)
+    private val workoutPartnerRequestService: WorkoutPartnerRequestService = mock(WorkoutPartnerRequestService::class.java)
     private val securityUtil: SecurityUtil = mock(SecurityUtil::class.java)
 
     override fun initController(): Any {
-        return WorkoutPartnerController(workoutPartnerService, securityUtil)
+        return WorkoutPartnerController(workoutPartnerRequestService, securityUtil)
     }
 
     @DisplayName("핏버디 요청 API")

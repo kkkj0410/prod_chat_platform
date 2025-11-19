@@ -3,14 +3,26 @@ package kr.co.fitview.api.app.domain.member.service
 import jakarta.persistence.EntityManager
 import jakarta.persistence.EntityNotFoundException
 import kr.co.fitview.api.app.IntegrationTestSupport
+import kr.co.fitview.api.app.domain.address.dto.request.AddressCreateServiceRequest
+import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
+import kr.co.fitview.api.app.domain.member.dto.request.Age
+import kr.co.fitview.api.app.domain.member.dto.response.enums.ProfileWorkoutPartnerStatus
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.entity.WorkoutTime
+import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutExperience
+import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutGoal
+import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutStyle
 import kr.co.fitview.api.app.domain.member.entity.enums.WorkoutTimeName
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.domain.member.repository.WorkoutTimeRepository
+import kr.co.fitview.api.app.domain.oauth2.dto.request.OAuth2SignupServiceRequest
+import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
+import kr.co.fitview.api.app.domain.workout_partner.dto.request.enums.WorkoutPartnerRequestType
+import kr.co.fitview.api.app.global.entity.Gender
 import kr.co.fitview.api.app.global.entity.OAuth2Provider
 import kr.co.fitview.api.app.global.exception.GlobalException
+import kr.co.fitview.api.app.global.exception.error.global.GlobalErrorCode
 import kr.co.fitview.api.app.global.exception.error.member.MemberErrorCode
 import org.assertj.core.api.Assertions.*
 import org.assertj.core.api.ThrowingConsumer
@@ -18,11 +30,13 @@ import org.hibernate.proxy.HibernateProxy
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import java.time.LocalDate
 
 class MemberServiceTest @Autowired constructor(
     val memberService : MemberService,
     val memberRepository : MemberRepository,
     val workoutTimeRepository : WorkoutTimeRepository,
+    val oAuth2Service : OAuth2Service,
     val em : EntityManager
 ) : IntegrationTestSupport() {
 
@@ -144,41 +158,109 @@ class MemberServiceTest @Autowired constructor(
         assertThat(findMember).isNull()
     }
 
+    fun createOAuth2SignupServiceRequest(
+        profileImageUrl: String = "profileImageUrl",
+        nickname: String = "nickname",
+        gender: Gender = Gender.MALE,
+        birthday: LocalDate = LocalDate.of(2000, 1, 1),
+        height: Int = 170,
+        weight: Int = 65,
+        workoutExperience: MemberWorkoutExperience = MemberWorkoutExperience.JUST_STARTED,
+        workoutStyle: MemberWorkoutStyle = MemberWorkoutStyle.STRENGTH,
+        workoutTimes: List<WorkoutTimeName> = listOf(WorkoutTimeName.WEEKDAY_DAWN, WorkoutTimeName.WEEKDAY_EVENING),
+        workoutGoal: MemberWorkoutGoal = MemberWorkoutGoal.PERFORMANCE_GOAL,
+        workoutImageUrls: List<String> = listOf(
+            "imageUrl1",
+            "imageUrl2",
+        ),
+        intro: String? = "intro",
+        address : AddressCreateServiceRequest = AddressCreateServiceRequest(
+            siDo = AddressSiDo.SEOUL,
+            siGunGu = "강남구",
+            eupMyeonDong = "역삼동",
+            lat = 37.4979,
+            lng = 127.0276,
+            fullAddress = "서울특별시 강남구 테헤란로 123"
+        )
+    ): OAuth2SignupServiceRequest {
+        return OAuth2SignupServiceRequest(
+            profileImageUrl = profileImageUrl,
+            nickname = nickname,
+            gender = gender,
+            birthday = birthday,
+            height = height,
+            weight = weight,
+            workoutExperience = workoutExperience,
+            workoutStyle = workoutStyle,
+            workoutTimes = workoutTimes,
+            workoutGoal = workoutGoal,
+            workoutImageUrls = workoutImageUrls,
+            intro = intro,
+            address = address
+        )
+    }
+
 
     @DisplayName("회원 id로 회원 정보를 조회한다.")
     @Test
-    fun findMemberMe() {
+    fun findMemberProfile() {
         // given
         val member = Member(
             email = "email",
             password = "password",
             role = Role.USER,
+            provider = OAuth2Provider.APPLE,
+            providerId = "providerId"
         )
         val savedMember = memberRepository.save(member)
 
+        val request = createOAuth2SignupServiceRequest()
+        oAuth2Service.signup(request, member.id!!)
+
         // when
-        val response = memberService.findMemberMe(savedMember.id!!)
+        val response = memberService.findMemberProfile(savedMember.id!!)
 
         // then
-//        assertThat(response.email).isEqualTo(savedMember.email)
-//        assertThat(response.role).isEqualTo(savedMember.role)
+        assertThat(response).isNotNull
+        response.let {
+            assertThat(it.memberId).isEqualTo(savedMember.id)
+            assertThat(it.nickname).isEqualTo(request.nickname)
+            assertThat(it.gender).isEqualTo(request.gender)
+            assertThat(it.height).isEqualTo(request.height)
+            assertThat(it.weight).isEqualTo(request.weight)
+            assertThat(it.intro).isEqualTo(request.intro)
+            assertThat(it.age).isEqualTo(Age.fromBirthDay(request.birthday))
+            assertThat(it.workoutExperience).isEqualTo(request.workoutExperience)
+            assertThat(it.workoutStyle).isEqualTo(request.workoutStyle)
+            assertThat(it.workoutGoal).isEqualTo(request.workoutGoal)
+            assertThat(it.score).isEqualTo(savedMember.score!!.toInt())
+
+            assertThat(it.siDo).isEqualTo(request.address.siDo)
+            assertThat(it.siGunGu).isEqualTo(request.address.siGunGu)
+            assertThat(it.eupMyeonDong).isEqualTo(request.address.eupMyeonDong)
+
+            assertThat(it.workoutTimeNames).containsExactlyInAnyOrderElementsOf(request.workoutTimes)
+            assertThat(it.workoutImageUrls).containsExactlyInAnyOrderElementsOf(request.workoutImageUrls)
+
+            assertThat(it.profileImageUrl).isEqualTo(request.profileImageUrl)
+        }
     }
 
     @DisplayName("회원 정보가 없으면 회원 고유 id로 사용자 정보를 조회할 수 없다.")
     @Test
-    fun findMemberMeWithoutMember() {
+    fun findMemberProfileWithoutMember() {
         // given
         val memberId = 100L
 
         // when & then
         assertThatThrownBy {
-            memberService.findMemberMe(memberId)
+            memberService.findMemberProfile(memberId)
         }
             .isInstanceOf(GlobalException::class.java)
             .satisfies(ThrowingConsumer { ex ->
                 val globalEx = ex as GlobalException
                 assertThat(globalEx.errorCode)
-                    .isEqualTo(MemberErrorCode.MEMBER_NOT_FOUND)
+                    .isEqualTo(GlobalErrorCode.ENTITY_NOT_FOUND)
             })
     }
 
@@ -516,6 +598,63 @@ class MemberServiceTest @Autowired constructor(
             memberProxy.email
         }
         .isInstanceOf(EntityNotFoundException::class.java)
+    }
+
+
+    @DisplayName("상대 회원의 프로필을 조회한다.")
+    @Test
+    fun findMemberDetail() {
+        // given
+        val me = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        val otherMember = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+            provider = OAuth2Provider.APPLE,
+            providerId = "providerId"
+        )
+        memberRepository.save(me)
+        memberRepository.save(otherMember)
+
+        val request = createOAuth2SignupServiceRequest()
+        oAuth2Service.signup(request, otherMember.id!!)
+
+        // when
+        val response = memberService.findMemberDetail(me.id!!, otherMember.id!!)
+
+        // then
+        assertThat(response.profile).isNotNull
+        response.profile.let {
+            assertThat(it.memberId).isEqualTo(otherMember.id)
+            assertThat(it.nickname).isEqualTo(request.nickname)
+            assertThat(it.gender).isEqualTo(request.gender)
+            assertThat(it.height).isEqualTo(request.height)
+            assertThat(it.weight).isEqualTo(request.weight)
+            assertThat(it.intro).isEqualTo(request.intro)
+            assertThat(it.age).isEqualTo(Age.fromBirthDay(request.birthday))
+            assertThat(it.workoutExperience).isEqualTo(request.workoutExperience)
+            assertThat(it.workoutStyle).isEqualTo(request.workoutStyle)
+            assertThat(it.workoutGoal).isEqualTo(request.workoutGoal)
+            assertThat(it.score).isEqualTo(otherMember.score!!.toInt())
+
+            assertThat(it.siDo).isEqualTo(request.address.siDo)
+            assertThat(it.siGunGu).isEqualTo(request.address.siGunGu)
+            assertThat(it.eupMyeonDong).isEqualTo(request.address.eupMyeonDong)
+
+            assertThat(it.workoutTimeNames).containsExactlyInAnyOrderElementsOf(request.workoutTimes)
+            assertThat(it.workoutImageUrls).containsExactlyInAnyOrderElementsOf(request.workoutImageUrls)
+
+            assertThat(it.profileImageUrl).isEqualTo(request.profileImageUrl)
+        }
+        response.workoutPartner.let {
+            assertThat(it.status).isEqualTo(ProfileWorkoutPartnerStatus.NONE)
+            assertThat(it.workoutPartnerRequestId).isEqualTo(null)
+            assertThat(it.chatRoomId).isEqualTo(null)
+        }
     }
 
 }

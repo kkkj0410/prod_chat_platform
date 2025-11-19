@@ -1,20 +1,15 @@
 package kr.co.fitview.api.app.domain.member.service
 
 import kr.co.fitview.api.app.domain.member.condition.MemberLocalCondition
-import kr.co.fitview.api.app.domain.member.dto.request.Age
-import kr.co.fitview.api.app.domain.member.dto.response.MemberLocalResponse
-import kr.co.fitview.api.app.domain.member.dto.response.MemberMeResponse
-import kr.co.fitview.api.app.domain.member.dto.response.MemberRecommendationResponse
+import kr.co.fitview.api.app.domain.member.dto.response.*
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.entity.WorkoutTime
-import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutExperience
-import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutGoal
-import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutStyle
 import kr.co.fitview.api.app.domain.member.entity.enums.WorkoutTimeName
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.domain.member.repository.WorkoutTimeRepository
-import kr.co.fitview.api.app.global.entity.Gender
+import kr.co.fitview.api.app.domain.workout_partner.service.WorkoutPartnerService
 import kr.co.fitview.api.app.global.exception.GlobalException
+import kr.co.fitview.api.app.global.exception.error.global.GlobalErrorCode
 import kr.co.fitview.api.app.global.exception.error.member.MemberErrorCode
 import kr.co.fitview.api.app.global.time.Time
 import org.springframework.data.domain.Page
@@ -30,6 +25,7 @@ import kotlin.random.Random
 class MemberService(
     private val memberRepository : MemberRepository,
     private val workoutTimeRepository: WorkoutTimeRepository,
+    private val workoutPartnerService : WorkoutPartnerService,
     private val time : Time
 ) {
 
@@ -86,29 +82,20 @@ class MemberService(
             ?: throw GlobalException(MemberErrorCode.MEMBER_NOT_FOUND)
     }
 
-    fun findMemberMe(memberId: Long){
-        findMemberOrElseThrow(memberId)
-//         return MemberMeResponse(
-//            memberId = 1L,
-//            profileImageUrl = "https://example.com/profile.png",
-//            nickname = "test_user",
-//            gender = Gender.MALE,
-//            siDo = "서울특별시",
-//            siGunGu = "강남구",
-//            eupMyeonDong = "역삼동",
-//            intro = "헬스 좋아함",
-//            height = 175,
-//            weight = 70,
-//            age = Age.FIFTIES_AND_ABOVE,
-//            workoutExperience = MemberWorkoutExperience.UNDER_ONE_YEAR,
-//            workoutStyle = MemberWorkoutStyle.CARDIO,
-//            workoutGoal = MemberWorkoutGoal.PERFORMANCE_GOAL,
-//            workoutTimeNames = listOf(WorkoutTimeName.WEEKEND_DAWN, WorkoutTimeName.WEEKDAY_MORNING),
-//            workoutImageUrls = listOf("https://example.com/workout1.png"),
-//            score = 42
-//        )
-//        return memberRepository.findMemberMeByDeletedAtIsNull(memberId)
+    fun findMemberProfile(memberId: Long) : MemberProfileResponse{
+        val response = memberRepository.findMemberProfileByDeletedAtIsNull(memberId)
+            ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
+
+        return response
     }
+
+    fun findMemberDetail(fromMemberId : Long, toMemberId : Long) : MemberDetailResponse{
+        val findProfile = findMemberProfile(toMemberId)
+        val findWorkoutPartnerStatus : WorkoutPartnerStatusResponse = workoutPartnerService.findWorkoutPartnerStatus(fromMemberId, toMemberId)
+
+        return MemberDetailResponse(findProfile, findWorkoutPartnerStatus)
+    }
+
 
     fun findMemberReferenceFrom(memberId : Long)  : Member{
         return memberRepository.getReferenceById(memberId)

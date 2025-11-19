@@ -8,14 +8,14 @@ import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
 import kr.co.fitview.api.app.domain.address.service.AddressService
 import kr.co.fitview.api.app.domain.member.controller.MemberController
 import kr.co.fitview.api.app.domain.member.dto.request.Age
-import kr.co.fitview.api.app.domain.member.dto.response.MemberLocalResponse
-import kr.co.fitview.api.app.domain.member.dto.response.MemberRecommendationResponse
+import kr.co.fitview.api.app.domain.member.dto.response.*
 import kr.co.fitview.api.app.domain.member.dto.response.enums.ProfileWorkoutPartnerStatus
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutExperience
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutGoal
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutStyle
 import kr.co.fitview.api.app.domain.member.entity.enums.WorkoutTimeName
 import kr.co.fitview.api.app.domain.member.service.MemberService
+import kr.co.fitview.api.app.global.entity.Gender
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.util.SecurityUtil
 import org.junit.jupiter.api.DisplayName
@@ -56,17 +56,36 @@ class MemberControllerDocsTest : RestDocsSupport() {
     @DisplayName("사용자 본인 조회 API")
     @Test
     fun memberMe() {
-        // when
-//        given(memberService.findMemberMe(any()))
-//            .willReturn(
-//                MemberMeResponse(
-//                    memberId = 1L,
-//                    email = "email",
-//                    role = Role.USER
-//                )
-//            )
+        // given
+        given(memberService.findMemberProfile(any()))
+            .willReturn(
+                MemberProfileResponse(
+                    memberId = 456L,
+                    profileImageUrl = "http://test.com/profile/image.jpg",
+                    nickname = "테스트닉네임",
+                    gender = Gender.MALE,
 
-        // then
+                    siDo = AddressSiDo.SEOUL,
+                    siGunGu = "강남구",
+                    eupMyeonDong = "역삼동",
+
+                    intro = "안녕하세요! 운동을 좋아하는 사람입니다.",
+                    height = 180,
+                    weight = 75,
+
+                    age = Age.FORTIES_MID,
+
+                    workoutExperience = MemberWorkoutExperience.JUST_STARTED,
+                    workoutStyle = MemberWorkoutStyle.STRENGTH,
+                    workoutGoal = MemberWorkoutGoal.PERFORMANCE_GOAL,
+                    workoutTimeNames = listOf(WorkoutTimeName.WEEKDAY_DAWN, WorkoutTimeName.WEEKDAY_AFTERNOON),
+                    workoutImageUrls = listOf(),
+
+                    score = 80
+                ),
+            )
+
+        // when & then
         mockMvc.perform(
             get("/api/v1/members/me")
                 .header("Authorization", "Bearer jwt-token")
@@ -107,7 +126,7 @@ class MemberControllerDocsTest : RestDocsSupport() {
                             .description("시/군/구"),
                         fieldWithPath("data.eupMyeonDong").type(JsonFieldType.STRING)
                             .description("읍/면/동"),
-                        fieldWithPath("data.intro").type(JsonFieldType.STRING)
+                        fieldWithPath("data.intro").type(JsonFieldType.STRING).optional()
                             .description("소개글"),
                         fieldWithPath("data.height").type(JsonFieldType.NUMBER)
                             .description("키"),
@@ -426,14 +445,41 @@ class MemberControllerDocsTest : RestDocsSupport() {
     @Test
     fun memberDetails() {
         // when
-//        given(memberService.findMemberMe(any()))
-//            .willReturn(
-//                MemberMeResponse(
-//                    memberId = 1L,
-//                    email = "email",
-//                    role = Role.USER
-//                )
-//            )
+        given(memberService.findMemberDetail(any(), any()))
+            .willReturn(
+                MemberDetailResponse(
+                    profile = MemberProfileResponse(
+                        memberId = 456L, // otherMember.id 대신 하드코딩
+                        profileImageUrl = "http://test.com/profile/image.jpg",
+                        nickname = "테스트닉네임",
+                        gender = Gender.MALE,
+
+                        siDo = AddressSiDo.SEOUL,
+                        siGunGu = "강남구",
+                        eupMyeonDong = "역삼동",
+
+                        intro = "안녕하세요! 운동을 좋아하는 사람입니다.",
+                        height = 180,
+                        weight = 75,
+
+                        age = Age.FORTIES_MID,
+
+                        workoutExperience = MemberWorkoutExperience.JUST_STARTED,
+                        workoutStyle = MemberWorkoutStyle.STRENGTH,
+                        workoutGoal = MemberWorkoutGoal.PERFORMANCE_GOAL,
+                        workoutTimeNames = listOf(WorkoutTimeName.WEEKDAY_DAWN, WorkoutTimeName.WEEKDAY_AFTERNOON),
+                        workoutImageUrls = listOf(),
+
+                        score = 80
+                    ),
+
+                    workoutPartner = WorkoutPartnerStatusResponse(
+                        status = ProfileWorkoutPartnerStatus.NONE,
+                        workoutPartnerRequestId = null,
+                        chatRoomId = null
+                    )
+                )
+            )
 
         // then
         mockMvc.perform(
@@ -465,40 +511,26 @@ class MemberControllerDocsTest : RestDocsSupport() {
                             .description("에러 메시지"),
                         fieldWithPath("data").type(JsonFieldType.OBJECT)
                             .description("응답 데이터"),
-                        fieldWithPath("data.memberId").type(JsonFieldType.NUMBER)
-                            .description("회원 ID"),
-                        fieldWithPath("data.profileImageUrl").type(JsonFieldType.STRING)
-                            .description("프로필 이미지 URL"),
-                        fieldWithPath("data.nickname").type(JsonFieldType.STRING)
-                            .description("닉네임"),
-                        fieldWithPath("data.gender").type(JsonFieldType.STRING)
-                            .description("성별"),
-                        fieldWithPath("data.siDo").type(JsonFieldType.STRING)
-                            .description("시/도"),
-                        fieldWithPath("data.siGunGu").type(JsonFieldType.STRING)
-                            .description("시/군/구"),
-                        fieldWithPath("data.eupMyeonDong").type(JsonFieldType.STRING)
-                            .description("읍/면/동"),
-                        fieldWithPath("data.intro").type(JsonFieldType.STRING)
-                            .description("소개글"),
-                        fieldWithPath("data.height").type(JsonFieldType.NUMBER)
-                            .description("키"),
-                        fieldWithPath("data.weight").type(JsonFieldType.NUMBER)
-                            .description("몸무게"),
-                        fieldWithPath("data.age").type(JsonFieldType.STRING)
-                            .description("연령대"),
-                        fieldWithPath("data.workoutExperience").type(JsonFieldType.STRING)
-                            .description("운동 경력"),
-                        fieldWithPath("data.workoutStyle").type(JsonFieldType.STRING)
-                            .description("운동 스타일"),
-                        fieldWithPath("data.workoutGoal").type(JsonFieldType.STRING)
-                            .description("운동 목표"),
-                        fieldWithPath("data.workoutTimeNames").type(JsonFieldType.ARRAY)
-                            .description("운동 가능 시간대 리스트. STRING"),
-                        fieldWithPath("data.workoutImageUrls").type(JsonFieldType.ARRAY)
-                            .description("운동 이미지 URL 리스트. STRING. 빈 배열일 수 있음"),
-                        fieldWithPath("data.score").type(JsonFieldType.NUMBER)
-                            .description("핏버디 온도값"),
+
+                        fieldWithPath("data.profile").type(JsonFieldType.OBJECT).description("회원 프로필 상세 정보"),
+                        fieldWithPath("data.profile.memberId").type(JsonFieldType.NUMBER).description("회원 ID"),
+                        fieldWithPath("data.profile.profileImageUrl").type(JsonFieldType.STRING).description("프로필 이미지 URL"),
+                        fieldWithPath("data.profile.nickname").type(JsonFieldType.STRING).description("닉네임"),
+                        fieldWithPath("data.profile.gender").type(JsonFieldType.STRING).description(Gender.allDescription()),
+                        fieldWithPath("data.profile.siDo").type(JsonFieldType.STRING).description("시/도 주소"),
+                        fieldWithPath("data.profile.siGunGu").type(JsonFieldType.STRING).description("시/군/구 주소"),
+                        fieldWithPath("data.profile.eupMyeonDong").type(JsonFieldType.STRING).description("읍/면/동 주소"),
+                        fieldWithPath("data.profile.intro").type(JsonFieldType.STRING).description("자기소개").optional(),
+                        fieldWithPath("data.profile.height").type(JsonFieldType.NUMBER).description("키 (cm)"),
+                        fieldWithPath("data.profile.weight").type(JsonFieldType.NUMBER).description("몸무게 (kg)"),
+                        fieldWithPath("data.profile.age").type(JsonFieldType.STRING).description("연령대" + Age.allDescription()),
+                        fieldWithPath("data.profile.workoutExperience").type(JsonFieldType.STRING).description("운동 경력"),
+                        fieldWithPath("data.profile.workoutStyle").type(JsonFieldType.STRING).description("선호 운동 스타일"),
+                        fieldWithPath("data.profile.workoutGoal").type(JsonFieldType.STRING).description("주요 운동 목표"),
+                        fieldWithPath("data.profile.workoutTimeNames").type(JsonFieldType.ARRAY).description("운동 가능 시간 목록"),
+                        fieldWithPath("data.profile.workoutImageUrls").type(JsonFieldType.ARRAY).description("운동 인증 이미지 URL 목록. 빈 배열 가능"),
+                        fieldWithPath("data.profile.score").type(JsonFieldType.NUMBER).description("핏버디 온도"),
+
 
                         fieldWithPath("data.workoutPartner").type(JsonFieldType.OBJECT)
                             .description("운동 파트너 상태 정보"),
@@ -507,7 +539,7 @@ class MemberControllerDocsTest : RestDocsSupport() {
                         fieldWithPath("data.workoutPartner.workoutPartnerRequestId").type(JsonFieldType.NUMBER).optional()
                             .description("운동 파트너 요청이 존재할 경우 해당 요청 ID. SEND = 본인이 보낸 파트너 요청 id, RECEIVE = 상대가 본인에게 보낸 파트너 요청 id"),
                         fieldWithPath("data.workoutPartner.chatRoomId").type(JsonFieldType.NUMBER).optional()
-                            .description("파트너 상태일 경우 채팅방 ID. PARTNER가 아니면 null")
+                            .description("파트너 상태일 경우 채팅방 ID. PARTNER가 아니면 null. PARTNER임에도 불구하고, 채팅방을 안만들었어도 null")
                     )
                 )
             )

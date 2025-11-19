@@ -21,10 +21,16 @@ class ChatMessage(
     @JoinColumn(name = "chat_room_id", nullable = false)
     var chatRoom: ChatRoom? = null,
 
+    @Size(max = 50)
+    @NotNull
+    @ColumnDefault("'TEXT'")
+    @Column(name = "type", nullable = false, length = 50)
+    var type: String? = null,
+
     @Size(max = 1000)
     @NotNull
     @Column(name = "content", nullable = false, length = 1000)
-    var content: String? = null
+    var content: String? = null,
 
 ) : BaseEntity() {
     @Id
@@ -35,4 +41,5 @@ class ChatMessage(
 
     @OneToMany(mappedBy = "chatMessage")
     var messageReadStatuses: MutableSet<MessageReadStatus> = mutableSetOf()
+
 }
