@@ -1,12 +1,21 @@
 package kr.co.fitview.api.app.domain.member.repository
 
 import kr.co.fitview.api.app.IntegrationTestSupport
+import kr.co.fitview.api.app.domain.address.dto.request.AddressCreateServiceRequest
 import kr.co.fitview.api.app.domain.address.entity.Address
 import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
 import kr.co.fitview.api.app.domain.address.repository.AddressRepository
 import kr.co.fitview.api.app.domain.image.entity.enums.MemberImageType
 import kr.co.fitview.api.app.domain.member.condition.MemberLocalCondition
+import kr.co.fitview.api.app.domain.member.dto.request.Age
 import kr.co.fitview.api.app.domain.member.entity.Member
+import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutExperience
+import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutGoal
+import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutStyle
+import kr.co.fitview.api.app.domain.member.entity.enums.WorkoutTimeName
+import kr.co.fitview.api.app.domain.oauth2.dto.request.OAuth2SignupServiceRequest
+import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
+import kr.co.fitview.api.app.global.entity.Gender
 import kr.co.fitview.api.app.global.entity.OAuth2Provider
 import kr.co.fitview.api.app.global.entity.Role
 import org.assertj.core.api.Assertions.assertThat
@@ -14,12 +23,14 @@ import org.assertj.core.api.Assertions.tuple
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import java.time.LocalDate
 import kotlin.math.cos
 
 
 class MemberRepositoryTest@Autowired constructor(
     val memberRepository : MemberRepository,
-    val addressRepository: AddressRepository
+    val addressRepository: AddressRepository,
+    val oAuth2Service : OAuth2Service
 ) : IntegrationTestSupport() {
 
 
@@ -131,6 +142,95 @@ class MemberRepositoryTest@Autowired constructor(
         // then
         assertThat(findMember).isNull()
     }
+
+    fun createOAuth2SignupServiceRequest(
+        profileImageUrl: String = "profileImageUrl",
+        nickname: String = "nickname",
+        gender: Gender = Gender.MALE,
+        birthday: LocalDate = LocalDate.of(2000, 1, 1),
+        height: Int = 170,
+        weight: Int = 65,
+        workoutExperience: MemberWorkoutExperience = MemberWorkoutExperience.JUST_STARTED,
+        workoutStyle: MemberWorkoutStyle = MemberWorkoutStyle.STRENGTH,
+        workoutTimes: List<WorkoutTimeName> = listOf(WorkoutTimeName.WEEKDAY_DAWN, WorkoutTimeName.WEEKDAY_EVENING),
+        workoutGoal: MemberWorkoutGoal = MemberWorkoutGoal.PERFORMANCE_GOAL,
+        workoutImageUrls: List<String> = listOf(
+            "imageUrl1",
+            "imageUrl2",
+        ),
+        intro: String? = "intro",
+        address : AddressCreateServiceRequest = AddressCreateServiceRequest(
+            siDo = AddressSiDo.SEOUL,
+            siGunGu = "강남구",
+            eupMyeonDong = "역삼동",
+            lat = 37.4979,
+            lng = 127.0276,
+            fullAddress = "서울특별시 강남구 테헤란로 123"
+        )
+    ): OAuth2SignupServiceRequest {
+        return OAuth2SignupServiceRequest(
+            profileImageUrl = profileImageUrl,
+            nickname = nickname,
+            gender = gender,
+            birthday = birthday,
+            height = height,
+            weight = weight,
+            workoutExperience = workoutExperience,
+            workoutStyle = workoutStyle,
+            workoutTimes = workoutTimes,
+            workoutGoal = workoutGoal,
+            workoutImageUrls = workoutImageUrls,
+            intro = intro,
+            address = address
+        )
+    }
+
+
+    @DisplayName("회원 프로필을 조회한다.")
+    @Test
+    fun findMemberProfileByDeletedAtIsNull() {
+        // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+            provider = OAuth2Provider.APPLE,
+            providerId = "providerId"
+        )
+        val savedMember = memberRepository.save(member)
+
+        val request = createOAuth2SignupServiceRequest()
+        oAuth2Service.signup(request, member.id!!)
+
+        // when
+        val response = memberRepository.findMemberProfileByDeletedAtIsNull(member.id!!)
+
+        // then
+        assertThat(response).isNotNull
+        response?.let {
+            assertThat(it.memberId).isEqualTo(savedMember.id)
+            assertThat(it.nickname).isEqualTo(request.nickname)
+            assertThat(it.gender).isEqualTo(request.gender)
+            assertThat(it.height).isEqualTo(request.height)
+            assertThat(it.weight).isEqualTo(request.weight)
+            assertThat(it.intro).isEqualTo(request.intro)
+            assertThat(it.age).isEqualTo(Age.fromBirthDay(request.birthday))
+            assertThat(it.workoutExperience).isEqualTo(request.workoutExperience)
+            assertThat(it.workoutStyle).isEqualTo(request.workoutStyle)
+            assertThat(it.workoutGoal).isEqualTo(request.workoutGoal)
+            assertThat(it.score).isEqualTo(savedMember.score!!.toInt())
+
+            assertThat(it.siDo).isEqualTo(request.address.siDo)
+            assertThat(it.siGunGu).isEqualTo(request.address.siGunGu)
+            assertThat(it.eupMyeonDong).isEqualTo(request.address.eupMyeonDong)
+
+            assertThat(it.workoutTimeNames).containsExactlyInAnyOrderElementsOf(request.workoutTimes)
+            assertThat(it.workoutImageUrls).containsExactlyInAnyOrderElementsOf(request.workoutImageUrls)
+
+            assertThat(it.profileImageUrl).isEqualTo(request.profileImageUrl)
+        }
+    }
+
 
     private fun createAddress(
         lat : Double,

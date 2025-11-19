@@ -1,6 +1,8 @@
 package kr.co.fitview.api.app.domain.member.dto.request
 
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutStyle
+import java.time.LocalDate
+import java.time.LocalDateTime
 
 enum class Age(val min: Int, val max: Int, val label: String) {
 
@@ -23,6 +25,15 @@ enum class Age(val min: Int, val max: Int, val label: String) {
     companion object {
         fun allDescription(): List<String> {
             return entries.map { it.toString() }
+        }
+
+        fun fromBirthDay(birthday: LocalDate): Age {
+            val today = LocalDate.now()
+
+            val koreanAge = today.year - birthday.year + 1
+
+            return entries.firstOrNull { koreanAge in it.min..it.max }
+                ?: FIFTIES_AND_ABOVE
         }
     }
 }

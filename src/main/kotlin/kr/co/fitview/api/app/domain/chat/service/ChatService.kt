@@ -7,8 +7,9 @@ import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatRoomType
 import kr.co.fitview.api.app.domain.chat.repository.ChatParticipantRepository
 import kr.co.fitview.api.app.domain.chat.repository.ChatRoomRepository
+import kr.co.fitview.api.app.domain.member.service.MemberReferenceProvider
 import kr.co.fitview.api.app.domain.member.service.MemberService
-import kr.co.fitview.api.app.domain.workout_partner.service.WorkoutPartnerService
+import kr.co.fitview.api.app.domain.workout_partner.service.WorkoutPartnerRequestService
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.chat.ChatErrorCode
 import org.springframework.stereotype.Service
@@ -20,20 +21,20 @@ import org.springframework.transaction.annotation.Transactional
 class ChatService(
     private val chatRoomRepository : ChatRoomRepository,
     private val chatParticipantRepository : ChatParticipantRepository,
-    private val memberService : MemberService,
-    private val workoutPartnerService : WorkoutPartnerService
+    private val memberReferenceProvider : MemberReferenceProvider,
+    private val workoutPartnerRequestService : WorkoutPartnerRequestService
 ) {
 
     @Transactional
     fun saveChatRoom(memberId: Long, request: ChatRoomCreateServiceRequest): ChatRoomCreateResponse {
-        if(workoutPartnerService.isAcceptWorkoutPartner(memberId, request.toMemberId) == false){
+        if(workoutPartnerRequestService.isAcceptWorkoutPartner(memberId, request.toMemberId) == false){
             throw GlobalException(ChatErrorCode.NOT_PARTNER)
         }
 
-        val findChatRoomId = chatRoomRepository.findPrivateChatRoomIdBetweenMemberIds(memberId, request.toMemberId)
+        val findChatRoom = chatRoomRepository.findPrivateChatRoomIdBetweenMemberIds(memberId, request.toMemberId)
 
-        if(findChatRoomId != null){
-            return ChatRoomCreateResponse(findChatRoomId)
+        if(findChatRoom != null){
+            return ChatRoomCreateResponse(findChatRoom.id!!)
         }
 
         val chatRoom = ChatRoom(ChatRoomType.PRIVATE)
@@ -43,6 +44,10 @@ class ChatService(
         chatParticipantRepository.saveAll(createChatParticipants(chatRoom, memberId, request.toMemberId))
 
         return ChatRoomCreateResponse(savedChatRoom.id!!)
+    }
+
+    fun findChatRoomFrom(fromMemberId: Long, toMemberId: Long): ChatRoom? {
+        return chatRoomRepository.findPrivateChatRoomIdBetweenMemberIds(fromMemberId, toMemberId)
     }
 
     private fun createChatParticipants(
@@ -60,7 +65,8 @@ class ChatService(
         fromMemberId: Long
     ) = ChatParticipant(
         chatRoom = chatRoom,
-        member = memberService.findMemberReferenceFrom(fromMemberId)
+        member = memberReferenceProvider.findMemberReferenceFrom(fromMemberId)
     )
+
 
 }

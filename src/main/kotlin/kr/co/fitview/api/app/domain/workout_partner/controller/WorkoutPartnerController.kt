@@ -1,21 +1,17 @@
 package kr.co.fitview.api.app.domain.workout_partner.controller
 
 import jakarta.validation.Valid
-import kr.co.fitview.api.app.domain.member.condition.MemberLocalCondition
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutExperience
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutGoal
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutStyle
 import kr.co.fitview.api.app.domain.workout_partner.condition.WorkoutPartnerRequestCondition
 import kr.co.fitview.api.app.domain.workout_partner.dto.request.WorkoutPartnerCreateRequest
 import kr.co.fitview.api.app.domain.workout_partner.dto.request.WorkoutPartnerUpdateRequest
-import kr.co.fitview.api.app.domain.workout_partner.dto.request.enums.WorkoutPartnerRequestType
 import kr.co.fitview.api.app.domain.workout_partner.dto.response.WorkoutPartnerRequestResponse
 import kr.co.fitview.api.app.domain.workout_partner.dto.response.enums.WorkoutPartnerRequestStatusForResponse
-import kr.co.fitview.api.app.domain.workout_partner.entity.enums.WorkoutPartnerRequestStatus
-import kr.co.fitview.api.app.domain.workout_partner.service.WorkoutPartnerService
+import kr.co.fitview.api.app.domain.workout_partner.service.WorkoutPartnerRequestService
 import kr.co.fitview.api.app.global.dto.ApiResponse
 import kr.co.fitview.api.app.global.dto.SuccessCursorPagedResponse
-import kr.co.fitview.api.app.global.dto.SuccessPagedResponse
 import kr.co.fitview.api.app.global.util.SecurityUtil
 import org.springframework.data.domain.Slice
 import org.springframework.data.domain.SliceImpl
@@ -26,7 +22,7 @@ import org.springframework.web.bind.annotation.*
 @RestController
 @RequestMapping("/api/v1")
 class WorkoutPartnerController(
-    private val workoutPartnerService : WorkoutPartnerService,
+    private val workoutPartnerRequestService : WorkoutPartnerRequestService,
     private val securityUtil : SecurityUtil
 ) {
 
@@ -37,7 +33,7 @@ class WorkoutPartnerController(
         request : WorkoutPartnerCreateRequest
     ) : ResponseEntity<ApiResponse<*>> {
 
-        workoutPartnerService.addWorkoutPartnerRequest(securityUtil.getMemberId(), request.toServiceRequest())
+        workoutPartnerRequestService.addWorkoutPartnerRequest(securityUtil.getMemberId(), request.toServiceRequest())
 
         return ResponseEntity.ok(ApiResponse.success("ok"))
     }
@@ -52,7 +48,7 @@ class WorkoutPartnerController(
         request : WorkoutPartnerUpdateRequest
     ) : ResponseEntity<ApiResponse<*>> {
 
-        workoutPartnerService.updateWorkoutPartnerRequest(securityUtil.getMemberId(), workoutPartnerRequestId, request.toServiceRequest())
+        workoutPartnerRequestService.updateWorkoutPartnerRequest(securityUtil.getMemberId(), workoutPartnerRequestId, request.toServiceRequest())
 
         return ResponseEntity.ok(ApiResponse.success("ok"))
     }

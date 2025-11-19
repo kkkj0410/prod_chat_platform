@@ -93,17 +93,25 @@ class Member(
     var id: Long? = null
 
     @OneToMany(mappedBy = "member")
-    var memberImages: MutableSet<MemberImage> = mutableSetOf()
+    var mutableMemberImages: MutableList<MemberImage> = mutableListOf()
+    val memberImages: List<MemberImage>
+        get() = mutableMemberImages.toList()
 
     @OneToMany(mappedBy = "member")
-    var workoutTimes: MutableSet<WorkoutTime> = mutableSetOf()
+    var mutableWorkoutTimes: MutableList<WorkoutTime> = mutableListOf()
+    val workoutTimes: List<WorkoutTime>
+        get() = mutableWorkoutTimes.toList()
 
     @OneToMany(mappedBy = "member")
-    var addresses: MutableSet<Address> = mutableSetOf()
+    var mutableAddresses: MutableList<Address> = mutableListOf()
+    val addresses: List<Address>
+        get() = mutableAddresses.toList()
 
 
     fun delete(now : LocalDateTime) : Member{
         this.deletedAt = now
         return this
     }
+
+
 }

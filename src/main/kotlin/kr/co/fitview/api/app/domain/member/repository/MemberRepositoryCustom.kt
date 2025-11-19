@@ -2,8 +2,9 @@ package kr.co.fitview.api.app.domain.member.repository
 
 import kr.co.fitview.api.app.domain.member.condition.MemberLocalCondition
 import kr.co.fitview.api.app.domain.member.dto.response.MemberLocalResponse
-import kr.co.fitview.api.app.domain.member.dto.response.MemberMeResponse
+import kr.co.fitview.api.app.domain.member.dto.response.MemberProfileResponse
 import kr.co.fitview.api.app.domain.member.dto.response.MemberRecommendationResponse
+import kr.co.fitview.api.app.domain.member.entity.Member
 
 interface MemberRepositoryCustom {
     fun findMemberWithinLocal(memberId: Long, condition: MemberLocalCondition) : List<MemberLocalResponse>
@@ -14,5 +15,5 @@ interface MemberRepositoryCustom {
 
     fun findAllRandomMemberIdByCountAndSeoul(count: Int, seed : Long) : List<Long>
 
-    fun findMemberMeByDeletedAtIsNull(memberId: Long): MemberMeResponse
+    fun findMemberProfileByDeletedAtIsNull(memberId: Long): MemberProfileResponse?
 }
