@@ -57,3 +57,16 @@ include::{snippets}/member-local/query-parameters.adoc[]
 ==== HTTP Response
 include::{snippets}/member-local/http-response.adoc[]
 include::{snippets}/member-local/response-fields.adoc[]
+
+
+[[member-detail]]
+=== 상대 회원 프로필 조회
+
+==== HTTP Request
+include::{snippets}/member-detail/http-request.adoc[]
+include::{snippets}/member-detail/request-headers.adoc[]
+include::{snippets}/member-detail/path-parameters.adoc[]
+
+==== HTTP Response
+include::{snippets}/member-detail/http-response.adoc[]
+include::{snippets}/member-detail/response-fields.adoc[]

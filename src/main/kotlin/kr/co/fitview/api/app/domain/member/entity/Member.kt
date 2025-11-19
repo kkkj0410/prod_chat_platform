@@ -96,6 +96,11 @@ class Member(
     @OneToMany(mappedBy = "member")
     var addresses: MutableSet<Address> = mutableSetOf()
 
+    @NotNull
+    @ColumnDefault("36")
+    @Column(name = "rating", nullable = false)
+    var rating: Double? = 36.0
+
     fun delete(now : LocalDateTime) : Member{
         this.deletedAt = now
         return this
