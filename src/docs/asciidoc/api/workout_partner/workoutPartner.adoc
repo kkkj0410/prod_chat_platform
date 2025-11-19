@@ -25,3 +25,16 @@ include::{snippets}/workout-partner-request-update/http-response.adoc[]
 include::{snippets}/workout-partner-request-update/response-fields.adoc[]
 
 
+[[workout-partner-request-get]]
+=== 핏버디 조회 API
+
+==== HTTP Request
+include::{snippets}/workout-partner-request-get/http-request.adoc[]
+include::{snippets}/workout-partner-request-get/request-headers.adoc[]
+include::{snippets}/workout-partner-request-get/query-parameters.adoc[]
+
+==== HTTP Response
+include::{snippets}/workout-partner-request-get/http-response.adoc[]
+include::{snippets}/workout-partner-request-get/response-fields.adoc[]
+
+

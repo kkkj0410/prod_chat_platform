@@ -20,6 +20,7 @@ object SecurityConstant {
         "$API_BASE/oauth2/signup",
         "$API_BASE/addresses/**",
         "$API_BASE/workout-partners/**",
+        "$API_BASE/workout-partner-requests/**",
         "$API_BASE/chats/**",
     )
 
