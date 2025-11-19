@@ -21,7 +21,7 @@ class CustomUserDetailService(
     }
 
     private fun findMemberElseThrow(memberId : Long): Member {
-        return (memberService.findMemberFromLoginId(memberId)
+        return (memberService.findMemberFromId(memberId)
             ?: throw GlobalException(MemberErrorCode.MEMBER_NOT_FOUND))
     }
 }
