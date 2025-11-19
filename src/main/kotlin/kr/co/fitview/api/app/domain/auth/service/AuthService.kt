@@ -2,7 +2,6 @@ package kr.co.fitview.api.app.domain.auth.service
 
 import kr.co.fitview.api.app.domain.auth.HeaderClientType
 import kr.co.fitview.api.app.domain.auth.dto.request.AccessTokenRefreshServiceRequest
-import kr.co.fitview.api.app.domain.auth.dto.request.AuthSignupRequestTest
 import kr.co.fitview.api.app.domain.auth.dto.response.MemberLoginResponse
 import kr.co.fitview.api.app.domain.auth.dto.response.AccessTokenRefreshResponse
 import kr.co.fitview.api.app.domain.member.dto.request.MemberCreateServiceRequest
@@ -85,7 +84,7 @@ class AuthService(
     }
 
     private fun findMemberElseThrow(request: MemberLoginServiceRequest): Member {
-        return (memberService.findMemberFromLoginId(request.email)
+        return (memberService.findMemberFromEmail(request.email)
             ?: throw GlobalException(MemberErrorCode.MEMBER_NOT_FOUND))
     }
 

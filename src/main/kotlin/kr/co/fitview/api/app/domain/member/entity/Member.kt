@@ -65,6 +65,11 @@ class Member(
     @Column(name = "weight")
     var weight: Int? = null,
 
+    @NotNull
+    @ColumnDefault("36")
+    @Column(name = "score", nullable = false)
+    var score: Double? = 36.0,
+
     @Size(max = 100)
     @Enumerated(EnumType.STRING)
     @Column(name = "workout_goal", length = 100)
@@ -96,10 +101,6 @@ class Member(
     @OneToMany(mappedBy = "member")
     var addresses: MutableSet<Address> = mutableSetOf()
 
-    @NotNull
-    @ColumnDefault("36")
-    @Column(name = "rating", nullable = false)
-    var rating: Double? = 36.0
 
     fun delete(now : LocalDateTime) : Member{
         this.deletedAt = now

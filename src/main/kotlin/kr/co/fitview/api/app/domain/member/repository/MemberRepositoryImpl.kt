@@ -16,10 +16,7 @@ import kr.co.fitview.api.app.domain.image.entity.QMemberImage.memberImage
 import kr.co.fitview.api.app.domain.image.entity.enums.MemberImageType
 import kr.co.fitview.api.app.domain.member.condition.MemberLocalCondition
 import kr.co.fitview.api.app.domain.member.dto.request.Age
-import kr.co.fitview.api.app.domain.member.dto.response.MemberLocalResponse
-import kr.co.fitview.api.app.domain.member.dto.response.MemberRecommendationResponse
-import kr.co.fitview.api.app.domain.member.dto.response.QMemberLocalResponse
-import kr.co.fitview.api.app.domain.member.dto.response.QMemberRecommendationResponse
+import kr.co.fitview.api.app.domain.member.dto.response.*
 import kr.co.fitview.api.app.domain.member.entity.QMember
 import kr.co.fitview.api.app.domain.member.entity.QMember.member
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutExperience
@@ -420,6 +417,10 @@ class MemberRepositoryImpl(
         return query.resultList.map { row ->
             row as Long
         }
+    }
+
+    override fun findMemberMeByDeletedAtIsNull(memberId: Long): MemberMeResponse {
+        TODO("Not yet implemented")
     }
 
     private fun gteHeight(minHeight: Int?): BooleanExpression? {

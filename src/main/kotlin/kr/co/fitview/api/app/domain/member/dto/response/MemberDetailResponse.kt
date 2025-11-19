@@ -25,6 +25,6 @@ data class MemberDetailResponse(
     val workoutGoal : MemberWorkoutGoal,
     val workoutTimeNames : List<WorkoutTimeName>,
     val workoutImageUrls : List<String>,
-    val rating : Int,
+    val score : Int,
     val workoutPartner : WorkoutPartnerInfoResponse
 )

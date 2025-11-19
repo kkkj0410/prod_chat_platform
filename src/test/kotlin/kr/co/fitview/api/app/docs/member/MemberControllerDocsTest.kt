@@ -9,7 +9,6 @@ import kr.co.fitview.api.app.domain.address.service.AddressService
 import kr.co.fitview.api.app.domain.member.controller.MemberController
 import kr.co.fitview.api.app.domain.member.dto.request.Age
 import kr.co.fitview.api.app.domain.member.dto.response.MemberLocalResponse
-import kr.co.fitview.api.app.domain.member.dto.response.MemberMeResponse
 import kr.co.fitview.api.app.domain.member.dto.response.MemberRecommendationResponse
 import kr.co.fitview.api.app.domain.member.dto.response.enums.ProfileWorkoutPartnerStatus
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutExperience
@@ -126,7 +125,7 @@ class MemberControllerDocsTest : RestDocsSupport() {
                             .description("운동 가능 시간대 리스트. STRING" + WorkoutTimeName.allDescription()),
                         fieldWithPath("data.workoutImageUrls").type(JsonFieldType.ARRAY)
                             .description("운동 이미지 URL 리스트. STRING. 빈 배열일 수 있음"),
-                        fieldWithPath("data.rating").type(JsonFieldType.NUMBER)
+                        fieldWithPath("data.score").type(JsonFieldType.NUMBER)
                             .description("핏버디 온도값")
                     )
                 )
@@ -498,7 +497,7 @@ class MemberControllerDocsTest : RestDocsSupport() {
                             .description("운동 가능 시간대 리스트. STRING"),
                         fieldWithPath("data.workoutImageUrls").type(JsonFieldType.ARRAY)
                             .description("운동 이미지 URL 리스트. STRING. 빈 배열일 수 있음"),
-                        fieldWithPath("data.rating").type(JsonFieldType.NUMBER)
+                        fieldWithPath("data.score").type(JsonFieldType.NUMBER)
                             .description("핏버디 온도값"),
 
                         fieldWithPath("data.workoutPartner").type(JsonFieldType.OBJECT)
