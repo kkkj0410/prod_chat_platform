@@ -86,28 +86,28 @@ class MemberService(
             ?: throw GlobalException(MemberErrorCode.MEMBER_NOT_FOUND)
     }
 
-    fun findMemberMe(memberId: Long): MemberMeResponse {
+    fun findMemberMe(memberId: Long){
         findMemberOrElseThrow(memberId)
-         return MemberMeResponse(
-            memberId = 1L,
-            profileImageUrl = "https://example.com/profile.png",
-            nickname = "test_user",
-            gender = Gender.MALE,
-            siDo = "서울특별시",
-            siGunGu = "강남구",
-            eupMyeonDong = "역삼동",
-            intro = "헬스 좋아함",
-            height = 175,
-            weight = 70,
-            age = Age.FIFTIES_AND_ABOVE,
-            workoutExperience = MemberWorkoutExperience.UNDER_ONE_YEAR,
-            workoutStyle = MemberWorkoutStyle.CARDIO,
-            workoutGoal = MemberWorkoutGoal.PERFORMANCE_GOAL,
-            workoutTimeNames = listOf(WorkoutTimeName.WEEKEND_DAWN, WorkoutTimeName.WEEKDAY_MORNING),
-            workoutImageUrls = listOf("https://example.com/workout1.png"),
-            score = 42
-        )
-        return memberRepository.findMemberMeByDeletedAtIsNull(memberId)
+//         return MemberMeResponse(
+//            memberId = 1L,
+//            profileImageUrl = "https://example.com/profile.png",
+//            nickname = "test_user",
+//            gender = Gender.MALE,
+//            siDo = "서울특별시",
+//            siGunGu = "강남구",
+//            eupMyeonDong = "역삼동",
+//            intro = "헬스 좋아함",
+//            height = 175,
+//            weight = 70,
+//            age = Age.FIFTIES_AND_ABOVE,
+//            workoutExperience = MemberWorkoutExperience.UNDER_ONE_YEAR,
+//            workoutStyle = MemberWorkoutStyle.CARDIO,
+//            workoutGoal = MemberWorkoutGoal.PERFORMANCE_GOAL,
+//            workoutTimeNames = listOf(WorkoutTimeName.WEEKEND_DAWN, WorkoutTimeName.WEEKDAY_MORNING),
+//            workoutImageUrls = listOf("https://example.com/workout1.png"),
+//            score = 42
+//        )
+//        return memberRepository.findMemberMeByDeletedAtIsNull(memberId)
     }
 
     fun findMemberReferenceFrom(memberId : Long)  : Member{

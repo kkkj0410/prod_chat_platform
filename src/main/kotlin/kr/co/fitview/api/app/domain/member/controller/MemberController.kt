@@ -29,26 +29,26 @@ class MemberController(
 
     @GetMapping("/me")
     fun memberMe() : ResponseEntity<ApiResponse<MemberMeResponse>> {
-        val response = memberService.findMemberMe(securityUtil.getMemberId())
-//        val response = MemberMeResponse2(
-//            memberId = 1L,
-//            profileImageUrl = "https://example.com/profile.png",
-//            nickname = "test_user",
-//            gender = Gender.MALE,
-//            siDo = "서울특별시",
-//            siGunGu = "강남구",
-//            eupMyeonDong = "역삼동",
-//            intro = "헬스 좋아함",
-//            height = 175,
-//            weight = 70,
-//            age = Age.FIFTIES_AND_ABOVE,
-//            workoutExperience = MemberWorkoutExperience.UNDER_ONE_YEAR,
-//            workoutStyle = MemberWorkoutStyle.CARDIO,
-//            workoutGoal = MemberWorkoutGoal.PERFORMANCE_GOAL,
-//            workoutTimeNames = listOf(WorkoutTimeName.WEEKEND_DAWN, WorkoutTimeName.WEEKDAY_MORNING),
-//            workoutImageUrls = listOf("https://example.com/workout1.png"),
-//            score = 42
-//        )
+//        val response = memberService.findMemberMe(securityUtil.getMemberId())
+        val response = MemberMeResponse(
+            memberId = 1L,
+            profileImageUrl = "https://example.com/profile.png",
+            nickname = "test_user",
+            gender = Gender.MALE,
+            siDo = "서울특별시",
+            siGunGu = "강남구",
+            eupMyeonDong = "역삼동",
+            intro = "헬스 좋아함",
+            height = 175,
+            weight = 70,
+            age = Age.FIFTIES_AND_ABOVE,
+            workoutExperience = MemberWorkoutExperience.UNDER_ONE_YEAR,
+            workoutStyle = MemberWorkoutStyle.CARDIO,
+            workoutGoal = MemberWorkoutGoal.PERFORMANCE_GOAL,
+            workoutTimeNames = listOf(WorkoutTimeName.WEEKEND_DAWN, WorkoutTimeName.WEEKDAY_MORNING),
+            workoutImageUrls = listOf("https://example.com/workout1.png"),
+            score = 42
+        )
         return ResponseEntity.ok(ApiResponse.success(response))
     }
 
