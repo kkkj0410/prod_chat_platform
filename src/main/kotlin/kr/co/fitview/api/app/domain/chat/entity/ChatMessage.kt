@@ -3,6 +3,7 @@ package kr.co.fitview.api.app.domain.chat.entity
 import jakarta.persistence.*
 import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
+import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.global.entity.BaseEntity
 import org.hibernate.annotations.ColumnDefault
@@ -25,14 +26,15 @@ class ChatMessage(
     @NotNull
     @ColumnDefault("'TEXT'")
     @Column(name = "type", nullable = false, length = 50)
-    var type: String? = null,
+    @Enumerated(EnumType.STRING)
+    var type: ChatMessageType? = null,
 
     @Size(max = 1000)
     @NotNull
     @Column(name = "content", nullable = false, length = 1000)
     var content: String? = null,
 
-) : BaseEntity() {
+    ) : BaseEntity() {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "chat_message_id", nullable = false)

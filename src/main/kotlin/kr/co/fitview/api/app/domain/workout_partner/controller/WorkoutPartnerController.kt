@@ -1,20 +1,14 @@
 package kr.co.fitview.api.app.domain.workout_partner.controller
 
 import jakarta.validation.Valid
-import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutExperience
-import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutGoal
-import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutStyle
 import kr.co.fitview.api.app.domain.workout_partner.condition.WorkoutPartnerRequestCondition
 import kr.co.fitview.api.app.domain.workout_partner.dto.request.WorkoutPartnerCreateRequest
 import kr.co.fitview.api.app.domain.workout_partner.dto.request.WorkoutPartnerUpdateRequest
 import kr.co.fitview.api.app.domain.workout_partner.dto.response.WorkoutPartnerRequestResponse
-import kr.co.fitview.api.app.domain.workout_partner.dto.response.enums.WorkoutPartnerRequestStatusForResponse
 import kr.co.fitview.api.app.domain.workout_partner.service.WorkoutPartnerRequestService
 import kr.co.fitview.api.app.global.dto.ApiResponse
 import kr.co.fitview.api.app.global.dto.SuccessCursorPagedResponse
 import kr.co.fitview.api.app.global.util.SecurityUtil
-import org.springframework.data.domain.Slice
-import org.springframework.data.domain.SliceImpl
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
@@ -65,7 +59,6 @@ class WorkoutPartnerController(
             ApiResponse.successWithCursorPagination(
                 slice = response,
                 idExtractor = { it.workoutPartnerRequestId },
-                isFirstCursor = true
             )
         )
     }
