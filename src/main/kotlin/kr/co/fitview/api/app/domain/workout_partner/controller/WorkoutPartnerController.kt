@@ -62,7 +62,11 @@ class WorkoutPartnerController(
         val response = workoutPartnerRequestService.findWorkoutPartnerFrom(securityUtil.getMemberId(), condition)
 
         return ResponseEntity.ok(
-            ApiResponse.successWithCursorPagination(response) { it.workoutPartnerRequestId }
+            ApiResponse.successWithCursorPagination(
+                slice = response,
+                idExtractor = { it.workoutPartnerRequestId },
+                isFirstCursor = true
+            )
         )
     }
 

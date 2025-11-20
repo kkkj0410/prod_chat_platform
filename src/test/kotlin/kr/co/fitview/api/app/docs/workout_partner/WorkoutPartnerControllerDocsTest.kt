@@ -218,7 +218,7 @@ class WorkoutPartnerControllerDocsTest : RestDocsSupport() {
                         parameterWithName("size").optional()
                             .description("(Optional - default 10) 조회 크기"),
                         parameterWithName("firstWorkoutPartnerRequestId").optional()
-                            .description("(Optional) 제일 옛날 id 값(id가 제일 작은값) - firstWorkoutPartnerRequestId(처음에는 null로 했을 때 최근 것을 size 개수만큼 가져옴. 그 후, firstWorkoutRequestId 호출하면 그 이후 더 작은 id의 데이터 가져옴(최신순))"),
+                            .description("(Optional) 제일 옛날 id 값(id가 제일 작은값) - firstWorkoutPartnerRequestId(처음에는 null로 했을 때 제일 id가 큰 데이터부터 size 개수만큼 가져옴. 그 후, 제일 작은 id값을 firstWorkoutRequestId에 넣으면 그 이후 더 작은 id의 데이터 가져옴(최신순))"),
                         parameterWithName("type")
                             .description("운동 파트너 요청 타입" + WorkoutPartnerRequestType.allDescription()),
                     ),

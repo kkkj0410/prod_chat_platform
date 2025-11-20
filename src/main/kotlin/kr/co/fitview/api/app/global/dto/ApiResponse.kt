@@ -39,8 +39,12 @@ data class ApiResponse<T>(
             )
         }
 
-        fun <T> successWithCursorPagination(slice: Slice<T>, lastIdExtractor: (T) -> Long): ApiResponse<SuccessCursorPagedResponse<T>> {
-            val pagination = CursorPagination.from(slice, lastIdExtractor)
+        fun <T> successWithCursorPagination(
+            slice: Slice<T>,
+            idExtractor: (T) -> Long,
+            isFirstCursor: Boolean = false
+        ): ApiResponse<SuccessCursorPagedResponse<T>> {
+            val pagination = CursorPagination.from(slice, idExtractor, isFirstCursor)
             return ApiResponse(
                 HttpStatus.OK.value(),
                 "ok",
@@ -102,10 +106,19 @@ data class CursorPagination(
     val cursorId: Long?,
     val hasNext: Boolean
 ) {
+
     companion object {
-        fun <T> from(slice: Slice<T>, lastIdExtractor: (T) -> Long) = CursorPagination(
+        fun <T> from(
+            slice: Slice<T>,
+            idExtractor: (T) -> Long,
+            isFirstCursor: Boolean = false
+        ) = CursorPagination(
             size = slice.size,
-            cursorId = slice.content.lastOrNull()?.let { lastIdExtractor(it) },
+            cursorId = if (isFirstCursor) {
+                slice.content.firstOrNull()?.let { idExtractor(it) }
+            } else {
+                slice.content.lastOrNull()?.let { idExtractor(it) }
+            },
             hasNext = slice.hasNext()
         )
     }
