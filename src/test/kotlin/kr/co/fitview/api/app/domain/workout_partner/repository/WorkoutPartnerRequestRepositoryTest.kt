@@ -206,7 +206,7 @@ class WorkoutPartnerRequestRepositoryTest @Autowired constructor(
 
         val condition = WorkoutPartnerRequestCondition(
             size = 10,
-            lastWorkoutPartnerRequestId = null,
+            firstWorkoutPartnerRequestId = null,
             type = WorkoutPartnerRequestType.RECEIVE
         )
 
@@ -285,7 +285,7 @@ class WorkoutPartnerRequestRepositoryTest @Autowired constructor(
 
         val condition = WorkoutPartnerRequestCondition(
             size = 10,
-            lastWorkoutPartnerRequestId = null,
+            firstWorkoutPartnerRequestId = null,
             type = WorkoutPartnerRequestType.SEND
         )
 
@@ -377,7 +377,7 @@ class WorkoutPartnerRequestRepositoryTest @Autowired constructor(
 
         val condition = WorkoutPartnerRequestCondition(
             size = 10,
-            lastWorkoutPartnerRequestId = null,
+            firstWorkoutPartnerRequestId = null,
             type = WorkoutPartnerRequestType.RECEIVE
         )
 
@@ -458,7 +458,7 @@ class WorkoutPartnerRequestRepositoryTest @Autowired constructor(
 
         val condition = WorkoutPartnerRequestCondition(
             size = 10,
-            lastWorkoutPartnerRequestId = partnerRequest1.id!!,
+            firstWorkoutPartnerRequestId = partnerRequest3.id!!,
             type = WorkoutPartnerRequestType.RECEIVE
         )
 
@@ -472,9 +472,9 @@ class WorkoutPartnerRequestRepositoryTest @Autowired constructor(
         val response2 = slice.content[1]
 
         assertThat(response1.workoutPartnerRequestId)
-            .isEqualTo(partnerRequest3.id)
-        assertThat(response2.workoutPartnerRequestId)
             .isEqualTo(partnerRequest2.id)
+        assertThat(response2.workoutPartnerRequestId)
+            .isEqualTo(partnerRequest1.id)
 
         assertThat(response1.nickname).isEqualTo(otherMember.nickname)
         assertThat(response1.profileImageUrl).isEqualTo(signupRequest.profileImageUrl)

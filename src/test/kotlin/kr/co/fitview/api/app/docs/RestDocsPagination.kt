@@ -54,7 +54,7 @@ object RestDocsPagination {
                 .description("커서 기반 페이지 정보: 페이지 크기, 마지막 요소 ID, 다음 페이지 존재 여부 등"),
             fieldWithPath("$basePath.size").type(JsonFieldType.NUMBER)
                 .description("한 페이지에 표시되는 데이터 수"),
-            fieldWithPath("$basePath.lastId").type(JsonFieldType.NUMBER).optional()
+            fieldWithPath("$basePath.cursorId").type(JsonFieldType.NUMBER).optional()
                 .description("다음 페이지를 조회할 때 기준이 되는 마지막 요소 ID. 데이터가 없으면 null"),
             fieldWithPath("$basePath.hasNext").type(JsonFieldType.BOOLEAN)
                 .description("다음 페이지 존재 여부")

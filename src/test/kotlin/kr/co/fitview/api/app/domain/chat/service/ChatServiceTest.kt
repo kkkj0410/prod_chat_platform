@@ -68,7 +68,7 @@ class ChatServiceTest@Autowired constructor(
     }
 
     @DisplayName("두 회원 간의 개인 채팅방이 이미 있으면 해당 채팅방을 조회한다.")
-//    @Test
+    @Test
     fun saveChatRoomWhenAlreadyChatRoom() {
         //given
         val member1 = Member(
@@ -83,6 +83,9 @@ class ChatServiceTest@Autowired constructor(
         )
         val savedMember1 = memberRepository.save(member1)
         val savedMember2 = memberRepository.save(member2)
+
+        val workoutPartner = WorkoutPartner.of(savedMember1, savedMember2)
+        workoutPartnerRepository.save(workoutPartner)
 
         val savedChatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
 
@@ -110,9 +113,9 @@ class ChatServiceTest@Autowired constructor(
         assertThat(response.chatRoomId).isEqualTo(findChatRoom!!.id!!)
     }
 
-    @DisplayName("두 회원간의 개인 채팅방을 조회한다.")
+    @DisplayName("개인 채팅방을 생성하려는데 핏버디가 성사 되어있지 않으면 채팅방 생성을 하지 않는다.")
     @Test
-    fun findChatRoomFrom() {
+    fun saveChatRoomNotWorkoutPartner() {
         // given
         val member1 = Member(
             email = "email1",
@@ -127,79 +130,20 @@ class ChatServiceTest@Autowired constructor(
         val savedMember1 = memberRepository.save(member1)
         val savedMember2 = memberRepository.save(member2)
 
-        val savedChatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+        val request = ChatRoomCreateServiceRequest(savedMember2.id!!)
 
-        val chatParticipant1 = ChatParticipant(
-            savedChatRoom,
-            savedMember1
-        )
-        val chatParticipant2 = ChatParticipant(
-            savedChatRoom,
-            savedMember2
-        )
-        chatParticipantRepository.save(chatParticipant1)
-        chatParticipantRepository.save(chatParticipant2)
-
-        // when
-        val findChatRoom = chatService.findChatRoomFrom(member1.id!!, member2.id!!)
-
-        // then
-        assertThat(findChatRoom!!.id).isNotNull()
-        assertThat(findChatRoom.type).isEqualTo(ChatRoomType.PRIVATE)
+        // when & then
+        assertThatThrownBy {
+            chatService.saveChatRoom(savedMember1.id!!, request)
+        }
+            .isInstanceOf(GlobalException::class.java)
+            .satisfies(ThrowingConsumer { ex ->
+                val globalEx = ex as GlobalException
+                assertThat(globalEx.errorCode)
+                    .isEqualTo(ChatErrorCode.NOT_PARTNER)
+            })
     }
 
-    @DisplayName("두 회원간의 채팅방이 없으면 채팅방 조회 하지 못한다.")
-    @Test
-    fun findChatRoomFromNoneChatRoom() {
-        // given
-        val member1 = Member(
-            email = "email1",
-            password = "password1",
-            role = Role.USER,
-        )
-        val member2 = Member(
-            email = "email2",
-            password = "password2",
-            role = Role.USER,
-        )
-        memberRepository.save(member1)
-        memberRepository.save(member2)
 
-        // when
-        val findChatRoom = chatService.findChatRoomFrom(member1.id!!, member2.id!!)
 
-        // then
-        assertThat(findChatRoom).isNull()
-    }
-
-//    @DisplayName("개인 채팅방을 생성하려는데 핏버디가 성사 되어있지 않으면 채팅방 생성을 하지 않는다.")
-//    @Test
-//    fun saveChatRoomNotWorkoutPartner() {
-//        // given
-//        val member1 = Member(
-//            email = "email1",
-//            password = "password1",
-//            role = Role.USER,
-//        )
-//        val member2 = Member(
-//            email = "email2",
-//            password = "password2",
-//            role = Role.USER,
-//        )
-//        val savedMember1 = memberRepository.save(member1)
-//        val savedMember2 = memberRepository.save(member2)
-//
-//        val request = ChatRoomCreateServiceRequest(savedMember2.id!!)
-//
-//        // when & then
-//        assertThatThrownBy {
-//            chatService.saveChatRoom(savedMember1.id!!, request)
-//        }
-//            .isInstanceOf(GlobalException::class.java)
-//            .satisfies(ThrowingConsumer { ex ->
-//                val globalEx = ex as GlobalException
-//                assertThat(globalEx.errorCode)
-//                    .isEqualTo(ChatErrorCode.NOT_PARTNER)
-//            })
-//    }
 }

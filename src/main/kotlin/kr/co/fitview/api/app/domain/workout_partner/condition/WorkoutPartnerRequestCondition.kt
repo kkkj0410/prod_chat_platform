@@ -4,6 +4,6 @@ import kr.co.fitview.api.app.domain.workout_partner.dto.request.enums.WorkoutPar
 
 data class WorkoutPartnerRequestCondition(
     val size: Int? = 10,
-    val lastWorkoutPartnerRequestId: Long? = null,
+    val firstWorkoutPartnerRequestId: Long? = null,
     val type : WorkoutPartnerRequestType
 )

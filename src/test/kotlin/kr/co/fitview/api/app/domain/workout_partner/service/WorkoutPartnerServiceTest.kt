@@ -306,4 +306,58 @@ class WorkoutPartnerServiceTest @Autowired constructor(
             .contains(ProfileWorkoutPartnerStatus.NONE, null, null)
     }
 
+    @DisplayName("두 회원이 운동 파트너 관계인지 확인한다.")
+    @Test
+    fun isWorkoutPartnerFrom() {
+        // given
+        val me = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        val otherMember = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+        memberRepository.save(otherMember)
+
+        val workoutPartner = WorkoutPartner.of(
+            memberOne = me,
+            memberTwo = otherMember
+        )
+        workoutPartnerRepository.save(workoutPartner)
+
+        // when
+        val response = workoutPartnerService.isWorkoutPartnerFrom(me.id!!, otherMember.id!!)
+
+        // then
+        assertThat(response).isTrue()
+    }
+
+    @DisplayName("두 회원이 운동 파트너 관계가 아니면 운동 파트너 관계가 아니다.")
+    @Test
+    fun isWorkoutPartnerFromNotPartner() {
+        // given
+        val me = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        val otherMember = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+        memberRepository.save(otherMember)
+
+        // when
+        val response = workoutPartnerService.isWorkoutPartnerFrom(me.id!!, otherMember.id!!)
+
+        // then
+        assertThat(response).isFalse()
+    }
+
 }
