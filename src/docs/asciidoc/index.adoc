@@ -40,5 +40,10 @@ include::api/address/address.adoc[]
 
 include::api/workout_partner/workoutPartner.adoc[]
 
+[[Chat-API]]
+== Chat API
+
+include::api/chat/chat.adoc[]
+
 
 

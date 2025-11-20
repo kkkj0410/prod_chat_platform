@@ -1,0 +1,11 @@
+[[chat]]
+=== 채팅방 생성 API
+
+==== HTTP Request
+include::{snippets}/chat-room-add/http-request.adoc[]
+include::{snippets}/chat-room-add/request-fields.adoc[]
+include::{snippets}/chat-room-add/request-headers.adoc[]
+
+==== HTTP Response
+include::{snippets}/chat-room-add/http-response.adoc[]
+include::{snippets}/chat-room-add/response-fields.adoc[]

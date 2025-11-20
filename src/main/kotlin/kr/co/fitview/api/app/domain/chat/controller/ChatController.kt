@@ -5,6 +5,7 @@ import kr.co.fitview.api.app.domain.chat.condition.ChatRoomCondition
 import kr.co.fitview.api.app.domain.chat.dto.request.ChatRoomCreateRequest
 import kr.co.fitview.api.app.domain.chat.dto.response.ChatRoomCreateResponse
 import kr.co.fitview.api.app.domain.chat.dto.response.ChatRoomResponse
+import kr.co.fitview.api.app.domain.chat.service.ChatRoomService
 import kr.co.fitview.api.app.domain.chat.service.ChatService
 import kr.co.fitview.api.app.global.dto.ApiResponse
 import kr.co.fitview.api.app.global.dto.SuccessCursorAtPagedResponse
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/api/v1/chats")
 class ChatController(
     private val chatService : ChatService,
+    private val chatRoomService : ChatRoomService,
     private val securityUtil : SecurityUtil
 ) {
 
@@ -36,7 +38,7 @@ class ChatController(
         condition : ChatRoomCondition
     ) : ResponseEntity<ApiResponse<SuccessCursorAtPagedResponse<ChatRoomResponse>>> {
 
-        val response = chatService.findChatRooms(securityUtil.getMemberId(), condition)
+        val response = chatRoomService.findChatRooms(securityUtil.getMemberId(), condition)
 
         return ResponseEntity.ok(ApiResponse.successWithCursorAtPagination(
             slice = response,
