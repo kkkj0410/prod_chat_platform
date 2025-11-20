@@ -59,44 +59,10 @@ class WorkoutPartnerController(
         condition : WorkoutPartnerRequestCondition,
         ) : ResponseEntity<ApiResponse<SuccessCursorPagedResponse<WorkoutPartnerRequestResponse>>> {
 
-
-        val responseList = listOf(
-            WorkoutPartnerRequestResponse(
-                workoutPartnerRequestId = 123L,
-                profileImageUrl = "https://example.com/profile1.png",
-                nickname = "user_one",
-                workoutExperience = MemberWorkoutExperience.UNDER_ONE_YEAR,
-                workoutStyle = MemberWorkoutStyle.CARDIO,
-                workoutGoal = MemberWorkoutGoal.PERFORMANCE_GOAL,
-                status = WorkoutPartnerRequestStatusForResponse.PENDING,
-                chatRoomId = null
-            ),
-            WorkoutPartnerRequestResponse(
-                workoutPartnerRequestId = 124L,
-                profileImageUrl = "https://example.com/profile2.png",
-                nickname = "user_two",
-                workoutExperience = MemberWorkoutExperience.FOUR_TO_SIX_YEARS,
-                workoutStyle = MemberWorkoutStyle.STRENGTH,
-                workoutGoal = MemberWorkoutGoal.PERFORMANCE_GOAL,
-                status = WorkoutPartnerRequestStatusForResponse.ACCEPT,
-                chatRoomId = null
-            ),
-            WorkoutPartnerRequestResponse(
-                workoutPartnerRequestId = 125L,
-                profileImageUrl = "https://example.com/profile3.png",
-                nickname = "user_three",
-                workoutExperience = MemberWorkoutExperience.UNDER_ONE_YEAR,
-                workoutStyle = MemberWorkoutStyle.CARDIO,
-                workoutGoal = MemberWorkoutGoal.PERFORMANCE_GOAL,
-                status = WorkoutPartnerRequestStatusForResponse.EXPIRE,
-                chatRoomId = null
-            )
-        )
-
-        val slice: Slice<WorkoutPartnerRequestResponse> = SliceImpl(responseList)
+        val response = workoutPartnerRequestService.findWorkoutPartnerFrom(securityUtil.getMemberId(), condition)
 
         return ResponseEntity.ok(
-            ApiResponse.successWithCursorPagination(slice) { it.workoutPartnerRequestId }
+            ApiResponse.successWithCursorPagination(response) { it.workoutPartnerRequestId }
         )
     }
 

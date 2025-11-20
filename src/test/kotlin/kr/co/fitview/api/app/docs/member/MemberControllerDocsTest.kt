@@ -514,21 +514,26 @@ class MemberControllerDocsTest : RestDocsSupport() {
 
                         fieldWithPath("data.profile").type(JsonFieldType.OBJECT).description("회원 프로필 상세 정보"),
                         fieldWithPath("data.profile.memberId").type(JsonFieldType.NUMBER).description("회원 ID"),
-                        fieldWithPath("data.profile.profileImageUrl").type(JsonFieldType.STRING).description("프로필 이미지 URL"),
+                        fieldWithPath("data.profile.profileImageUrl").type(JsonFieldType.STRING)
+                            .description("프로필 이미지 URL"),
                         fieldWithPath("data.profile.nickname").type(JsonFieldType.STRING).description("닉네임"),
-                        fieldWithPath("data.profile.gender").type(JsonFieldType.STRING).description(Gender.allDescription()),
+                        fieldWithPath("data.profile.gender").type(JsonFieldType.STRING)
+                            .description(Gender.allDescription()),
                         fieldWithPath("data.profile.siDo").type(JsonFieldType.STRING).description("시/도 주소"),
                         fieldWithPath("data.profile.siGunGu").type(JsonFieldType.STRING).description("시/군/구 주소"),
                         fieldWithPath("data.profile.eupMyeonDong").type(JsonFieldType.STRING).description("읍/면/동 주소"),
                         fieldWithPath("data.profile.intro").type(JsonFieldType.STRING).description("자기소개").optional(),
                         fieldWithPath("data.profile.height").type(JsonFieldType.NUMBER).description("키 (cm)"),
                         fieldWithPath("data.profile.weight").type(JsonFieldType.NUMBER).description("몸무게 (kg)"),
-                        fieldWithPath("data.profile.age").type(JsonFieldType.STRING).description("연령대" + Age.allDescription()),
+                        fieldWithPath("data.profile.age").type(JsonFieldType.STRING)
+                            .description("연령대" + Age.allDescription()),
                         fieldWithPath("data.profile.workoutExperience").type(JsonFieldType.STRING).description("운동 경력"),
                         fieldWithPath("data.profile.workoutStyle").type(JsonFieldType.STRING).description("선호 운동 스타일"),
                         fieldWithPath("data.profile.workoutGoal").type(JsonFieldType.STRING).description("주요 운동 목표"),
-                        fieldWithPath("data.profile.workoutTimeNames").type(JsonFieldType.ARRAY).description("운동 가능 시간 목록"),
-                        fieldWithPath("data.profile.workoutImageUrls").type(JsonFieldType.ARRAY).description("운동 인증 이미지 URL 목록. 빈 배열 가능"),
+                        fieldWithPath("data.profile.workoutTimeNames").type(JsonFieldType.ARRAY)
+                            .description("운동 가능 시간 목록"),
+                        fieldWithPath("data.profile.workoutImageUrls").type(JsonFieldType.ARRAY)
+                            .description("운동 인증 이미지 URL 목록. 빈 배열 가능"),
                         fieldWithPath("data.profile.score").type(JsonFieldType.NUMBER).description("핏버디 온도"),
 
 
@@ -536,7 +541,8 @@ class MemberControllerDocsTest : RestDocsSupport() {
                             .description("운동 파트너 상태 정보"),
                         fieldWithPath("data.workoutPartner.status").type(JsonFieldType.STRING)
                             .description("운동 파트너 상태" + ProfileWorkoutPartnerStatus.allDescription()),
-                        fieldWithPath("data.workoutPartner.workoutPartnerRequestId").type(JsonFieldType.NUMBER).optional()
+                        fieldWithPath("data.workoutPartner.workoutPartnerRequestId").type(JsonFieldType.NUMBER)
+                            .optional()
                             .description("운동 파트너 요청이 존재할 경우 해당 요청 ID. SEND = 본인이 보낸 파트너 요청 id, RECEIVE = 상대가 본인에게 보낸 파트너 요청 id"),
                         fieldWithPath("data.workoutPartner.chatRoomId").type(JsonFieldType.NUMBER).optional()
                             .description("파트너 상태일 경우 채팅방 ID. PARTNER가 아니면 null. PARTNER임에도 불구하고, 채팅방을 안만들었어도 null")
