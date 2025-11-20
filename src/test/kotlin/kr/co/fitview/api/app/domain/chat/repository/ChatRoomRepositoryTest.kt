@@ -21,9 +21,8 @@ class ChatRoomRepositoryTest @Autowired constructor(
 ) : IntegrationTestSupport() {
 
     @DisplayName("두 회원이 참석한 개인 채팅방을 조회한다.")
-//    @Test
-    fun findChatRoomIdFromMemberIdAndToMemberIdAndPrivateAndDeletedAtIsNull() {
-
+    @Test
+    fun findPrivateChatRoomIdBetweenMemberIds() {
         //given
         val member1 = Member(
             email = "email1",

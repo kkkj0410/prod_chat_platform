@@ -3,18 +3,32 @@ package kr.co.fitview.api.app.docs.workout_partner
 import kr.co.fitview.api.app.docs.RestDocsHeaders
 import kr.co.fitview.api.app.docs.RestDocsPagination
 import kr.co.fitview.api.app.docs.RestDocsSupport
+import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
+import kr.co.fitview.api.app.domain.member.dto.request.Age
+import kr.co.fitview.api.app.domain.member.dto.response.MemberProfileResponse
+import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutExperience
+import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutGoal
+import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutStyle
+import kr.co.fitview.api.app.domain.member.entity.enums.WorkoutTimeName
 import kr.co.fitview.api.app.domain.workout_partner.controller.WorkoutPartnerController
 import kr.co.fitview.api.app.domain.workout_partner.dto.request.WorkoutPartnerCreateRequest
 import kr.co.fitview.api.app.domain.workout_partner.dto.request.WorkoutPartnerUpdateRequest
 import kr.co.fitview.api.app.domain.workout_partner.dto.request.enums.WorkoutPartnerRequestType
 import kr.co.fitview.api.app.domain.workout_partner.dto.request.enums.WorkoutPartnerRequestUpdateStatus
+import kr.co.fitview.api.app.domain.workout_partner.dto.response.WorkoutPartnerRequestResponse
 import kr.co.fitview.api.app.domain.workout_partner.dto.response.enums.WorkoutPartnerRequestStatusForResponse
+import kr.co.fitview.api.app.domain.workout_partner.entity.QWorkoutPartner.workoutPartner
 import kr.co.fitview.api.app.domain.workout_partner.service.WorkoutPartnerRequestService
+import kr.co.fitview.api.app.global.entity.Gender
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.util.SecurityUtil
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
+import org.mockito.kotlin.any
+import org.mockito.kotlin.given
+import org.springframework.data.domain.Slice
+import org.springframework.data.domain.SliceImpl
 import org.springframework.http.MediaType
 import org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document
@@ -30,7 +44,8 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 class WorkoutPartnerControllerDocsTest : RestDocsSupport() {
 
-    private val workoutPartnerRequestService: WorkoutPartnerRequestService = mock(WorkoutPartnerRequestService::class.java)
+    private val workoutPartnerRequestService: WorkoutPartnerRequestService =
+        mock(WorkoutPartnerRequestService::class.java)
     private val securityUtil: SecurityUtil = mock(SecurityUtil::class.java)
 
     override fun initController(): Any {
@@ -138,6 +153,47 @@ class WorkoutPartnerControllerDocsTest : RestDocsSupport() {
     @Test
     fun workoutPartnerRequestList() {
 
+        val responseList = listOf(
+            WorkoutPartnerRequestResponse(
+                workoutPartnerRequestId = 123L,
+                profileImageUrl = "https://example.com/profile1.png",
+                nickname = "user_one",
+                workoutExperience = MemberWorkoutExperience.UNDER_ONE_YEAR,
+                workoutStyle = MemberWorkoutStyle.CARDIO,
+                workoutGoal = MemberWorkoutGoal.PERFORMANCE_GOAL,
+                status = WorkoutPartnerRequestStatusForResponse.PENDING,
+                chatRoomId = null
+            ),
+            WorkoutPartnerRequestResponse(
+                workoutPartnerRequestId = 124L,
+                profileImageUrl = "https://example.com/profile2.png",
+                nickname = "user_two",
+                workoutExperience = MemberWorkoutExperience.FOUR_TO_SIX_YEARS,
+                workoutStyle = MemberWorkoutStyle.STRENGTH,
+                workoutGoal = MemberWorkoutGoal.PERFORMANCE_GOAL,
+                status = WorkoutPartnerRequestStatusForResponse.ACCEPT,
+                chatRoomId = null
+            ),
+            WorkoutPartnerRequestResponse(
+                workoutPartnerRequestId = 125L,
+                profileImageUrl = "https://example.com/profile3.png",
+                nickname = "user_three",
+                workoutExperience = MemberWorkoutExperience.UNDER_ONE_YEAR,
+                workoutStyle = MemberWorkoutStyle.CARDIO,
+                workoutGoal = MemberWorkoutGoal.PERFORMANCE_GOAL,
+                status = WorkoutPartnerRequestStatusForResponse.EXPIRE,
+                chatRoomId = null
+            )
+        )
+
+        val slice: Slice<WorkoutPartnerRequestResponse> = SliceImpl(responseList)
+
+        // given
+        given(workoutPartnerRequestService.findWorkoutPartnerFrom(any(), any()))
+            .willReturn(
+                slice
+            )
+
         // when & then
         mockMvc.perform(
             get("/api/v1/workout-partner-requests")
@@ -195,7 +251,6 @@ class WorkoutPartnerControllerDocsTest : RestDocsSupport() {
                         fieldWithPath("data.content[].chatRoomId").type(JsonFieldType.NUMBER)
                             .optional()
                             .description("파트너 관계일 경우 채팅방 id, 없으면 null"),
-
 
                         *RestDocsPagination.paginationByCursor()
                     )

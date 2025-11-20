@@ -16,6 +16,36 @@ class WorkoutPartnerRequestTest @Autowired constructor(
     val memberRepository : MemberRepository
 ) : IntegrationTestSupport(){
 
+    @DisplayName("파트너 요청을 만든다")
+    @Test
+    fun of() {
+        // given
+        val fromMember = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val toMember = Member(
+            email = "email2",
+            password = "password2",
+            role = Role.USER,
+        )
+        memberRepository.save(fromMember)
+        memberRepository.save(toMember)
+
+
+        // when
+        val workoutPartnerRequest = WorkoutPartnerRequest.of(
+            fromMember = fromMember,
+            toMember = toMember,
+            now = time.nowLocalDateTime
+        )
+
+        // then
+        assertThat(workoutPartnerRequest)
+            .extracting("fromMember", "toMember", "requestedAt", "status")
+            .contains(fromMember, toMember, time.nowLocalDateTime, WorkoutPartnerRequestStatus.PENDING)
+    }
 
     @DisplayName("핏버디 요청을 거부한다.")
     @Test
@@ -113,36 +143,65 @@ class WorkoutPartnerRequestTest @Autowired constructor(
             .contains(fromMember, toMember, time.nowLocalDateTime, WorkoutPartnerRequestStatus.CANCEL)
     }
 
-    @DisplayName("")
+
+    @DisplayName("요청 회원의 id를 가져온다.")
     @Test
     fun getFromMemberId() {
         // given
+        val fromMember = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val toMember = Member(
+            email = "email2",
+            password = "password2",
+            role = Role.USER,
+        )
+        memberRepository.save(fromMember)
+        memberRepository.save(toMember)
+
+        val workoutPartnerRequest = WorkoutPartnerRequest.of(
+            fromMember = fromMember,
+            toMember = toMember,
+            now = time.nowLocalDateTime
+        )
 
         // when
+        val fromMemberId = workoutPartnerRequest.getFromMemberId()
 
         // then
-
+        assertThat(fromMemberId).isEqualTo(fromMember.id!!)
     }
 
     @DisplayName("")
     @Test
     fun getToMemberId() {
         // given
+        val fromMember = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val toMember = Member(
+            email = "email2",
+            password = "password2",
+            role = Role.USER,
+        )
+        memberRepository.save(fromMember)
+        memberRepository.save(toMember)
+
+        val workoutPartnerRequest = WorkoutPartnerRequest.of(
+            fromMember = fromMember,
+            toMember = toMember,
+            now = time.nowLocalDateTime
+        )
 
         // when
+        val toMemberId = workoutPartnerRequest.getToMemberId()
 
         // then
-//
+        assertThat(toMemberId).isEqualTo(toMember.id!!)
     }
 
-    @DisplayName("")
-    @Test
-    fun of() {
-        // given
-
-        // when
-
-        // then
-
-    }
 }
