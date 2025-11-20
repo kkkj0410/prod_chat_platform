@@ -562,4 +562,74 @@ class WorkoutPartnerRequestServiceTest @Autowired constructor(
             })
 
     }
+
+    @DisplayName("최근 운동 파트너 요청을 조회한다.")
+    @Test
+    fun findRecentRequestWithin24Hours() {
+        // given
+        val fromMember = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val toMember = Member(
+            email = "email2",
+            password = "password2",
+            role = Role.USER,
+        )
+        memberService.addMember(fromMember)
+        memberService.addMember(toMember)
+
+        val recentWorkoutPartnerRequest = WorkoutPartnerRequest.of(
+            fromMember = fromMember,
+            toMember = toMember,
+            now = time.nowLocalDateTime
+        )
+        val workoutPartnerRequest = WorkoutPartnerRequest.of(
+            fromMember = fromMember,
+            toMember = toMember,
+            now = time.nowLocalDateTime.minusHours(24)
+        )
+        workoutPartnerRequestRepository.save(recentWorkoutPartnerRequest)
+        workoutPartnerRequestRepository.save(workoutPartnerRequest)
+
+        // when
+        val findWorkoutPartnerRequest = workoutPartnerRequestService.findRecentRequestWithin24Hours(fromMember.id!!, toMember.id!!)
+
+        // then
+        assertThat(findWorkoutPartnerRequest)
+            .extracting("fromMember", "toMember", "status", "requestedAt")
+            .contains(fromMember, toMember, WorkoutPartnerRequestStatus.PENDING, time.nowLocalDateTime)
+    }
+
+    @DisplayName("최근 운동 파트너 요청을 조회한다. 다만 24시간이 지난 요청은 무시한다.")
+    @Test
+    fun findRecentRequestWithin24HoursExceed24Hours() {
+        // given
+        val fromMember = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val toMember = Member(
+            email = "email2",
+            password = "password2",
+            role = Role.USER,
+        )
+        memberService.addMember(fromMember)
+        memberService.addMember(toMember)
+
+        val workoutPartnerRequest = WorkoutPartnerRequest.of(
+            fromMember = fromMember,
+            toMember = toMember,
+            now = time.nowLocalDateTime.minusHours(24)
+        )
+        workoutPartnerRequestRepository.save(workoutPartnerRequest)
+
+        // when
+        val findWorkoutPartnerRequest = workoutPartnerRequestService.findRecentRequestWithin24Hours(fromMember.id!!, toMember.id!!)
+
+        // then
+        assertThat(findWorkoutPartnerRequest).isNull()
+    }
 }

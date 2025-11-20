@@ -3,7 +3,6 @@ package kr.co.fitview.api.app.domain.workout_partner.service
 import kr.co.fitview.api.app.domain.chat.service.ChatService
 import kr.co.fitview.api.app.domain.member.dto.response.WorkoutPartnerStatusResponse
 import kr.co.fitview.api.app.domain.member.dto.response.enums.ProfileWorkoutPartnerStatus
-import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartnerRequest
 import kr.co.fitview.api.app.domain.workout_partner.repository.WorkoutPartnerRepository
 import kr.co.fitview.api.app.domain.workout_partner.repository.findByOrderedMemberOneIdAndMemberTwoIdAndDeletedAtIsNull
 import org.springframework.stereotype.Service
@@ -53,41 +52,32 @@ class WorkoutPartnerService(
     }
 
     private fun getReceiveRequestStatusResponse(fromMemberId: Long, toMemberId: Long): WorkoutPartnerStatusResponse? {
-        val findReceiveRequest = workoutPartnerRequestService.findRecentRequestFrom(toMemberId, fromMemberId)
+        val findReceiveRequest = workoutPartnerRequestService.findRecentRequestWithin24Hours(toMemberId, fromMemberId)
 
         if (isNotNull(findReceiveRequest)) {
-            return if (workoutPartnerRequestService.isNotExpire24Hour(findReceiveRequest!!)) {
-                WorkoutPartnerStatusResponse(
-                    status = ProfileWorkoutPartnerStatus.RECEIVE,
-                    workoutPartnerRequestId = findReceiveRequest.id!!
-                )
-            } else {
-                WorkoutPartnerStatusResponse(status = ProfileWorkoutPartnerStatus.NONE)
-            }
+            return WorkoutPartnerStatusResponse(
+                status = ProfileWorkoutPartnerStatus.RECEIVE,
+                workoutPartnerRequestId = findReceiveRequest!!.id!!
+            )
         }
+
         return null
     }
 
     private fun getSendRequestStatusResponse(fromMemberId: Long, toMemberId: Long): WorkoutPartnerStatusResponse? {
-        val findSendRequest = workoutPartnerRequestService.findRecentRequestFrom(fromMemberId, toMemberId)
+        val findSendRequest = workoutPartnerRequestService.findRecentRequestWithin24Hours(fromMemberId, toMemberId)
 
         if (isNotNull(findSendRequest)) {
-            return if (workoutPartnerRequestService.isNotExpire24Hour(findSendRequest!!)) {
-                WorkoutPartnerStatusResponse(
-                    status = ProfileWorkoutPartnerStatus.SEND,
-                    workoutPartnerRequestId = findSendRequest.id!!
-                )
-            } else {
-                WorkoutPartnerStatusResponse(status = ProfileWorkoutPartnerStatus.NONE)
-            }
+            return WorkoutPartnerStatusResponse(
+                status = ProfileWorkoutPartnerStatus.SEND,
+                workoutPartnerRequestId = findSendRequest!!.id!!
+            )
         }
+
         return null
     }
 
     private fun isNotNull(value: Any?) =
         value != null
-
-    private fun isNull(value: Any?) =
-        value == null
 
 }

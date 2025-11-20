@@ -59,6 +59,7 @@ class WorkoutPartnerController(
         condition : WorkoutPartnerRequestCondition,
         ) : ResponseEntity<ApiResponse<SuccessCursorPagedResponse<WorkoutPartnerRequestResponse>>> {
 
+
         val responseList = listOf(
             WorkoutPartnerRequestResponse(
                 workoutPartnerRequestId = 123L,

@@ -1,7 +1,6 @@
 package kr.co.fitview.api.app.domain.workout_partner.service
 
 import kr.co.fitview.api.app.domain.member.service.MemberReferenceProvider
-import kr.co.fitview.api.app.domain.member.service.MemberService
 import kr.co.fitview.api.app.domain.workout_partner.dto.request.WorkoutPartnerCreateServiceRequest
 import kr.co.fitview.api.app.domain.workout_partner.dto.request.WorkoutPartnerUpdateServiceRequest
 import kr.co.fitview.api.app.domain.workout_partner.dto.request.enums.WorkoutPartnerRequestUpdateStatus
@@ -76,8 +75,14 @@ class WorkoutPartnerRequestService(
         workoutPartnerRepository.save(workoutPartner)
     }
 
-    fun findRecentRequestFrom(fromMemberId : Long, toMemberId : Long) : WorkoutPartnerRequest?{
-        return workoutPartnerRequestRepository.findTop1ByFromMemberIdAndToMemberIdAndDeletedAtIsNullOrderByRequestedAtDesc(fromMemberId, toMemberId)
+    fun findRecentRequestWithin24Hours(fromMemberId : Long, toMemberId : Long) : WorkoutPartnerRequest?{
+        val findWorkoutPartnerRequest = workoutPartnerRequestRepository.findTop1ByFromMemberIdAndToMemberIdAndDeletedAtIsNullOrderByRequestedAtDesc(fromMemberId, toMemberId)
+
+        if(isNotNull(findWorkoutPartnerRequest) && isNotExpire24Hour(findWorkoutPartnerRequest!!)){
+            return findWorkoutPartnerRequest
+        }
+
+        return null
     }
 
     fun isAcceptWorkoutPartner(fromMemberId: Long, toMemberId: Long): Boolean {

@@ -61,4 +61,39 @@ class WorkoutPartnerRequestRepositoryTest @Autowired constructor(
             .extracting("fromMember", "toMember", "requestedAt")
             .contains(fromMember, toMember, time.nowLocalDateTime)
     }
+
+    @DisplayName("상대 회원을 향한 특정 운동 파트너 신청을 조회한다.")
+    @Test
+    fun findByIdAndToMemberIdAndDeletedAtIsNull() {
+        // given
+        val fromMember = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+
+        val toMember = Member(
+            email = "email2",
+            password = "password2",
+            role = Role.USER,
+        )
+
+        val savedFromMember = memberService.addMember(fromMember)
+        val savedToMember = memberService.addMember(toMember)
+
+        val workoutPartnerRequest = WorkoutPartnerRequest.of(
+            fromMember = savedFromMember,
+            toMember = savedToMember,
+            now = time.nowLocalDateTime
+        )
+        workoutPartnerRequestRepository.save(workoutPartnerRequest)
+
+        // when
+        val findWorkoutPartnerRequest = workoutPartnerRequestRepository.findByIdAndToMemberIdAndDeletedAtIsNull(workoutPartnerRequest.id!!, toMember.id!!)
+
+        // then
+        assertThat(findWorkoutPartnerRequest)
+            .extracting("fromMember", "toMember", "requestedAt")
+            .contains(fromMember, toMember, time.nowLocalDateTime)
+    }
 }
