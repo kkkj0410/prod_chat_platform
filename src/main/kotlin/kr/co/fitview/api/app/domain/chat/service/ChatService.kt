@@ -45,11 +45,6 @@ class ChatService(
         return ChatRoomCreateResponse(savedChatRoom.id!!)
     }
 
-    fun findChatRooms(memberId: Long, condition: ChatRoomCondition): Slice<ChatRoomResponse> {
-        TODO()
-    }
-
-
 
     private fun isNotWorkoutPartner(
         memberId: Long,

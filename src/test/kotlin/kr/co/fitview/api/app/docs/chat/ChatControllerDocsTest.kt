@@ -9,6 +9,7 @@ import kr.co.fitview.api.app.domain.address.service.AddressService
 import kr.co.fitview.api.app.domain.chat.controller.ChatController
 import kr.co.fitview.api.app.domain.chat.dto.request.ChatRoomCreateRequest
 import kr.co.fitview.api.app.domain.chat.dto.response.ChatRoomCreateResponse
+import kr.co.fitview.api.app.domain.chat.service.ChatRoomService
 import kr.co.fitview.api.app.domain.chat.service.ChatService
 import kr.co.fitview.api.app.domain.member.controller.MemberController
 import kr.co.fitview.api.app.domain.member.dto.request.Age
@@ -51,10 +52,11 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 class ChatControllerDocsTest : RestDocsSupport() {
 
     private val chatService: ChatService = mock(ChatService::class.java)
+    private val chatRoomService: ChatRoomService = mock(ChatRoomService::class.java)
     private val securityUtil: SecurityUtil = mock(SecurityUtil::class.java)
 
     override fun initController(): Any {
-        return ChatController(chatService, securityUtil)
+        return ChatController(chatService, chatRoomService, securityUtil)
     }
 
     @DisplayName("채팅방을 생성한다.")
