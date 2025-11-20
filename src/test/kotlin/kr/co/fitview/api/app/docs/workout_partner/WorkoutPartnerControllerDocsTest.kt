@@ -199,7 +199,7 @@ class WorkoutPartnerControllerDocsTest : RestDocsSupport() {
             get("/api/v1/workout-partner-requests")
                 .header("Authorization", "Bearer jwt-token")
                 .param("size", "10")
-                .param("lastWorkoutPartnerRequestId", "123")
+                .param("firstWorkoutPartnerRequestId", "123")
                 .param("type", "SEND")
         )
             .andDo(print())
@@ -217,8 +217,8 @@ class WorkoutPartnerControllerDocsTest : RestDocsSupport() {
                     queryParameters(
                         parameterWithName("size").optional()
                             .description("(Optional - default 10) 조회 크기"),
-                        parameterWithName("lastWorkoutPartnerRequestId").optional()
-                            .description("(Optional) 최근까지 조회한 id 값 - lastWorkoutPartnerRequestId(처음에는 null로 했을 때 최근 것을 size 개수만큼 가져옴. 그 후, lastWorkoutRequestId 호출하면 그 이후 데이터 가져옴)"),
+                        parameterWithName("firstWorkoutPartnerRequestId").optional()
+                            .description("(Optional) 제일 옛날 id 값(id가 제일 작은값) - firstWorkoutPartnerRequestId(처음에는 null로 했을 때 최근 것을 size 개수만큼 가져옴. 그 후, firstWorkoutRequestId 호출하면 그 이후 더 작은 id의 데이터 가져옴(최신순))"),
                         parameterWithName("type")
                             .description("운동 파트너 요청 타입" + WorkoutPartnerRequestType.allDescription()),
                     ),

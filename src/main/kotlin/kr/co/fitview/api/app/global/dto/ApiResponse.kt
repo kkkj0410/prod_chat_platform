@@ -1,6 +1,5 @@
 package kr.co.fitview.api.app.global.dto
 
-import com.fasterxml.jackson.annotation.JsonInclude
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Slice
 import org.springframework.http.HttpStatus
@@ -100,13 +99,13 @@ data class SuccessCursorPagedResponse<T>(
 
 data class CursorPagination(
     val size: Int,
-    val lastId: Long?,
+    val cursorId: Long?,
     val hasNext: Boolean
 ) {
     companion object {
         fun <T> from(slice: Slice<T>, lastIdExtractor: (T) -> Long) = CursorPagination(
             size = slice.size,
-            lastId = slice.content.lastOrNull()?.let { lastIdExtractor(it) },
+            cursorId = slice.content.lastOrNull()?.let { lastIdExtractor(it) },
             hasNext = slice.hasNext()
         )
     }

@@ -92,11 +92,6 @@ class WorkoutPartnerRequestService(
         return workoutPartnerRequestRepository.findWorkoutPartnerByConditionAndDeletedAtIsNull(memberId, condition)
     }
 
-    fun isAcceptWorkoutPartner(fromMemberId: Long, toMemberId: Long): Boolean {
-//        workoutPartnerRepository.findTop1ByFromMemberIdAndToMemberIdAndDeletedAtIsNullOrderByRequestedAtDesc(fromMemberId, toMemberId)
-        return true
-    }
-
 
     private fun validateAddWorkoutPartnerRequest(workoutPartnerRequest: WorkoutPartnerRequest?) {
         if (isNotNull(workoutPartnerRequest)) {

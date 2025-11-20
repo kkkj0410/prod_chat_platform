@@ -126,7 +126,7 @@ class MemberControllerTest : ControllerTestSupport() {
             .willReturn(
                 MemberDetailResponse(
                     profile = MemberProfileResponse(
-                        memberId = 456L, // otherMember.id 대신 하드코딩
+                        memberId = 456L,
                         profileImageUrl = "http://test.com/profile/image.jpg",
                         nickname = "테스트닉네임",
                         gender = Gender.MALE,
@@ -160,47 +160,44 @@ class MemberControllerTest : ControllerTestSupport() {
 
         // when // then
         mockMvc.perform(
-            get("/api/v1/members/addresses", 1)
+            get("/api/v1/members/{memberId}", 1)
                 .header("Authorization", "Bearer jwt-token")
         )
             .andDo(print())
             .andExpect(status().isOk())
 
-        responseFields(
-            fieldWithPath("status").type(JsonFieldType.NUMBER).description("응답 상태 코드"),
-            fieldWithPath("code").type(JsonFieldType.STRING).description("응답 코드 문자열"),
-            fieldWithPath("message").type(JsonFieldType.STRING).description("응답 메시지"),
+            .andExpect(jsonPath("$.status").exists())
+            .andExpect(jsonPath("$.code").value("ok"))
+            .andExpect(jsonPath("$.message").value("ok"))
 
-            fieldWithPath("data").type(JsonFieldType.OBJECT).description("응답 데이터 객체"),
+            .andExpect(jsonPath("$.data.profile.memberId").value(456L))
+            .andExpect(jsonPath("$.data.profile.profileImageUrl").value("http://test.com/profile/image.jpg"))
+            .andExpect(jsonPath("$.data.profile.nickname").value("테스트닉네임"))
+            .andExpect(jsonPath("$.data.profile.gender").value("MALE"))
 
-            fieldWithPath("data.profile").type(JsonFieldType.OBJECT).description("회원 프로필 상세 정보"),
-            fieldWithPath("data.profile.memberId").type(JsonFieldType.NUMBER).description("회원 ID"),
-            fieldWithPath("data.profile.profileImageUrl").type(JsonFieldType.STRING).description("프로필 이미지 URL"),
-            fieldWithPath("data.profile.nickname").type(JsonFieldType.STRING).description("닉네임"),
-            fieldWithPath("data.profile.gender").type(JsonFieldType.STRING).description(Gender.allDescription()),
+            .andExpect(jsonPath("$.data.profile.siDo").value("서울"))
+            .andExpect(jsonPath("$.data.profile.siGunGu").value("강남구"))
+            .andExpect(jsonPath("$.data.profile.eupMyeonDong").value("역삼동"))
 
-            fieldWithPath("data.profile.siDo").type(JsonFieldType.STRING).description("시/도 주소"),
-            fieldWithPath("data.profile.siGunGu").type(JsonFieldType.STRING).description("시/군/구 주소"),
-            fieldWithPath("data.profile.eupMyeonDong").type(JsonFieldType.STRING).description("읍/면/동 주소"),
+            .andExpect(jsonPath("$.data.profile.intro").value("안녕하세요! 운동을 좋아하는 사람입니다."))
+            .andExpect(jsonPath("$.data.profile.height").value(180))
+            .andExpect(jsonPath("$.data.profile.weight").value(75))
 
-            fieldWithPath("data.profile.intro").type(JsonFieldType.STRING).description("자기소개").optional(),
-            fieldWithPath("data.profile.height").type(JsonFieldType.NUMBER).description("키 (cm)"),
-            fieldWithPath("data.profile.weight").type(JsonFieldType.NUMBER).description("몸무게 (kg)"),
+            .andExpect(jsonPath("$.data.profile.age").value("FORTIES_MID"))
+            .andExpect(jsonPath("$.data.profile.workoutExperience").value("JUST_STARTED"))
+            .andExpect(jsonPath("$.data.profile.workoutStyle").value("STRENGTH"))
+            .andExpect(jsonPath("$.data.profile.workoutGoal").value("PERFORMANCE_GOAL"))
 
-            fieldWithPath("data.profile.age").type(JsonFieldType.STRING).description("연령대" + Age.allDescription()),
+            .andExpect(jsonPath("$.data.profile.workoutTimeNames").isArray)
+            .andExpect(jsonPath("$.data.profile.workoutTimeNames.length()").value(2))
+            .andExpect(jsonPath("$.data.profile.workoutImageUrls").isArray)
+            .andExpect(jsonPath("$.data.profile.workoutImageUrls.length()").value(0))
 
-            fieldWithPath("data.profile.workoutExperience").type(JsonFieldType.STRING).description("운동 경력"),
-            fieldWithPath("data.profile.workoutStyle").type(JsonFieldType.STRING).description("선호 운동 스타일"),
-            fieldWithPath("data.profile.workoutGoal").type(JsonFieldType.STRING).description("주요 운동 목표"),
-            fieldWithPath("data.profile.workoutTimeNames").type(JsonFieldType.ARRAY).description("운동 가능 시간 목록"),
-            fieldWithPath("data.profile.workoutImageUrls").type(JsonFieldType.ARRAY).description("운동 인증 이미지 URL 목록. 빈 배열 가능"),
-            fieldWithPath("data.profile.score").type(JsonFieldType.NUMBER).description("핏버디 온도"),
+            .andExpect(jsonPath("$.data.profile.score").value(80))
 
-            fieldWithPath("data.workoutPartner").type(JsonFieldType.OBJECT).description("운동 파트너 상태 정보"),
-            fieldWithPath("data.workoutPartner.status").type(JsonFieldType.STRING).description("파트너 관계 상태" + ProfileWorkoutPartnerStatus.allDescription()),
-            fieldWithPath("data.workoutPartner.workoutPartnerRequestId").type(JsonFieldType.NUMBER).description("요청 ID (요청 상태일 경우)").optional(),
-            fieldWithPath("data.workoutPartner.chatRoomId").type(JsonFieldType.NUMBER).description("채팅방 ID (파트너 상태일 경우)").optional()
-        )
+            .andExpect(jsonPath("$.data.workoutPartner.status").value("NONE"))
+            .andExpect(jsonPath("$.data.workoutPartner.workoutPartnerRequestId").isEmpty)
+            .andExpect(jsonPath("$.data.workoutPartner.chatRoomId").isEmpty)
     }
 
 }

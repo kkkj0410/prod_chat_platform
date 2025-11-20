@@ -1,5 +1,6 @@
 package kr.co.fitview.api.app.domain.workout_partner.service
 
+import kr.co.fitview.api.app.domain.chat.service.ChatRoomService
 import kr.co.fitview.api.app.domain.chat.service.ChatService
 import kr.co.fitview.api.app.domain.member.dto.response.WorkoutPartnerStatusResponse
 import kr.co.fitview.api.app.domain.member.dto.response.enums.ProfileWorkoutPartnerStatus
@@ -14,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional
 class WorkoutPartnerService(
     val workoutPartnerRepository : WorkoutPartnerRepository,
     val workoutPartnerRequestService : WorkoutPartnerRequestService,
-    val chatService : ChatService
+    val chatRoomService : ChatRoomService
 ) {
 
     fun findWorkoutPartnerStatus(fromMemberId : Long, toMemberId : Long): WorkoutPartnerStatusResponse {
@@ -37,11 +38,16 @@ class WorkoutPartnerService(
         return WorkoutPartnerStatusResponse(status = ProfileWorkoutPartnerStatus.NONE)
     }
 
+    fun isWorkoutPartnerFrom(fromMemberId: Long, toMemberId: Long): Boolean {
+        val findWorkoutPartner = workoutPartnerRepository.findByOrderedMemberOneIdAndMemberTwoIdAndDeletedAtIsNull(fromMemberId, toMemberId)
+        return isNotNull(findWorkoutPartner)
+    }
+
     private fun getPartnerStatusResponse(fromMemberId: Long, toMemberId: Long): WorkoutPartnerStatusResponse? {
         val findWorkoutPartner = workoutPartnerRepository.findByOrderedMemberOneIdAndMemberTwoIdAndDeletedAtIsNull(fromMemberId, toMemberId)
 
         if (isNotNull(findWorkoutPartner)) {
-            val chatRoom = chatService.findChatRoomFrom(fromMemberId, toMemberId)
+            val chatRoom = chatRoomService.findChatRoomFrom(fromMemberId, toMemberId)
 
             return WorkoutPartnerStatusResponse(
                 status = ProfileWorkoutPartnerStatus.PARTNER,

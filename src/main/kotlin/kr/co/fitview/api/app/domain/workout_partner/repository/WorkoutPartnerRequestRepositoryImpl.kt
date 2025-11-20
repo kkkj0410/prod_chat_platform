@@ -55,8 +55,8 @@ class WorkoutPartnerRequestRepositoryImpl(
         }
 
         fun lastRequestIdCondition(): BooleanExpression? {
-            val lastId = condition.lastWorkoutPartnerRequestId ?: return null
-            return workoutPartnerRequest.id.gt(lastId)
+            val lastId = condition.firstWorkoutPartnerRequestId ?: return null
+            return workoutPartnerRequest.id.lt(lastId)
         }
 
         val limit = condition.size!! + 1
@@ -89,7 +89,7 @@ class WorkoutPartnerRequestRepositoryImpl(
                 memberImage.deletedAt.isNull,
                 image.deletedAt.isNull,
             )
-            .orderBy(workoutPartnerRequest.requestedAt.desc())
+            .orderBy(workoutPartnerRequest.id.desc())
             .limit(limit.toLong())
             .fetch()
 

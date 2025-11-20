@@ -732,7 +732,7 @@ class WorkoutPartnerRequestServiceTest @Autowired constructor(
 
         val condition = WorkoutPartnerRequestCondition(
             size = 10,
-            lastWorkoutPartnerRequestId = null,
+            firstWorkoutPartnerRequestId = null,
             type = WorkoutPartnerRequestType.RECEIVE
         )
 
@@ -764,5 +764,6 @@ class WorkoutPartnerRequestServiceTest @Autowired constructor(
 
         assertThat(slice.hasNext()).isFalse()
     }
+
 
 }
