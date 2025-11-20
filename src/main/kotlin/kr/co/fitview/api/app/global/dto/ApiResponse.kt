@@ -3,6 +3,7 @@ package kr.co.fitview.api.app.global.dto
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Slice
 import org.springframework.http.HttpStatus
+import java.time.LocalDateTime
 
 data class ApiResponse<T>(
     val status: Int,
@@ -42,9 +43,8 @@ data class ApiResponse<T>(
         fun <T> successWithCursorPagination(
             slice: Slice<T>,
             idExtractor: (T) -> Long,
-            isFirstCursor: Boolean = false
         ): ApiResponse<SuccessCursorPagedResponse<T>> {
-            val pagination = CursorPagination.from(slice, idExtractor, isFirstCursor)
+            val pagination = CursorPagination.from(slice, idExtractor)
             return ApiResponse(
                 HttpStatus.OK.value(),
                 "ok",
@@ -53,6 +53,22 @@ data class ApiResponse<T>(
             )
         }
 
+        fun <T> successWithCursorAtPagination(
+            slice: Slice<T>,
+            timeExtractor: (T) -> LocalDateTime,
+        ): ApiResponse<SuccessCursorAtPagedResponse<T>> {
+            val pagination = CursorAtPagination.from(slice, timeExtractor)
+
+            return ApiResponse(
+                status = HttpStatus.OK.value(),
+                code = "ok",
+                message = HttpStatus.OK.reasonPhrase,
+                data = SuccessCursorAtPagedResponse(
+                    content = slice.content,
+                    pagination = pagination
+                )
+            )
+        }
 
         fun error(status: HttpStatus, code: String, message: String): ApiResponse<Any?> {
             return ApiResponse(status.value(), code, message, null)
@@ -111,14 +127,34 @@ data class CursorPagination(
         fun <T> from(
             slice: Slice<T>,
             idExtractor: (T) -> Long,
-            isFirstCursor: Boolean = false
         ) = CursorPagination(
             size = slice.size,
-            cursorId = if (isFirstCursor) {
-                slice.content.firstOrNull()?.let { idExtractor(it) }
-            } else {
-                slice.content.lastOrNull()?.let { idExtractor(it) }
-            },
+            cursorId = slice.content.lastOrNull()?.let{idExtractor(it)},
+            hasNext = slice.hasNext()
+        )
+    }
+}
+
+
+
+data class SuccessCursorAtPagedResponse<T>(
+    val content: List<T>,
+    val pagination: CursorAtPagination // 시간 기반 Pagination DTO와 명확히 연결
+)
+
+data class CursorAtPagination(
+    val size: Int,
+    val cursorAt: LocalDateTime?,
+    val hasNext: Boolean
+) {
+
+    companion object {
+        fun <T> from(
+            slice: Slice<T>,
+            timeExtractor: (T) -> LocalDateTime,
+        ) = CursorAtPagination(
+            size = slice.size,
+            cursorAt = slice.content.lastOrNull()?.let { timeExtractor(it) },
             hasNext = slice.hasNext()
         )
     }
