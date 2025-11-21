@@ -9,3 +9,35 @@ include::{snippets}/chat-room-add/request-headers.adoc[]
 ==== HTTP Response
 include::{snippets}/chat-room-add/http-response.adoc[]
 include::{snippets}/chat-room-add/response-fields.adoc[]
+
+
+[[chat-room-list-text]]
+=== 채팅방 목록 (TEXT 유형) API
+-> TEXT, WORKOUT_REQUEST 유형으로 나뉨. (lastChatMessage 필드가 달라진다.)
+
+==== HTTP Request
+include::{snippets}/chat-room-list-text/http-request.adoc[]
+include::{snippets}/chat-room-list-text/request-headers.adoc[]
+include::{snippets}/chat-room-list-text/query-parameters.adoc[]
+
+
+==== HTTP Response
+include::{snippets}/chat-room-list-text/http-response.adoc[]
+include::{snippets}/chat-room-list-text/response-fields.adoc[]
+include::{snippets}/chat-room-list-text/response-fields-text-message.adoc[]
+include::{snippets}/chat-room-list-text/response-fields-workout-request.adoc[]
+
+
+[[chat-room-list-workout-request]]
+=== 채팅방 목록 (WORKOUT_REQUEST 유형) API
+
+==== HTTP Request
+include::{snippets}/chat-room-list-workout-request/http-request.adoc[]
+include::{snippets}/chat-room-list-workout-request/request-headers.adoc[]
+include::{snippets}/chat-room-list-workout-request/query-parameters.adoc[]
+
+==== HTTP Response
+include::{snippets}/chat-room-list-workout-request/http-response.adoc[]
+include::{snippets}/chat-room-list-workout-request/response-fields.adoc[]
+include::{snippets}/chat-room-list-workout-request/response-fields-workout-request-message.adoc[]
+include::{snippets}/chat-room-list-workout-request/response-fields-workout-request.adoc[]
