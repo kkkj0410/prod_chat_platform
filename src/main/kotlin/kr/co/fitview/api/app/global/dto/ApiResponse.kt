@@ -4,6 +4,7 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Slice
 import org.springframework.http.HttpStatus
 import java.time.LocalDateTime
+import java.time.ZoneId
 
 data class ApiResponse<T>(
     val status: Int,
@@ -144,7 +145,7 @@ data class SuccessCursorAtPagedResponse<T>(
 
 data class CursorAtPagination(
     val size: Int,
-    val cursorAt: LocalDateTime?,
+    val cursorAt: Long?,
     val hasNext: Boolean
 ) {
 
@@ -154,7 +155,13 @@ data class CursorAtPagination(
             timeExtractor: (T) -> LocalDateTime,
         ) = CursorAtPagination(
             size = slice.size,
-            cursorAt = slice.content.lastOrNull()?.let { timeExtractor(it) },
+            cursorAt = slice.content.lastOrNull()
+                ?.let {
+                    timeExtractor(it)
+                        .atZone(ZoneId.systemDefault())
+                        .toInstant()
+                        .toEpochMilli()
+                },
             hasNext = slice.hasNext()
         )
     }

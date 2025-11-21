@@ -163,7 +163,7 @@ class ChatControllerDocsTest : RestDocsSupport() {
                 .header("Authorization", "Bearer jwt-token")
                 .contentType(MediaType.APPLICATION_JSON)
                 .param("size", "10")
-                .param("lastMessageAt", "2025-11-21T17:01:49.9315438")
+                .param("lastMessageAt", "1763714029931")
         )
             .andExpect(status().isOk())
             .andDo(
@@ -251,7 +251,7 @@ class ChatControllerDocsTest : RestDocsSupport() {
                 .header("Authorization", "Bearer jwt-token")
                 .contentType(MediaType.APPLICATION_JSON)
                 .param("size", "10")
-                .param("lastMessageAt", "2025-11-21T17:01:49.9315438")
+                .param("lastMessageAt", "1763714029931")
         )
             .andExpect(status().isOk())
             .andDo(
