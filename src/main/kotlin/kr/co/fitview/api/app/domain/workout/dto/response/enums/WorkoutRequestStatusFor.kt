@@ -21,7 +21,7 @@ enum class WorkoutRequestStatusFor(val description : String) {
 
     companion object {
         fun allDescription(): List<String> {
-            return MemberWorkoutGoal.entries.map { it.toString() }
+            return entries.map { it.toString() }
         }
 
 
