@@ -39,6 +39,10 @@ class ChatRoomService(
 
         val chatRoomIds = profiles.map { it.chatRoomId }
 
+        if (slice.content.isEmpty()) {
+            return SliceImpl(emptyList(), slice.pageable, false)
+        }
+
         val chatMessages = chatMessageService.findLastChatMessages(memberId, chatRoomIds)
 
         val recentWorkoutRequests = workoutRequestService.findRecentWorkoutRequestFrom(chatRoomIds)
