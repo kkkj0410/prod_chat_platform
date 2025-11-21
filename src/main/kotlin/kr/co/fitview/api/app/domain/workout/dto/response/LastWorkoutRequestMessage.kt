@@ -11,9 +11,5 @@ data class LastWorkoutRequestMessage(
     val status : WorkoutRequestStatusFor? = null,
 
     @get:JsonIgnore
-    val dbStatus : WorkoutRequestStatus? = null,
-    @get:JsonIgnore
-    val requestedAt : LocalDateTime? = null,
-    @get:JsonIgnore
     val chatRoomId : Long?
 )

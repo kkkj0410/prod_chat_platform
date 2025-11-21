@@ -11,31 +11,33 @@ data class ChatRoomResponse (
     val isRead: Boolean,
     val lastChatMessage : LastChatMessage,
     val lastWorkoutRequest : LastWorkoutRequestMessage
-)
+){
+    companion object {
 
-fun assembleChatRoomResponses(
-    profiles: List<ChatRoomResponseProfile>,
-    chatMessages: List<LastChatMessage>,
-    workoutRequests: List<LastWorkoutRequestMessage>
-): List<ChatRoomResponse> {
+        fun from(
+            profiles: List<ChatRoomResponseProfile>,
+            chatMessages: List<LastChatMessage>,
+            workoutRequests: List<LastWorkoutRequestMessage>
+        ): List<ChatRoomResponse> {
 
-    val messageMap = chatMessages.associateBy { it.chatRoomId }
-    val workoutMap = workoutRequests.associateBy { it.chatRoomId }
+            val messageMap = chatMessages.associateBy { it.chatRoomId }
+            val workoutMap = workoutRequests.associateBy { it.chatRoomId }
 
-    return profiles.map { profile ->
-        ChatRoomResponse(
-            chatRoomId = profile.chatRoomId,
-            profileImageUrl = profile.profileImageUrl,
-            nickname = profile.nickname,
-            isRead = messageMap[profile.chatRoomId]?.isRead ?: false,
-            lastChatMessage = messageMap[profile.chatRoomId]
-                ?: throw IllegalStateException("LastChatMessage missing for chatRoomId=${profile.chatRoomId}"),
-            lastWorkoutRequest = workoutMap[profile.chatRoomId]
-                ?: LastWorkoutRequestMessage(
-                    dbStatus = null,
-                    requestedAt = null,
-                    chatRoomId = null
+            return profiles.map { profile ->
+                ChatRoomResponse(
+                    chatRoomId = profile.chatRoomId,
+                    profileImageUrl = profile.profileImageUrl,
+                    nickname = profile.nickname,
+                    isRead = messageMap[profile.chatRoomId]?.isRead ?: false,
+                    lastChatMessage = messageMap[profile.chatRoomId]
+                        ?: throw IllegalStateException("LastChatMessage missing for chatRoomId=${profile.chatRoomId}"),
+                    lastWorkoutRequest = workoutMap[profile.chatRoomId]
+                        ?: LastWorkoutRequestMessage(
+                            status = null,
+                            chatRoomId = null
+                        )
                 )
-        )
+            }
+        }
     }
 }

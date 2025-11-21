@@ -7,6 +7,7 @@ import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
 import kr.co.fitview.api.app.domain.member.dto.request.Age
 import kr.co.fitview.api.app.domain.member.dto.response.MemberDetailResponse
 import kr.co.fitview.api.app.domain.member.dto.response.MemberProfileResponse
+import kr.co.fitview.api.app.domain.member.dto.response.OtherMemberProfileResponse
 import kr.co.fitview.api.app.domain.member.dto.response.WorkoutPartnerStatusResponse
 import kr.co.fitview.api.app.domain.member.dto.response.enums.ProfileWorkoutPartnerStatus
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutExperience
@@ -38,6 +39,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultHandlers
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import java.time.LocalDate
 
 
 class MemberControllerTest : ControllerTestSupport() {
@@ -125,7 +127,7 @@ class MemberControllerTest : ControllerTestSupport() {
         given(memberService.findMemberDetail(any(), any()))
             .willReturn(
                 MemberDetailResponse(
-                    profile = MemberProfileResponse(
+                    profile = OtherMemberProfileResponse(
                         memberId = 456L,
                         profileImageUrl = "http://test.com/profile/image.jpg",
                         nickname = "테스트닉네임",

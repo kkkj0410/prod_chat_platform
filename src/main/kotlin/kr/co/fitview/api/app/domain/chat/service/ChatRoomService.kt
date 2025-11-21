@@ -2,7 +2,6 @@ package kr.co.fitview.api.app.domain.chat.service
 
 import kr.co.fitview.api.app.domain.chat.condition.ChatRoomCondition
 import kr.co.fitview.api.app.domain.chat.dto.response.ChatRoomResponse
-import kr.co.fitview.api.app.domain.chat.dto.response.assembleChatRoomResponses
 import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatRoomType
 import kr.co.fitview.api.app.domain.chat.repository.ChatRoomRepository
@@ -35,17 +34,17 @@ class ChatRoomService(
     }
 
     fun findChatRooms(memberId: Long, condition: ChatRoomCondition): Slice<ChatRoomResponse> {
-        val profiles = chatRoomRepository.findChatRoomProfileByDeletedAtIsNull(memberId, condition)
+        val slice = chatRoomRepository.findChatRoomProfileByDeletedAtIsNull(memberId, condition)
+        val profiles = slice.content
 
-        val chatRoomIds: List<Long> = profiles.map { it.chatRoomId }
+        val chatRoomIds = profiles.map { it.chatRoomId }
 
         val chatMessages = chatMessageService.findLastChatMessages(memberId, chatRoomIds)
 
         val recentWorkoutRequests = workoutRequestService.findRecentWorkoutRequestFrom(chatRoomIds)
 
-        val chatRoomResponses = assembleChatRoomResponses(profiles, chatMessages, recentWorkoutRequests)
+        val chatRoomResponses = ChatRoomResponse.from(profiles, chatMessages, recentWorkoutRequests)
 
-        return SliceImpl(chatRoomResponses)
-
+        return SliceImpl(chatRoomResponses, slice.pageable, slice.hasNext())
     }
 }

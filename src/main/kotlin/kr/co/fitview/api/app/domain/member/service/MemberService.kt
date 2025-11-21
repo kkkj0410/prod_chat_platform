@@ -91,9 +91,10 @@ class MemberService(
 
     fun findMemberDetail(fromMemberId : Long, toMemberId : Long) : MemberDetailResponse{
         val findProfile = findMemberProfile(toMemberId)
-        val findWorkoutPartnerStatus : WorkoutPartnerStatusResponse = workoutPartnerService.findWorkoutPartnerStatus(fromMemberId, toMemberId)
+        val otherProfile = OtherMemberProfileResponse.fromMemberProfile(findProfile)
 
-        return MemberDetailResponse(findProfile, findWorkoutPartnerStatus)
+        val findWorkoutPartnerStatus : WorkoutPartnerStatusResponse = workoutPartnerService.findWorkoutPartnerStatus(fromMemberId, toMemberId)
+        return MemberDetailResponse(otherProfile, findWorkoutPartnerStatus)
     }
 
 

@@ -267,7 +267,7 @@ class ChatRoomRepositoryTest @Autowired constructor(
         )
 
         // when
-        val response = chatRoomRepository.findChatRoomProfileByDeletedAtIsNull(me.id!!, condition)
+        val response = chatRoomRepository.findChatRoomProfileByDeletedAtIsNull(me.id!!, condition).content
 
         // then
         assertThat(response[0])
@@ -277,6 +277,77 @@ class ChatRoomRepositoryTest @Autowired constructor(
         assertThat(response[1])
             .extracting("chatRoomId", "profileImageUrl", "nickname")
             .contains(chatRoom1.id!!, signupRequest.profileImageUrl, other1.nickname)
+    }
+
+    @DisplayName("채팅방 목록 조회 시, 최근 메시지 업데이트 시간이 주어지면 해당 시간보다 더 옛날 채팅방을 가져온다.")
+    @Test
+    fun findChatRoomProfileByDeletedAtIsNullExistsLastMessagedAt() {
+        //given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val other1 = Member(
+            email = "email2",
+            password = "password2",
+            role = Role.USER,
+        )
+        val other2 = Member(
+            email = "email2",
+            password = "password2",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+        memberRepository.save(other1)
+        memberRepository.save(other2)
+
+        val signupRequest = createOAuth2SignupServiceRequest()
+
+        oAuth2Service.signup(signupRequest, me.id!!)
+        oAuth2Service.signup(signupRequest, other1.id!!)
+        oAuth2Service.signup(signupRequest, other2.id!!)
+
+        val chatRoom1 = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+        val chatRoom2 = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+        chatRoom1.updateLastMessageAt(time.nowLocalDateTime.minusHours(3))
+        chatRoom2.updateLastMessageAt(time.nowLocalDateTime.minusHours(50))
+
+        val chatParticipant1 = ChatParticipant(
+            chatRoom1,
+            me
+        )
+        val chatParticipant2 = ChatParticipant(
+            chatRoom1,
+            other1
+        )
+        val chatParticipant3 = ChatParticipant(
+            chatRoom2,
+            me
+        )
+        val chatParticipant4 = ChatParticipant(
+            chatRoom2,
+            other2
+        )
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+        chatParticipantRepository.save(chatParticipant3)
+        chatParticipantRepository.save(chatParticipant4)
+
+
+        val condition = ChatRoomCondition(
+            size = 10,
+            lastMessagedAt = time.nowLocalDateTime.minusHours(3)
+        )
+
+        // when
+        val response = chatRoomRepository.findChatRoomProfileByDeletedAtIsNull(me.id!!, condition).content
+
+        // then
+        assertThat(response[0])
+            .extracting("chatRoomId", "profileImageUrl", "nickname")
+            .contains(chatRoom2.id!!, signupRequest.profileImageUrl, other2.nickname)
+
     }
 
 

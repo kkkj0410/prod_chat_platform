@@ -41,6 +41,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import java.time.LocalDate
 
 
 class MemberControllerDocsTest : RestDocsSupport() {
@@ -74,6 +75,7 @@ class MemberControllerDocsTest : RestDocsSupport() {
                     weight = 75,
 
                     age = Age.FORTIES_MID,
+                    birthday = LocalDate.of(1970, 1, 1),
 
                     workoutExperience = MemberWorkoutExperience.JUST_STARTED,
                     workoutStyle = MemberWorkoutStyle.STRENGTH,
@@ -134,6 +136,8 @@ class MemberControllerDocsTest : RestDocsSupport() {
                             .description("몸무게"),
                         fieldWithPath("data.age").type(JsonFieldType.STRING)
                             .description("연령대"),
+                        fieldWithPath("data.birthday").type(JsonFieldType.STRING)
+                            .description("생년월일"),
                         fieldWithPath("data.workoutExperience").type(JsonFieldType.STRING)
                             .description("운동 경력"),
                         fieldWithPath("data.workoutStyle").type(JsonFieldType.STRING)
@@ -448,7 +452,7 @@ class MemberControllerDocsTest : RestDocsSupport() {
         given(memberService.findMemberDetail(any(), any()))
             .willReturn(
                 MemberDetailResponse(
-                    profile = MemberProfileResponse(
+                    profile = OtherMemberProfileResponse(
                         memberId = 456L, // otherMember.id 대신 하드코딩
                         profileImageUrl = "http://test.com/profile/image.jpg",
                         nickname = "테스트닉네임",

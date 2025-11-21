@@ -60,4 +60,17 @@ object RestDocsPagination {
                 .description("다음 페이지 존재 여부")
         )
     }
+
+    fun paginationByCursorAt(basePath: String = "data.pagination"): Array<FieldDescriptor> {
+        return arrayOf(
+            fieldWithPath("$basePath").type(JsonFieldType.OBJECT)
+                .description("커서 기반 페이지 정보: 페이지 크기, 커서 시간, 다음 페이지 존재 여부 등"),
+            fieldWithPath("$basePath.size").type(JsonFieldType.NUMBER)
+                .description("한 페이지에 표시되는 데이터 수"),
+            fieldWithPath("$basePath.cursorAt").type(JsonFieldType.STRING).optional()
+                .description("다음 페이지 조회를 위한 기준 시간. 데이터가 없으면 null"),
+            fieldWithPath("$basePath.hasNext").type(JsonFieldType.BOOLEAN)
+                .description("다음 페이지 존재 여부")
+        )
+    }
 }
