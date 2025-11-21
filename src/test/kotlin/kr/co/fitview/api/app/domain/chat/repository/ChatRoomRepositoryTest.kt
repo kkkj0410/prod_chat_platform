@@ -9,7 +9,6 @@ import kr.co.fitview.api.app.domain.chat.entity.ChatParticipant
 import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatRoomType
-import kr.co.fitview.api.app.domain.image.entity.enums.MemberImageType
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutExperience
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutGoal
@@ -338,7 +337,7 @@ class ChatRoomRepositoryTest @Autowired constructor(
 
         val condition = ChatRoomCondition(
             size = 10,
-            lastMessagedAt = time.nowLocalDateTime.minusHours(3)
+            lastMessageAt = time.nowLocalDateTime.minusHours(3)
                 .atZone(ZoneId.systemDefault())
                 .toInstant()
                 .toEpochMilli()
