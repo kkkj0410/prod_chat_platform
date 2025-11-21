@@ -9,6 +9,8 @@ import kr.co.fitview.api.app.domain.chat.dto.response.LastChatMessage
 import kr.co.fitview.api.app.domain.chat.service.ChatMessageService
 import kr.co.fitview.api.app.domain.chat.service.ChatRoomService
 import kr.co.fitview.api.app.domain.chat.service.ChatService
+import kr.co.fitview.api.app.domain.workout.dto.response.LastWorkoutRequestMessage
+import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestService
 import kr.co.fitview.api.app.global.dto.ApiResponse
 import kr.co.fitview.api.app.global.dto.SuccessCursorAtPagedResponse
 import kr.co.fitview.api.app.global.util.SecurityUtil
@@ -22,7 +24,8 @@ class ChatController(
     private val chatService : ChatService,
     private val chatRoomService : ChatRoomService,
     private val chatMessageService : ChatMessageService,
-    private val securityUtil : SecurityUtil
+    private val securityUtil : SecurityUtil,
+    private val workoutRequestService : WorkoutRequestService
 ) {
 
     @PostMapping("")
@@ -65,6 +68,22 @@ class ChatController(
             timeExtractor = { it.sentAt },
         ))
     }
+
+    @GetMapping("/{chatRoomId}/workout-requests/last")
+    fun workoutRequestLast(
+        @PathVariable
+        chatRoomId : Long,
+    ) : ResponseEntity<ApiResponse<LastWorkoutRequestMessage>> {
+
+        val response = workoutRequestService.findRecentWorkoutRequestFrom(listOf(chatRoomId))
+
+        val lastWorkoutRequest = response.firstOrNull() ?: LastWorkoutRequestMessage(
+            status = null
+        )
+
+        return ResponseEntity.ok(ApiResponse.success(lastWorkoutRequest))
+    }
+
 
 
 }

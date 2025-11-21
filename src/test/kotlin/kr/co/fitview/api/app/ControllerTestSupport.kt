@@ -18,6 +18,7 @@ import kr.co.fitview.api.app.domain.member.controller.MemberController
 import kr.co.fitview.api.app.domain.member.service.MemberService
 import kr.co.fitview.api.app.domain.oauth2.controller.OAuth2Controller
 import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
+import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestService
 import kr.co.fitview.api.app.domain.workout_partner.controller.WorkoutPartnerController
 import kr.co.fitview.api.app.domain.workout_partner.service.WorkoutPartnerRequestService
 import kr.co.fitview.api.app.global.config.JacksonConfig
@@ -114,5 +115,8 @@ abstract class ControllerTestSupport {
 
     @MockitoBean
     protected lateinit var chatMessageService: ChatMessageService
+
+    @MockitoBean
+    protected lateinit var workoutRequestService: WorkoutRequestService
 
 }

@@ -1,6 +1,7 @@
 package kr.co.fitview.api.app.domain.chat.service
 
 import kr.co.fitview.api.app.domain.chat.condition.ChatCondition
+import kr.co.fitview.api.app.domain.chat.dto.ChatMessageAndWorkoutRequest
 import kr.co.fitview.api.app.domain.chat.dto.response.ChatMessageContent
 import kr.co.fitview.api.app.domain.chat.dto.response.ChatMessageWorkoutRequest
 import kr.co.fitview.api.app.domain.chat.dto.response.LastChatMessage
@@ -30,31 +31,35 @@ class ChatMessageService(
     }
 
     fun findChatMessages(memberId : Long, chatRoomId : Long, condition : ChatCondition) : Slice<LastChatMessage> {
-        val findChatParticipant = chatParticipantService.findChatRoomFromMemberIdAndChatRoomId(memberId, chatRoomId)
-            ?: throw GlobalException(ChatErrorCode.NOT_MEMBER_OF_CHAT_ROOM)
+        validateMemberInChatRoom(memberId, chatRoomId)
 
         val slice = chatMessageRepository.findChatMessageByCondition(chatRoomId, condition)
-
         val content = slice.content
 
-        val responses = content.map { chatMessageAndWorkoutRequest ->
-            when (chatMessageAndWorkoutRequest.chatMessage.type) {
-                ChatMessageType.TEXT -> ChatMessageContent.from(chatMessageAndWorkoutRequest.chatMessage, memberId)
-                ChatMessageType.WORKOUT_REQUEST -> ChatMessageWorkoutRequest.from(
-                    chatMessage = chatMessageAndWorkoutRequest.chatMessage,
-                    workoutRequest = chatMessageAndWorkoutRequest.workoutRequest!!,
-                    myMemberId = memberId,
-                    now = time.nowLocalDateTime
-                )
-                else -> throw IllegalArgumentException("Unknown ChatMessageType: ${chatMessageAndWorkoutRequest.chatMessage.type}")
-            }
-        }
-
+        val responses = content.map { chatMessageAndWorkoutRequest -> mapChatMessage(chatMessageAndWorkoutRequest, memberId) }
 
         return SliceImpl(responses, slice.pageable, slice.hasNext())
     }
 
+    private fun validateMemberInChatRoom(memberId: Long, chatRoomId: Long) {
+        chatParticipantService.findChatRoomFromMemberIdAndChatRoomId(memberId, chatRoomId)
+            ?: throw GlobalException(ChatErrorCode.NOT_MEMBER_OF_CHAT_ROOM)
+    }
 
+    private fun mapChatMessage(chatAndRequest: ChatMessageAndWorkoutRequest, memberId: Long): LastChatMessage {
+        return when (chatAndRequest.chatMessage.type) {
+            ChatMessageType.TEXT ->
+                ChatMessageContent.from(chatAndRequest.chatMessage, memberId)
+            ChatMessageType.WORKOUT_REQUEST ->
+                ChatMessageWorkoutRequest.from(
+                    chatMessage = chatAndRequest.chatMessage,
+                    workoutRequest = chatAndRequest.workoutRequest!!,
+                    myMemberId = memberId,
+                    now = time.nowLocalDateTime
+                )
+            else -> throw IllegalArgumentException("Unknown ChatMessageType: ${chatAndRequest.chatMessage.type}")
+        }
+    }
 
 
 }

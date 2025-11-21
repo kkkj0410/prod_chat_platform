@@ -348,12 +348,9 @@ class ChatMessageServiceTest @Autowired constructor(
             size = 10,
         )
 
-        // when
-        chatMessageService.findChatMessages(555L, chatRoom.id!!, condition)
-
         // when & then
         assertThatThrownBy {
-            chatMessageService.findChatMessages(me.id!!, chatRoom.id!!, condition)
+            chatMessageService.findChatMessages(555L, chatRoom.id!!, condition)
         }
             .isInstanceOf(GlobalException::class.java)
             .satisfies(ThrowingConsumer { ex ->

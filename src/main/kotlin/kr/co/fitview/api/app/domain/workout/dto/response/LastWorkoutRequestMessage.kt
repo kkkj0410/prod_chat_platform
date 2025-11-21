@@ -11,5 +11,5 @@ data class LastWorkoutRequestMessage(
     val status : WorkoutRequestStatusFor? = null,
 
     @get:JsonIgnore
-    val chatRoomId : Long?
+    val chatRoomId : Long? = null
 )
