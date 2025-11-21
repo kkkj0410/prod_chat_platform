@@ -8,7 +8,7 @@ data class ChatRoomCondition(
     val size: Int? = 10,
     val lastMessageAt: Long? = null,
 ){
-    fun lastMessagedAt(): LocalDateTime? =
+    fun lastMessageAt(): LocalDateTime? =
         lastMessageAt?.let {
             Instant.ofEpochMilli(it)
                 .atZone(ZoneId.systemDefault())

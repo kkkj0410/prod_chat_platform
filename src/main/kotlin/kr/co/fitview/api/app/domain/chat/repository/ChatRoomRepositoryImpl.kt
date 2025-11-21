@@ -42,7 +42,7 @@ class ChatRoomRepositoryImpl(
     override fun findChatRoomProfileByDeletedAtIsNull(memberId: Long, condition: ChatRoomCondition): Slice<ChatRoomResponseProfile> {
 
         fun whereCondition(): BooleanExpression? {
-            return condition.lastMessagedAt()?.let { lastAt ->
+            return condition.lastMessageAt()?.let { lastAt ->
                 chatRoom.lastMessageAt.lt(lastAt)
             }
         }
