@@ -3,7 +3,7 @@ package kr.co.fitview.api.app.domain.chat.repository
 import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.address.dto.request.AddressCreateServiceRequest
 import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
-import kr.co.fitview.api.app.domain.chat.condition.ChatRoomCondition
+import kr.co.fitview.api.app.domain.chat.condition.ChatCondition
 import kr.co.fitview.api.app.domain.chat.entity.ChatMessage
 import kr.co.fitview.api.app.domain.chat.entity.ChatParticipant
 import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
@@ -172,7 +172,7 @@ class ChatRoomRepositoryTest @Autowired constructor(
         chatParticipantRepository.save(chatParticipant3)
         chatParticipantRepository.save(chatParticipant4)
 
-        val condition = ChatRoomCondition(
+        val condition = ChatCondition(
             size = 10,
         )
 
@@ -262,7 +262,7 @@ class ChatRoomRepositoryTest @Autowired constructor(
         chatMessageRepository.save(chatMessage2)
 
 
-        val condition = ChatRoomCondition(
+        val condition = ChatCondition(
             size = 10,
         )
 
@@ -335,7 +335,7 @@ class ChatRoomRepositoryTest @Autowired constructor(
         chatParticipantRepository.save(chatParticipant4)
 
 
-        val condition = ChatRoomCondition(
+        val condition = ChatCondition(
             size = 10,
             lastMessageAt = time.nowLocalDateTime.minusHours(3)
                 .atZone(ZoneId.systemDefault())
@@ -352,6 +352,7 @@ class ChatRoomRepositoryTest @Autowired constructor(
             .contains(chatRoom2.id!!, signupRequest.profileImageUrl, other2.nickname)
 
     }
+
 
 
 }

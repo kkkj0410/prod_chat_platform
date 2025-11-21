@@ -3,10 +3,11 @@ package kr.co.fitview.api.app.domain.chat.repository
 import com.querydsl.core.types.Projections
 import com.querydsl.core.types.dsl.BooleanExpression
 import com.querydsl.jpa.impl.JPAQueryFactory
-import kr.co.fitview.api.app.domain.chat.condition.ChatRoomCondition
+import kr.co.fitview.api.app.domain.chat.condition.ChatCondition
 import kr.co.fitview.api.app.domain.chat.dto.response.ChatRoomResponseProfile
 import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
 import kr.co.fitview.api.app.domain.chat.entity.QChatParticipant
+import kr.co.fitview.api.app.domain.chat.entity.QChatParticipant.chatParticipant
 import kr.co.fitview.api.app.domain.chat.entity.QChatRoom.chatRoom
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatRoomType
 import kr.co.fitview.api.app.domain.image.entity.QImage.image
@@ -39,7 +40,7 @@ class ChatRoomRepositoryImpl(
             .fetchOne()
     }
 
-    override fun findChatRoomProfileByDeletedAtIsNull(memberId: Long, condition: ChatRoomCondition): Slice<ChatRoomResponseProfile> {
+    override fun findChatRoomProfileByDeletedAtIsNull(memberId: Long, condition: ChatCondition): Slice<ChatRoomResponseProfile> {
 
         fun whereCondition(): BooleanExpression? {
             return condition.lastMessageAt()?.let { lastAt ->
@@ -92,5 +93,6 @@ class ChatRoomRepositoryImpl(
 
         return SliceImpl(content, PageRequest.of(0, condition.size), hasNext)
     }
+
 
 }

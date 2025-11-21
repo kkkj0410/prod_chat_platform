@@ -1,18 +1,14 @@
 package kr.co.fitview.api.app.domain.chat.service
 
-import kr.co.fitview.api.app.domain.chat.condition.ChatRoomCondition
 import kr.co.fitview.api.app.domain.chat.dto.request.ChatRoomCreateServiceRequest
 import kr.co.fitview.api.app.domain.chat.dto.response.ChatRoomCreateResponse
-import kr.co.fitview.api.app.domain.chat.dto.response.ChatRoomResponse
 import kr.co.fitview.api.app.domain.chat.entity.ChatParticipant
 import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
 import kr.co.fitview.api.app.domain.chat.repository.ChatParticipantRepository
-import kr.co.fitview.api.app.domain.chat.repository.ChatRoomRepository
 import kr.co.fitview.api.app.domain.member.service.MemberReferenceProvider
 import kr.co.fitview.api.app.domain.workout_partner.service.WorkoutPartnerService
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.chat.ChatErrorCode
-import org.springframework.data.domain.Slice
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 

@@ -1,16 +1,25 @@
 package kr.co.fitview.api.app.domain.chat.repository
 
+import com.querydsl.core.types.dsl.BooleanExpression
 import com.querydsl.jpa.impl.JPAQueryFactory
 import jakarta.persistence.EntityManager
+import kr.co.fitview.api.app.domain.chat.condition.ChatCondition
+import kr.co.fitview.api.app.domain.chat.dto.ChatMessageAndWorkoutRequest
 import kr.co.fitview.api.app.domain.chat.dto.response.ChatMessageContent
 import kr.co.fitview.api.app.domain.chat.dto.response.ChatMessageWorkoutRequest
 import kr.co.fitview.api.app.domain.chat.dto.response.LastChatMessage
+import kr.co.fitview.api.app.domain.chat.entity.ChatMessage
+import kr.co.fitview.api.app.domain.chat.entity.QChatMessage.chatMessage
+import kr.co.fitview.api.app.domain.chat.entity.QChatRoom.chatRoom
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
 import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusFor
+import kr.co.fitview.api.app.domain.workout.entity.QWorkoutRequest.workoutRequest
 import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
 import kr.co.fitview.api.app.global.time.Time
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Slice
+import org.springframework.data.domain.SliceImpl
 import java.sql.Timestamp
-import java.time.LocalDateTime
 
 class ChatMessageRepositoryImpl(
     private val queryFactory : JPAQueryFactory,
@@ -129,6 +138,42 @@ class ChatMessageRepositoryImpl(
                 )
             }
         }
+    }
+
+    override fun findChatMessageByCondition(chatRoomId: Long, condition: ChatCondition) : Slice<ChatMessageAndWorkoutRequest> {
+
+        fun ltLastMessageAt(): BooleanExpression? {
+            return condition.lastMessageAt()?.let { lastAt ->
+                chatMessage.sentAt.lt(lastAt)
+            }
+        }
+
+        val result = queryFactory
+            .select(chatMessage, workoutRequest)
+            .from(chatMessage)
+            .join(chatRoom)
+            .on(
+                chatRoom.id.eq(chatMessage.chatRoom.id),
+                chatRoom.id.eq(chatRoomId)
+            )
+            .leftJoin(workoutRequest).fetchJoin()
+            .on(workoutRequest.chatMessage.id.eq(chatMessage.id))
+            .where(ltLastMessageAt())
+            .orderBy(chatMessage.sentAt.desc().nullsLast())
+            .limit((condition.size!! + 1).toLong())
+            .fetch()
+
+        val hasNext = result.size > condition.size
+        val content = if (hasNext) result.subList(0, condition.size) else result
+
+        val mappedEntity = content.map { tuple ->
+            ChatMessageAndWorkoutRequest(
+                chatMessage = tuple.get(chatMessage)!!,
+                workoutRequest = tuple.get(workoutRequest)
+            )
+        }
+
+        return SliceImpl(mappedEntity, PageRequest.of(0, condition.size), hasNext)
     }
 
     private fun isMe(targetMemberId: Long, memberId: Long) = targetMemberId == memberId

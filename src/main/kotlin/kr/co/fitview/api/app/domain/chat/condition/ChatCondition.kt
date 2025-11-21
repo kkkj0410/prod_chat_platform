@@ -4,7 +4,7 @@ import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
 
-data class ChatRoomCondition(
+data class ChatCondition(
     val size: Int? = 10,
     val lastMessageAt: Long? = null,
 ){

@@ -13,6 +13,7 @@ import kr.co.fitview.api.app.domain.chat.dto.response.ChatMessageWorkoutRequest
 import kr.co.fitview.api.app.domain.chat.dto.response.ChatRoomCreateResponse
 import kr.co.fitview.api.app.domain.chat.dto.response.ChatRoomResponse
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
+import kr.co.fitview.api.app.domain.chat.service.ChatMessageService
 import kr.co.fitview.api.app.domain.chat.service.ChatRoomService
 import kr.co.fitview.api.app.domain.chat.service.ChatService
 import kr.co.fitview.api.app.domain.member.controller.MemberController
@@ -65,10 +66,11 @@ class ChatControllerDocsTest : RestDocsSupport() {
 
     private val chatService: ChatService = mock(ChatService::class.java)
     private val chatRoomService: ChatRoomService = mock(ChatRoomService::class.java)
+    private val chatMessageService: ChatMessageService = mock(ChatMessageService::class.java)
     private val securityUtil: SecurityUtil = mock(SecurityUtil::class.java)
 
     override fun initController(): Any {
-        return ChatController(chatService, chatRoomService, securityUtil)
+        return ChatController(chatService, chatRoomService, chatMessageService, securityUtil)
     }
 
     @DisplayName("채팅방을 생성한다.")

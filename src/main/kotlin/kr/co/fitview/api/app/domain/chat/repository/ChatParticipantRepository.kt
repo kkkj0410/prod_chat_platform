@@ -5,5 +5,5 @@ import kr.co.fitview.api.app.domain.chat.entity.ChatParticipant
 import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
 import org.springframework.data.jpa.repository.JpaRepository
 
-interface ChatParticipantRepository : JpaRepository<ChatParticipant, Long> {
+interface ChatParticipantRepository : JpaRepository<ChatParticipant, Long>, ChatParticipantRepositoryCustom {
 }

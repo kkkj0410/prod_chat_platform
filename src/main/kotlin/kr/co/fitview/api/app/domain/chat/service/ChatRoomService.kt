@@ -1,6 +1,6 @@
 package kr.co.fitview.api.app.domain.chat.service
 
-import kr.co.fitview.api.app.domain.chat.condition.ChatRoomCondition
+import kr.co.fitview.api.app.domain.chat.condition.ChatCondition
 import kr.co.fitview.api.app.domain.chat.dto.response.ChatRoomResponse
 import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatRoomType
@@ -33,7 +33,7 @@ class ChatRoomService(
         return chatRoomRepository.findPrivateChatRoomIdBetweenMemberIds(memberOneId, memberTwoId)
     }
 
-    fun findChatRooms(memberId: Long, condition: ChatRoomCondition): Slice<ChatRoomResponse> {
+    fun findChatRooms(memberId: Long, condition: ChatCondition): Slice<ChatRoomResponse> {
         val slice = chatRoomRepository.findChatRoomProfileByDeletedAtIsNull(memberId, condition)
         val profiles = slice.content
 
@@ -51,4 +51,5 @@ class ChatRoomService(
 
         return SliceImpl(chatRoomResponses, slice.pageable, slice.hasNext())
     }
+
 }

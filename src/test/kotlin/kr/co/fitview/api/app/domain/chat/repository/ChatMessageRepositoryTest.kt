@@ -3,12 +3,8 @@ package kr.co.fitview.api.app.domain.chat.repository
 import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.address.dto.request.AddressCreateServiceRequest
 import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
-import kr.co.fitview.api.app.domain.chat.condition.ChatRoomCondition
-import kr.co.fitview.api.app.domain.chat.entity.ChatMessage
-import kr.co.fitview.api.app.domain.chat.entity.ChatParticipant
-import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
-import kr.co.fitview.api.app.domain.chat.entity.MessageReadStatus
-import kr.co.fitview.api.app.domain.chat.entity.QChatMessage.chatMessage
+import kr.co.fitview.api.app.domain.chat.condition.ChatCondition
+import kr.co.fitview.api.app.domain.chat.entity.*
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatRoomType
 import kr.co.fitview.api.app.domain.member.entity.Member
@@ -32,17 +28,18 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.ZoneId
 
-class ChatMessageRepositoryImplTest @Autowired constructor(
-    val chatMessageRepository : ChatMessageRepository,
-    val chatParticipantRepository : ChatParticipantRepository,
-    val chatRoomRepository : ChatRoomRepository,
-    val workoutRequestRepository : WorkoutRequestRepository,
+class ChatMessageRepositoryTest @Autowired constructor(
+    val chatMessageRepository: ChatMessageRepository,
+    val chatParticipantRepository: ChatParticipantRepository,
+    val chatRoomRepository: ChatRoomRepository,
+    val workoutRequestRepository: WorkoutRequestRepository,
     val messageReadStatusRepository: MessageReadStatusRepository,
-    val oAuth2Service : OAuth2Service,
-    val memberRepository : MemberRepository,
-    val time : Time
-) : IntegrationTestSupport(){
+    val oAuth2Service: OAuth2Service,
+    val memberRepository: MemberRepository,
+    val time: Time
+) : IntegrationTestSupport() {
 
 
     fun createOAuth2SignupServiceRequest(
@@ -61,7 +58,7 @@ class ChatMessageRepositoryImplTest @Autowired constructor(
             "imageUrl2",
         ),
         intro: String? = "intro",
-        address : AddressCreateServiceRequest = AddressCreateServiceRequest(
+        address: AddressCreateServiceRequest = AddressCreateServiceRequest(
             siDo = AddressSiDo.SEOUL,
             siGunGu = "강남구",
             eupMyeonDong = "역삼동",
@@ -224,7 +221,8 @@ class ChatMessageRepositoryImplTest @Autowired constructor(
                 "workoutRequestId",
                 "status",
                 "scheduledAt",
-                "location")
+                "location"
+            )
             .contains(
                 message1ByChatRoom2.id!!,
                 ChatMessageType.WORKOUT_REQUEST,
@@ -238,5 +236,158 @@ class ChatMessageRepositoryImplTest @Autowired constructor(
                 time.nowLocalDateTime.plusHours(24),
                 "location"
             )
+    }
+
+    @DisplayName("채팅방의 메시지를 조회한다.")
+    @Test
+    fun findChatMessageByCondition() {
+        //given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val other = Member(
+            email = "email2",
+            password = "password2",
+            role = Role.USER,
+        )
+
+        memberRepository.save(me)
+        memberRepository.save(other)
+
+        val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+
+        val chatParticipant1 = ChatParticipant(
+            chatRoom,
+            me
+        )
+        val chatParticipant2 = ChatParticipant(
+            chatRoom,
+            other
+        )
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+
+
+        val chatMessage1 = ChatMessage(
+            member = me,
+            chatRoom = chatRoom,
+            type = ChatMessageType.TEXT,
+            content = "content",
+            sentAt = time.nowLocalDateTime.minusHours(20)
+        )
+        chatMessageRepository.save(chatMessage1)
+
+        val chatMessage2 = ChatMessage(
+            member = me,
+            chatRoom = chatRoom,
+            type = ChatMessageType.WORKOUT_REQUEST,
+            sentAt = time.nowLocalDateTime.minusHours(10)
+        )
+        val workoutRequest = WorkoutRequest(
+            chatMessage = chatMessage2,
+            fromMember = other,
+            toMember = me,
+            status = WorkoutRequestStatus.PENDING,
+            scheduledAt = time.nowLocalDateTime.plusHours(24),
+            requestedAt = time.nowLocalDateTime.minusHours(10),
+            location = "location"
+        )
+        chatMessageRepository.save(chatMessage2)
+        workoutRequestRepository.save(workoutRequest)
+
+        val condition = ChatCondition(
+            size = 10,
+        )
+
+        // when
+        val chatMessageAndWorkoutRequests = chatMessageRepository.findChatMessageByCondition(chatRoom.id!!, condition)
+        val response = chatMessageAndWorkoutRequests.content
+
+        // then
+        assertThat(response[0].chatMessage).isEqualTo(chatMessage2)
+        assertThat(response[0].workoutRequest).isEqualTo(workoutRequest)
+
+        assertThat(response[1].chatMessage).isEqualTo(chatMessage1)
+        assertThat(response[1].workoutRequest).isNull()
+    }
+
+
+    @DisplayName("채팅방의 메시지를 조회한다. 최근 메시지를 읽은 기록이 있다면 해당 이후의 더 옛날 메시지를 조회한다.")
+    @Test
+    fun findChatMessageByConditionExistsCursorAt() {
+        //given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val other = Member(
+            email = "email2",
+            password = "password2",
+            role = Role.USER,
+        )
+
+        memberRepository.save(me)
+        memberRepository.save(other)
+
+        val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+
+        val chatParticipant1 = ChatParticipant(
+            chatRoom,
+            me
+        )
+        val chatParticipant2 = ChatParticipant(
+            chatRoom,
+            other
+        )
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+
+
+        val chatMessage1 = ChatMessage(
+            member = me,
+            chatRoom = chatRoom,
+            type = ChatMessageType.TEXT,
+            content = "content",
+            sentAt = time.nowLocalDateTime.minusHours(20)
+        )
+        chatMessageRepository.save(chatMessage1)
+
+        val chatMessage2 = ChatMessage(
+            member = me,
+            chatRoom = chatRoom,
+            type = ChatMessageType.WORKOUT_REQUEST,
+            sentAt = time.nowLocalDateTime.minusHours(10)
+        )
+        val workoutRequest = WorkoutRequest(
+            chatMessage = chatMessage2,
+            fromMember = other,
+            toMember = me,
+            status = WorkoutRequestStatus.PENDING,
+            scheduledAt = time.nowLocalDateTime.plusHours(24),
+            requestedAt = time.nowLocalDateTime.minusHours(10),
+            location = "location"
+        )
+        chatMessageRepository.save(chatMessage2)
+        workoutRequestRepository.save(workoutRequest)
+
+        val condition = ChatCondition(
+            size = 10,
+            lastMessageAt = time.nowLocalDateTime.minusHours(10)
+                .atZone(ZoneId.systemDefault())
+                .toInstant()
+                .toEpochMilli()
+        )
+
+        // when
+        val chatMessageAndWorkoutRequests = chatMessageRepository.findChatMessageByCondition(chatRoom.id!!, condition)
+        val response = chatMessageAndWorkoutRequests.content
+
+        // then
+        assertThat(response).hasSize(1)
+        assertThat(response[0].chatMessage).isEqualTo(chatMessage1)
+        assertThat(response[0].workoutRequest).isNull()
     }
 }
