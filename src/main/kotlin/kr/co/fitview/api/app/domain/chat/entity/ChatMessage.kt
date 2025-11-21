@@ -8,6 +8,7 @@ import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.global.entity.BaseEntity
 import org.hibernate.annotations.ColumnDefault
 import java.time.Instant
+import java.time.LocalDateTime
 
 @Entity
 @Table(name = "chat_message")
@@ -30,9 +31,13 @@ class ChatMessage(
     var type: ChatMessageType? = null,
 
     @Size(max = 1000)
-    @NotNull
-    @Column(name = "content", nullable = false, length = 1000)
+    @Column(name = "content", nullable = true, length = 1000)
     var content: String? = null,
+
+    @NotNull
+    @ColumnDefault("CURRENT_TIMESTAMP")
+    @Column(name = "sent_at", nullable = false)
+    var sentAt: LocalDateTime? = null
 
     ) : BaseEntity() {
     @Id

@@ -1,4 +1,4 @@
-package kr.co.fitview.api.app.domain.workout
+package kr.co.fitview.api.app.domain.workout.entity
 
 import jakarta.persistence.*
 import jakarta.validation.constraints.NotNull

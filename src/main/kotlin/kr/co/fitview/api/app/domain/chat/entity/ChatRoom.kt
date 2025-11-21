@@ -7,6 +7,7 @@ import kr.co.fitview.api.app.domain.chat.entity.enums.ChatRoomType
 import kr.co.fitview.api.app.global.entity.BaseEntity
 import org.hibernate.annotations.ColumnDefault
 import java.time.Instant
+import java.time.LocalDateTime
 
 @Entity
 @Table(name = "chat_room")
@@ -33,4 +34,11 @@ class ChatRoom(
     @OneToMany(mappedBy = "chatRoom")
     var messageReadStatuses: MutableSet<MessageReadStatus> = mutableSetOf()
 
+    @Column(name = "last_message_at")
+    var lastMessageAt: LocalDateTime? = null
+
+    fun updateLastMessageAt(now : LocalDateTime) : ChatRoom {
+        this.lastMessageAt = now
+        return this
+    }
 }

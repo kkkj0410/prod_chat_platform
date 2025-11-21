@@ -8,6 +8,8 @@ import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutGoal
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutStyle
 import kr.co.fitview.api.app.domain.member.entity.enums.WorkoutTimeName
 import kr.co.fitview.api.app.global.entity.Gender
+import java.time.LocalDate
+import java.time.LocalDateTime
 
 data class MemberProfileResponse(
 
@@ -22,6 +24,7 @@ data class MemberProfileResponse(
     val height: Int,
     val weight: Int,
     val age: Age,
+    val birthday : LocalDate,
     val workoutExperience: MemberWorkoutExperience,
     val workoutStyle: MemberWorkoutStyle,
     val workoutGoal: MemberWorkoutGoal,
@@ -50,6 +53,7 @@ data class MemberProfileResponse(
                 height = first.height,
                 weight = first.weight,
                 age = Age.fromBirthDay(first.birthday),
+                birthday = first.birthday,
                 workoutExperience = first.workoutExperience,
                 workoutStyle = first.workoutStyle,
                 workoutGoal = first.workoutGoal,
