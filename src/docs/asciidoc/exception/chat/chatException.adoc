@@ -1,0 +1,20 @@
+[[CHAT_001]]
+=== CHAT_001
+
+==== HTTP Request
+include::{snippets}/CHAT_001/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/CHAT_001/http-response.adoc[]
+include::{snippets}/CHAT_001/response-fields.adoc[]
+
+
+[[CHAT_002]]
+=== CHAT_002
+
+==== HTTP Request
+include::{snippets}/CHAT_002/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/CHAT_002/http-response.adoc[]
+include::{snippets}/CHAT_002/response-fields.adoc[]

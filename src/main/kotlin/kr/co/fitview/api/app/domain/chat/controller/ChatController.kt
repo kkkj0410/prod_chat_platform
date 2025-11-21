@@ -1,12 +1,16 @@
 package kr.co.fitview.api.app.domain.chat.controller
 
 import jakarta.validation.Valid
-import kr.co.fitview.api.app.domain.chat.condition.ChatRoomCondition
+import kr.co.fitview.api.app.domain.chat.condition.ChatCondition
 import kr.co.fitview.api.app.domain.chat.dto.request.ChatRoomCreateRequest
 import kr.co.fitview.api.app.domain.chat.dto.response.ChatRoomCreateResponse
 import kr.co.fitview.api.app.domain.chat.dto.response.ChatRoomResponse
+import kr.co.fitview.api.app.domain.chat.dto.response.LastChatMessage
+import kr.co.fitview.api.app.domain.chat.service.ChatMessageService
 import kr.co.fitview.api.app.domain.chat.service.ChatRoomService
 import kr.co.fitview.api.app.domain.chat.service.ChatService
+import kr.co.fitview.api.app.domain.workout.dto.response.LastWorkoutRequestMessage
+import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestService
 import kr.co.fitview.api.app.global.dto.ApiResponse
 import kr.co.fitview.api.app.global.dto.SuccessCursorAtPagedResponse
 import kr.co.fitview.api.app.global.util.SecurityUtil
@@ -19,7 +23,9 @@ import org.springframework.web.bind.annotation.*
 class ChatController(
     private val chatService : ChatService,
     private val chatRoomService : ChatRoomService,
-    private val securityUtil : SecurityUtil
+    private val chatMessageService : ChatMessageService,
+    private val securityUtil : SecurityUtil,
+    private val workoutRequestService : WorkoutRequestService
 ) {
 
     @PostMapping("")
@@ -35,7 +41,7 @@ class ChatController(
     @GetMapping("")
     fun chatRoomList(
         @ModelAttribute
-        condition : ChatRoomCondition
+        condition : ChatCondition
     ) : ResponseEntity<ApiResponse<SuccessCursorAtPagedResponse<ChatRoomResponse>>> {
 
         val response = chatRoomService.findChatRooms(securityUtil.getMemberId(), condition)
@@ -45,5 +51,39 @@ class ChatController(
             timeExtractor = { it.lastChatMessage.sentAt },
         ))
     }
+
+    @GetMapping("/{chatRoomId}/messages")
+    fun chatMessageList(
+        @PathVariable
+        chatRoomId : Long,
+
+        @ModelAttribute
+        condition : ChatCondition
+    ) : ResponseEntity<ApiResponse<SuccessCursorAtPagedResponse<LastChatMessage>>> {
+
+        val response = chatMessageService.findChatMessages(securityUtil.getMemberId(), chatRoomId, condition)
+
+        return ResponseEntity.ok(ApiResponse.successWithCursorAtPagination(
+            slice = response,
+            timeExtractor = { it.sentAt },
+        ))
+    }
+
+    @GetMapping("/{chatRoomId}/workout-requests/last")
+    fun workoutRequestLast(
+        @PathVariable
+        chatRoomId : Long,
+    ) : ResponseEntity<ApiResponse<LastWorkoutRequestMessage>> {
+
+        val response = workoutRequestService.findRecentWorkoutRequestFrom(listOf(chatRoomId))
+
+        val lastWorkoutRequest = response.firstOrNull() ?: LastWorkoutRequestMessage(
+            status = null
+        )
+
+        return ResponseEntity.ok(ApiResponse.success(lastWorkoutRequest))
+    }
+
+
 
 }

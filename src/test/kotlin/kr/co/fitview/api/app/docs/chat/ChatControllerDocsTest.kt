@@ -8,11 +8,9 @@ import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
 import kr.co.fitview.api.app.domain.address.service.AddressService
 import kr.co.fitview.api.app.domain.chat.controller.ChatController
 import kr.co.fitview.api.app.domain.chat.dto.request.ChatRoomCreateRequest
-import kr.co.fitview.api.app.domain.chat.dto.response.ChatMessageContent
-import kr.co.fitview.api.app.domain.chat.dto.response.ChatMessageWorkoutRequest
-import kr.co.fitview.api.app.domain.chat.dto.response.ChatRoomCreateResponse
-import kr.co.fitview.api.app.domain.chat.dto.response.ChatRoomResponse
+import kr.co.fitview.api.app.domain.chat.dto.response.*
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
+import kr.co.fitview.api.app.domain.chat.service.ChatMessageService
 import kr.co.fitview.api.app.domain.chat.service.ChatRoomService
 import kr.co.fitview.api.app.domain.chat.service.ChatService
 import kr.co.fitview.api.app.domain.member.controller.MemberController
@@ -26,6 +24,7 @@ import kr.co.fitview.api.app.domain.member.entity.enums.WorkoutTimeName
 import kr.co.fitview.api.app.domain.member.service.MemberService
 import kr.co.fitview.api.app.domain.workout.dto.response.LastWorkoutRequestMessage
 import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusFor
+import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestService
 import kr.co.fitview.api.app.global.entity.Gender
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.util.SecurityUtil
@@ -59,16 +58,19 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.test.web.servlet.setup.StandaloneMockMvcBuilder
 import java.time.LocalDateTime
+import java.time.ZoneOffset
 
 
 class ChatControllerDocsTest : RestDocsSupport() {
 
     private val chatService: ChatService = mock(ChatService::class.java)
     private val chatRoomService: ChatRoomService = mock(ChatRoomService::class.java)
+    private val chatMessageService: ChatMessageService = mock(ChatMessageService::class.java)
+    private val workoutRequestService: WorkoutRequestService = mock(WorkoutRequestService::class.java)
     private val securityUtil: SecurityUtil = mock(SecurityUtil::class.java)
 
     override fun initController(): Any {
-        return ChatController(chatService, chatRoomService, securityUtil)
+        return ChatController(chatService, chatRoomService, chatMessageService, securityUtil, workoutRequestService)
     }
 
     @DisplayName("채팅방을 생성한다.")
@@ -299,6 +301,171 @@ class ChatControllerDocsTest : RestDocsSupport() {
                     responseFields(
                         beneathPath("data.content[].lastWorkoutRequest").withSubsectionId("workout-request"),
                         fieldWithPath("status").description("운동 요청 상태" + WorkoutRequestStatusFor.allDescription()),
+                    )
+                )
+            )
+    }
+
+
+    @DisplayName("채팅방 메시지 목록 조회 API - TEXT 메시지")
+    @Test
+    fun chatMessageListText() {
+        val chatRoomId = 456L
+        val now = LocalDateTime.now()
+
+        val responses: List<LastChatMessage> = listOf(
+            ChatMessageContent(
+                chatMessageId = 1L,
+                sentAt = now.minusMinutes(10),
+                isMe = true,
+                content = "안녕하세요!"
+            )
+        )
+        val slice: Slice<LastChatMessage> = SliceImpl(responses, PageRequest.of(0, 10), false)
+        given(chatMessageService.findChatMessages(any(), any(), any())).willReturn(slice)
+
+        mockMvc.perform(
+            get("/api/v1/chats/{chatRoomId}/messages", chatRoomId)
+                .header("Authorization", "Bearer jwt-token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .param("size", "10")
+                .param("lastMessageAt", now.toEpochSecond(ZoneOffset.UTC).toString())
+        )
+            .andExpect(status().isOk())
+            .andDo(
+                document(
+                    "chat-message-list-text",
+                    preprocessRequest(prettyPrint()),
+                    preprocessResponse(prettyPrint()),
+
+                    requestHeaders(
+                        RestDocsHeaders.authorizationHeader(Role.USER)
+                    ),
+
+                    queryParameters(
+                        parameterWithName("size").optional().description("(Optional - default 10) 조회 크기"),
+                        parameterWithName("lastMessageAt").optional().description("Optional - 해당 시간보다 더 옛날 시점의 메시지 조회")
+                    ),
+
+                    responseFields(
+                        fieldWithPath("status").description("HTTP 상태 코드"),
+                        fieldWithPath("code").description("응답 코드"),
+                        fieldWithPath("message").description("응답 메시지"),
+                        *RestDocsPagination.paginationByCursorAt(),
+                        fieldWithPath("data.content").type(JsonFieldType.ARRAY).description("채팅 메시지 리스트"),
+                        fieldWithPath("data.content[].chatMessageId").description("메시지 ID"),
+                        fieldWithPath("data.content[].type").description("TEXT"),
+                        fieldWithPath("data.content[].sentAt").description("보낸 시간"),
+                        fieldWithPath("data.content[].isMe").description("내가 보낸 메시지 여부"),
+                        fieldWithPath("data.content[].content").description("메시지 내용")
+                    ),
+                )
+            )
+    }
+
+    @DisplayName("채팅방 메시지 목록 조회 API - WORKOUT_REQUEST 메시지")
+    @Test
+    fun chatMessageListWorkoutRequestDocs() {
+        val chatRoomId = 456L
+        val now = LocalDateTime.now()
+
+        val responses: List<LastChatMessage> = listOf(
+            ChatMessageWorkoutRequest(
+                chatMessageId = 2L,
+                sentAt = now.minusMinutes(5),
+                isMe = false,
+                workoutRequestId = 100L,
+                status = WorkoutRequestStatusFor.PENDING,
+                scheduledAt = now.plusDays(1),
+                location = "헬스장 앞"
+            )
+        )
+        val slice: Slice<LastChatMessage> = SliceImpl(responses, PageRequest.of(0, 10), false)
+        given(chatMessageService.findChatMessages(any(), any(), any())).willReturn(slice)
+
+        mockMvc.perform(
+            get("/api/v1/chats/{chatRoomId}/messages", chatRoomId)
+                .header("Authorization", "Bearer jwt-token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .param("size", "10")
+                .param("lastMessageAt", now.toEpochSecond(ZoneOffset.UTC).toString())
+        )
+            .andExpect(status().isOk())
+            .andDo(
+                document(
+                    "chat-message-list-workout-request",
+                    preprocessRequest(prettyPrint()),
+                    preprocessResponse(prettyPrint()),
+
+                    requestHeaders(
+                        RestDocsHeaders.authorizationHeader(Role.USER)
+                    ),
+
+                    queryParameters(
+                        parameterWithName("size").optional().description("(Optional - default 10) 조회 크기"),
+                        parameterWithName("lastMessageAt").optional().description("Optional - 해당 시간보다 더 옛날 시점의 메시지 조회")
+                    ),
+
+                    responseFields(
+                        fieldWithPath("status").description("HTTP 상태 코드"),
+                        fieldWithPath("code").description("응답 코드"),
+                        fieldWithPath("message").description("응답 메시지"),
+                        *RestDocsPagination.paginationByCursorAt(),
+                        fieldWithPath("data.content").type(JsonFieldType.ARRAY).description("채팅 메시지 리스트"),
+                        fieldWithPath("data.content[].chatMessageId").description("메시지 ID"),
+                        fieldWithPath("data.content[].type").description("WORKOUT_REQUEST"),
+                        fieldWithPath("data.content[].sentAt").description("보낸 시간"),
+                        fieldWithPath("data.content[].isMe").description("내가 보낸 메시지 여부"),
+                        fieldWithPath("data.content[].workoutRequestId").description("운동 요청 ID"),
+                        fieldWithPath("data.content[].status").description("운동 요청 상태"),
+                        fieldWithPath("data.content[].scheduledAt").description("운동 예정 시간"),
+                        fieldWithPath("data.content[].location").description("운동 장소")
+
+                    ),
+
+                )
+            )
+    }
+
+    @DisplayName("채팅방 마지막 운동 요청 조회 API")
+    @Test
+    fun workoutRequestLastDocs() {
+        val chatRoomId = 123L
+
+        val lastWorkoutRequest = LastWorkoutRequestMessage(
+            status = WorkoutRequestStatusFor.PENDING,
+            chatRoomId = chatRoomId
+        )
+        given(workoutRequestService.findRecentWorkoutRequestFrom(listOf(chatRoomId)))
+            .willReturn(listOf(lastWorkoutRequest))
+
+        // when & then
+        mockMvc.perform(
+            get("/api/v1/chats/{chatRoomId}/workout-requests/last", chatRoomId)
+                .header("Authorization", "Bearer jwt-token")
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isOk)
+            .andDo(
+                document(
+                    "chat-workout-request-last",
+                    preprocessRequest(prettyPrint()),
+                    preprocessResponse(prettyPrint()),
+
+                    requestHeaders(
+                        RestDocsHeaders.authorizationHeader(Role.USER)
+                    ),
+
+                    pathParameters(
+                        parameterWithName("chatRoomId").description("조회할 채팅방 ID")
+                    ),
+
+                    responseFields(
+                        fieldWithPath("status").description("HTTP 상태 코드"),
+                        fieldWithPath("code").description("응답 코드"),
+                        fieldWithPath("message").description("응답 메시지"),
+                        fieldWithPath("data.status").type(JsonFieldType.STRING).optional()
+                            .description("마지막 운동 요청 상태 (없으면 null)" + WorkoutRequestStatusFor.allDescription()),
                     )
                 )
             )

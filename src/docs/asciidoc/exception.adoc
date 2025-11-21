@@ -69,3 +69,8 @@ include::exception/workout_partner/workoutPartnerException.adoc[]
 == <GLOBAL>
 
 include::exception/global/globalException.adoc[]
+
+[[CHAT]]
+== <CHAT>
+
+include::exception/chat/chatException.adoc[]

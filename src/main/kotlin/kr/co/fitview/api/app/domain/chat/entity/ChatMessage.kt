@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
 import kr.co.fitview.api.app.domain.member.entity.Member
+import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequest
 import kr.co.fitview.api.app.global.entity.BaseEntity
 import org.hibernate.annotations.ColumnDefault
 import java.time.Instant
@@ -49,4 +50,12 @@ class ChatMessage(
     @OneToMany(mappedBy = "chatMessage")
     var messageReadStatuses: MutableSet<MessageReadStatus> = mutableSetOf()
 
+    @OneToMany(mappedBy = "chatMessage")
+    var workoutRequests: MutableSet<WorkoutRequest> = mutableSetOf()
+
+    fun getMemberId() : Long{
+        return this.member!!.id!!
+    }
+
+    fun getWorkoutRequest(): WorkoutRequest? = workoutRequests.firstOrNull()
 }

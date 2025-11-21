@@ -1,7 +1,7 @@
 package kr.co.fitview.api.app.domain.chat.service
 
 import kr.co.fitview.api.app.IntegrationTestSupport
-import kr.co.fitview.api.app.domain.chat.condition.ChatRoomCondition
+import kr.co.fitview.api.app.domain.chat.condition.ChatCondition
 import kr.co.fitview.api.app.domain.chat.entity.ChatMessage
 import kr.co.fitview.api.app.domain.chat.entity.ChatParticipant
 import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
@@ -23,7 +23,6 @@ import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.time.Time
 import kr.co.fitview.api.app.global.util.TestDataFactory
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -249,7 +248,7 @@ class ChatRoomServiceTest @Autowired constructor(
         )
         messageReadStatusRepository.save(messageRead)
 
-        val condition = ChatRoomCondition()
+        val condition = ChatCondition()
 
         // when
         val response = chatRoomService.findChatRooms(me.id!!, condition)
@@ -319,4 +318,5 @@ class ChatRoomServiceTest @Autowired constructor(
 
         assertThat(response.hasNext()).isEqualTo(false)
     }
+
 }

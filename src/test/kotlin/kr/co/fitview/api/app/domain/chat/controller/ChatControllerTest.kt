@@ -5,10 +5,7 @@ import kr.co.fitview.api.app.domain.address.dto.response.AddressDetailResponse
 import kr.co.fitview.api.app.domain.address.dto.response.AddressResponse
 import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
 import kr.co.fitview.api.app.domain.chat.dto.request.ChatRoomCreateRequest
-import kr.co.fitview.api.app.domain.chat.dto.response.ChatMessageContent
-import kr.co.fitview.api.app.domain.chat.dto.response.ChatMessageWorkoutRequest
-import kr.co.fitview.api.app.domain.chat.dto.response.ChatRoomCreateResponse
-import kr.co.fitview.api.app.domain.chat.dto.response.ChatRoomResponse
+import kr.co.fitview.api.app.domain.chat.dto.response.*
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
 import kr.co.fitview.api.app.domain.workout.dto.response.LastWorkoutRequestMessage
 import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusFor
@@ -204,5 +201,87 @@ class ChatControllerTest : ControllerTestSupport(){
             .andExpect(jsonPath("$.data.pagination.cursorAt").exists())
     }
 
+    @DisplayName("채팅방 메시지 목록을 조회한다.")
+    @Test
+    fun chatMessageList() {
+        val chatRoomId = 456L
+        val now = LocalDateTime.now()
+
+
+        val messages: List<LastChatMessage> = listOf(
+            ChatMessageContent(
+                chatMessageId = 1L,
+                sentAt = now.minusMinutes(10),
+                isMe = true,
+                content = "안녕하세요!"
+            ),
+            ChatMessageWorkoutRequest(
+                chatMessageId = 2L,
+                sentAt = now.minusMinutes(5),
+                isMe = false,
+                workoutRequestId = 100L,
+                status = WorkoutRequestStatusFor.PENDING,
+                scheduledAt = now.plusDays(1),
+                location = "헬스장 앞"
+            )
+        )
+        val slice: Slice<LastChatMessage> = SliceImpl(messages, PageRequest.of(0, 10), false)
+
+        // 서비스 mocking
+        given(chatMessageService.findChatMessages(any(), any(), any())).willReturn(slice)
+
+        mockMvc.perform(
+            get("/api/v1/chats/{chatRoomId}/messages", chatRoomId)
+                .header("Authorization", "Bearer jwt-token")
+        )
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").exists())
+            .andExpect(jsonPath("$.code").value("ok"))
+            .andExpect(jsonPath("$.message").value("OK"))
+            .andExpect(jsonPath("$.data.content").isArray)
+            .andExpect(jsonPath("$.data.content.length()").value(2))
+
+            .andExpect(jsonPath("$.data.content[0].chatMessageId").value(1))
+            .andExpect(jsonPath("$.data.content[0].type").value("TEXT"))
+            .andExpect(jsonPath("$.data.content[0].content").value("안녕하세요!"))
+            .andExpect(jsonPath("$.data.content[0].isMe").value(true))
+
+            .andExpect(jsonPath("$.data.content[1].chatMessageId").value(2))
+            .andExpect(jsonPath("$.data.content[1].type").value("WORKOUT_REQUEST"))
+            .andExpect(jsonPath("$.data.content[1].workoutRequestId").value(100))
+            .andExpect(jsonPath("$.data.content[1].status").value("PENDING"))
+            .andExpect(jsonPath("$.data.content[1].location").value("헬스장 앞"))
+
+            .andExpect(jsonPath("$.data.pagination.size").value(10))
+            .andExpect(jsonPath("$.data.pagination.hasNext").value(false))
+            .andExpect(jsonPath("$.data.pagination.cursorAt").exists())
+    }
+
+    @DisplayName("채팅방 마지막 운동 요청 조회 API")
+    @Test
+    fun workoutRequestLast() {
+        val chatRoomId = 123L
+
+        // given
+        val lastWorkoutRequest = LastWorkoutRequestMessage(
+            status = WorkoutRequestStatusFor.PENDING,
+            chatRoomId = chatRoomId
+        )
+        given(workoutRequestService.findRecentWorkoutRequestFrom(listOf(chatRoomId)))
+            .willReturn(listOf(lastWorkoutRequest))
+
+        // when & then
+        mockMvc.perform(
+            get("/api/v1/chats/{chatRoomId}/workout-requests/last", chatRoomId)
+                .header("Authorization", "Bearer jwt-token")
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.status").exists())
+            .andExpect(jsonPath("$.code").value("ok"))
+            .andExpect(jsonPath("$.message").value("ok"))
+            .andExpect(jsonPath("$.data.status").value("PENDING"))
+    }
 
 }
