@@ -72,7 +72,7 @@ class ChatControllerDocsTest : RestDocsSupport() {
     }
 
     @DisplayName("채팅방을 생성한다.")
-//    @Test
+    @Test
     fun chatRoomAdd() {
         given(chatService.saveChatRoom(any(), any()))
             .willReturn(
