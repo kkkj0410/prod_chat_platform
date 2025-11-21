@@ -6,10 +6,10 @@ import java.time.ZoneId
 
 data class ChatRoomCondition(
     val size: Int? = 10,
-    val lastMessagedAt: Long? = null,
+    val lastMessageAt: Long? = null,
 ){
     fun lastMessagedAt(): LocalDateTime? =
-        lastMessagedAt?.let {
+        lastMessageAt?.let {
             Instant.ofEpochMilli(it)
                 .atZone(ZoneId.systemDefault())
                 .toLocalDateTime()
