@@ -27,6 +27,7 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
+import java.time.ZoneId
 
 class ChatRoomRepositoryTest @Autowired constructor(
     val chatRoomRepository: ChatRoomRepository,
@@ -338,6 +339,9 @@ class ChatRoomRepositoryTest @Autowired constructor(
         val condition = ChatRoomCondition(
             size = 10,
             lastMessagedAt = time.nowLocalDateTime.minusHours(3)
+                .atZone(ZoneId.systemDefault())
+                .toInstant()
+                .toEpochMilli()
         )
 
         // when
