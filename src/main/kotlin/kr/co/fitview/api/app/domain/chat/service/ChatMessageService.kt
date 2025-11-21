@@ -31,10 +31,7 @@ class ChatMessageService(
 
     fun findChatMessages(memberId : Long, chatRoomId : Long, condition : ChatCondition) : Slice<LastChatMessage> {
         val findChatParticipant = chatParticipantService.findChatRoomFromMemberIdAndChatRoomId(memberId, chatRoomId)
-
-        if(findChatParticipant != null){
-            throw GlobalException(ChatErrorCode.NOT_MEMBER_OF_CHAT_ROOM)
-        }
+            ?: throw GlobalException(ChatErrorCode.NOT_MEMBER_OF_CHAT_ROOM)
 
         val slice = chatMessageRepository.findChatMessageByCondition(chatRoomId, condition)
 
@@ -57,11 +54,7 @@ class ChatMessageService(
         return SliceImpl(responses, slice.pageable, slice.hasNext())
     }
 
-//    private fun isMemberInChatRoom(memberId: Long, chatRoomId: Long) {
-//        chatParticipantService
-//            .findChatRoomFromMemberIdAndChatRoomId(memberId, chatRoomId)
-//            ?.let { throw GlobalException(ChatErrorCode.NOT_MEMBER_OF_CHAT_ROOM) }
-//    }
+
 
 
 }
