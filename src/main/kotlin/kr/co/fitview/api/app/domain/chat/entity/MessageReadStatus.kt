@@ -24,7 +24,12 @@ class MessageReadStatus(
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "chat_message_id", nullable = false)
-    var chatMessage: ChatMessage? = null
+    var chatMessage: ChatMessage? = null,
+
+    @NotNull
+    @ColumnDefault("0")
+    @Column(name = "is_read", nullable = false)
+    var isRead: Boolean? = false
 
 ) : BaseEntity() {
 
@@ -33,8 +38,4 @@ class MessageReadStatus(
     @Column(name = "message_read_status_id", nullable = false)
     var id: Long? = null
 
-    @NotNull
-    @ColumnDefault("0")
-    @Column(name = "is_read", nullable = false)
-    var isRead: Boolean? = false
 }

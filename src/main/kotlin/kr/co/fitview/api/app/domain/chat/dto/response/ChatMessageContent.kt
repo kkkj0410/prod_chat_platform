@@ -7,8 +7,12 @@ data class ChatMessageContent(
 
     override val chatMessageId: Long,
     override val type: ChatMessageType = ChatMessageType.TEXT,
-    override val createdAt: LocalDateTime,
-    override val isMe: Boolean,
+    override val sentAt: LocalDateTime,
+    override val isMe: Boolean = false,
+    override val isRead: Boolean?,
+    override val chatRoomId: Long?,
+    override val memberId: Long?,
+
     val content: String
 
 ) : LastChatMessage

@@ -2,10 +2,13 @@ package kr.co.fitview.api.app.domain.chat.service
 
 import kr.co.fitview.api.app.domain.chat.condition.ChatRoomCondition
 import kr.co.fitview.api.app.domain.chat.dto.response.ChatRoomResponse
+import kr.co.fitview.api.app.domain.chat.dto.response.assembleChatRoomResponses
 import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatRoomType
 import kr.co.fitview.api.app.domain.chat.repository.ChatRoomRepository
+import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestService
 import org.springframework.data.domain.Slice
+import org.springframework.data.domain.SliceImpl
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -13,7 +16,9 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 @Transactional(readOnly = true)
 class ChatRoomService(
-    private val chatRoomRepository : ChatRoomRepository
+    private val chatRoomRepository : ChatRoomRepository,
+    private val chatMessageService : ChatMessageService,
+    private val workoutRequestService : WorkoutRequestService
 ) {
 
     fun findChatRoomFrom(fromMemberId: Long, toMemberId: Long): ChatRoom? {
@@ -30,6 +35,17 @@ class ChatRoomService(
     }
 
     fun findChatRooms(memberId: Long, condition: ChatRoomCondition): Slice<ChatRoomResponse> {
-        return chatRoomRepository.findChatRoomByDeletedAtIsNull(memberId, condition)
+        val profiles = chatRoomRepository.findChatRoomProfileByDeletedAtIsNull(memberId, condition)
+
+        val chatRoomIds: List<Long> = profiles.map { it.chatRoomId }
+
+        val chatMessages = chatMessageService.findLastChatMessages(memberId, chatRoomIds)
+
+        val recentWorkoutRequests = workoutRequestService.findRecentWorkoutRequestFrom(chatRoomIds)
+
+        val chatRoomResponses = assembleChatRoomResponses(profiles, chatMessages, recentWorkoutRequests)
+
+        return SliceImpl(chatRoomResponses)
+
     }
 }

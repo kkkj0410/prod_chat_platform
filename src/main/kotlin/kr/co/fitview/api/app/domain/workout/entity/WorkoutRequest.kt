@@ -1,0 +1,59 @@
+package kr.co.fitview.api.app.domain.workout.entity
+
+import jakarta.persistence.*
+import jakarta.validation.constraints.NotNull
+import jakarta.validation.constraints.Size
+import kr.co.fitview.api.app.domain.chat.entity.ChatMessage
+import kr.co.fitview.api.app.domain.member.entity.Member
+import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
+import kr.co.fitview.api.app.global.entity.BaseEntity
+import org.hibernate.annotations.ColumnDefault
+import java.time.Instant
+import java.time.LocalDateTime
+
+@Entity
+@Table(name = "workout_request")
+class WorkoutRequest(
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "chat_message_id", nullable = false)
+    var chatMessage: ChatMessage? = null,
+
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "from_member_id", nullable = false)
+    var fromMember: Member? = null,
+
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "to_member_id", nullable = false)
+    var toMember: Member? = null,
+
+    @Size(max = 50)
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 50)
+    var status: WorkoutRequestStatus? = null,
+
+    @Size(max = 50)
+    @NotNull
+    @Column(name = "location", nullable = false, length = 50)
+    var location: String? = null,
+
+    @NotNull
+    @Column(name = "scheduled_at", nullable = false)
+    var scheduledAt: LocalDateTime? = null,
+
+    @NotNull
+    @ColumnDefault("CURRENT_TIMESTAMP")
+    @Column(name = "requested_at", nullable = false)
+    var requestedAt: LocalDateTime? = null
+
+) : BaseEntity() {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "workout_request_id", nullable = false)
+    var id: Long? = null
+
+}

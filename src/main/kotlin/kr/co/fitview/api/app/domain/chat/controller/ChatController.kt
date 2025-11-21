@@ -42,7 +42,7 @@ class ChatController(
 
         return ResponseEntity.ok(ApiResponse.successWithCursorAtPagination(
             slice = response,
-            timeExtractor = { it.lastChatMessage.createdAt },
+            timeExtractor = { it.lastChatMessage.sentAt },
         ))
     }
 
