@@ -62,14 +62,14 @@ class StompController(
         principal: Principal,
 
         @DestinationVariable
-        chatRoomId : String,
+        chatRoomId : Long,
 
         @Payload
         message: ChatMessageRequest
     ) {
 
         val senderId = principal.name
-        val otherMemberId = chatService.sendMessage(principal.name.toLong(), chatRoomId.toLong(), message)
+        val otherMemberId = chatService.sendMessage(principal.name.toLong(), chatRoomId, message)
 
         messageTemplate.convertAndSendToUser(
             otherMemberId.toString(),
@@ -83,25 +83,6 @@ class StompController(
             message
         )
     }
-
-    @GetMapping("/api/v1/test/{memberId}")
-    fun test(
-        @PathVariable
-        memberId : Long
-    ){
-        println("$memberId, ${simpUserRegistry.getUser(memberId.toString()) != null}",)
-
-    }
-
-    @PostMapping("/api/v1/test/time")
-    fun test2(
-        @RequestBody
-        time : TestRequest
-    ){
-        println("$time")
-
-    }
-
 
     fun isMemberConnected(memberId: String): Boolean {
 

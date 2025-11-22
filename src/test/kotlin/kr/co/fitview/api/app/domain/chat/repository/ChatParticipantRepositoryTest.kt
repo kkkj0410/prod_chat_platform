@@ -67,4 +67,43 @@ class ChatParticipantRepositoryTest @Autowired constructor(
 
     }
 
+    @DisplayName("채팅방에 참여한 본인이 아닌 다른 회원을 찾는다.")
+    @Test
+    fun findOtherChatParticipantByMemberIdAndChatRoomId() {
+        // given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val other = Member(
+            email = "email2",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+        memberRepository.save(other)
+
+        val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+
+        val chatParticipant1 = ChatParticipant(
+            chatRoom,
+            me
+        )
+        val chatParticipant2 = ChatParticipant(
+            chatRoom,
+            other
+        )
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+
+        // when
+        val findOtherChatParticipant = chatParticipantRepository.findOtherChatParticipantByMemberIdAndChatRoomId(me.id!!, chatRoom.id!!)
+
+        // then
+        assertThat(findOtherChatParticipant)
+            .extracting("chatRoom", "member")
+            .contains(chatRoom, other)
+    }
+
 }

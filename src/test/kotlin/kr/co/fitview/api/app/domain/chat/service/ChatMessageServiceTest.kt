@@ -1,7 +1,16 @@
 package kr.co.fitview.api.app.domain.chat.service
 
+import jakarta.persistence.Column
+import jakarta.persistence.FetchType
+import jakarta.persistence.JoinColumn
+import jakarta.persistence.ManyToOne
+import jakarta.validation.constraints.NotNull
 import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.chat.condition.ChatCondition
+import kr.co.fitview.api.app.domain.chat.dto.request.ChatTextMessageRequest
+import kr.co.fitview.api.app.domain.chat.dto.request.ChatTextMessageServiceRequest
+import kr.co.fitview.api.app.domain.chat.dto.request.ChatWorkoutRequestMessageRequest
+import kr.co.fitview.api.app.domain.chat.dto.request.ChatWorkoutRequestMessageServiceRequest
 import kr.co.fitview.api.app.domain.chat.dto.response.ChatMessageContent
 import kr.co.fitview.api.app.domain.chat.dto.response.ChatMessageWorkoutRequest
 import kr.co.fitview.api.app.domain.chat.entity.ChatMessage
@@ -18,6 +27,7 @@ import kr.co.fitview.api.app.domain.chat.repository.MessageReadStatusRepository
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
+import kr.co.fitview.api.app.domain.term.entity.enums.TermName
 import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusFor
 import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequest
 import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
@@ -27,16 +37,16 @@ import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.chat.ChatErrorCode
 import kr.co.fitview.api.app.global.time.Time
 import kr.co.fitview.api.app.global.util.TestDataFactory
-import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.assertj.core.api.Assertions.*
 import org.assertj.core.api.ThrowingConsumer
+import org.hibernate.annotations.ColumnDefault
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
 class ChatMessageServiceTest @Autowired constructor(
-    private val chatMessageService : ChatMessageService,
+    val chatMessageService : ChatMessageService,
     val chatMessageRepository: ChatMessageRepository,
     val chatParticipantRepository: ChatParticipantRepository,
     val chatRoomRepository: ChatRoomRepository,
@@ -358,5 +368,137 @@ class ChatMessageServiceTest @Autowired constructor(
                 assertThat(globalEx.errorCode)
                     .isEqualTo(ChatErrorCode.NOT_MEMBER_OF_CHAT_ROOM)
             })
+    }
+
+
+    @DisplayName("회원은 TEXT 형태의 채팅 메시지를 보낸다.")
+    @Test
+    fun addChatTextMessage() {
+        // given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val other = Member(
+            email = "email2",
+            password = "password2",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+        memberRepository.save(other)
+
+        val savedChatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+
+        val chatParticipant1 = ChatParticipant(
+            savedChatRoom,
+            me
+        )
+        val chatParticipant2 = ChatParticipant(
+            savedChatRoom,
+            other
+        )
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+
+        val request = ChatTextMessageServiceRequest(
+            content = "hello"
+        )
+
+        // when
+        chatMessageService.addChatTextMessage(
+            member = me,
+            chatRoom = savedChatRoom,
+            message = request
+        )
+
+        // then
+        val findChatMessage = chatMessageRepository.findAll()[0]
+        val findMessageReadStatuses = messageReadStatusRepository.findAll()
+
+        assertThat(findChatMessage)
+            .extracting("member", "chatRoom", "type", "content", "sentAt")
+            .contains(me, savedChatRoom, ChatMessageType.TEXT, request.content, time.nowLocalDateTime)
+
+        assertThat(savedChatRoom.lastMessageAt).isEqualTo(time.nowLocalDateTime)
+
+        assertThat(findMessageReadStatuses)
+            .extracting("chatRoom", "member", "chatMessage", "isRead")
+            .containsExactlyInAnyOrder(
+                tuple(savedChatRoom, me, findChatMessage, true),
+                tuple(savedChatRoom, other, findChatMessage, false),
+            )
+    }
+
+    @DisplayName("회원은 WORKOUT_REQUEST 메시지를 보낸다.")
+    @Test
+    fun addChatWorkoutRequestMessage() {
+        // given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val other = Member(
+            email = "email2",
+            password = "password2",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+        memberRepository.save(other)
+
+        val savedChatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+
+        val chatParticipant1 = ChatParticipant(
+            savedChatRoom,
+            me
+        )
+        val chatParticipant2 = ChatParticipant(
+            savedChatRoom,
+            other
+        )
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+
+        val request = ChatWorkoutRequestMessageServiceRequest(
+            scheduledAt = time.nowLocalDateTime.plusHours(5),
+            location = "location"
+        )
+
+        // when
+        chatMessageService.addChatWorkoutRequestMessage(
+            fromMember = me,
+            chatRoom = savedChatRoom,
+            message = request
+        )
+
+        // then
+        val findChatMessage = chatMessageRepository.findAll()[0]
+        val findWorkoutRequest = workoutRequestRepository.findAll()[0]
+        val findMessageReadStatuses = messageReadStatusRepository.findAll()
+
+        assertThat(findChatMessage)
+            .extracting("member", "chatRoom", "type", "content", "sentAt")
+            .contains(me, savedChatRoom, ChatMessageType.WORKOUT_REQUEST, null, time.nowLocalDateTime)
+
+        assertThat(findWorkoutRequest)
+            .extracting("fromMember", "toMember", "status", "location", "scheduledAt", "requestedAt")
+            .contains(
+                me,
+                other,
+                WorkoutRequestStatus.PENDING,
+                request.location,
+                request.scheduledAt,
+                time.nowLocalDateTime
+            )
+
+        assertThat(savedChatRoom.lastMessageAt).isEqualTo(time.nowLocalDateTime)
+
+        assertThat(findMessageReadStatuses)
+            .extracting("chatRoom", "member", "chatMessage", "isRead")
+            .containsExactlyInAnyOrder(
+                tuple(savedChatRoom, me, findChatMessage, true),
+                tuple(savedChatRoom, other, findChatMessage, false),
+            )
     }
 }

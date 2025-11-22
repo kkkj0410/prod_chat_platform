@@ -46,7 +46,6 @@ class ChatMessage(
     @Column(name = "chat_message_id", nullable = false)
     var id: Long? = null
 
-
     @OneToMany(mappedBy = "chatMessage")
     var messageReadStatuses: MutableSet<MessageReadStatus> = mutableSetOf()
 
@@ -58,4 +57,26 @@ class ChatMessage(
     }
 
     fun getWorkoutRequest(): WorkoutRequest? = workoutRequests.firstOrNull()
+
+
+    companion object {
+        fun ofText(member: Member, chatRoom: ChatRoom, content : String, sentAt : LocalDateTime): ChatMessage {
+            return ChatMessage(
+                member = member,
+                chatRoom = chatRoom,
+                type = ChatMessageType.TEXT,
+                content = content,
+                sentAt = sentAt
+            )
+        }
+
+        fun ofWorkoutRequest(member: Member, chatRoom: ChatRoom, sentAt : LocalDateTime): ChatMessage {
+            return ChatMessage(
+                member = member,
+                chatRoom = chatRoom,
+                type = ChatMessageType.WORKOUT_REQUEST,
+                sentAt = sentAt
+            )
+        }
+    }
 }

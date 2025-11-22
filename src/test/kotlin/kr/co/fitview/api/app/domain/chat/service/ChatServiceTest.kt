@@ -1,24 +1,25 @@
 package kr.co.fitview.api.app.domain.chat.service
 
 import kr.co.fitview.api.app.IntegrationTestSupport
-import kr.co.fitview.api.app.domain.auth.repository.RefreshTokenRepository
-import kr.co.fitview.api.app.domain.auth.service.AuthService
-import kr.co.fitview.api.app.domain.auth.service.RefreshTokenService
 import kr.co.fitview.api.app.domain.chat.dto.request.ChatRoomCreateServiceRequest
+import kr.co.fitview.api.app.domain.chat.dto.request.ChatTextMessageRequest
+import kr.co.fitview.api.app.domain.chat.dto.request.ChatWorkoutRequestMessageRequest
 import kr.co.fitview.api.app.domain.chat.entity.ChatParticipant
 import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
+import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatRoomType
+import kr.co.fitview.api.app.domain.chat.repository.ChatMessageRepository
 import kr.co.fitview.api.app.domain.chat.repository.ChatParticipantRepository
 import kr.co.fitview.api.app.domain.chat.repository.ChatRoomRepository
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
+import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
+import kr.co.fitview.api.app.domain.workout.repository.WorkoutRequestRepository
 import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartner
 import kr.co.fitview.api.app.domain.workout_partner.repository.WorkoutPartnerRepository
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.chat.ChatErrorCode
-import kr.co.fitview.api.app.global.exception.error.member.MemberErrorCode
-import kr.co.fitview.api.app.global.jwt.JwtTokenProvider
 import kr.co.fitview.api.app.global.time.Time
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
@@ -32,7 +33,9 @@ class ChatServiceTest@Autowired constructor(
     val chatService: ChatService,
     val chatRoomRepository : ChatRoomRepository,
     val chatParticipantRepository : ChatParticipantRepository,
+    val chatMessageRepository : ChatMessageRepository,
     val workoutPartnerRepository : WorkoutPartnerRepository,
+    val workoutRequestRepository : WorkoutRequestRepository,
     val memberRepository : MemberRepository,
     val time : Time
 ) : IntegrationTestSupport() {
@@ -141,6 +144,147 @@ class ChatServiceTest@Autowired constructor(
                 val globalEx = ex as GlobalException
                 assertThat(globalEx.errorCode)
                     .isEqualTo(ChatErrorCode.NOT_PARTNER)
+            })
+    }
+
+    @DisplayName("채팅방에 TEXT 메시지를 보낸다.")
+    @Test
+    fun sendMessage() {
+        // given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val other = Member(
+            email = "email2",
+            password = "password2",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+        memberRepository.save(other)
+
+        val savedChatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+
+        val chatParticipant1 = ChatParticipant(
+            savedChatRoom,
+            me
+        )
+        val chatParticipant2 = ChatParticipant(
+            savedChatRoom,
+            other
+        )
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+
+        val request = ChatTextMessageRequest(
+            content = "hello"
+        )
+
+        // when
+        val otherMemberId = chatService.sendMessage(
+            memberId = me.id!!,
+            chatRoomId = savedChatRoom.id!!,
+            message = request
+        )
+
+        // then
+        assertThat(otherMemberId).isEqualTo(other.id!!)
+        val findChatMessage = chatMessageRepository.findAll()[0]
+
+        assertThat(findChatMessage)
+
+        assertThat(findChatMessage)
+            .extracting("member", "chatRoom", "type", "content", "sentAt")
+            .contains(me, savedChatRoom, ChatMessageType.TEXT, request.content, time.nowLocalDateTime)
+
+    }
+
+    @DisplayName("채팅방에 WORKOUT_REQUEST 메시지를 보낸다.")
+    @Test
+    fun sendMessageWorkoutRequest() {
+        // given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val other = Member(
+            email = "email2",
+            password = "password2",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+        memberRepository.save(other)
+
+        val savedChatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+
+        val chatParticipant1 = ChatParticipant(
+            savedChatRoom,
+            me
+        )
+        val chatParticipant2 = ChatParticipant(
+            savedChatRoom,
+            other
+        )
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+
+        val request = ChatWorkoutRequestMessageRequest(
+            scheduledAt = time.nowLocalDateTime.plusHours(5),
+            location = "location"
+        )
+
+        // when
+        val otherMemberId = chatService.sendMessage(
+            memberId = me.id!!,
+            chatRoomId = savedChatRoom.id!!,
+            message = request
+        )
+
+        // then
+        assertThat(otherMemberId).isEqualTo(other.id!!)
+        val findChatMessage = chatMessageRepository.findAll()[0]
+        val findWorkoutRequest = workoutRequestRepository.findAll()[0]
+
+        assertThat(findChatMessage)
+
+        assertThat(findChatMessage)
+            .extracting("member", "chatRoom", "type", "content", "sentAt")
+            .contains(me, savedChatRoom, ChatMessageType.WORKOUT_REQUEST, null, time.nowLocalDateTime)
+
+        assertThat(findWorkoutRequest)
+            .extracting("fromMember", "toMember", "status", "location", "scheduledAt", "requestedAt")
+            .contains(
+                me,
+                other,
+                WorkoutRequestStatus.PENDING,
+                request.location,
+                request.scheduledAt,
+                time.nowLocalDateTime
+            )
+    }
+
+    @DisplayName("해당 회원이 지정 채팅방에 있는 것이 조회되지 않으면 메시지를 보내지 않는다.")
+    @Test
+    fun sendMessageInvalidChatRoom() {
+        // given
+        val request = ChatTextMessageRequest(
+            content = "hello"
+        )
+
+        // when & then
+        assertThatThrownBy {
+            chatService.sendMessage(
+                memberId = 1L,
+                chatRoomId = 1L,
+                message = request
+            )        }
+            .isInstanceOf(GlobalException::class.java)
+            .satisfies(ThrowingConsumer { ex ->
+                val globalEx = ex as GlobalException
+                assertThat(globalEx.errorCode)
+                    .isEqualTo(ChatErrorCode.NOT_MEMBER_OF_CHAT_ROOM)
             })
     }
 

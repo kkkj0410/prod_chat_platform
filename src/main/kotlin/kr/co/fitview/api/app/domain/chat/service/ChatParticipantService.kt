@@ -24,7 +24,7 @@ class ChatParticipantService(
     }
 
     fun findOtherParticipantFromMemberIdAndChatRoomId(memberId : Long, chatRoomId : Long) : ChatParticipant? {
-        return chatParticipantRepository.findChatParticipantByMemberIdAndChatRoomId(memberId, chatRoomId)
+        return chatParticipantRepository.findOtherChatParticipantByMemberIdAndChatRoomId(memberId, chatRoomId)
     }
 
     private fun createChatParticipants(

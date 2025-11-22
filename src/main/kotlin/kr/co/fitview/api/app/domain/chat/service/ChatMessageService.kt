@@ -28,29 +28,41 @@ class ChatMessageService(
     private val chatParticipantService: ChatParticipantService,
     private val workoutRequestService: WorkoutRequestService,
     private val memberReferenceProvider : MemberReferenceProvider,
+    private val messageReadStatusService : MessageReadStatusService,
     private val time: Time
 ) {
 
     @Transactional
-    fun addChatTextMessage(member: Member, chatRoom: ChatRoom, message: ChatTextMessageServiceRequest) {
-        val chatMessage = ChatMessage(
+    fun addChatTextMessage(member: Member, chatRoom: ChatRoom, message: ChatTextMessageServiceRequest) : ChatMessage {
+        val now = time.nowLocalDateTime
+        val chatMessage = ChatMessage.ofText(
             member = member,
             chatRoom = chatRoom,
-            type = ChatMessageType.TEXT,
-            content = message.content
+            content = message.content,
+            sentAt = now
         )
-        chatRoom.updateLastMessageAt(time.nowLocalDateTime)
+        chatRoom.updateLastMessageAt(now)
+
         chatMessageRepository.save(chatMessage)
+
+        messageReadStatusService.saveMessageReadStatus(
+            member = member,
+            chatMessage = chatMessage,
+            chatRoom = chatRoom
+        )
+
+        return chatMessage
     }
 
     @Transactional
-    fun addChatWorkoutRequestMessage(fromMember: Member, chatRoom: ChatRoom, message: ChatWorkoutRequestMessageServiceRequest) {
-        val chatMessage = ChatMessage(
+    fun addChatWorkoutRequestMessage(fromMember: Member, chatRoom: ChatRoom, message: ChatWorkoutRequestMessageServiceRequest) : ChatMessage{
+        val now = time.nowLocalDateTime
+        val chatMessage = ChatMessage.ofWorkoutRequest(
             member = fromMember,
             chatRoom = chatRoom,
-            type = ChatMessageType.TEXT,
+            sentAt = now
         )
-        chatRoom.updateLastMessageAt(time.nowLocalDateTime)
+        chatRoom.updateLastMessageAt(now)
         chatMessageRepository.save(chatMessage)
 
         val findOtherChatParticipant = chatParticipantService.findOtherParticipantFromMemberIdAndChatRoomId(fromMember.id!!, chatRoom.id!!)
@@ -63,6 +75,14 @@ class ChatMessageService(
             toMember = toMember,
             message = message
         )
+
+        messageReadStatusService.saveMessageReadStatus(
+            member = fromMember,
+            chatMessage = chatMessage,
+            chatRoom = chatRoom
+        )
+
+        return chatMessage
     }
 
 
