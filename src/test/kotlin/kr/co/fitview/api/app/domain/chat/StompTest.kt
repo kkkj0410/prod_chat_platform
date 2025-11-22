@@ -1,53 +1,114 @@
-//package kr.co.fitview.api.app.domain.chat
-//
-//import kr.co.fitview.api.app.StompTestSupport
-//import org.junit.jupiter.api.BeforeEach
-//import org.springframework.beans.factory.annotation.Autowired
-//import org.springframework.boot.test.web.server.LocalServerPort
-//import org.springframework.messaging.converter.MappingJackson2MessageConverter
-//import org.springframework.messaging.simp.stomp.StompFrameHandler
-//import org.springframework.messaging.simp.stomp.StompHeaders
-//import org.springframework.messaging.simp.stomp.StompSession
-//import org.springframework.messaging.simp.stomp.StompSessionHandlerAdapter
-//import org.springframework.web.socket.messaging.WebSocketStompClient
-//import org.springframework.web.socket.sockjs.client.SockJsClient
-//import org.springframework.web.socket.sockjs.client.WebSocketTransport
-//import java.util.concurrent.BlockingQueue
-//import java.util.concurrent.CompletableFuture
-//import java.util.concurrent.LinkedBlockingDeque
-//import java.util.concurrent.TimeUnit
-//
-//class StompTest @Autowired constructor(
-//    private val
-//) : StompTestSupport(){
-//
-//    @LocalServerPort
-//    private var port: Int = 0
-//
+package kr.co.fitview.api.app.domain.chat
+
+import kr.co.fitview.api.app.StompTestSupport
+import kr.co.fitview.api.app.domain.member.entity.Member
+import kr.co.fitview.api.app.domain.member.repository.MemberRepository
+import kr.co.fitview.api.app.global.entity.Role
+import kr.co.fitview.api.app.global.jwt.JwtTokenProvider
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.assertThrows
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.web.server.LocalServerPort
+import org.springframework.messaging.converter.MappingJackson2MessageConverter
+import org.springframework.messaging.simp.stomp.StompHeaders
+import org.springframework.messaging.simp.stomp.StompSessionHandlerAdapter
+import org.springframework.web.socket.client.standard.StandardWebSocketClient
+import org.springframework.web.socket.messaging.WebSocketStompClient
+import org.springframework.web.socket.sockjs.client.SockJsClient
+import org.springframework.web.socket.sockjs.client.WebSocketTransport
+import java.util.concurrent.*
+import kotlin.test.Test
+
+
+class StompTest @Autowired constructor(
+    val memberRepository : MemberRepository,
+    val jwtTokenProvider : JwtTokenProvider
+) : StompTestSupport(){
+
+    @LocalServerPort
+    private var port: Int = 0
+
 //    private lateinit var messages: BlockingQueue<MessageResponse>
-//
-//    @Autowired
-//    private lateinit var userRepository: UserRepository
-//
-//    @Autowired
-//    private lateinit var roomRepository: RoomRepository
-//
+
+
 //    @BeforeEach
 //    fun setUp() {
 //        messages = LinkedBlockingDeque()
-//        insertUsers()
-//        createRooms()
 //    }
-//
-//    private fun insertUsers() {
-//        userRepository.save(User(name = "Alice"))
-//        userRepository.save(User(name = "Bob"))
-//    }
-//
-//    private fun createRooms() {
-//        roomRepository.save(Room(capacity = 2))
-//    }
-//
+
+    @DisplayName("stomp에 연결한다")
+    @Test
+    fun accessStomp() {
+        //given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(member)
+
+        val accessToken = jwtTokenProvider.createAccessToken(member.id!!, member.role!!)
+
+        val stompClient = WebSocketStompClient(
+            SockJsClient(listOf(WebSocketTransport(StandardWebSocketClient())))
+        )
+        stompClient.messageConverter = MappingJackson2MessageConverter()
+
+        val headers = StompHeaders().apply {
+            add("Authorization", "Bearer $accessToken")
+        }
+
+        val sessionHandler = object : StompSessionHandlerAdapter() {}
+
+        //when
+        val session = stompClient.connectAsync(
+            "http://localhost:$port/ws/stomp",
+            null,
+            headers,
+            sessionHandler
+        ).get(5, TimeUnit.SECONDS)
+
+        //then
+        assertThat(session.isConnected).isTrue()
+    }
+
+    @DisplayName("stomp에 연결 시, 유효한 JWT 토큰을 헤더에 전송하지 않으면 거부한다.")
+    @Test
+    fun accessStompInvalidJwtToken() {
+        //given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(member)
+
+        val invalidAccessToken = "asd"
+
+        val stompClient = WebSocketStompClient(
+            SockJsClient(listOf(WebSocketTransport(StandardWebSocketClient())))
+        )
+        stompClient.messageConverter = MappingJackson2MessageConverter()
+
+        val headers = StompHeaders().apply {
+            add("Authorization", "Bearer $invalidAccessToken")
+        }
+
+        val sessionHandler = object : StompSessionHandlerAdapter() {}
+
+        //when & then
+        assertThrows<ExecutionException> {
+            stompClient.connectAsync(
+                "http://localhost:$port/ws/stomp",
+                null,
+                headers,
+                sessionHandler
+            ).get(5, TimeUnit.SECONDS)
+        }
+    }
+
+
 //    @Test
 //    fun `유저가 메시지를 보내면 방에 브로드캐스트된다`() {
 //        val room = roomRepository.findAll().first()
@@ -87,14 +148,14 @@
 //        val response = messages.poll(5, TimeUnit.SECONDS)
 //        assertThat(response).usingRecursiveComparison().isEqualTo(expected)
 //    }
-//
-//    private fun createWebSocketStompClient(): WebSocketStompClient {
-//        val transport = WebSocketTransport(StandardWebSocketClient())
-//        val sockJsClient = SockJsClient(listOf(transport))
-//        return WebSocketStompClient(sockJsClient)
-//    }
-//}
-//
+
+    private fun createWebSocketStompClient(): WebSocketStompClient {
+        val transport = WebSocketTransport(StandardWebSocketClient())
+        val sockJsClient = SockJsClient(listOf(transport))
+        return WebSocketStompClient(sockJsClient)
+    }
+}
+
 //// STOMP Frame Handler 구현
 //class StompFrameHandlerImpl<T>(
 //    private val payloadType: Class<T>,
