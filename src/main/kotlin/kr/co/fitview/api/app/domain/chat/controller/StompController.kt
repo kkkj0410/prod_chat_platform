@@ -1,7 +1,6 @@
 package kr.co.fitview.api.app.domain.chat.controller
 
 import kr.co.fitview.api.app.domain.chat.dto.request.ChatMessageRequest
-import kr.co.fitview.api.app.domain.chat.dto.request.ChatMessageRequest2
 import kr.co.fitview.api.app.domain.chat.service.ChatMessageService
 import kr.co.fitview.api.app.domain.chat.service.ChatService
 import org.springframework.messaging.handler.annotation.DestinationVariable
@@ -69,18 +68,18 @@ class StompController(
     ) {
 
         val senderId = principal.name
-        val otherMemberId = chatService.sendMessage(principal.name.toLong(), chatRoomId, message)
+        val response = chatService.sendMessage(principal.name.toLong(), chatRoomId, message)
 
         messageTemplate.convertAndSendToUser(
-            otherMemberId.toString(),
+            response.otherMemberId.toString(),
             "/v1/queue/chats/messages",
-            message
+            response
         )
 
         messageTemplate.convertAndSendToUser(
             senderId,
             "/v1/queue/chats/messages",
-            message
+            response
         )
     }
 
