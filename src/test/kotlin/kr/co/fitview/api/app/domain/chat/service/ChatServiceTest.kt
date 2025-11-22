@@ -274,7 +274,7 @@ class ChatServiceTest@Autowired constructor(
         // then
         val findChatMessage = chatMessageRepository.findAll()[0]
         val findWorkoutRequest = workoutRequestRepository.findAll()[0]
-
+//
         assertThat(response)
             .extracting(
                 "chatRoomId",
