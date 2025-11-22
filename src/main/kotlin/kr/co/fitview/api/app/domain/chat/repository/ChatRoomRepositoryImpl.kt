@@ -5,6 +5,7 @@ import com.querydsl.core.types.dsl.BooleanExpression
 import com.querydsl.jpa.impl.JPAQueryFactory
 import kr.co.fitview.api.app.domain.chat.condition.ChatCondition
 import kr.co.fitview.api.app.domain.chat.dto.response.ChatRoomResponseProfile
+import kr.co.fitview.api.app.domain.chat.entity.ChatParticipant
 import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
 import kr.co.fitview.api.app.domain.chat.entity.QChatParticipant
 import kr.co.fitview.api.app.domain.chat.entity.QChatParticipant.chatParticipant
@@ -92,6 +93,22 @@ class ChatRoomRepositoryImpl(
         val content = if (hasNext) result.subList(0, condition.size) else result
 
         return SliceImpl(content, PageRequest.of(0, condition.size), hasNext)
+    }
+
+
+    override fun findChatRoomByMemberIdAndChatRoomId(memberId: Long, chatRoomId: Long): ChatRoom? {
+        return queryFactory
+            .selectFrom(chatRoom)
+            .join(chatParticipant)
+            .on(
+                chatParticipant.chatRoom.id.eq(chatRoom.id),
+            )
+            .where(
+                chatParticipant.member.id.eq(memberId),
+                chatRoom.deletedAt.isNull,
+                chatRoom.id.eq(chatRoomId)
+            )
+            .fetchOne()
     }
 
 

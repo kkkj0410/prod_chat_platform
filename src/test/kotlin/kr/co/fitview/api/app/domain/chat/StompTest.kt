@@ -1,6 +1,15 @@
 package kr.co.fitview.api.app.domain.chat
 
 import kr.co.fitview.api.app.StompTestSupport
+import kr.co.fitview.api.app.domain.chat.dto.request.ChatTextMessageRequest
+import kr.co.fitview.api.app.domain.chat.entity.ChatParticipant
+import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
+import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
+import kr.co.fitview.api.app.domain.chat.entity.enums.ChatRoomType
+import kr.co.fitview.api.app.domain.chat.repository.ChatMessageRepository
+import kr.co.fitview.api.app.domain.chat.repository.ChatParticipantRepository
+import kr.co.fitview.api.app.domain.chat.repository.ChatRoomRepository
+import kr.co.fitview.api.app.domain.chat.service.ChatService
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.global.entity.Role
@@ -12,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.messaging.converter.MappingJackson2MessageConverter
 import org.springframework.messaging.simp.stomp.StompHeaders
+import org.springframework.messaging.simp.stomp.StompSession
 import org.springframework.messaging.simp.stomp.StompSessionHandlerAdapter
 import org.springframework.web.socket.client.standard.StandardWebSocketClient
 import org.springframework.web.socket.messaging.WebSocketStompClient
@@ -23,7 +33,11 @@ import kotlin.test.Test
 
 class StompTest @Autowired constructor(
     val memberRepository : MemberRepository,
-    val jwtTokenProvider : JwtTokenProvider
+    val jwtTokenProvider : JwtTokenProvider,
+    val chatService : ChatService,
+    val chatMessageRepository : ChatMessageRepository,
+    val chatRoomRepository : ChatRoomRepository,
+    val chatParticipantRepository : ChatParticipantRepository
 ) : StompTestSupport(){
 
     @LocalServerPort
@@ -109,45 +123,80 @@ class StompTest @Autowired constructor(
     }
 
 
-//    @Test
-//    fun `유저가 메시지를 보내면 방에 브로드캐스트된다`() {
-//        val room = roomRepository.findAll().first()
-//        val user = userRepository.findAll().first()
-//        val expected = MessageResponse(user.id!!, "안녕하세요!")
-//
-//        // 1. STOMP WebSocket Client 생성
-//        val stompClient = createWebSocketStompClient()
-//        stompClient.messageConverter = MappingJackson2MessageConverter()
-//
-//        // 2. 비동기 연결
-//        val stompSessionFuture = CompletableFuture<StompSession>()
-//        stompClient.connect(
-//            "ws://localhost:$port/ws-connection",
-//            object : StompSessionHandlerAdapter() {
-//                override fun afterConnected(session: StompSession, headers: StompHeaders) {
-//                    stompSessionFuture.complete(session)
-//                }
-//
-//                override fun handleTransportError(session: StompSession, exception: Throwable) {
-//                    stompSessionFuture.completeExceptionally(exception)
-//                }
-//            }
-//        )
-//
-//        val stompSession = stompSessionFuture.get(5, TimeUnit.SECONDS)
-//
-//        // 3. 메시지 구독
-//        stompSession.subscribe("/sub/rooms/${room.id}/chat",
-//            StompFrameHandlerImpl(MessageResponse::class.java, messages)
-//        )
-//
-//        // 4. 메시지 발송
-//        stompSession.send("/pub/rooms/${room.id}/chat", MessageRequest(user.id!!, "안녕하세요!"))
-//
-//        // 5. 수신 검증
-//        val response = messages.poll(5, TimeUnit.SECONDS)
-//        assertThat(response).usingRecursiveComparison().isEqualTo(expected)
-//    }
+    private fun connectStomp(member: Member): StompSession {
+        val accessToken = jwtTokenProvider.createAccessToken(member.id!!, member.role!!)
+
+        val stompClient = WebSocketStompClient(
+            SockJsClient(listOf(WebSocketTransport(StandardWebSocketClient())))
+        ).apply {
+            messageConverter = MappingJackson2MessageConverter()
+        }
+
+        val headers = StompHeaders().apply {
+            add("Authorization", "Bearer $accessToken")
+        }
+
+        val sessionHandler = object : StompSessionHandlerAdapter() {}
+
+        // 연결 세션 확보
+        val session = stompClient.connectAsync(
+            "http://localhost:$port/ws/stomp",
+            null,
+            headers,
+            sessionHandler
+        ).get(5, TimeUnit.SECONDS)
+        return session
+    }
+
+    @DisplayName("메시지를 발행(PUB)한다")
+    @Test
+    fun publishMessage() {
+        //given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val other = Member(
+            email = "email2",
+            password = "password2",
+            role = Role.USER,
+        )
+        val savedMember1 = memberRepository.save(me)
+        val savedMember2 = memberRepository.save(other)
+
+        val savedChatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+
+        val chatParticipant1 = ChatParticipant(
+            savedChatRoom,
+            savedMember1
+        )
+        val chatParticipant2 = ChatParticipant(
+            savedChatRoom,
+            savedMember2
+        )
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+
+        val session = connectStomp(me)
+
+        val request = ChatTextMessageRequest(
+            type = ChatMessageType.TEXT,
+            content = "hello"
+        )
+
+        // when
+        session.send("/v1/pub/chats/${savedChatRoom.id}/messages", request)
+        Thread.sleep(500)
+
+
+        // 나머지 진행하기
+        // then
+
+    }
+
+
+
 
     private fun createWebSocketStompClient(): WebSocketStompClient {
         val transport = WebSocketTransport(StandardWebSocketClient())
@@ -155,18 +204,3 @@ class StompTest @Autowired constructor(
         return WebSocketStompClient(sockJsClient)
     }
 }
-
-//// STOMP Frame Handler 구현
-//class StompFrameHandlerImpl<T>(
-//    private val payloadType: Class<T>,
-//    private val messages: BlockingQueue<T>
-//) : StompFrameHandler {
-//    override fun getPayloadType(headers: StompHeaders): Type = payloadType
-//    override fun handleFrame(headers: StompHeaders, payload: Any?) {
-//        messages.offer(payload as T)
-//    }
-//}
-//
-//// 예시 DTO
-//data class MessageRequest(val userId: Long, val content: String)
-//data class MessageResponse(val userId: Long, val content: String)

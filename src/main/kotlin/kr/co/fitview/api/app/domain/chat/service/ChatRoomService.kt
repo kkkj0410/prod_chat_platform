@@ -2,6 +2,7 @@ package kr.co.fitview.api.app.domain.chat.service
 
 import kr.co.fitview.api.app.domain.chat.condition.ChatCondition
 import kr.co.fitview.api.app.domain.chat.dto.response.ChatRoomResponse
+import kr.co.fitview.api.app.domain.chat.entity.ChatParticipant
 import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatRoomType
 import kr.co.fitview.api.app.domain.chat.repository.ChatRoomRepository
@@ -20,13 +21,14 @@ class ChatRoomService(
     private val workoutRequestService : WorkoutRequestService
 ) {
 
-    fun findChatRoomFrom(fromMemberId: Long, toMemberId: Long): ChatRoom? {
-        return chatRoomRepository.findPrivateChatRoomIdBetweenMemberIds(fromMemberId, toMemberId)
-    }
-
+    @Transactional
     fun addPrivateChatRoom() : ChatRoom {
         val chatRoom = ChatRoom(ChatRoomType.PRIVATE)
         return chatRoomRepository.save(chatRoom)
+    }
+
+    fun findChatRoomFrom(fromMemberId: Long, toMemberId: Long): ChatRoom? {
+        return chatRoomRepository.findPrivateChatRoomIdBetweenMemberIds(fromMemberId, toMemberId)
     }
 
     fun findPrivateChatRoomFrom(memberOneId : Long, memberTwoId : Long) : ChatRoom? {
@@ -50,6 +52,10 @@ class ChatRoomService(
         val chatRoomResponses = ChatRoomResponse.from(profiles, chatMessages, recentWorkoutRequests)
 
         return SliceImpl(chatRoomResponses, slice.pageable, slice.hasNext())
+    }
+
+    fun findChatRoomFromMemberIdAndChatRoomId(memberId : Long, chatRoomId : Long) : ChatRoom? {
+        return chatRoomRepository.findChatRoomByMemberIdAndChatRoomId(memberId, chatRoomId)
     }
 
 }

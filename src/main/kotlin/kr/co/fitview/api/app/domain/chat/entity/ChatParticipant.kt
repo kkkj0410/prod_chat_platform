@@ -27,4 +27,8 @@ class ChatParticipant(
     @Column(name = "chat_participant_id", nullable = false)
     var id: Long? = null
 
+    fun getMemberId() : Long{
+        return member!!.id!!
+    }
+
 }

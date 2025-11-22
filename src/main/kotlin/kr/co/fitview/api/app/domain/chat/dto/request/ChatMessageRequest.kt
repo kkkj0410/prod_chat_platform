@@ -1,21 +1,19 @@
 package kr.co.fitview.api.app.domain.chat.dto.request
 
-import jakarta.validation.constraints.NotBlank
-import kr.co.fitview.api.app.domain.auth.dto.request.AccessTokenRefreshServiceRequest
+import com.fasterxml.jackson.annotation.JsonSubTypes
+import com.fasterxml.jackson.annotation.JsonTypeInfo
+import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
 
-data class ChatMessageRequest(
 
-    @field:NotBlank(message = "message is required")
-    val message : String?,
-
-    @field:NotBlank(message = "senderEmail is required")
-    val senderEmail : String?
-
-){
-    fun toServiceRequest() : ChatMessageServiceRequest {
-        return ChatMessageServiceRequest(
-            message = message!!,
-            senderEmail = senderEmail!!
-        )
-    }
+@JsonTypeInfo(
+    use = JsonTypeInfo.Id.NAME,
+    include = JsonTypeInfo.As.PROPERTY,
+    property = "type"
+)
+@JsonSubTypes(
+    JsonSubTypes.Type(value = ChatTextMessageRequest::class, name = "TEXT"),
+    JsonSubTypes.Type(value = ChatWorkoutRequestMessageRequest::class, name = "WORKOUT_REQUEST")
+)
+sealed interface ChatMessageRequest {
+    val type: ChatMessageType
 }
