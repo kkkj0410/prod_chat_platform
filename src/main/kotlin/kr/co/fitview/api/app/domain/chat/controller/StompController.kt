@@ -1,25 +1,16 @@
 package kr.co.fitview.api.app.domain.chat.controller
 
-import kr.co.fitview.api.app.domain.chat.config.StompPrincipal
 import kr.co.fitview.api.app.domain.chat.dto.request.ChatMessageRequest
+import kr.co.fitview.api.app.domain.chat.dto.request.ChatMessageRequest2
+import kr.co.fitview.api.app.domain.chat.service.ChatMessageService
 import kr.co.fitview.api.app.domain.chat.service.ChatService
-import kr.co.fitview.api.app.global.security.UserPrincipal
-import kr.co.fitview.api.app.global.util.SecurityUtil
 import org.springframework.messaging.handler.annotation.DestinationVariable
 import org.springframework.messaging.handler.annotation.MessageMapping
 import org.springframework.messaging.handler.annotation.Payload
-import org.springframework.messaging.handler.annotation.SendTo
-import org.springframework.messaging.simp.SimpMessageHeaderAccessor
 import org.springframework.messaging.simp.SimpMessageSendingOperations
-import org.springframework.messaging.simp.stomp.StompHeaderAccessor
 import org.springframework.messaging.simp.user.SimpUserRegistry
-import org.springframework.security.core.Authentication
-import org.springframework.security.core.annotation.AuthenticationPrincipal
-import org.springframework.security.core.context.SecurityContextHolder
-import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.*
 import java.security.Principal
-import java.time.LocalDateTime
 
 
 @RestController
@@ -55,32 +46,33 @@ class StompController(
         @DestinationVariable
         roomId : Long,
 
-        request : ChatMessageRequest
-    ) {
+        @Payload
+        request : ChatMessageRequest,
 
+    ) {
         println(request)
+
 
         //@SendTo 어노테이션을 대신하는 함수
         messageTemplate.convertAndSend("/api/v1/topic/$roomId", request)
     }
 
-    @MessageMapping("/chats/messages")
+    @MessageMapping("/chats/{chatRoomId}/messages")
     fun sendPrivateMessage(
+        principal: Principal,
+
+        @DestinationVariable
+        chatRoomId : Long,
+
         @Payload
-        message: PrivateMessageDto,
-
-        principal: Principal
-
+        message: ChatMessageRequest
     ) {
 
         val senderId = principal.name
-        val recipientId = message.recipientId // "userB"
-
-        println("Sending private message from $senderId to $recipientId")
-
+        val otherMemberId = chatService.sendMessage(principal.name.toLong(), chatRoomId, message)
 
         messageTemplate.convertAndSendToUser(
-            recipientId,
+            otherMemberId.toString(),
             "/v1/queue/chats/messages",
             message
         )
@@ -91,25 +83,6 @@ class StompController(
             message
         )
     }
-
-    @GetMapping("/api/v1/test/{memberId}")
-    fun test(
-        @PathVariable
-        memberId : Long
-    ){
-        println("$memberId, ${simpUserRegistry.getUser(memberId.toString()) != null}",)
-
-    }
-
-    @PostMapping("/api/v1/test/time")
-    fun test2(
-        @RequestBody
-        time : TestRequest
-    ){
-        println("$time")
-
-    }
-
 
     fun isMemberConnected(memberId: String): Boolean {
 

@@ -8,14 +8,16 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 
 
 @Configuration
-class CorsConfig {
+class CorsConfig(
+    private val corsConstant : CorsConstant
+) {
 
     fun corsConfigurationSource(): CorsConfigurationSource {
         val configuration = CorsConfiguration()
 
         //리소스를 허용할 URL 지정
         configuration.setAllowedOriginPatterns(
-            CorsConstant.ALLOW_ORIGIN_URIS
+            corsConstant.ALLOW_ORIGIN_URIS
         )
 
         //허용하는 HTTP METHOD 지정

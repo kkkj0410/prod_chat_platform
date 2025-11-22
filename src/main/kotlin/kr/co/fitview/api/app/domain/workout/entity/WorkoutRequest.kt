@@ -56,4 +56,25 @@ class WorkoutRequest(
     @Column(name = "workout_request_id", nullable = false)
     var id: Long? = null
 
+    companion object {
+        fun of(
+            chatMessage: ChatMessage,
+            fromMember: Member,
+            toMember: Member,
+            location: String,
+            scheduledAt: LocalDateTime,
+            requestedAt: LocalDateTime
+        ): WorkoutRequest {
+            return WorkoutRequest(
+                chatMessage = chatMessage,
+                fromMember = fromMember,
+                toMember = toMember,
+                status = WorkoutRequestStatus.PENDING,
+                location = location,
+                scheduledAt = scheduledAt,
+                requestedAt = requestedAt
+            )
+        }
+    }
+
 }

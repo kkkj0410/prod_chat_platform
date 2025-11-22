@@ -6,4 +6,7 @@ import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
 interface ChatParticipantRepositoryCustom {
 
     fun findChatParticipantByMemberIdAndChatRoomId(memberId: Long, chatRoomId: Long): ChatParticipant?
+
+    fun findOtherChatParticipantByMemberIdAndChatRoomId(memberId: Long, chatRoomId: Long): ChatParticipant?
+
 }

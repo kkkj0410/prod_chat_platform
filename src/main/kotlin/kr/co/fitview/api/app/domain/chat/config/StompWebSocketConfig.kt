@@ -10,20 +10,22 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer
+import org.springframework.web.socket.config.annotation.WebSocketTransportRegistration
 
 
 @Configuration
 @EnableWebSocketMessageBroker
 class StompWebSocketConfig(
     val stompHandler : StompHandler,
-//    val threadPoolTaskScheduler : ThreadPoolTaskScheduler
+    val corsConstant : CorsConstant
 ) : WebSocketMessageBrokerConfigurer {
 
 
 
     override fun registerStompEndpoints(registry: StompEndpointRegistry) {
         registry.addEndpoint(SecurityConstant.WS_STOMP_URI)
-            .setAllowedOriginPatterns(*CorsConstant.ALLOW_ORIGIN_URIS.toTypedArray())
+            .setAllowedOriginPatterns(*corsConstant.ALLOW_ORIGIN_URIS.toTypedArray())
+
             //ws://가 아닌 http:// 엔드포인트 사용 가능하게 해주는 sockJs 라이브러리를 통해 요청을 허용하는 설정
             // FE가 ws 엔드포인트가 아니라 http 엔드포인트를 통해서 웹소캣 사용을 가능하게 해줌
             .withSockJS()
