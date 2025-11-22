@@ -31,3 +31,11 @@ data class ChatMessageDetailResponse(
     }
 }
 
+fun ChatMessageDetailResponse.withIsMe(isMe: Boolean): ChatMessageDetailResponse {
+    val updatedMessage = when(val msg = this.chatMessage) {
+        is ChatMessageContent -> msg.copy(isMe = isMe)
+        is ChatMessageWorkoutRequest -> msg.copy(isMe = isMe)
+        else -> msg
+    }
+    return this.copy(chatMessage = updatedMessage)
+}

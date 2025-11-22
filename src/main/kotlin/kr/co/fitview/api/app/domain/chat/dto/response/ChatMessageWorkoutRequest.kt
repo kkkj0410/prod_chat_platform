@@ -28,6 +28,8 @@ data class ChatMessageWorkoutRequest(
     
 ) : LastChatMessage {
 
+
+
     companion object {
         fun from(chatMessage: ChatMessage, workoutRequest: WorkoutRequest, myMemberId : Long, now : LocalDateTime): ChatMessageWorkoutRequest {
             return ChatMessageWorkoutRequest(

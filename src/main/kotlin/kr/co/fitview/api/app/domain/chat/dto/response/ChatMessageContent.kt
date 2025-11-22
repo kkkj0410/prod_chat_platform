@@ -23,6 +23,7 @@ data class ChatMessageContent(
 
 ) : LastChatMessage{
 
+
     companion object {
         fun from(chatMessage: ChatMessage, myMemberId : Long): ChatMessageContent {
             return ChatMessageContent(
@@ -35,3 +36,4 @@ data class ChatMessageContent(
         }
     }
 }
+
