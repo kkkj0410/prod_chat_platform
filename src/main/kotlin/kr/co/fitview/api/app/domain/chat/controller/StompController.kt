@@ -1,6 +1,7 @@
 package kr.co.fitview.api.app.domain.chat.controller
 
 import kr.co.fitview.api.app.domain.chat.dto.request.ChatMessageRequest
+import kr.co.fitview.api.app.domain.chat.dto.response.withIsMe
 import kr.co.fitview.api.app.domain.chat.service.ChatMessageService
 import kr.co.fitview.api.app.domain.chat.service.ChatService
 import org.springframework.messaging.handler.annotation.DestinationVariable
@@ -73,13 +74,13 @@ class StompController(
         messageTemplate.convertAndSendToUser(
             response.otherMemberId.toString(),
             "/v1/queue/chats/messages",
-            response
+            response.withIsMe(false)
         )
 
         messageTemplate.convertAndSendToUser(
             senderId,
             "/v1/queue/chats/messages",
-            response
+            response.withIsMe(true)
         )
     }
 
