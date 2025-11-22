@@ -1,9 +1,11 @@
 package kr.co.fitview.api.app.domain.member.repository
 
+import com.querydsl.core.types.Projections
 import com.querydsl.core.types.dsl.BooleanExpression
 import com.querydsl.core.types.dsl.CaseBuilder
 import com.querydsl.core.types.dsl.Expressions
 import com.querydsl.jpa.JPAExpressions
+import com.querydsl.jpa.JPAExpressions.select
 import com.querydsl.jpa.impl.JPAQueryFactory
 import jakarta.persistence.EntityManager
 import kr.co.fitview.api.app.domain.address.entity.QAddress
@@ -24,12 +26,12 @@ import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutStyle
 
 
 class MemberRepositoryImpl(
-    private val queryFactory : JPAQueryFactory,
+    private val queryFactory: JPAQueryFactory,
     private val em: EntityManager
 ) : MemberRepositoryCustom {
 
 
-    override fun findMemberWithinLocal(memberId: Long, condition: MemberLocalCondition) : List<MemberLocalResponse>{
+    override fun findMemberWithinLocal(memberId: Long, condition: MemberLocalCondition): List<MemberLocalResponse> {
 
 //        SELECT a.*
 //                from member m
@@ -105,7 +107,7 @@ class MemberRepositoryImpl(
                         .from(subAddress2)
                         .where(subAddress2.member.id.eq(memberId)),
 
-                )
+                    )
                     .and(
                         address.lng.between(
                             JPAExpressions.select(
@@ -398,7 +400,7 @@ class MemberRepositoryImpl(
         }
     }
 
-    override fun findAllRandomMemberIdByCountAndSeoul(count: Int, seed : Long): List<Long> {
+    override fun findAllRandomMemberIdByCountAndSeoul(count: Int, seed: Long): List<Long> {
         val sql = """
         SELECT m.member_id
         FROM member m
@@ -420,7 +422,7 @@ class MemberRepositoryImpl(
 
     override fun findMemberProfileByDeletedAtIsNull(memberId: Long): MemberProfileResponse? {
 
-         val memberProfileFlats = queryFactory
+        val memberProfileFlats = queryFactory
             .select(
                 QMemberProfileFlat(
                     member.id,
@@ -462,6 +464,28 @@ class MemberRepositoryImpl(
         return MemberProfileResponse.fromFlat(memberProfileFlats)
     }
 
+    override fun findMemberChatProfileByDeletedAtIsNull(memberId: Long): MemberChatProfileResponse? {
+        return queryFactory
+            .select(
+                Projections.constructor(
+                    MemberChatProfileResponse::class.java,
+                    image.url,
+                    member.nickname,
+                )
+            )
+            .from(member)
+            .join(member.mutableMemberImages, memberImage)
+            .join(memberImage.image, image)
+            .where(
+                member.id.eq(memberId),
+                member.deletedAt.isNull,
+                memberImage.deletedAt.isNull,
+                image.deletedAt.isNull,
+                memberImage.type.eq(MemberImageType.PROFILE)
+            )
+            .fetchOne()
+    }
+
     private fun gteHeight(minHeight: Int?): BooleanExpression? {
         return minHeight?.let { member.height.goe(it) }
     }
@@ -479,7 +503,7 @@ class MemberRepositoryImpl(
     }
 
 
-    private fun betweenAge(ages : List<Age>?) : BooleanExpression?{
+    private fun betweenAge(ages: List<Age>?): BooleanExpression? {
         if (ages.isNullOrEmpty()) return null
 
         val koreanAge = Expressions.numberTemplate(
@@ -501,12 +525,12 @@ class MemberRepositoryImpl(
         return predicate
     }
 
-    private fun inWorkoutGoal(workoutGoals : List<MemberWorkoutGoal>?) : BooleanExpression?{
+    private fun inWorkoutGoal(workoutGoals: List<MemberWorkoutGoal>?): BooleanExpression? {
         if (workoutGoals.isNullOrEmpty()) return null
         return member.workoutGoal.`in`(workoutGoals)
     }
 
-    private fun inWorkoutStyle(workoutStyles : List<MemberWorkoutStyle>?) : BooleanExpression?{
+    private fun inWorkoutStyle(workoutStyles: List<MemberWorkoutStyle>?): BooleanExpression? {
         if (workoutStyles.isNullOrEmpty()) return null
         return member.workoutStyle.`in`(workoutStyles)
     }

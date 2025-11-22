@@ -102,6 +102,10 @@ class MemberService(
         return memberRepository.getReferenceById(memberId)
     }
 
+    fun findMemberChatProfileFrom(memberId: Long): MemberChatProfileResponse? {
+        return memberRepository.findMemberChatProfileByDeletedAtIsNull(memberId)
+    }
+
     fun findRandomMemberWithinLocal(
         memberId: Long,
         condition: MemberLocalCondition,
@@ -168,6 +172,7 @@ class MemberService(
     ) = workoutTimeNames
         .filterNot { it in findWorkoutNameSet }
         .map { WorkoutTime(member = member, name = it) }
+
 
 
 }

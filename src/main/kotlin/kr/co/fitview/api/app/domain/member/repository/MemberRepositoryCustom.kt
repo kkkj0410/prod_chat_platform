@@ -1,6 +1,7 @@
 package kr.co.fitview.api.app.domain.member.repository
 
 import kr.co.fitview.api.app.domain.member.condition.MemberLocalCondition
+import kr.co.fitview.api.app.domain.member.dto.response.MemberChatProfileResponse
 import kr.co.fitview.api.app.domain.member.dto.response.MemberLocalResponse
 import kr.co.fitview.api.app.domain.member.dto.response.MemberProfileResponse
 import kr.co.fitview.api.app.domain.member.dto.response.MemberRecommendationResponse
@@ -16,4 +17,6 @@ interface MemberRepositoryCustom {
     fun findAllRandomMemberIdByCountAndSeoul(count: Int, seed : Long) : List<Long>
 
     fun findMemberProfileByDeletedAtIsNull(memberId: Long): MemberProfileResponse?
+
+    fun findMemberChatProfileByDeletedAtIsNull(memberId: Long): MemberChatProfileResponse?
 }

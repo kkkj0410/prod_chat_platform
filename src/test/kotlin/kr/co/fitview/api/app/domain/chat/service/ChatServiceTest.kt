@@ -1,9 +1,11 @@
 package kr.co.fitview.api.app.domain.chat.service
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.chat.dto.request.ChatRoomCreateServiceRequest
 import kr.co.fitview.api.app.domain.chat.dto.request.ChatTextMessageRequest
 import kr.co.fitview.api.app.domain.chat.dto.request.ChatWorkoutRequestMessageRequest
+import kr.co.fitview.api.app.domain.chat.dto.response.ChatMessageContent
 import kr.co.fitview.api.app.domain.chat.entity.ChatParticipant
 import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
@@ -13,6 +15,8 @@ import kr.co.fitview.api.app.domain.chat.repository.ChatParticipantRepository
 import kr.co.fitview.api.app.domain.chat.repository.ChatRoomRepository
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
+import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
+import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusFor
 import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
 import kr.co.fitview.api.app.domain.workout.repository.WorkoutRequestRepository
 import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartner
@@ -21,13 +25,14 @@ import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.chat.ChatErrorCode
 import kr.co.fitview.api.app.global.time.Time
+import kr.co.fitview.api.app.global.util.TestDataFactory
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.assertj.core.api.ThrowingConsumer
-import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import java.time.LocalDateTime
 
 class ChatServiceTest@Autowired constructor(
     val chatService: ChatService,
@@ -36,6 +41,7 @@ class ChatServiceTest@Autowired constructor(
     val chatMessageRepository : ChatMessageRepository,
     val workoutPartnerRepository : WorkoutPartnerRepository,
     val workoutRequestRepository : WorkoutRequestRepository,
+    val oAuth2Service : OAuth2Service,
     val memberRepository : MemberRepository,
     val time : Time
 ) : IntegrationTestSupport() {
@@ -164,6 +170,9 @@ class ChatServiceTest@Autowired constructor(
         memberRepository.save(me)
         memberRepository.save(other)
 
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest, me.id!!)
+
         val savedChatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
 
         val chatParticipant1 = ChatParticipant(
@@ -182,17 +191,34 @@ class ChatServiceTest@Autowired constructor(
         )
 
         // when
-        val otherMemberId = chatService.sendMessage(
+        val response = chatService.sendMessage(
             memberId = me.id!!,
             chatRoomId = savedChatRoom.id!!,
             message = request
         )
 
         // then
-        assertThat(otherMemberId).isEqualTo(other.id!!)
         val findChatMessage = chatMessageRepository.findAll()[0]
 
-        assertThat(findChatMessage)
+        assertThat(response)
+            .extracting(
+                "chatRoomId",
+                "profileImageUrl",
+                "nickname",
+                "chatMessage.chatMessageId",
+                "chatMessage.type",
+                "chatMessage.sentAt",
+                "chatMessage.content",
+            )
+            .contains(
+                savedChatRoom.id!!,
+                signupRequest.profileImageUrl,
+                signupRequest.nickname,
+                findChatMessage.id!!,
+                ChatMessageType.TEXT,
+                time.nowLocalDateTime,
+                request.content
+            )
 
         assertThat(findChatMessage)
             .extracting("member", "chatRoom", "type", "content", "sentAt")
@@ -217,6 +243,9 @@ class ChatServiceTest@Autowired constructor(
         memberRepository.save(me)
         memberRepository.save(other)
 
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest, me.id!!)
+
         val savedChatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
 
         val chatParticipant1 = ChatParticipant(
@@ -236,18 +265,42 @@ class ChatServiceTest@Autowired constructor(
         )
 
         // when
-        val otherMemberId = chatService.sendMessage(
+        val response = chatService.sendMessage(
             memberId = me.id!!,
             chatRoomId = savedChatRoom.id!!,
             message = request
         )
 
         // then
-        assertThat(otherMemberId).isEqualTo(other.id!!)
         val findChatMessage = chatMessageRepository.findAll()[0]
         val findWorkoutRequest = workoutRequestRepository.findAll()[0]
 
-        assertThat(findChatMessage)
+        assertThat(response)
+            .extracting(
+                "chatRoomId",
+                "profileImageUrl",
+                "nickname",
+                "chatMessage.chatMessageId",
+                "chatMessage.type",
+                "chatMessage.sentAt",
+                "chatMessage.workoutRequestId",
+                "chatMessage.status",
+                "chatMessage.scheduledAt",
+                "chatMessage.location"
+            )
+            .contains(
+                savedChatRoom.id!!,
+                signupRequest.profileImageUrl,
+                signupRequest.nickname,
+                findChatMessage.id!!,
+                ChatMessageType.WORKOUT_REQUEST,
+                time.nowLocalDateTime,
+                findWorkoutRequest.id!!,
+                WorkoutRequestStatusFor.PENDING,
+                request.scheduledAt,
+                request.location
+            )
+
 
         assertThat(findChatMessage)
             .extracting("member", "chatRoom", "type", "content", "sentAt")

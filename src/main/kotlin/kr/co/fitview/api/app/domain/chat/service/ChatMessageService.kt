@@ -12,6 +12,9 @@ import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
 import kr.co.fitview.api.app.domain.chat.repository.ChatMessageRepository
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.service.MemberReferenceProvider
+import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusFor
+import kr.co.fitview.api.app.domain.workout.entity.QWorkoutRequest.workoutRequest
+import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
 import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestService
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.chat.ChatErrorCode
@@ -33,7 +36,7 @@ class ChatMessageService(
 ) {
 
     @Transactional
-    fun addChatTextMessage(member: Member, chatRoom: ChatRoom, message: ChatTextMessageServiceRequest) : ChatMessage {
+    fun addChatTextMessage(member: Member, chatRoom: ChatRoom, message: ChatTextMessageServiceRequest) : LastChatMessage {
         val now = time.nowLocalDateTime
         val chatMessage = ChatMessage.ofText(
             member = member,
@@ -51,11 +54,17 @@ class ChatMessageService(
             chatRoom = chatRoom
         )
 
-        return chatMessage
+        val response = ChatMessageContent(
+            chatMessageId = chatMessage.id!!,
+            sentAt = now,
+            content = message.content
+        )
+
+        return response
     }
 
     @Transactional
-    fun addChatWorkoutRequestMessage(fromMember: Member, chatRoom: ChatRoom, message: ChatWorkoutRequestMessageServiceRequest) : ChatMessage{
+    fun addChatWorkoutRequestMessage(fromMember: Member, chatRoom: ChatRoom, message: ChatWorkoutRequestMessageServiceRequest) : LastChatMessage{
         val now = time.nowLocalDateTime
         val chatMessage = ChatMessage.ofWorkoutRequest(
             member = fromMember,
@@ -69,7 +78,7 @@ class ChatMessageService(
 
         val toMember = memberReferenceProvider.findMemberReferenceFrom(findOtherChatParticipant!!.getMemberId())
 
-        workoutRequestService.addWorkoutRequest(
+        val savedWorkoutRequest = workoutRequestService.addWorkoutRequest(
             chatMessage = chatMessage,
             fromMember = fromMember,
             toMember = toMember,
@@ -82,7 +91,21 @@ class ChatMessageService(
             chatRoom = chatRoom
         )
 
-        return chatMessage
+        val response = ChatMessageWorkoutRequest(
+            chatMessageId = chatMessage.id!!,
+            sentAt = now,
+            workoutRequestId = savedWorkoutRequest.id!!,
+            status = WorkoutRequestStatusFor.from(
+                dbStatus = WorkoutRequestStatus.PENDING,
+                requestedAt = now,
+                scheduledAt = message.scheduledAt,
+                now = now
+            ),
+            scheduledAt = message.scheduledAt,
+            location = message.location,
+        )
+
+        return response
     }
 
 
