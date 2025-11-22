@@ -154,7 +154,7 @@ class StompTest @Autowired constructor(
     private var messages: BlockingQueue<String> = LinkedBlockingDeque()
 
     @DisplayName("메시지를 발행(PUB)한다 - FE에서는 정상 동작하지만 테스트에서는 SUB 내용을 받지 못하는 오류 있음. 해결 필요(2025.11.22)")
-    @Commit
+//    @Commit -> commit은 db 데이터를 안지우기 때문에 쓰면안됨
 //    @Test
     fun publishMessage() {
         //given
