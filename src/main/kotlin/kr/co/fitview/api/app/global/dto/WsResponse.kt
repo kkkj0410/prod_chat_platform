@@ -8,4 +8,5 @@ data class WsResponse<T>(
 enum class WsMessageType {
     TEXT,
     WORKOUT_REQUEST,
+    WORKOUT_REQUEST_UPDATE
 }

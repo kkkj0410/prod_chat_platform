@@ -5,6 +5,7 @@ import kr.co.fitview.api.app.domain.chat.dto.request.WorkoutRequestUpdateRequest
 import kr.co.fitview.api.app.domain.chat.dto.response.withIsMe
 import kr.co.fitview.api.app.domain.chat.service.ChatMessageService
 import kr.co.fitview.api.app.domain.chat.service.ChatService
+import kr.co.fitview.api.app.domain.notification.service.NotificationStompService
 import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestService
 import org.springframework.messaging.handler.annotation.DestinationVariable
 import org.springframework.messaging.handler.annotation.MessageMapping
@@ -20,7 +21,8 @@ class StompController(
     private val messageTemplate : SimpMessageSendingOperations,
     private val simpUserRegistry: SimpUserRegistry,
     private val chatService : ChatService,
-    private val workoutRequestService : WorkoutRequestService
+    private val workoutRequestService : WorkoutRequestService,
+    private val notificationStompService : NotificationStompService
 ) {
 
 
@@ -92,24 +94,16 @@ class StompController(
         principal: Principal,
 
         @Payload
-        message: WorkoutRequestUpdateRequest
+        request: WorkoutRequestUpdateRequest
     ) {
 
         val senderId = principal.name
 
-//        val response = chatService.sendMessage(principal.name.toLong(), chatRoomId, message)
-//
-//        messageTemplate.convertAndSendToUser(
-//            response.otherMemberId.toString(),
-//            "/v1/queue/chats/messages",
-//            response.withIsMe(false)
-//        )
-//
-//        messageTemplate.convertAndSendToUser(
-//            senderId,
-//            "/v1/queue/chats/messages",
-//            response.withIsMe(true)
-//        )
+        val response = workoutRequestService.modifyWorkoutRequest(senderId.toLong(), request)
+
+        notificationStompService.sendWorkoutRequestUpdate(
+            listOf(response)
+        )
     }
 
     fun isMemberConnected(memberId: String): Boolean {

@@ -5,6 +5,7 @@ import kr.co.fitview.api.app.domain.auth.controller.AuthController
 import kr.co.fitview.api.app.domain.auth.service.AuthService
 import kr.co.fitview.api.app.domain.chat.controller.StompController
 import kr.co.fitview.api.app.domain.chat.service.ChatService
+import kr.co.fitview.api.app.domain.notification.service.NotificationStompService
 import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestService
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -23,9 +24,11 @@ class StompControllerDocsTest : RestDocsSupport(){
     private val simpUserRegistry: SimpUserRegistry = mock(SimpUserRegistry::class.java)
     private val chatService : ChatService = mock(ChatService::class.java)
     private val workoutRequestService : WorkoutRequestService = mock(WorkoutRequestService::class.java)
+    private val notificationStompService : NotificationStompService = mock(NotificationStompService::class.java)
+
 
     override fun initController(): Any {
-        return StompController(simpMessageSendingOperations, simpUserRegistry, chatService, workoutRequestService)
+        return StompController(simpMessageSendingOperations, simpUserRegistry, chatService, workoutRequestService, notificationStompService)
     }
 
     @DisplayName("사용자 회원가입 API")

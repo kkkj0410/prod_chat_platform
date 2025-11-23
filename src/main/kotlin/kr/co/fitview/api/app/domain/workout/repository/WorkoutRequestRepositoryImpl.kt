@@ -10,6 +10,7 @@ import kr.co.fitview.api.app.domain.workout.dto.response.LastWorkoutRequestMessa
 import kr.co.fitview.api.app.domain.workout.dto.response.WorkoutRequestUpdateResponse
 import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusForResponse
 import kr.co.fitview.api.app.domain.workout.entity.QWorkoutRequest.workoutRequest
+import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequest
 import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
 import kr.co.fitview.api.app.global.time.Time
 import java.sql.Timestamp
@@ -127,5 +128,17 @@ class WorkoutRequestRepositoryImpl(
         em.flush()
         em.clear()
     }
+
+    override fun findWorkoutRequestByIdAndDeletedAtIsNullWithChatMessage(workoutRequestId : Long) : WorkoutRequest?{
+        return queryFactory
+            .selectFrom(workoutRequest)
+            .join(workoutRequest.chatMessage, chatMessage).fetchJoin()
+            .where(
+                workoutRequest.id.eq(workoutRequestId),
+                workoutRequest.deletedAt.isNull
+            )
+            .fetchOne()
+    }
+
 
 }

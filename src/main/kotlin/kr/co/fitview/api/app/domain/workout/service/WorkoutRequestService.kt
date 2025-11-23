@@ -1,6 +1,8 @@
 package kr.co.fitview.api.app.domain.workout.service
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import kr.co.fitview.api.app.domain.chat.dto.request.ChatWorkoutRequestMessageServiceRequest
+import kr.co.fitview.api.app.domain.chat.dto.request.WorkoutRequestUpdateRequest
 import kr.co.fitview.api.app.domain.chat.entity.ChatMessage
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.workout.dto.response.LastWorkoutRequestMessage
@@ -8,6 +10,9 @@ import kr.co.fitview.api.app.domain.workout.dto.response.WorkoutRequestUpdateRes
 import kr.co.fitview.api.app.domain.workout.repository.WorkoutRequestRepository
 import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequest
 import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
+import kr.co.fitview.api.app.global.exception.GlobalException
+import kr.co.fitview.api.app.global.exception.error.global.GlobalErrorCode
+import kr.co.fitview.api.app.global.exception.error.workout_request.WorkoutRequestErrorCode
 import kr.co.fitview.api.app.global.time.Time
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -47,8 +52,76 @@ class WorkoutRequestService(
         return expireResponse
     }
 
+    @Transactional
+    fun modifyWorkoutRequest(memberId: Long, request: WorkoutRequestUpdateRequest) : WorkoutRequestUpdateResponse{
+
+        val findWorkoutRequest = workoutRequestRepository
+            .findWorkoutRequestByIdAndDeletedAtIsNullWithChatMessage(request.workoutRequestId)
+            ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
+
+        validateNotUpdateStatus(findWorkoutRequest)
+
+        validateNotRejectOrNotCancel(findWorkoutRequest, memberId, request)
+
+        findWorkoutRequest.updateStatus(request.status.toWorkoutRequestStatus())
+
+        val response = WorkoutRequestUpdateResponse(
+            chatRoomId = findWorkoutRequest.getChatRoomId()!!,
+            workoutRequestId = findWorkoutRequest.id!!,
+            status = findWorkoutRequest.status!!,
+            fromMemberId = findWorkoutRequest.getFromMemberId(),
+            toMemberId = findWorkoutRequest.getToMemberId()
+        )
+
+        return response
+    }
+
     fun findRecentWorkoutRequestFrom(chatRoomIds : List<Long>) : List<LastWorkoutRequestMessage>{
         return workoutRequestRepository.findRecentWorkoutRequest(chatRoomIds)
     }
+
+    private fun validateNotUpdateStatus(findWorkoutRequest: WorkoutRequest) {
+        val notUpdateStatus = getNotUpdateStatus()
+
+        if (notUpdateStatus.contains(findWorkoutRequest.status)) {
+            throw GlobalException(WorkoutRequestErrorCode.TERMINATED_WORKOUT_REQUEST_STATUS_CHANGE)
+        }
+    }
+
+    private fun getNotUpdateStatus(): List<WorkoutRequestStatus> {
+        val notUpdateStatus = enumValues<WorkoutRequestStatus>()
+            .filter { it != WorkoutRequestStatus.PENDING }
+
+        return notUpdateStatus
+    }
+
+    private fun validateNotRejectOrNotCancel(
+        findWorkoutRequest: WorkoutRequest,
+        memberId: Long,
+        request: WorkoutRequestUpdateRequest
+    ) {
+        if (isNotReject(findWorkoutRequest, memberId, request)) {
+            throw GlobalException(WorkoutRequestErrorCode.FROM_MEMBER_CANNOT_REJECT)
+        }
+
+        if (isNotCancel(findWorkoutRequest, memberId, request)) {
+            throw GlobalException(WorkoutRequestErrorCode.TO_MEMBER_CANNOT_CANCEL)
+        }
+    }
+
+    private fun isNotCancel(
+        findWorkoutRequest: WorkoutRequest,
+        memberId: Long,
+        request: WorkoutRequestUpdateRequest
+    ) =
+        findWorkoutRequest.getToMemberId() == memberId && request.status.toWorkoutRequestStatus() == WorkoutRequestStatus.CANCEL
+
+    private fun isNotReject(
+        findWorkoutRequest: WorkoutRequest,
+        memberId: Long,
+        request: WorkoutRequestUpdateRequest
+    ) =
+        findWorkoutRequest.getFromMemberId() == memberId && request.status.toWorkoutRequestStatus() == WorkoutRequestStatus.REJECT
+
 
 }

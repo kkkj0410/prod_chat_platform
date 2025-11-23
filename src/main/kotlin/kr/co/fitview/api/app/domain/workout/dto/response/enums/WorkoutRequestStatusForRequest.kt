@@ -11,6 +11,15 @@ enum class WorkoutRequestStatusForRequest(val description : String) {
     COMPLETE("완료"),
     ;
 
+    fun toWorkoutRequestStatus(): WorkoutRequestStatus {
+        return when (this) {
+            ACCEPT -> WorkoutRequestStatus.ACCEPT
+            REJECT -> WorkoutRequestStatus.REJECT
+            CANCEL -> WorkoutRequestStatus.CANCEL
+            COMPLETE -> WorkoutRequestStatus.COMPLETE
+        }
+    }
+
     override fun toString(): String {
         return "$name: $description"
     }

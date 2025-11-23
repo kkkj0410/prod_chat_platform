@@ -3,7 +3,10 @@ package kr.co.fitview.api.app.domain.notification.service
 import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.notification.constant.StompConstant
 import kr.co.fitview.api.app.domain.workout.dto.response.WorkoutRequestUpdateResponse
+import kr.co.fitview.api.app.domain.workout.entity.QWorkoutRequest.workoutRequest
 import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
+import kr.co.fitview.api.app.global.dto.WsMessageType
+import kr.co.fitview.api.app.global.dto.WsResponse
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -46,8 +49,22 @@ class NotificationStompServiceTest @Autowired constructor(
 
         // then
         workoutRequests.forEach { request ->
-            then(stompPublisher).should().sendToUser(request.fromMemberId, StompConstant.SUB_WORKOUT_REQUEST, request)
-            then(stompPublisher).should().sendToUser(request.toMemberId, StompConstant.SUB_WORKOUT_REQUEST, request)
+            then(stompPublisher).should().sendToUser(
+                request.fromMemberId,
+                StompConstant.SUB_WORKOUT_REQUEST,
+                WsResponse(
+                    type = WsMessageType.WORKOUT_REQUEST_UPDATE,
+                    payload = request
+                )
+            )
+            then(stompPublisher).should().sendToUser(
+                request.toMemberId,
+                StompConstant.SUB_WORKOUT_REQUEST,
+                WsResponse(
+                    type = WsMessageType.WORKOUT_REQUEST_UPDATE,
+                    payload = request
+                )
+            )
         }
 
     }
