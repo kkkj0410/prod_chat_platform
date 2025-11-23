@@ -1,6 +1,7 @@
 package kr.co.fitview.api.app.global.exception.error
 
 import kr.co.fitview.api.app.global.dto.ApiResponse
+import kr.co.fitview.api.app.global.dto.WsTypeIdentifier
 import org.apache.naming.SelectorContext.prefix
 import org.springframework.http.HttpStatus
 

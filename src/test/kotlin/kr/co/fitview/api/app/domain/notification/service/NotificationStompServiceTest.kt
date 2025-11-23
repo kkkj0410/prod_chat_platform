@@ -53,7 +53,7 @@ class NotificationStompServiceTest @Autowired constructor(
                 request.fromMemberId,
                 StompConstant.SUB_WORKOUT_REQUEST,
                 WsResponse(
-                    type = WsMessageType.WORKOUT_REQUEST_UPDATE,
+                    type = WsMessageType.WORKOUT_REQUEST_UPDATE.code,
                     payload = request
                 )
             )
@@ -61,7 +61,7 @@ class NotificationStompServiceTest @Autowired constructor(
                 request.toMemberId,
                 StompConstant.SUB_WORKOUT_REQUEST,
                 WsResponse(
-                    type = WsMessageType.WORKOUT_REQUEST_UPDATE,
+                    type = WsMessageType.WORKOUT_REQUEST_UPDATE.code,
                     payload = request
                 )
             )
