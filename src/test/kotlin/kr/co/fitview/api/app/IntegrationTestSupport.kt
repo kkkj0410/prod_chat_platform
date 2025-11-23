@@ -1,5 +1,6 @@
 package kr.co.fitview.api.app
 
+import kr.co.fitview.api.app.domain.notification.service.StompPublisher
 import kr.co.fitview.api.app.domain.oauth2.service.AppleAuthService
 import kr.co.fitview.api.app.global.config.TestJwtConfig
 import kr.co.fitview.api.app.global.network.NetworkService
@@ -21,5 +22,8 @@ abstract class IntegrationTestSupport {
 
     @MockitoBean
     lateinit var networkService: NetworkService
+
+    @MockitoBean
+    lateinit var stompPublisher: StompPublisher
 
 }

@@ -1,9 +1,12 @@
 package kr.co.fitview.api.app.domain.chat.controller
 
 import kr.co.fitview.api.app.domain.chat.dto.request.ChatMessageRequest
+import kr.co.fitview.api.app.domain.chat.dto.request.WorkoutRequestUpdateRequest
 import kr.co.fitview.api.app.domain.chat.dto.response.withIsMe
 import kr.co.fitview.api.app.domain.chat.service.ChatMessageService
 import kr.co.fitview.api.app.domain.chat.service.ChatService
+import kr.co.fitview.api.app.domain.notification.service.NotificationStompService
+import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestService
 import org.springframework.messaging.handler.annotation.DestinationVariable
 import org.springframework.messaging.handler.annotation.MessageMapping
 import org.springframework.messaging.handler.annotation.Payload
@@ -17,7 +20,9 @@ import java.security.Principal
 class StompController(
     private val messageTemplate : SimpMessageSendingOperations,
     private val simpUserRegistry: SimpUserRegistry,
-    private val chatService : ChatService
+    private val chatService : ChatService,
+    private val workoutRequestService : WorkoutRequestService,
+    private val notificationStompService : NotificationStompService
 ) {
 
 
@@ -81,6 +86,23 @@ class StompController(
             senderId,
             "/v1/queue/chats/messages",
             response.withIsMe(true)
+        )
+    }
+
+    @MessageMapping("/workout-requests")
+    fun workoutRequestModify(
+        principal: Principal,
+
+        @Payload
+        request: WorkoutRequestUpdateRequest
+    ) {
+
+        val senderId = principal.name
+
+        val response = workoutRequestService.modifyWorkoutRequest(senderId.toLong(), request)
+
+        notificationStompService.sendWorkoutRequestUpdate(
+            listOf(response)
         )
     }
 

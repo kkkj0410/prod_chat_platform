@@ -1,10 +1,9 @@
 package kr.co.fitview.api.app.domain.workout.dto.response.enums
 
-import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutGoal
 import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
 import java.time.LocalDateTime
 
-enum class WorkoutRequestStatusFor(val description : String) {
+enum class WorkoutRequestStatusForResponse(val description : String) {
 
     PENDING("대기"),
     ACCEPT("수락"),
@@ -30,7 +29,7 @@ enum class WorkoutRequestStatusFor(val description : String) {
             requestedAt: LocalDateTime,
             scheduledAt: LocalDateTime,
             now : LocalDateTime
-        ): WorkoutRequestStatusFor {
+        ): WorkoutRequestStatusForResponse {
             return when (dbStatus) {
                 WorkoutRequestStatus.PENDING -> {
                     if (requestedAt.plusHours(24).isBefore(now) || scheduledAt.isBefore(now)) {
@@ -43,6 +42,7 @@ enum class WorkoutRequestStatusFor(val description : String) {
                 WorkoutRequestStatus.REJECT -> REJECT
                 WorkoutRequestStatus.CANCEL -> CANCEL
                 WorkoutRequestStatus.COMPLETE -> COMPLETE
+                WorkoutRequestStatus.EXPIRE -> EXPIRE
             }
         }
     }

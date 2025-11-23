@@ -1,11 +1,9 @@
 package kr.co.fitview.api.app.domain.chat.service
 
-import com.fasterxml.jackson.annotation.JsonIgnore
 import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.chat.dto.request.ChatRoomCreateServiceRequest
 import kr.co.fitview.api.app.domain.chat.dto.request.ChatTextMessageRequest
 import kr.co.fitview.api.app.domain.chat.dto.request.ChatWorkoutRequestMessageRequest
-import kr.co.fitview.api.app.domain.chat.dto.response.ChatMessageContent
 import kr.co.fitview.api.app.domain.chat.entity.ChatParticipant
 import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
@@ -16,7 +14,7 @@ import kr.co.fitview.api.app.domain.chat.repository.ChatRoomRepository
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
-import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusFor
+import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusForResponse
 import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
 import kr.co.fitview.api.app.domain.workout.repository.WorkoutRequestRepository
 import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartner
@@ -32,7 +30,6 @@ import org.assertj.core.api.ThrowingConsumer
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import java.time.LocalDateTime
 
 class ChatServiceTest@Autowired constructor(
     val chatService: ChatService,
@@ -296,7 +293,7 @@ class ChatServiceTest@Autowired constructor(
                 ChatMessageType.WORKOUT_REQUEST,
                 time.nowLocalDateTime,
                 findWorkoutRequest.id!!,
-                WorkoutRequestStatusFor.PENDING,
+                WorkoutRequestStatusForResponse.PENDING,
                 request.scheduledAt,
                 request.location
             )

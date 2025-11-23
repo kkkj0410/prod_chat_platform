@@ -1,17 +1,12 @@
 package kr.co.fitview.api.app.domain.chat.controller
 
 import kr.co.fitview.api.app.ControllerTestSupport
-import kr.co.fitview.api.app.domain.address.dto.response.AddressDetailResponse
-import kr.co.fitview.api.app.domain.address.dto.response.AddressResponse
-import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
 import kr.co.fitview.api.app.domain.chat.dto.request.ChatRoomCreateRequest
 import kr.co.fitview.api.app.domain.chat.dto.response.*
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
 import kr.co.fitview.api.app.domain.workout.dto.response.LastWorkoutRequestMessage
-import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusFor
-import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
+import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusForResponse
 import kr.co.fitview.api.app.global.exception.error.request.RequestErrorCode
-import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
@@ -20,14 +15,9 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Slice
 import org.springframework.data.domain.SliceImpl
 import org.springframework.http.MediaType
-import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document
-import org.springframework.restdocs.payload.JsonFieldType
-import org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath
-import org.springframework.restdocs.payload.PayloadDocumentation.responseFields
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 
-import org.springframework.test.web.servlet.result.MockMvcResultHandlers
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
@@ -117,7 +107,7 @@ class ChatControllerTest : ControllerTestSupport(){
                     content = "오늘 운동할래?"
                 ),
                 lastWorkoutRequest = LastWorkoutRequestMessage(
-                    status = WorkoutRequestStatusFor.PENDING,
+                    status = WorkoutRequestStatusForResponse.PENDING,
                     chatRoomId = 1L
                 )
             ),
@@ -136,12 +126,12 @@ class ChatControllerTest : ControllerTestSupport(){
                     chatRoomId = 2L,
                     memberId = 20L,
                     workoutRequestId = 9001L,
-                    status = WorkoutRequestStatusFor.ACCEPT,
+                    status = WorkoutRequestStatusForResponse.ACCEPT,
                     scheduledAt = LocalDateTime.now().plusDays(1),
                     location = "스타벅스 앞"
                 ),
                 lastWorkoutRequest = LastWorkoutRequestMessage(
-                    status = WorkoutRequestStatusFor.ACCEPT,
+                    status = WorkoutRequestStatusForResponse.ACCEPT,
                     chatRoomId = 2L
                 )
             ),
@@ -220,7 +210,7 @@ class ChatControllerTest : ControllerTestSupport(){
                 sentAt = now.minusMinutes(5),
                 isMe = false,
                 workoutRequestId = 100L,
-                status = WorkoutRequestStatusFor.PENDING,
+                status = WorkoutRequestStatusForResponse.PENDING,
                 scheduledAt = now.plusDays(1),
                 location = "헬스장 앞"
             )
@@ -265,7 +255,7 @@ class ChatControllerTest : ControllerTestSupport(){
 
         // given
         val lastWorkoutRequest = LastWorkoutRequestMessage(
-            status = WorkoutRequestStatusFor.PENDING,
+            status = WorkoutRequestStatusForResponse.PENDING,
             chatRoomId = chatRoomId
         )
         given(workoutRequestService.findRecentWorkoutRequestFrom(listOf(chatRoomId)))

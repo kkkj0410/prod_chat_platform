@@ -15,7 +15,7 @@ import kr.co.fitview.api.app.domain.member.entity.enums.WorkoutTimeName
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.domain.oauth2.dto.request.OAuth2SignupServiceRequest
 import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
-import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusFor
+import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusForResponse
 import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequest
 import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
 import kr.co.fitview.api.app.domain.workout.repository.WorkoutRequestRepository
@@ -27,7 +27,6 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.ZoneId
 
 class ChatMessageRepositoryTest @Autowired constructor(
@@ -152,11 +151,13 @@ class ChatMessageRepositoryTest @Autowired constructor(
             content = "content",
             sentAt = time.nowLocalDateTime
         )
+        chatRoom1.updateLastMessageAt(time.nowLocalDateTime)
+
         val message1ByChatRoom2 = ChatMessage(
             member = other2,
             chatRoom = chatRoom2,
             type = ChatMessageType.WORKOUT_REQUEST,
-            sentAt = time.nowLocalDateTime
+            sentAt = time.nowLocalDateTime.minusHours(3)
         )
         val workout1ByChatRoom2 = WorkoutRequest(
             chatMessage = message1ByChatRoom2,
@@ -167,6 +168,8 @@ class ChatMessageRepositoryTest @Autowired constructor(
             scheduledAt = time.nowLocalDateTime.plusHours(24),
             requestedAt = time.nowLocalDateTime.minusHours(3)
         )
+        chatRoom2.updateLastMessageAt(time.nowLocalDateTime.minusHours(3))
+
         chatMessageRepository.save(message1ByChatRoom1)
         chatMessageRepository.save(message2ByChatRoom1)
         chatMessageRepository.save(message1ByChatRoom2)
@@ -185,7 +188,6 @@ class ChatMessageRepositoryTest @Autowired constructor(
 
         // when
         val response = chatMessageRepository.findRecentChatMessageByMemberIdAndIn(me.id!!, chatRoomIds)
-
 
         assertThat(response[0])
             .extracting(
@@ -226,13 +228,13 @@ class ChatMessageRepositoryTest @Autowired constructor(
             .contains(
                 message1ByChatRoom2.id!!,
                 ChatMessageType.WORKOUT_REQUEST,
-                time.nowLocalDateTime,
+                message1ByChatRoom2.sentAt,
                 false,
                 true,
                 chatRoom2.id!!,
                 other2.id!!,
                 workout1ByChatRoom2.id!!,
-                WorkoutRequestStatusFor.PENDING,
+                WorkoutRequestStatusForResponse.PENDING,
                 time.nowLocalDateTime.plusHours(24),
                 "location"
             )

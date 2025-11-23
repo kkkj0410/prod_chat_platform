@@ -74,3 +74,8 @@ include::exception/global/globalException.adoc[]
 == <CHAT>
 
 include::exception/chat/chatException.adoc[]
+
+[[WORKOUT_REQUEST]]
+== <WORKOUT_REQUEST>
+
+include::exception/workout_request/workoutRequestException.adoc[]

@@ -3,9 +3,6 @@ package kr.co.fitview.api.app.docs.chat
 import kr.co.fitview.api.app.docs.RestDocsHeaders
 import kr.co.fitview.api.app.docs.RestDocsPagination
 import kr.co.fitview.api.app.docs.RestDocsSupport
-import kr.co.fitview.api.app.domain.address.dto.response.AddressResponse
-import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
-import kr.co.fitview.api.app.domain.address.service.AddressService
 import kr.co.fitview.api.app.domain.chat.controller.ChatController
 import kr.co.fitview.api.app.domain.chat.dto.request.ChatRoomCreateRequest
 import kr.co.fitview.api.app.domain.chat.dto.response.*
@@ -13,37 +10,21 @@ import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
 import kr.co.fitview.api.app.domain.chat.service.ChatMessageService
 import kr.co.fitview.api.app.domain.chat.service.ChatRoomService
 import kr.co.fitview.api.app.domain.chat.service.ChatService
-import kr.co.fitview.api.app.domain.member.controller.MemberController
-import kr.co.fitview.api.app.domain.member.dto.request.Age
-import kr.co.fitview.api.app.domain.member.dto.response.*
-import kr.co.fitview.api.app.domain.member.dto.response.enums.ProfileWorkoutPartnerStatus
-import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutExperience
-import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutGoal
-import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutStyle
-import kr.co.fitview.api.app.domain.member.entity.enums.WorkoutTimeName
-import kr.co.fitview.api.app.domain.member.service.MemberService
 import kr.co.fitview.api.app.domain.workout.dto.response.LastWorkoutRequestMessage
-import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusFor
+import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusForResponse
 import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestService
-import kr.co.fitview.api.app.global.entity.Gender
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.util.SecurityUtil
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.mockito.BDDMockito.willReturn
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.any
 import org.mockito.kotlin.given
 import org.springframework.data.domain.*
 import org.springframework.http.MediaType
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
-import org.springframework.restdocs.RestDocumentationContextProvider
 import org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document
-import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration
 import org.springframework.restdocs.operation.preprocess.Preprocessors.*
-import org.springframework.restdocs.payload.FieldDescriptor
 import org.springframework.restdocs.payload.JsonFieldType
 import org.springframework.restdocs.payload.PayloadDocumentation.*
 import org.springframework.restdocs.request.RequestDocumentation.parameterWithName
@@ -53,10 +34,7 @@ import org.springframework.restdocs.request.RequestDocumentation.queryParameters
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
-import org.springframework.test.web.servlet.setup.MockMvcBuilders
-import org.springframework.test.web.servlet.setup.StandaloneMockMvcBuilder
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
@@ -151,7 +129,7 @@ class ChatControllerDocsTest : RestDocsSupport() {
                     content = "오늘 운동할래?"
                 ),
                 lastWorkoutRequest = LastWorkoutRequestMessage(
-                    status = WorkoutRequestStatusFor.PENDING,
+                    status = WorkoutRequestStatusForResponse.PENDING,
                     chatRoomId = 1L
                 )
             )
@@ -209,7 +187,7 @@ class ChatControllerDocsTest : RestDocsSupport() {
 
                     responseFields(
                         beneathPath("data.content[].lastWorkoutRequest").withSubsectionId("workout-request"),
-                        fieldWithPath("status").description("운동 요청 상태" + WorkoutRequestStatusFor.allDescription()),
+                        fieldWithPath("status").description("운동 요청 상태" + WorkoutRequestStatusForResponse.allDescription()),
                     )
                 )
             )
@@ -234,12 +212,12 @@ class ChatControllerDocsTest : RestDocsSupport() {
                     chatRoomId = 2L,
                     memberId = 20L,
                     workoutRequestId = 9001L,
-                    status = WorkoutRequestStatusFor.ACCEPT,
+                    status = WorkoutRequestStatusForResponse.ACCEPT,
                     scheduledAt = LocalDateTime.now().plusDays(1),
                     location = "스타벅스 앞"
                 ),
                 lastWorkoutRequest = LastWorkoutRequestMessage(
-                    status = WorkoutRequestStatusFor.ACCEPT,
+                    status = WorkoutRequestStatusForResponse.ACCEPT,
                     chatRoomId = 2L
                 )
             )
@@ -300,7 +278,7 @@ class ChatControllerDocsTest : RestDocsSupport() {
 
                     responseFields(
                         beneathPath("data.content[].lastWorkoutRequest").withSubsectionId("workout-request"),
-                        fieldWithPath("status").description("운동 요청 상태" + WorkoutRequestStatusFor.allDescription()),
+                        fieldWithPath("status").description("운동 요청 상태" + WorkoutRequestStatusForResponse.allDescription()),
                     )
                 )
             )
@@ -375,7 +353,7 @@ class ChatControllerDocsTest : RestDocsSupport() {
                 sentAt = now.minusMinutes(5),
                 isMe = false,
                 workoutRequestId = 100L,
-                status = WorkoutRequestStatusFor.PENDING,
+                status = WorkoutRequestStatusForResponse.PENDING,
                 scheduledAt = now.plusDays(1),
                 location = "헬스장 앞"
             )
@@ -433,7 +411,7 @@ class ChatControllerDocsTest : RestDocsSupport() {
         val chatRoomId = 123L
 
         val lastWorkoutRequest = LastWorkoutRequestMessage(
-            status = WorkoutRequestStatusFor.PENDING,
+            status = WorkoutRequestStatusForResponse.PENDING,
             chatRoomId = chatRoomId
         )
         given(workoutRequestService.findRecentWorkoutRequestFrom(listOf(chatRoomId)))
@@ -465,7 +443,7 @@ class ChatControllerDocsTest : RestDocsSupport() {
                         fieldWithPath("code").description("응답 코드"),
                         fieldWithPath("message").description("응답 메시지"),
                         fieldWithPath("data.status").type(JsonFieldType.STRING).optional()
-                            .description("마지막 운동 요청 상태 (없으면 null)" + WorkoutRequestStatusFor.allDescription()),
+                            .description("마지막 운동 요청 상태 (없으면 null)" + WorkoutRequestStatusForResponse.allDescription()),
                     )
                 )
             )

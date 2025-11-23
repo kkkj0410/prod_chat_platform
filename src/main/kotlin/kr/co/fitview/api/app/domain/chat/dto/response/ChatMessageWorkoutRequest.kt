@@ -3,7 +3,7 @@ package kr.co.fitview.api.app.domain.chat.dto.response
 import com.fasterxml.jackson.annotation.JsonIgnore
 import kr.co.fitview.api.app.domain.chat.entity.ChatMessage
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
-import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusFor
+import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusForResponse
 import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequest
 import java.time.LocalDateTime
 
@@ -22,7 +22,7 @@ data class ChatMessageWorkoutRequest(
     override val memberId: Long? = null,
 
     val workoutRequestId: Long,
-    val status: WorkoutRequestStatusFor,
+    val status: WorkoutRequestStatusForResponse,
     val scheduledAt: LocalDateTime,
     val location: String
     
@@ -37,7 +37,7 @@ data class ChatMessageWorkoutRequest(
                 sentAt = chatMessage.sentAt!!,
                 isMe = chatMessage.getMemberId() == myMemberId,
                 workoutRequestId = workoutRequest.id!!,
-                status = WorkoutRequestStatusFor.from(
+                status = WorkoutRequestStatusForResponse.from(
                     dbStatus = workoutRequest.status!!,
                     requestedAt = workoutRequest.requestedAt!!,
                     scheduledAt = workoutRequest.scheduledAt!!,

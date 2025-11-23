@@ -56,6 +56,23 @@ class WorkoutRequest(
     @Column(name = "workout_request_id", nullable = false)
     var id: Long? = null
 
+    fun updateStatus(status : WorkoutRequestStatus) : WorkoutRequest{
+        this.status = status
+        return this
+    }
+
+    fun getFromMemberId(): Long {
+        return fromMember?.id!!
+    }
+
+    fun getToMemberId(): Long {
+        return toMember?.id!!
+    }
+
+    fun getChatRoomId(): Long? {
+        return chatMessage?.chatRoom?.id
+    }
+
     companion object {
         fun of(
             chatMessage: ChatMessage,
@@ -76,5 +93,6 @@ class WorkoutRequest(
             )
         }
     }
+
 
 }
