@@ -1,23 +1,13 @@
 package kr.co.fitview.api.app.domain.chat.service
 
-import jakarta.persistence.Column
-import jakarta.persistence.FetchType
-import jakarta.persistence.JoinColumn
-import jakarta.persistence.ManyToOne
-import jakarta.validation.constraints.NotNull
 import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.chat.condition.ChatCondition
-import kr.co.fitview.api.app.domain.chat.dto.request.ChatTextMessageRequest
 import kr.co.fitview.api.app.domain.chat.dto.request.ChatTextMessageServiceRequest
-import kr.co.fitview.api.app.domain.chat.dto.request.ChatWorkoutRequestMessageRequest
 import kr.co.fitview.api.app.domain.chat.dto.request.ChatWorkoutRequestMessageServiceRequest
-import kr.co.fitview.api.app.domain.chat.dto.response.ChatMessageContent
-import kr.co.fitview.api.app.domain.chat.dto.response.ChatMessageWorkoutRequest
 import kr.co.fitview.api.app.domain.chat.entity.ChatMessage
 import kr.co.fitview.api.app.domain.chat.entity.ChatParticipant
 import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
 import kr.co.fitview.api.app.domain.chat.entity.MessageReadStatus
-import kr.co.fitview.api.app.domain.chat.entity.QChatMessage.chatMessage
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatRoomType
 import kr.co.fitview.api.app.domain.chat.repository.ChatMessageRepository
@@ -27,8 +17,7 @@ import kr.co.fitview.api.app.domain.chat.repository.MessageReadStatusRepository
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
-import kr.co.fitview.api.app.domain.term.entity.enums.TermName
-import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusFor
+import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusForResponse
 import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequest
 import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
 import kr.co.fitview.api.app.domain.workout.repository.WorkoutRequestRepository
@@ -39,8 +28,6 @@ import kr.co.fitview.api.app.global.time.Time
 import kr.co.fitview.api.app.global.util.TestDataFactory
 import org.assertj.core.api.Assertions.*
 import org.assertj.core.api.ThrowingConsumer
-import org.hibernate.annotations.ColumnDefault
-import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -204,7 +191,7 @@ class ChatMessageServiceTest @Autowired constructor(
                 chatRoom2.id!!,
                 other2.id!!,
                 workout1ByChatRoom2.id!!,
-                WorkoutRequestStatusFor.PENDING,
+                WorkoutRequestStatusForResponse.PENDING,
                 time.nowLocalDateTime.plusHours(24),
                 "location"
             )
@@ -289,7 +276,7 @@ class ChatMessageServiceTest @Autowired constructor(
                 chatMessage2.sentAt,
                 true,
                 workoutRequest.id!!,
-                WorkoutRequestStatusFor.PENDING,
+                WorkoutRequestStatusForResponse.PENDING,
                 workoutRequest.scheduledAt,
                 workoutRequest.location
             )

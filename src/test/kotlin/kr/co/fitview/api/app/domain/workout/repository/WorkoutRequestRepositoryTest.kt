@@ -1,6 +1,5 @@
 package kr.co.fitview.api.app.domain.workout.repository
 
-import com.fasterxml.jackson.annotation.JsonIgnore
 import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.chat.entity.ChatMessage
 import kr.co.fitview.api.app.domain.chat.entity.ChatParticipant
@@ -12,7 +11,7 @@ import kr.co.fitview.api.app.domain.chat.repository.ChatParticipantRepository
 import kr.co.fitview.api.app.domain.chat.repository.ChatRoomRepository
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
-import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusFor
+import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusForResponse
 import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequest
 import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
 import kr.co.fitview.api.app.global.entity.Role
@@ -21,7 +20,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import java.time.LocalDateTime
 
 class WorkoutRequestRepositoryTest @Autowired constructor(
     val workoutRequestRepository : WorkoutRequestRepository,
@@ -90,7 +88,7 @@ class WorkoutRequestRepositoryTest @Autowired constructor(
         val response = workoutRequestRepository.findRecentWorkoutRequest(chatRoomIds)
 
         // then
-        val status = WorkoutRequestStatusFor.from(workout.status!!, requestedAt, scheduledAt, time.nowLocalDateTime)
+        val status = WorkoutRequestStatusForResponse.from(workout.status!!, requestedAt, scheduledAt, time.nowLocalDateTime)
         assertThat(response[0])
             .extracting("status", "chatRoomId")
             .contains(status, chatRoom.id!!)

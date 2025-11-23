@@ -3,11 +3,10 @@ package kr.co.fitview.api.app.domain.workout.repository
 import com.querydsl.jpa.impl.JPAQueryFactory
 import jakarta.persistence.EntityManager
 import kr.co.fitview.api.app.domain.workout.dto.response.LastWorkoutRequestMessage
-import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusFor
+import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusForResponse
 import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
 import kr.co.fitview.api.app.global.time.Time
 import java.sql.Timestamp
-import java.time.LocalDateTime
 
 class WorkoutRequestRepositoryImpl(
     private val queryFactory: JPAQueryFactory,
@@ -58,7 +57,7 @@ class WorkoutRequestRepositoryImpl(
             val chatRoomId = r[3] as Long
 
             LastWorkoutRequestMessage(
-                status = WorkoutRequestStatusFor.from(dbStatus!!, requestedAt, scheduledAt, time.nowLocalDateTime),
+                status = WorkoutRequestStatusForResponse.from(dbStatus!!, requestedAt, scheduledAt, time.nowLocalDateTime),
                 chatRoomId = chatRoomId
             )
         }

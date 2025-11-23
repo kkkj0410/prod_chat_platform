@@ -1,9 +1,11 @@
 package kr.co.fitview.api.app.domain.chat.controller
 
 import kr.co.fitview.api.app.domain.chat.dto.request.ChatMessageRequest
+import kr.co.fitview.api.app.domain.chat.dto.request.WorkoutRequestUpdateRequest
 import kr.co.fitview.api.app.domain.chat.dto.response.withIsMe
 import kr.co.fitview.api.app.domain.chat.service.ChatMessageService
 import kr.co.fitview.api.app.domain.chat.service.ChatService
+import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestService
 import org.springframework.messaging.handler.annotation.DestinationVariable
 import org.springframework.messaging.handler.annotation.MessageMapping
 import org.springframework.messaging.handler.annotation.Payload
@@ -17,7 +19,8 @@ import java.security.Principal
 class StompController(
     private val messageTemplate : SimpMessageSendingOperations,
     private val simpUserRegistry: SimpUserRegistry,
-    private val chatService : ChatService
+    private val chatService : ChatService,
+    private val workoutRequestService : WorkoutRequestService
 ) {
 
 
@@ -82,6 +85,31 @@ class StompController(
             "/v1/queue/chats/messages",
             response.withIsMe(true)
         )
+    }
+
+    @MessageMapping("/workout-requests")
+    fun workoutRequestModify(
+        principal: Principal,
+
+        @Payload
+        message: WorkoutRequestUpdateRequest
+    ) {
+
+        val senderId = principal.name
+
+//        val response = chatService.sendMessage(principal.name.toLong(), chatRoomId, message)
+//
+//        messageTemplate.convertAndSendToUser(
+//            response.otherMemberId.toString(),
+//            "/v1/queue/chats/messages",
+//            response.withIsMe(false)
+//        )
+//
+//        messageTemplate.convertAndSendToUser(
+//            senderId,
+//            "/v1/queue/chats/messages",
+//            response.withIsMe(true)
+//        )
     }
 
     fun isMemberConnected(memberId: String): Boolean {

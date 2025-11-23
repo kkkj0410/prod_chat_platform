@@ -15,7 +15,7 @@ import kr.co.fitview.api.app.domain.chat.repository.MessageReadStatusRepository
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
-import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusFor
+import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusForResponse
 import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequest
 import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
 import kr.co.fitview.api.app.domain.workout.repository.WorkoutRequestRepository
@@ -308,13 +308,13 @@ class ChatRoomServiceTest @Autowired constructor(
                 chatRoom2.id!!,
                 other2.id!!,
                 workout1ByChatRoom2.id!!,
-                WorkoutRequestStatusFor.PENDING,
+                WorkoutRequestStatusForResponse.PENDING,
                 time.nowLocalDateTime.plusHours(24),
                 "location"
             )
 
         assertThat(content[0].lastWorkoutRequest.status).isNull()
-        assertThat(content[1].lastWorkoutRequest.status).isEqualTo(WorkoutRequestStatusFor.PENDING)
+        assertThat(content[1].lastWorkoutRequest.status).isEqualTo(WorkoutRequestStatusForResponse.PENDING)
 
         assertThat(response.hasNext()).isEqualTo(false)
     }

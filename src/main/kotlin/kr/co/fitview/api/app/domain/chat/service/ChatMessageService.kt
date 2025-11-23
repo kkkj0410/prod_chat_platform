@@ -12,8 +12,7 @@ import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
 import kr.co.fitview.api.app.domain.chat.repository.ChatMessageRepository
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.service.MemberReferenceProvider
-import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusFor
-import kr.co.fitview.api.app.domain.workout.entity.QWorkoutRequest.workoutRequest
+import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusForResponse
 import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
 import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestService
 import kr.co.fitview.api.app.global.exception.GlobalException
@@ -95,7 +94,7 @@ class ChatMessageService(
             chatMessageId = chatMessage.id!!,
             sentAt = now,
             workoutRequestId = savedWorkoutRequest.id!!,
-            status = WorkoutRequestStatusFor.from(
+            status = WorkoutRequestStatusForResponse.from(
                 dbStatus = WorkoutRequestStatus.PENDING,
                 requestedAt = now,
                 scheduledAt = message.scheduledAt,

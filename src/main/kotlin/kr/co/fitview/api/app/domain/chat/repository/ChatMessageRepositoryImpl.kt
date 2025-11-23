@@ -8,11 +8,10 @@ import kr.co.fitview.api.app.domain.chat.dto.ChatMessageAndWorkoutRequest
 import kr.co.fitview.api.app.domain.chat.dto.response.ChatMessageContent
 import kr.co.fitview.api.app.domain.chat.dto.response.ChatMessageWorkoutRequest
 import kr.co.fitview.api.app.domain.chat.dto.response.LastChatMessage
-import kr.co.fitview.api.app.domain.chat.entity.ChatMessage
 import kr.co.fitview.api.app.domain.chat.entity.QChatMessage.chatMessage
 import kr.co.fitview.api.app.domain.chat.entity.QChatRoom.chatRoom
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
-import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusFor
+import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusForResponse
 import kr.co.fitview.api.app.domain.workout.entity.QWorkoutRequest.workoutRequest
 import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
 import kr.co.fitview.api.app.global.time.Time
@@ -42,7 +41,7 @@ class ChatMessageRepositoryImpl(
                 cm_inner.member_id,
                 ROW_NUMBER() OVER (
                     PARTITION BY cm_inner.chat_room_id
-                    ORDER BY cm_inner.created_at DESC
+                    ORDER BY cm_inner.sent_at DESC
                 ) AS rn
             FROM chat_message cm_inner
             WHERE cm_inner.chat_room_id IN ($inClause)
@@ -115,7 +114,7 @@ class ChatMessageRepositoryImpl(
                     isRead = isRead,
                     chatRoomId = chatRoomId,
                     workoutRequestId = workoutRequestId,
-                    status = WorkoutRequestStatusFor.from(
+                    status = WorkoutRequestStatusForResponse.from(
                         dbStatus = status!!,
                         requestedAt = requestedAt!!,
                         scheduledAt = scheduledAt!!,
