@@ -1,11 +1,9 @@
 package kr.co.fitview.api.app.domain.workout.repository
 
-import com.fasterxml.jackson.annotation.JsonIgnore
 import com.querydsl.core.types.Projections
 import com.querydsl.jpa.impl.JPAQueryFactory
 import jakarta.persistence.EntityManager
 import kr.co.fitview.api.app.domain.chat.entity.QChatMessage.chatMessage
-import kr.co.fitview.api.app.domain.chat.entity.QChatRoom.chatRoom
 import kr.co.fitview.api.app.domain.workout.dto.response.LastWorkoutRequestMessage
 import kr.co.fitview.api.app.domain.workout.dto.response.WorkoutRequestUpdateResponse
 import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusForResponse
@@ -71,7 +69,7 @@ class WorkoutRequestRepositoryImpl(
 
     }
 
-    override fun findAllExpireWorkoutRequest() : List<WorkoutRequestUpdateResponse> {
+    override fun findAllPendingWorkoutRequestAlreadyExpire() : List<WorkoutRequestUpdateResponse> {
 
 
         val expireByScheduledAt =queryFactory
@@ -88,6 +86,7 @@ class WorkoutRequestRepositoryImpl(
             .from(workoutRequest)
             .join(workoutRequest.chatMessage, chatMessage)
             .where(
+                workoutRequest.status.eq(WorkoutRequestStatus.PENDING),
                 workoutRequest.deletedAt.isNull,
                 workoutRequest.scheduledAt.lt(time.nowLocalDateTime),
             )
@@ -107,6 +106,7 @@ class WorkoutRequestRepositoryImpl(
             .from(workoutRequest)
             .join(workoutRequest.chatMessage, chatMessage)
             .where(
+                workoutRequest.status.eq(WorkoutRequestStatus.PENDING),
                 workoutRequest.deletedAt.isNull,
                 workoutRequest.requestedAt.loe(time.nowLocalDateTime.minusHours(24)),
             )

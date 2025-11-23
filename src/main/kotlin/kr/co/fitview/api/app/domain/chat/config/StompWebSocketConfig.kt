@@ -17,7 +17,8 @@ import org.springframework.web.socket.config.annotation.WebSocketTransportRegist
 @EnableWebSocketMessageBroker
 class StompWebSocketConfig(
     val stompHandler : StompHandler,
-    val corsConstant : CorsConstant
+    val corsConstant : CorsConstant,
+//    val stompExceptionInterceptor : StompExceptionInterceptor
 ) : WebSocketMessageBrokerConfigurer {
 
 
@@ -52,7 +53,6 @@ class StompWebSocketConfig(
     // 웹소캣은 security의 jwtTokenFilter를 거치지 않기 때문에 임의로 인터셉터 필요
     override fun configureClientInboundChannel(registration: ChannelRegistration) {
         registration.interceptors(stompHandler)
-
     }
 
     @Bean

@@ -7,6 +7,8 @@ import kr.co.fitview.api.app.domain.chat.service.ChatMessageService
 import kr.co.fitview.api.app.domain.chat.service.ChatService
 import kr.co.fitview.api.app.domain.notification.service.NotificationStompService
 import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestService
+import kr.co.fitview.api.app.global.dto.WsMessageType
+import kr.co.fitview.api.app.global.dto.WsResponse
 import org.springframework.messaging.handler.annotation.DestinationVariable
 import org.springframework.messaging.handler.annotation.MessageMapping
 import org.springframework.messaging.handler.annotation.Payload

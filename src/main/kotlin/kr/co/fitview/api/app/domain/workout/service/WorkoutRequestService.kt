@@ -1,6 +1,5 @@
 package kr.co.fitview.api.app.domain.workout.service
 
-import com.fasterxml.jackson.annotation.JsonIgnore
 import kr.co.fitview.api.app.domain.chat.dto.request.ChatWorkoutRequestMessageServiceRequest
 import kr.co.fitview.api.app.domain.chat.dto.request.WorkoutRequestUpdateRequest
 import kr.co.fitview.api.app.domain.chat.entity.ChatMessage
@@ -14,10 +13,11 @@ import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.global.GlobalErrorCode
 import kr.co.fitview.api.app.global.exception.error.workout_request.WorkoutRequestErrorCode
 import kr.co.fitview.api.app.global.time.Time
+import org.hibernate.query.sqm.tree.SqmNode.log
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
-
+import org.slf4j.LoggerFactory
 @Service
 @Transactional(readOnly = true)
 class WorkoutRequestService(
@@ -41,7 +41,7 @@ class WorkoutRequestService(
     @Transactional
     fun modifyAllWorkoutRequestExpire() : List<WorkoutRequestUpdateResponse> {
 
-        val response = workoutRequestRepository.findAllExpireWorkoutRequest()
+        val response = workoutRequestRepository.findAllPendingWorkoutRequestAlreadyExpire()
 
         val workoutRequestIds = response.map{it.workoutRequestId}
 

@@ -1,12 +1,19 @@
 package kr.co.fitview.api.app.global.dto
 
 data class WsResponse<T>(
-    val type: WsMessageType,
+    val type: String,
     val payload: T
 )
 
-enum class WsMessageType {
-    TEXT,
-    WORKOUT_REQUEST,
-    WORKOUT_REQUEST_UPDATE
+interface WsTypeIdentifier {
+    val code: String
+}
+
+
+enum class WsMessageType(
+    override val code: String
+) : WsTypeIdentifier {
+    TEXT("TEXT"),
+    WORKOUT_REQUEST("WORKOUT_REQUEST"),
+    WORKOUT_REQUEST_UPDATE("WORKOUT_REQUEST_UPDATE")
 }
