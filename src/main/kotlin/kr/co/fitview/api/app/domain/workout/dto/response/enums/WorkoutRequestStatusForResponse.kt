@@ -42,6 +42,7 @@ enum class WorkoutRequestStatusForResponse(val description : String) {
                 WorkoutRequestStatus.REJECT -> REJECT
                 WorkoutRequestStatus.CANCEL -> CANCEL
                 WorkoutRequestStatus.COMPLETE -> COMPLETE
+                WorkoutRequestStatus.EXPIRE -> EXPIRE
             }
         }
     }

@@ -4,8 +4,10 @@ import kr.co.fitview.api.app.domain.chat.dto.request.ChatWorkoutRequestMessageSe
 import kr.co.fitview.api.app.domain.chat.entity.ChatMessage
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.workout.dto.response.LastWorkoutRequestMessage
+import kr.co.fitview.api.app.domain.workout.dto.response.WorkoutRequestUpdateResponse
 import kr.co.fitview.api.app.domain.workout.repository.WorkoutRequestRepository
 import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequest
+import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
 import kr.co.fitview.api.app.global.time.Time
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -31,7 +33,22 @@ class WorkoutRequestService(
         return workoutRequestRepository.save(workoutRequest)
     }
 
+    @Transactional
+    fun modifyAllWorkoutRequestExpire() : List<WorkoutRequestUpdateResponse> {
+
+        val response = workoutRequestRepository.findAllExpireWorkoutRequest()
+
+        val workoutRequestIds = response.map{it.workoutRequestId}
+
+        workoutRequestRepository.updateExpireByIdIn(workoutRequestIds)
+
+        val expireResponse = response.map { it.copy(status = WorkoutRequestStatus.EXPIRE) }
+
+        return expireResponse
+    }
+
     fun findRecentWorkoutRequestFrom(chatRoomIds : List<Long>) : List<LastWorkoutRequestMessage>{
         return workoutRequestRepository.findRecentWorkoutRequest(chatRoomIds)
     }
+
 }

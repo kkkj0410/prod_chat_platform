@@ -6,5 +6,6 @@ enum class WorkoutRequestStatus {
     ACCEPT,
     REJECT,
     CANCEL,
-    COMPLETE
+    COMPLETE,
+    EXPIRE
 }
