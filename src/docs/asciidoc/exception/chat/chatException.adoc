@@ -18,3 +18,25 @@ include::{snippets}/CHAT_002/http-request.adoc[]
 ==== HTTP Response
 include::{snippets}/CHAT_002/http-response.adoc[]
 include::{snippets}/CHAT_002/response-fields.adoc[]
+
+
+[[CHAT_003]]
+=== CHAT_003
+
+==== HTTP Request
+include::{snippets}/CHAT_003/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/CHAT_003/http-response.adoc[]
+include::{snippets}/CHAT_003/response-fields.adoc[]
+
+
+[[CHAT_004]]
+=== CHAT_004
+
+==== HTTP Request
+include::{snippets}/CHAT_004/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/CHAT_004/http-response.adoc[]
+include::{snippets}/CHAT_004/response-fields.adoc[]
