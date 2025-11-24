@@ -263,7 +263,14 @@ class MemberRepositoryTest@Autowired constructor(
             password = "password",
             role = Role.USER
         )
+        val member1 = Member(
+            email = "email2",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(member1)
         memberRepository.save(me)
+
 
         val request = createOAuth2SignupServiceRequest()
         oAuth2Service.signup(request, me.id!!)

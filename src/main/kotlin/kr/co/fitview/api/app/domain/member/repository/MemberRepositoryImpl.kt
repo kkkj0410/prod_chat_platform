@@ -502,6 +502,7 @@ class MemberRepositoryImpl(
             .join(memberImage.image, image)
             .where(
                 memberImage.type.eq(MemberImageType.PROFILE),
+                member.id.eq(memberId),
                 member.deletedAt.isNull,
                 memberImage.deletedAt.isNull,
                 image.deletedAt.isNull
