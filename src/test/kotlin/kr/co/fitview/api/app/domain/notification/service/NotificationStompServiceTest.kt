@@ -69,6 +69,17 @@ class NotificationStompServiceTest @Autowired constructor(
         }
     }
 
+    @DisplayName("운동 파트너 요청을 전달 받는 자에게 전달한다.")
+    @Test
+    fun sendWorkoutPartnerRequest() {
+        // given
+
+        // when
+
+        // then
+
+    }
+
     @DisplayName("사용자 정의 예외를 실시간으로 회원에게 전달한다.")
     @Test
     fun sendGlobalError() {
@@ -119,6 +130,7 @@ class NotificationStompServiceTest @Autowired constructor(
                 payload = ex.message ?: "Unknown error"
             )
         )
-
     }
+
+
 }

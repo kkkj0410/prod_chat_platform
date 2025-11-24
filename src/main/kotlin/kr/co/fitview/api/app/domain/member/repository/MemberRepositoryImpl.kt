@@ -486,6 +486,30 @@ class MemberRepositoryImpl(
             .fetchOne()
     }
 
+    override fun findMemberWorkoutRequestProfile(memberId: Long): MemberWorkoutPartnerProfileResponse? {
+
+        return queryFactory
+            .select(
+                Projections.constructor(
+                    MemberWorkoutPartnerProfileResponse::class.java,
+                    member.id,
+                    image.url,
+                    member.nickname
+                )
+            )
+            .from(member)
+            .join(member.mutableMemberImages, memberImage)
+            .join(memberImage.image, image)
+            .where(
+                memberImage.type.eq(MemberImageType.PROFILE),
+                member.deletedAt.isNull,
+                memberImage.deletedAt.isNull,
+                image.deletedAt.isNull
+            )
+            .limit(1)
+            .fetchOne()
+    }
+
     private fun gteHeight(minHeight: Int?): BooleanExpression? {
         return minHeight?.let { member.height.goe(it) }
     }

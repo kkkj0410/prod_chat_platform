@@ -1,6 +1,7 @@
 package kr.co.fitview.api.app.domain.workout_partner.service
 
 import kr.co.fitview.api.app.domain.member.service.MemberReferenceProvider
+import kr.co.fitview.api.app.domain.notification.service.NotificationStompService
 import kr.co.fitview.api.app.domain.workout_partner.condition.WorkoutPartnerRequestCondition
 import kr.co.fitview.api.app.domain.workout_partner.dto.request.WorkoutPartnerCreateServiceRequest
 import kr.co.fitview.api.app.domain.workout_partner.dto.request.WorkoutPartnerUpdateServiceRequest
@@ -27,6 +28,7 @@ class WorkoutPartnerRequestService(
     private val workoutPartnerRepository: WorkoutPartnerRepository,
     private val workoutPartnerRequestRepository : WorkoutPartnerRequestRepository,
     private val memberReferenceProvider : MemberReferenceProvider,
+    private val notificationStompService: NotificationStompService,
     private val time : Time
 ) {
 
@@ -47,7 +49,15 @@ class WorkoutPartnerRequestService(
             WorkoutPartnerRequestStatus.PENDING,
             time.nowLocalDateTime
         )
-        return workoutPartnerRequestRepository.save(workoutPartner)
+
+        val savedWorkoutPartner = workoutPartnerRequestRepository.save(workoutPartner)
+
+        notificationStompService.sendWorkoutPartnerRequest(
+            fromMemberId = memberId,
+            toMemberId = request.memberId
+        )
+
+        return savedWorkoutPartner
     }
 
     @Transactional

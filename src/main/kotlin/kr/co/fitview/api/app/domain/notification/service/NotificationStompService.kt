@@ -1,15 +1,20 @@
 package kr.co.fitview.api.app.domain.notification.service
 
+import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.domain.notification.constant.StompConstant
 import kr.co.fitview.api.app.domain.workout.dto.response.WorkoutRequestUpdateResponse
+import kr.co.fitview.api.app.domain.workout.entity.QWorkoutRequest.workoutRequest
 import kr.co.fitview.api.app.global.dto.WsMessageType
 import kr.co.fitview.api.app.global.dto.WsResponse
+import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.ErrorCode
+import kr.co.fitview.api.app.global.exception.error.global.GlobalErrorCode
 import org.springframework.stereotype.Service
 
 @Service
 class NotificationStompService(
-    private val stompPublisher : StompPublisher
+    private val stompPublisher : StompPublisher,
+    private val memberQueryService : MemberQueryService
 ) {
 
 
@@ -39,6 +44,21 @@ class NotificationStompService(
         }
     }
 
+    fun sendWorkoutPartnerRequest(fromMemberId : Long, toMemberId : Long){
+        val findMemberProfile = memberQueryService.findMemberWorkoutRequestProfileFrom(fromMemberId)
+            ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
+
+        stompPublisher.sendToUser(
+            memberId = toMemberId,
+            destination = StompConstant.SUB_WORKOUT_PARTNER,
+            payload = WsResponse(
+                type = WsMessageType.WORKOUT_PARTNER_REQUEST.code,
+                payload = findMemberProfile
+            )
+        )
+
+    }
+
     fun sendGlobalError(memberId : Long, errorCode: ErrorCode) {
         stompPublisher.sendToUser(
             memberId = memberId,
@@ -60,5 +80,6 @@ class NotificationStompService(
             )
         )
     }
+
 
 }

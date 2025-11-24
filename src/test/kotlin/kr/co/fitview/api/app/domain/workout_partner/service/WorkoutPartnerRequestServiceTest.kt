@@ -30,6 +30,7 @@ import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.workout_partner.WorkoutPartnerErrorCode
 import kr.co.fitview.api.app.global.time.Time
+import kr.co.fitview.api.app.global.util.TestDataFactory
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.assertj.core.api.ThrowingConsumer
@@ -67,6 +68,9 @@ class WorkoutPartnerRequestServiceTest @Autowired constructor(
         val savedFromMember = memberService.addMember(fromMember)
         val savedToMember = memberService.addMember(toMember)
 
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest , savedFromMember.id!!)
+
         val request = WorkoutPartnerCreateServiceRequest(
             memberId = savedToMember.id!!
         )
@@ -100,6 +104,9 @@ class WorkoutPartnerRequestServiceTest @Autowired constructor(
 
         val savedFromMember = memberService.addMember(fromMember)
         val savedToMember = memberService.addMember(toMember)
+
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest , savedFromMember.id!!)
 
         val workoutPartnerRequest = WorkoutPartnerRequest.of(
             fromMember = savedFromMember,
@@ -143,6 +150,9 @@ class WorkoutPartnerRequestServiceTest @Autowired constructor(
         val savedFromMember = memberService.addMember(fromMember)
         val savedToMember = memberService.addMember(toMember)
 
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest , savedFromMember.id!!)
+
         val workoutPartnerRequest = WorkoutPartnerRequest.of(
             fromMember = savedFromMember,
             toMember = savedToMember,
@@ -184,6 +194,9 @@ class WorkoutPartnerRequestServiceTest @Autowired constructor(
         val savedFromMember = memberService.addMember(fromMember)
         val savedToMember = memberService.addMember(toMember)
 
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest , savedFromMember.id!!)
+
         val workoutPartnerRequest = WorkoutPartnerRequest.of(
             fromMember = savedFromMember,
             toMember = savedToMember,
@@ -224,6 +237,9 @@ class WorkoutPartnerRequestServiceTest @Autowired constructor(
 
         val savedFromMember = memberService.addMember(fromMember)
         val savedToMember = memberService.addMember(toMember)
+
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest , savedFromMember.id!!)
 
         val workoutPartnerRequest = WorkoutPartnerRequest.of(
             fromMember = savedFromMember,

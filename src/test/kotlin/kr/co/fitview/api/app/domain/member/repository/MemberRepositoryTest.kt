@@ -254,6 +254,30 @@ class MemberRepositoryTest@Autowired constructor(
             .contains(request.profileImageUrl, request.nickname)
     }
 
+    @DisplayName("운동 파트너 요청에 쓰이는 회원 프로필을 조회한다.")
+    @Test
+    fun findMemberWorkoutRequestProfile() {
+        // given
+        val me = Member(
+            email = "email1",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(me)
+
+        val request = createOAuth2SignupServiceRequest()
+        oAuth2Service.signup(request, me.id!!)
+
+        // when
+        val findMemberProfile = memberRepository.findMemberWorkoutRequestProfile(me.id!!)
+
+        // then
+        assertThat(findMemberProfile)
+            .extracting("memberId", "profileImageUrl", "nickname")
+            .contains(me.id!!, request.profileImageUrl, request.nickname)
+    }
+
+
 
     private fun createAddress(
         lat : Double,
@@ -351,7 +375,6 @@ class MemberRepositoryTest@Autowired constructor(
 //                tuple(savedMember, savedImage2, MemberImageType.WORKOUT),
 //            )
     }
-
 
 
 
