@@ -8,6 +8,8 @@ interface WorkoutRequestRepositoryCustom {
 
     fun findRecentWorkoutRequest(chatRoomIds : List<Long>) : List<LastWorkoutRequestMessage>
 
+    fun findRecentWorkoutRequestEntity(chatRoomId : Long) : WorkoutRequest?
+
     fun findAllPendingWorkoutRequestAlreadyExpire() : List<WorkoutRequestUpdateResponse>
 
     fun updateExpireByIdIn(workoutRequestIds: List<Long>)

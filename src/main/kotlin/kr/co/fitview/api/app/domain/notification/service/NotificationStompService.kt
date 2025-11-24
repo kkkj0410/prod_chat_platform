@@ -1,13 +1,10 @@
 package kr.co.fitview.api.app.domain.notification.service
 
-import kr.co.fitview.api.app.domain.chat.dto.response.withIsMe
 import kr.co.fitview.api.app.domain.notification.constant.StompConstant
 import kr.co.fitview.api.app.domain.workout.dto.response.WorkoutRequestUpdateResponse
-import kr.co.fitview.api.app.domain.workout.entity.QWorkoutRequest.workoutRequest
 import kr.co.fitview.api.app.global.dto.WsMessageType
 import kr.co.fitview.api.app.global.dto.WsResponse
 import kr.co.fitview.api.app.global.exception.error.ErrorCode
-import org.springframework.messaging.simp.SimpMessageSendingOperations
 import org.springframework.stereotype.Service
 
 @Service
@@ -42,8 +39,7 @@ class NotificationStompService(
         }
     }
 
-    fun sendError(memberId : Long, errorCode: ErrorCode) {
-
+    fun sendGlobalError(memberId : Long, errorCode: ErrorCode) {
         stompPublisher.sendToUser(
             memberId = memberId,
             destination = StompConstant.SUB_ERROR,
@@ -54,18 +50,15 @@ class NotificationStompService(
         )
     }
 
-    fun sendOtherError(memberId: Long, root: Throwable) {
-
+    fun sendOtherError(memberId: Long, ex: Throwable) {
         stompPublisher.sendToUser(
             memberId = memberId,
             destination = StompConstant.SUB_ERROR,
             payload = WsResponse(
-                type = root.javaClass.simpleName,
-                payload = (root.message ?: "Unknown error")
+                type = ex.javaClass.simpleName,
+                payload = (ex.message ?: "Unknown error")
             )
         )
-
     }
-
 
 }

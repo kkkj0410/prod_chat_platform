@@ -16,7 +16,7 @@ import java.sql.Timestamp
 class WorkoutRequestRepositoryImpl(
     private val queryFactory: JPAQueryFactory,
     private val em: EntityManager,
-    private val time : Time
+    private val time: Time
 ) : WorkoutRequestRepositoryCustom {
 
     override fun findRecentWorkoutRequest(chatRoomIds: List<Long>): List<LastWorkoutRequestMessage> {
@@ -62,17 +62,35 @@ class WorkoutRequestRepositoryImpl(
             val chatRoomId = r[3] as Long
 
             LastWorkoutRequestMessage(
-                status = WorkoutRequestStatusForResponse.from(dbStatus!!, requestedAt, scheduledAt, time.nowLocalDateTime),
+                status = WorkoutRequestStatusForResponse.from(
+                    dbStatus!!,
+                    requestedAt,
+                    scheduledAt,
+                    time.nowLocalDateTime
+                ),
                 chatRoomId = chatRoomId
             )
         }
+    }
+
+    override fun findRecentWorkoutRequestEntity(chatRoomId: Long): WorkoutRequest? {
+        return queryFactory
+            .selectFrom(workoutRequest)
+            .join(workoutRequest.chatMessage, chatMessage)
+            .where(
+                chatMessage.chatRoom.id.eq(chatRoomId),
+                workoutRequest.deletedAt.isNull,
+            )
+            .orderBy(workoutRequest.requestedAt.desc())
+            .limit(1)
+            .fetchOne()
 
     }
 
-    override fun findAllPendingWorkoutRequestAlreadyExpire() : List<WorkoutRequestUpdateResponse> {
+    override fun findAllPendingWorkoutRequestAlreadyExpire(): List<WorkoutRequestUpdateResponse> {
 
 
-        val expireByScheduledAt =queryFactory
+        val expireByScheduledAt = queryFactory
             .select(
                 Projections.constructor(
                     WorkoutRequestUpdateResponse::class.java,
@@ -129,7 +147,7 @@ class WorkoutRequestRepositoryImpl(
         em.clear()
     }
 
-    override fun findWorkoutRequestByIdAndDeletedAtIsNullWithChatMessage(workoutRequestId : Long) : WorkoutRequest?{
+    override fun findWorkoutRequestByIdAndDeletedAtIsNullWithChatMessage(workoutRequestId: Long): WorkoutRequest? {
         return queryFactory
             .selectFrom(workoutRequest)
             .join(workoutRequest.chatMessage, chatMessage).fetchJoin()

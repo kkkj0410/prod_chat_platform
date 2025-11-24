@@ -22,6 +22,7 @@ import org.springframework.data.domain.Slice
 import org.springframework.data.domain.SliceImpl
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
 
 @Service
 @Transactional(readOnly = true)
@@ -65,6 +66,9 @@ class ChatMessageService(
     @Transactional
     fun addChatWorkoutRequestMessage(fromMember: Member, chatRoom: ChatRoom, message: ChatWorkoutRequestMessageServiceRequest) : LastChatMessage{
         val now = time.nowLocalDateTime
+
+        validateScheduledAtNotPast(message.scheduledAt, now)
+
         val chatMessage = ChatMessage.ofWorkoutRequest(
             member = fromMember,
             chatRoom = chatRoom,
@@ -78,6 +82,7 @@ class ChatMessageService(
         val toMember = memberReferenceProvider.findMemberReferenceFrom(findOtherChatParticipant!!.getMemberId())
 
         val savedWorkoutRequest = workoutRequestService.addWorkoutRequest(
+            chatRoomId = chatRoom.id!!,
             chatMessage = chatMessage,
             fromMember = fromMember,
             toMember = toMember,
@@ -105,6 +110,15 @@ class ChatMessageService(
         )
 
         return response
+    }
+
+    private fun validateScheduledAtNotPast(
+        scheduledAt: LocalDateTime,
+        now: LocalDateTime
+    ) {
+        if (scheduledAt.isBefore(now)) {
+            throw GlobalException(ChatErrorCode.WORKOUT_REQUEST_TIME_PAST)
+        }
     }
 
 

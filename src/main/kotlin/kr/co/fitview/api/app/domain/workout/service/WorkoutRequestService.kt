@@ -10,23 +10,32 @@ import kr.co.fitview.api.app.domain.workout.repository.WorkoutRequestRepository
 import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequest
 import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
 import kr.co.fitview.api.app.global.exception.GlobalException
+import kr.co.fitview.api.app.global.exception.error.chat.ChatErrorCode
 import kr.co.fitview.api.app.global.exception.error.global.GlobalErrorCode
 import kr.co.fitview.api.app.global.exception.error.workout_request.WorkoutRequestErrorCode
 import kr.co.fitview.api.app.global.time.Time
-import org.hibernate.query.sqm.tree.SqmNode.log
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
-import org.slf4j.LoggerFactory
 @Service
 @Transactional(readOnly = true)
 class WorkoutRequestService(
-    private val workoutRequestRepository : WorkoutRequestRepository,
-    private val time : Time
+    private val workoutRequestRepository: WorkoutRequestRepository,
+    private val time: Time
 ) {
 
     @Transactional
-    fun addWorkoutRequest(chatMessage : ChatMessage, fromMember : Member, toMember : Member, message: ChatWorkoutRequestMessageServiceRequest) : WorkoutRequest{
+    fun addWorkoutRequest(
+        chatRoomId: Long,
+        chatMessage: ChatMessage,
+        fromMember: Member,
+        toMember: Member,
+        message: ChatWorkoutRequestMessageServiceRequest
+    ): WorkoutRequest {
+        val findWorkoutRequest = findRecentWorkoutRequestFrom(chatRoomId)
+
+        validateExistsWorkoutRequest(findWorkoutRequest)
+
         val workoutRequest = WorkoutRequest.of(
             chatMessage = chatMessage,
             fromMember = fromMember,
@@ -35,15 +44,16 @@ class WorkoutRequestService(
             scheduledAt = message.scheduledAt,
             requestedAt = time.nowLocalDateTime
         )
+
         return workoutRequestRepository.save(workoutRequest)
     }
 
     @Transactional
-    fun modifyAllWorkoutRequestExpire() : List<WorkoutRequestUpdateResponse> {
+    fun modifyAllWorkoutRequestExpire(): List<WorkoutRequestUpdateResponse> {
 
         val response = workoutRequestRepository.findAllPendingWorkoutRequestAlreadyExpire()
 
-        val workoutRequestIds = response.map{it.workoutRequestId}
+        val workoutRequestIds = response.map { it.workoutRequestId }
 
         workoutRequestRepository.updateExpireByIdIn(workoutRequestIds)
 
@@ -53,7 +63,7 @@ class WorkoutRequestService(
     }
 
     @Transactional
-    fun modifyWorkoutRequest(memberId: Long, request: WorkoutRequestUpdateRequest) : WorkoutRequestUpdateResponse{
+    fun modifyWorkoutRequest(memberId: Long, request: WorkoutRequestUpdateRequest): WorkoutRequestUpdateResponse {
 
         val findWorkoutRequest = workoutRequestRepository
             .findWorkoutRequestByIdAndDeletedAtIsNullWithChatMessage(request.workoutRequestId)
@@ -76,9 +86,30 @@ class WorkoutRequestService(
         return response
     }
 
-    fun findRecentWorkoutRequestFrom(chatRoomIds : List<Long>) : List<LastWorkoutRequestMessage>{
+    fun findRecentWorkoutRequestFrom(chatRoomIds: List<Long>): List<LastWorkoutRequestMessage> {
         return workoutRequestRepository.findRecentWorkoutRequest(chatRoomIds)
     }
+
+    fun findRecentWorkoutRequestFrom(chatRoomId: Long): WorkoutRequest? {
+        return workoutRequestRepository.findRecentWorkoutRequestEntity(chatRoomId)
+    }
+
+
+    private fun validateExistsWorkoutRequest(findWorkoutRequest: WorkoutRequest?) {
+        if (isNotNull(findWorkoutRequest) && isNotFinishStatus(findWorkoutRequest!!)) {
+            throw GlobalException(ChatErrorCode.EXISTING_WORKOUT_REQUEST)
+        }
+    }
+
+    private fun isNotFinishStatus(workoutRequest: WorkoutRequest): Boolean =
+        workoutRequest.status !in finishStatus
+
+    private val finishStatus = arrayOf(
+        WorkoutRequestStatus.REJECT,
+        WorkoutRequestStatus.CANCEL,
+        WorkoutRequestStatus.COMPLETE,
+        WorkoutRequestStatus.EXPIRE
+    )
 
     private fun validateNotUpdateStatus(findWorkoutRequest: WorkoutRequest) {
         val notUpdateStatus = getNotUpdateStatus()
@@ -123,5 +154,7 @@ class WorkoutRequestService(
     ) =
         findWorkoutRequest.getFromMemberId() == memberId && request.status.toWorkoutRequestStatus() == WorkoutRequestStatus.REJECT
 
+
+    private fun isNotNull(value: Any?) = value != null
 
 }

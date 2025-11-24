@@ -4,6 +4,7 @@ import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.chat.dto.request.ChatRoomCreateServiceRequest
 import kr.co.fitview.api.app.domain.chat.dto.request.ChatTextMessageRequest
 import kr.co.fitview.api.app.domain.chat.dto.request.ChatWorkoutRequestMessageRequest
+import kr.co.fitview.api.app.domain.chat.entity.ChatMessage
 import kr.co.fitview.api.app.domain.chat.entity.ChatParticipant
 import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
@@ -15,6 +16,7 @@ import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
 import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusForResponse
+import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequest
 import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
 import kr.co.fitview.api.app.domain.workout.repository.WorkoutRequestRepository
 import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartner
@@ -31,16 +33,16 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
-class ChatServiceTest@Autowired constructor(
+class ChatServiceTest @Autowired constructor(
     val chatService: ChatService,
-    val chatRoomRepository : ChatRoomRepository,
-    val chatParticipantRepository : ChatParticipantRepository,
-    val chatMessageRepository : ChatMessageRepository,
-    val workoutPartnerRepository : WorkoutPartnerRepository,
-    val workoutRequestRepository : WorkoutRequestRepository,
-    val oAuth2Service : OAuth2Service,
-    val memberRepository : MemberRepository,
-    val time : Time
+    val chatRoomRepository: ChatRoomRepository,
+    val chatParticipantRepository: ChatParticipantRepository,
+    val chatMessageRepository: ChatMessageRepository,
+    val workoutPartnerRepository: WorkoutPartnerRepository,
+    val workoutRequestRepository: WorkoutRequestRepository,
+    val oAuth2Service: OAuth2Service,
+    val memberRepository: MemberRepository,
+    val time: Time
 ) : IntegrationTestSupport() {
 
     @DisplayName("개인 채팅방을 생성한다.")
@@ -69,7 +71,8 @@ class ChatServiceTest@Autowired constructor(
         val response = chatService.saveChatRoom(savedMember1.id!!, request)
 
         // then
-        val findChatRoom = chatRoomRepository.findPrivateChatRoomIdBetweenMemberIds(savedMember1.id!!, savedMember2.id!!)
+        val findChatRoom =
+            chatRoomRepository.findPrivateChatRoomIdBetweenMemberIds(savedMember1.id!!, savedMember2.id!!)
         assertThat(response.chatRoomId).isEqualTo(findChatRoom!!.id!!)
     }
 
@@ -271,7 +274,7 @@ class ChatServiceTest@Autowired constructor(
         // then
         val findChatMessage = chatMessageRepository.findAll()[0]
         val findWorkoutRequest = workoutRequestRepository.findAll()[0]
-//
+
         assertThat(response)
             .extracting(
                 "chatRoomId",
@@ -329,7 +332,8 @@ class ChatServiceTest@Autowired constructor(
                 memberId = 1L,
                 chatRoomId = 1L,
                 message = request
-            )        }
+            )
+        }
             .isInstanceOf(GlobalException::class.java)
             .satisfies(ThrowingConsumer { ex ->
                 val globalEx = ex as GlobalException
@@ -338,6 +342,132 @@ class ChatServiceTest@Autowired constructor(
             })
     }
 
+    @DisplayName("해당 채팅방에 운동 약속 요청이 이미 있으면 운동 약속 요청을 보낼 수 없다.")
+    @Test
+    fun sendMessageWhenExistsWorkoutRequest() {
+        // given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val other = Member(
+            email = "email2",
+            password = "password2",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+        memberRepository.save(other)
+
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest, me.id!!)
+
+        val savedChatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+
+        val chatParticipant1 = ChatParticipant(
+            savedChatRoom,
+            me
+        )
+        val chatParticipant2 = ChatParticipant(
+            savedChatRoom,
+            other
+        )
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+
+        val message1ByChatRoom2 = ChatMessage(
+            member = me,
+            chatRoom = savedChatRoom,
+            type = ChatMessageType.WORKOUT_REQUEST,
+            sentAt = time.nowLocalDateTime
+        )
+        val workout1ByChatRoom2 = WorkoutRequest(
+            chatMessage = message1ByChatRoom2,
+            fromMember = me,
+            toMember = other,
+            status = WorkoutRequestStatus.PENDING,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusHours(24),
+            requestedAt = time.nowLocalDateTime.minusHours(3)
+        )
+        chatMessageRepository.save(message1ByChatRoom2)
+        workoutRequestRepository.save(workout1ByChatRoom2)
+
+        // when
+        val request = ChatWorkoutRequestMessageRequest(
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            location = "location"
+        )
+
+        // then
+        assertThatThrownBy {
+            chatService.sendMessage(
+                memberId = me.id!!,
+                chatRoomId = savedChatRoom.id!!,
+                message = request
+            )
+        }
+            .isInstanceOf(GlobalException::class.java)
+            .satisfies(ThrowingConsumer { ex ->
+                val globalEx = ex as GlobalException
+                assertThat(globalEx.errorCode)
+                    .isEqualTo(ChatErrorCode.EXISTING_WORKOUT_REQUEST)
+            })
+    }
+
+    @DisplayName("운동 약속 요청 시간은 과거 시점을 넣을 수 없다.")
+    @Test
+    fun sendMessageForPastWorkoutRequest() {
+        // given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val other = Member(
+            email = "email2",
+            password = "password2",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+        memberRepository.save(other)
+
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest, me.id!!)
+
+        val savedChatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+
+        val chatParticipant1 = ChatParticipant(
+            savedChatRoom,
+            me
+        )
+        val chatParticipant2 = ChatParticipant(
+            savedChatRoom,
+            other
+        )
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+
+        val request = ChatWorkoutRequestMessageRequest(
+            scheduledAt = time.nowLocalDateTime.minusHours(5),
+            location = "location"
+        )
+
+        // when & then
+        assertThatThrownBy {
+            chatService.sendMessage(
+                memberId = me.id!!,
+                chatRoomId = savedChatRoom.id!!,
+                message = request
+            )
+        }
+            .isInstanceOf(GlobalException::class.java)
+            .satisfies(ThrowingConsumer { ex ->
+                val globalEx = ex as GlobalException
+                assertThat(globalEx.errorCode)
+                    .isEqualTo(ChatErrorCode.WORKOUT_REQUEST_TIME_PAST)
+            })
+    }
 
 
 }
