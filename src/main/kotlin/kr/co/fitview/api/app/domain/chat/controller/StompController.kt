@@ -1,5 +1,6 @@
 package kr.co.fitview.api.app.domain.chat.controller
 
+import jakarta.validation.Valid
 import kr.co.fitview.api.app.domain.chat.dto.request.ChatMessageRequest
 import kr.co.fitview.api.app.domain.chat.dto.request.WorkoutRequestUpdateRequest
 import kr.co.fitview.api.app.domain.chat.dto.response.withIsMe
@@ -71,6 +72,7 @@ class StompController(
         @DestinationVariable
         chatRoomId : Long,
 
+        @Valid
         @Payload
         message: ChatMessageRequest
     ) {
@@ -95,6 +97,7 @@ class StompController(
     fun workoutRequestModify(
         principal: Principal,
 
+        @Valid
         @Payload
         request: WorkoutRequestUpdateRequest
     ) {
