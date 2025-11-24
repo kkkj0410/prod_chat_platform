@@ -16,5 +16,4 @@ sealed interface LastChatMessage {
     val chatRoomId : Long?
     @get:JsonIgnore
     val memberId : Long?
-
 }

@@ -1,5 +1,9 @@
 package kr.co.fitview.api.app.domain.notification.service
 
+import kr.co.fitview.api.app.domain.chat.dto.response.ChatMessageDetailResponse
+import kr.co.fitview.api.app.domain.chat.dto.response.StompChatTextMessage
+import kr.co.fitview.api.app.domain.chat.dto.response.StompChatWorkoutRequestMessage
+import kr.co.fitview.api.app.domain.chat.dto.response.withIsMe
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.domain.notification.constant.StompConstant
 import kr.co.fitview.api.app.domain.workout.dto.response.WorkoutRequestUpdateResponse
@@ -17,6 +21,48 @@ class NotificationStompService(
     private val memberQueryService : MemberQueryService
 ) {
 
+    fun sendChatMessage(memberId : Long, response : ChatMessageDetailResponse){
+
+        if(response.chatMessage is StompChatTextMessage){
+            stompPublisher.sendToUser(
+                memberId = memberId,
+                destination = StompConstant.SUB_CHAT_MESSAGE,
+                payload = WsResponse(
+                    type = WsMessageType.TEXT.code,
+                    payload = response.withIsMe(true)
+                )
+            )
+
+            stompPublisher.sendToUser(
+                memberId = response.otherMemberId,
+                destination = StompConstant.SUB_CHAT_MESSAGE,
+                payload = WsResponse(
+                    type = WsMessageType.TEXT.code,
+                    payload = response.withIsMe(false)
+                )
+            )
+        }
+
+        else if(response.chatMessage is StompChatWorkoutRequestMessage){
+            stompPublisher.sendToUser(
+                memberId = memberId,
+                destination = StompConstant.SUB_CHAT_MESSAGE,
+                payload = WsResponse(
+                    type = WsMessageType.WORKOUT_REQUEST.code,
+                    payload = response.withIsMe(true)
+                )
+            )
+
+            stompPublisher.sendToUser(
+                memberId = response.otherMemberId,
+                destination = StompConstant.SUB_CHAT_MESSAGE,
+                payload = WsResponse(
+                    type = WsMessageType.WORKOUT_REQUEST.code,
+                    payload = response.withIsMe(false)
+                )
+            )
+        }
+    }
 
     fun sendWorkoutRequestUpdate(workoutRequests : List<WorkoutRequestUpdateResponse>) {
         if(workoutRequests.isEmpty()){
