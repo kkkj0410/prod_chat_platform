@@ -56,7 +56,7 @@ class ChatMessageRepositoryTest @Autowired constructor(
             "imageUrl1",
             "imageUrl2",
         ),
-        intro: String? = "intro",
+        intro: String = "intro",
         address: AddressCreateServiceRequest = AddressCreateServiceRequest(
             siDo = AddressSiDo.SEOUL,
             siGunGu = "강남구",

@@ -20,7 +20,7 @@ data class OtherMemberProfileResponse(
     val siDo: AddressSiDo,
     val siGunGu: String,
     val eupMyeonDong: String,
-    val intro: String?,
+    val intro: String,
     val height: Int,
     val weight: Int,
     val age: Age,

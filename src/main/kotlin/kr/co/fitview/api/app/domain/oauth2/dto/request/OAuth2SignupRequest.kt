@@ -1,5 +1,6 @@
 package kr.co.fitview.api.app.domain.oauth2.dto.request
 
+import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
 import kr.co.fitview.api.app.domain.member.entity.enums.*
@@ -42,6 +43,7 @@ data class OAuth2SignupRequest(
     @field:Size(min = 1, message = "workoutImageUrls cannot be empty")
     val workoutImageUrls : List<String>?,
 
+    @field:NotBlank(message = "intro is required")
     val intro : String?,
 
     @field:NotNull(message = "address is required")
@@ -61,7 +63,7 @@ data class OAuth2SignupRequest(
             workoutTimes = this.workoutTimes!!,
             workoutGoal = this.workoutGoal!!,
             workoutImageUrls = this.workoutImageUrls,
-            intro = this.intro,
+            intro = this.intro!!,
             address = this.address!!.toServiceRequest()
         )
     }

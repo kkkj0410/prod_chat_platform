@@ -29,7 +29,7 @@ data class OAuth2SignupServiceRequest(
 
     val workoutImageUrls : List<String>?,
 
-    val intro : String?,
+    val intro : String,
 
     val address : AddressCreateServiceRequest
 

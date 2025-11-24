@@ -47,6 +47,7 @@ class Member(
     @Column(name = "nickname", length = 100)
     var nickname: String? = null,
 
+    @NotNull
     @Size(max = 1000)
     @Column(name = "intro", length = 1000)
     var intro: String? = null,

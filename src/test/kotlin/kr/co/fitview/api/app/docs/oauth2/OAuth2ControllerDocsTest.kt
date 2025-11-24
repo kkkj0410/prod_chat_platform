@@ -215,7 +215,7 @@ class OAuth2ControllerDocsTest : RestDocsSupport() {
         workoutImageUrls: List<String> = listOf(
             "imageUrl1", "imageUrl2"
         ),
-        intro: String? = "intro",
+        intro: String = "intro",
         address : AddressCreateRequest = AddressCreateRequest(
             siDo = AddressSiDo.SEOUL,
             siGunGu = "강남구",
@@ -292,14 +292,8 @@ class OAuth2ControllerDocsTest : RestDocsSupport() {
                         .description("운동 이미지 리스트. 리스트에 담긴 인덱스 순서대로 이미지 순서번호가 부여됨"),
                     fieldWithPath("workoutImageUrls[].").type(JsonFieldType.ARRAY)
                         .description("운동 이미지 URL"),
-                    fieldWithPath("intro").type(JsonFieldType.STRING).optional()
+                    fieldWithPath("intro").type(JsonFieldType.STRING)
                         .description("회원 소개, 최대 500자"),
-//                    fieldWithPath("terms").type(JsonFieldType.ARRAY)
-//                        .description("약관 동의항목 전체 - 모든 약관 동의항목이 해당 배열에 모두 있어야 통과"),
-//                    fieldWithPath("terms[].termName").type(JsonFieldType.STRING)
-//                        .description(TermName.allDescription()),
-//                    fieldWithPath("terms[].isAgreed").type(JsonFieldType.BOOLEAN)
-//                        .description("동의 여부"),
                     fieldWithPath("address.siDo").type(JsonFieldType.STRING)
                         .description(AddressSiDo.allDescription()),
                     fieldWithPath("address.siGunGu").type(JsonFieldType.STRING)
