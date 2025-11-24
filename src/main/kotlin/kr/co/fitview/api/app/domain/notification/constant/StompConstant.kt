@@ -6,6 +6,7 @@ class StompConstant private constructor() {
 
     companion object {
         const val SUB_WORKOUT_REQUEST = "/v1/queue/workout-requests"
+        const val SUB_WORKOUT_PARTNER = "/v1/queue/workout-partners"
         const val SUB_ERROR = "/v1/queue/errors"
     }
 }
