@@ -128,7 +128,7 @@ class MemberControllerDocsTest : RestDocsSupport() {
                             .description("시/군/구"),
                         fieldWithPath("data.eupMyeonDong").type(JsonFieldType.STRING)
                             .description("읍/면/동"),
-                        fieldWithPath("data.intro").type(JsonFieldType.STRING).optional()
+                        fieldWithPath("data.intro").type(JsonFieldType.STRING)
                             .description("소개글"),
                         fieldWithPath("data.height").type(JsonFieldType.NUMBER)
                             .description("키"),
@@ -526,7 +526,7 @@ class MemberControllerDocsTest : RestDocsSupport() {
                         fieldWithPath("data.profile.siDo").type(JsonFieldType.STRING).description("시/도 주소"),
                         fieldWithPath("data.profile.siGunGu").type(JsonFieldType.STRING).description("시/군/구 주소"),
                         fieldWithPath("data.profile.eupMyeonDong").type(JsonFieldType.STRING).description("읍/면/동 주소"),
-                        fieldWithPath("data.profile.intro").type(JsonFieldType.STRING).description("자기소개").optional(),
+                        fieldWithPath("data.profile.intro").type(JsonFieldType.STRING).description("자기소개"),
                         fieldWithPath("data.profile.height").type(JsonFieldType.NUMBER).description("키 (cm)"),
                         fieldWithPath("data.profile.weight").type(JsonFieldType.NUMBER).description("몸무게 (kg)"),
                         fieldWithPath("data.profile.age").type(JsonFieldType.STRING)
