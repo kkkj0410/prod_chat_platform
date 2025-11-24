@@ -488,4 +488,80 @@ class ChatMessageServiceTest @Autowired constructor(
                 tuple(savedChatRoom, other, findChatMessage, false),
             )
     }
+
+    @DisplayName("회원은 운동 요청 메시지를 보내는데 이미 운동 요청이 활성화되어있으면 전송을 하지 않는다.")
+    @Test
+    fun addChatWorkoutRequestMessageWhenExistsWorkoutRequest() {
+        // given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val other = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+        memberRepository.save(other)
+
+        val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+
+        val chatParticipant1 = ChatParticipant(
+            chatRoom,
+            me
+        )
+        val chatParticipant2 = ChatParticipant(
+            chatRoom,
+            other
+        )
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+
+        val chatMessage1 = ChatMessage.ofWorkoutRequest(
+            member = me,
+            chatRoom = chatRoom,
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessage1)
+
+        val workoutRequest = WorkoutRequest.of(
+            chatMessage = chatMessage1,
+            fromMember = me,
+            toMember = other,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime
+        )
+        workoutRequest.updateStatus(WorkoutRequestStatus.PENDING)
+        workoutRequestRepository.save(workoutRequest)
+
+        val chatMessage2 = ChatMessage.ofWorkoutRequest(
+            member = me,
+            chatRoom = chatRoom,
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessage2)
+
+        val request = ChatWorkoutRequestMessageServiceRequest(
+            scheduledAt = time.nowLocalDateTime.plusHours(5),
+            location = "location"
+        )
+
+        // when & then
+        assertThatThrownBy {
+            chatMessageService.addChatWorkoutRequestMessage(
+                fromMember = me,
+                chatRoom = chatRoom,
+                message = request
+            )
+        }
+            .isInstanceOf(GlobalException::class.java)
+            .satisfies(ThrowingConsumer { ex ->
+                val globalEx = ex as GlobalException
+                assertThat(globalEx.errorCode)
+                    .isEqualTo(ChatErrorCode.EXISTING_WORKOUT_REQUEST)
+            })
+    }
 }

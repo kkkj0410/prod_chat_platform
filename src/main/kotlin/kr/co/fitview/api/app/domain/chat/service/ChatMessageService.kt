@@ -121,7 +121,6 @@ class ChatMessageService(
         }
     }
 
-
     fun findLastChatMessages(memberId: Long, chatRoomIds: List<Long>): List<LastChatMessage> {
         return chatMessageRepository.findRecentChatMessageByMemberIdAndIn(memberId, chatRoomIds)
     }
