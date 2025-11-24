@@ -3,9 +3,7 @@ package kr.co.fitview.api.app.domain.chat.service
 import kr.co.fitview.api.app.domain.chat.condition.ChatCondition
 import kr.co.fitview.api.app.domain.chat.dto.ChatMessageAndWorkoutRequest
 import kr.co.fitview.api.app.domain.chat.dto.request.*
-import kr.co.fitview.api.app.domain.chat.dto.response.ChatMessageContent
-import kr.co.fitview.api.app.domain.chat.dto.response.ChatMessageWorkoutRequest
-import kr.co.fitview.api.app.domain.chat.dto.response.LastChatMessage
+import kr.co.fitview.api.app.domain.chat.dto.response.*
 import kr.co.fitview.api.app.domain.chat.entity.ChatMessage
 import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
@@ -36,7 +34,7 @@ class ChatMessageService(
 ) {
 
     @Transactional
-    fun addChatTextMessage(member: Member, chatRoom: ChatRoom, message: ChatTextMessageServiceRequest) : LastChatMessage {
+    fun addChatTextMessage(member: Member, chatRoom: ChatRoom, message: ChatTextMessageServiceRequest) : StompChatTextMessage {
         val now = time.nowLocalDateTime
         val chatMessage = ChatMessage.ofText(
             member = member,
@@ -54,7 +52,13 @@ class ChatMessageService(
             chatRoom = chatRoom
         )
 
-        val response = ChatMessageContent(
+//        val response = ChatMessageContent(
+//            chatMessageId = chatMessage.id!!,
+//            sentAt = now,
+//            content = message.content
+//        )
+
+        val response = StompChatTextMessage(
             chatMessageId = chatMessage.id!!,
             sentAt = now,
             content = message.content
@@ -64,7 +68,7 @@ class ChatMessageService(
     }
 
     @Transactional
-    fun addChatWorkoutRequestMessage(fromMember: Member, chatRoom: ChatRoom, message: ChatWorkoutRequestMessageServiceRequest) : LastChatMessage{
+    fun addChatWorkoutRequestMessage(fromMember: Member, chatRoom: ChatRoom, message: ChatWorkoutRequestMessageServiceRequest) : StompChatWorkoutRequestMessage {
         val now = time.nowLocalDateTime
 
         validateScheduledAtNotPast(message.scheduledAt, now)
@@ -95,7 +99,21 @@ class ChatMessageService(
             chatRoom = chatRoom
         )
 
-        val response = ChatMessageWorkoutRequest(
+//        val response = ChatMessageWorkoutRequest(
+//            chatMessageId = chatMessage.id!!,
+//            sentAt = now,
+//            workoutRequestId = savedWorkoutRequest.id!!,
+//            status = WorkoutRequestStatusForResponse.from(
+//                dbStatus = WorkoutRequestStatus.PENDING,
+//                requestedAt = now,
+//                scheduledAt = message.scheduledAt,
+//                now = now
+//            ),
+//            scheduledAt = message.scheduledAt,
+//            location = message.location,
+//        )
+
+        val response = StompChatWorkoutRequestMessage(
             chatMessageId = chatMessage.id!!,
             sentAt = now,
             workoutRequestId = savedWorkoutRequest.id!!,

@@ -7,7 +7,7 @@ data class ChatMessageDetailResponse(
     val chatRoomId: Long,
     val profileImageUrl: String,
     val nickname: String,
-    val chatMessage: LastChatMessage,
+    val chatMessage: StompChatMessage,
 
     @get:JsonIgnore
     val otherMemberId : Long
@@ -17,7 +17,7 @@ data class ChatMessageDetailResponse(
         fun of(
             chatRoomId: Long,
             chatProfile : MemberChatProfileResponse,
-            chatMessage: LastChatMessage,
+            chatMessage: StompChatMessage,
             otherMemberId : Long
         ): ChatMessageDetailResponse {
             return ChatMessageDetailResponse(
@@ -33,8 +33,8 @@ data class ChatMessageDetailResponse(
 
 fun ChatMessageDetailResponse.withIsMe(isMe: Boolean): ChatMessageDetailResponse {
     val updatedMessage = when(val msg = this.chatMessage) {
-        is ChatMessageContent -> msg.copy(isMe = isMe)
-        is ChatMessageWorkoutRequest -> msg.copy(isMe = isMe)
+        is StompChatTextMessage -> msg.copy(isMe = isMe)
+        is StompChatWorkoutRequestMessage -> msg.copy(isMe = isMe)
         else -> msg
     }
     return this.copy(chatMessage = updatedMessage)

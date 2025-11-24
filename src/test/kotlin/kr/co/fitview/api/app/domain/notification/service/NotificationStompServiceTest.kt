@@ -1,20 +1,25 @@
 package kr.co.fitview.api.app.domain.notification.service
 
 import kr.co.fitview.api.app.IntegrationTestSupport
+import kr.co.fitview.api.app.domain.chat.dto.response.ChatMessageDetailResponse
+import kr.co.fitview.api.app.domain.chat.dto.response.StompChatTextMessage
+import kr.co.fitview.api.app.domain.chat.dto.response.StompChatWorkoutRequestMessage
+import kr.co.fitview.api.app.domain.chat.dto.response.withIsMe
+import kr.co.fitview.api.app.domain.member.dto.response.MemberChatProfileResponse
 import kr.co.fitview.api.app.domain.member.dto.response.MemberWorkoutPartnerProfileResponse
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.domain.notification.constant.StompConstant
 import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
 import kr.co.fitview.api.app.domain.workout.dto.response.WorkoutRequestUpdateResponse
-import kr.co.fitview.api.app.domain.workout.entity.QWorkoutRequest.workoutRequest
+import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusForResponse
 import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
 import kr.co.fitview.api.app.global.dto.WsMessageType
 import kr.co.fitview.api.app.global.dto.WsResponse
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.exception.error.chat.ChatErrorCode
+import kr.co.fitview.api.app.global.time.Time
 import kr.co.fitview.api.app.global.util.TestDataFactory
-import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
@@ -25,15 +30,118 @@ import org.springframework.beans.factory.annotation.Autowired
 class NotificationStompServiceTest @Autowired constructor(
     val notificationStompService: NotificationStompService,
     val memberRepository: MemberRepository,
-    val oAuth2Service: OAuth2Service
+    val oAuth2Service: OAuth2Service,
+    val time: Time
 ) : IntegrationTestSupport() {
+
+    @DisplayName("채팅 메시지를 송신자, 수신자에게 보낸다.")
+    @Test
+    fun sendChatTextMessage() {
+        // given
+        val memberId = 123L
+        val otherMemberId = 234L
+
+        val chatMessage = StompChatTextMessage(
+            chatMessageId = 1L,
+            sentAt = time.nowLocalDateTime,
+            content = "하드코딩 메시지 예시입니다."
+        )
+
+        val chatProfile = MemberChatProfileResponse(
+            profileImageUrl = "https://example.com/profile.jpg",
+            nickname = "홍길동"
+        )
+
+        val response = ChatMessageDetailResponse.of(
+            chatRoomId = 123L,
+            chatProfile = chatProfile,
+            chatMessage = chatMessage,
+            otherMemberId = otherMemberId
+        )
+
+        given(stompPublisher.sendToUser(any(), any(), any())).willAnswer {}
+
+
+        // when
+        notificationStompService.sendChatMessage(memberId, response)
+
+        // then
+        then(stompPublisher).should().sendToUser(
+            memberId,
+            StompConstant.SUB_CHAT_MESSAGE,
+            WsResponse(
+                type = WsMessageType.TEXT.code,
+                payload = response.withIsMe(true)
+            )
+        )
+        then(stompPublisher).should().sendToUser(
+            otherMemberId,
+            StompConstant.SUB_CHAT_MESSAGE,
+            WsResponse(
+                type = WsMessageType.TEXT.code,
+                payload = response.withIsMe(false)
+            )
+        )
+    }
+
+    @DisplayName("채팅 운동 요청 메시지를 송신자, 수신자에게 보낸다.")
+    @Test
+    fun sendChatWorkoutRequestMessage() {
+        // given
+        val memberId = 123L
+        val otherMemberId = 234L
+
+        val workoutMessage = StompChatWorkoutRequestMessage(
+            chatMessageId = 2L,
+            sentAt = time.nowLocalDateTime,
+            workoutRequestId = 987L,
+            status = WorkoutRequestStatusForResponse.PENDING,
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            location = "location",
+        )
+
+        val chatProfile = MemberChatProfileResponse(
+            profileImageUrl = "https://example.com/profile.jpg",
+            nickname = "홍길동"
+        )
+
+        val response = ChatMessageDetailResponse.of(
+            chatRoomId = 123L,
+            chatProfile = chatProfile,
+            chatMessage = workoutMessage,
+            otherMemberId = otherMemberId
+        )
+
+        given(stompPublisher.sendToUser(any(), any(), any())).willAnswer {}
+
+
+        // when
+        notificationStompService.sendChatMessage(memberId, response)
+
+        // then
+        then(stompPublisher).should().sendToUser(
+            memberId,
+            StompConstant.SUB_CHAT_MESSAGE,
+            WsResponse(
+                type = WsMessageType.WORKOUT_REQUEST.code,
+                payload = response.withIsMe(true)
+            )
+        )
+        then(stompPublisher).should().sendToUser(
+            otherMemberId,
+            StompConstant.SUB_CHAT_MESSAGE,
+            WsResponse(
+                type = WsMessageType.WORKOUT_REQUEST.code,
+                payload = response.withIsMe(false)
+            )
+        )
+    }
 
 
     @DisplayName("운동 요청의 상태 변화를 현재 접속한 회원들에게 알린다.")
     @Test
     fun sendWorkoutRequestUpdate() {
         // given
-
         val workoutRequests = listOf(
             WorkoutRequestUpdateResponse(
                 chatRoomId = 1L,

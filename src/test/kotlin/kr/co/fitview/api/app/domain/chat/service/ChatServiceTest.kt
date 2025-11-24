@@ -206,7 +206,6 @@ class ChatServiceTest @Autowired constructor(
                 "profileImageUrl",
                 "nickname",
                 "chatMessage.chatMessageId",
-                "chatMessage.type",
                 "chatMessage.sentAt",
                 "chatMessage.content",
             )
@@ -215,7 +214,6 @@ class ChatServiceTest @Autowired constructor(
                 signupRequest.profileImageUrl,
                 signupRequest.nickname,
                 findChatMessage.id!!,
-                ChatMessageType.TEXT,
                 time.nowLocalDateTime,
                 request.content
             )
@@ -281,7 +279,6 @@ class ChatServiceTest @Autowired constructor(
                 "profileImageUrl",
                 "nickname",
                 "chatMessage.chatMessageId",
-                "chatMessage.type",
                 "chatMessage.sentAt",
                 "chatMessage.workoutRequestId",
                 "chatMessage.status",
@@ -293,7 +290,6 @@ class ChatServiceTest @Autowired constructor(
                 signupRequest.profileImageUrl,
                 signupRequest.nickname,
                 findChatMessage.id!!,
-                ChatMessageType.WORKOUT_REQUEST,
                 time.nowLocalDateTime,
                 findWorkoutRequest.id!!,
                 WorkoutRequestStatusForResponse.PENDING,

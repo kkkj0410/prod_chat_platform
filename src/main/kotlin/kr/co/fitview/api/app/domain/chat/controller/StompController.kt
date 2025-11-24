@@ -80,16 +80,9 @@ class StompController(
         val senderId = principal.name
         val response = chatService.sendMessage(principal.name.toLong(), chatRoomId, message)
 
-        messageTemplate.convertAndSendToUser(
-            response.otherMemberId.toString(),
-            "/v1/queue/chats/messages",
-            response.withIsMe(false)
-        )
-
-        messageTemplate.convertAndSendToUser(
-            senderId,
-            "/v1/queue/chats/messages",
-            response.withIsMe(true)
+        notificationStompService.sendChatMessage(
+            memberId = senderId.toLong(),
+            response = response
         )
     }
 
