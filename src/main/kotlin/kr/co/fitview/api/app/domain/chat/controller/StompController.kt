@@ -115,8 +115,4 @@ class StompController(
         return simpUserRegistry.getUser(memberId) != null
     }
 
-    data class PrivateMessageDto(
-        val recipientId: String,
-        val content: String
-    )
 }

@@ -7,6 +7,7 @@ import kr.co.fitview.api.app.domain.workout.entity.QWorkoutRequest.workoutReques
 import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
 import kr.co.fitview.api.app.global.dto.WsMessageType
 import kr.co.fitview.api.app.global.dto.WsResponse
+import kr.co.fitview.api.app.global.exception.error.chat.ChatErrorCode
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -66,6 +67,58 @@ class NotificationStompServiceTest @Autowired constructor(
                 )
             )
         }
+    }
+
+    @DisplayName("사용자 정의 예외를 실시간으로 회원에게 전달한다.")
+    @Test
+    fun sendGlobalError() {
+        // given
+        val memberId = 123L
+        val errorCode = ChatErrorCode.NOT_PARTNER
+
+        given(stompPublisher.sendToUser(any(), any(), any())).willAnswer {}
+
+        // when
+        notificationStompService.sendGlobalError(
+            memberId = memberId,
+            errorCode = errorCode
+        )
+
+        // then
+        then(stompPublisher).should().sendToUser(
+            memberId,
+            StompConstant.SUB_ERROR,
+            WsResponse(
+                type = errorCode.code,
+                payload = errorCode.message
+            )
+        )
+    }
+
+    @DisplayName("기본 예외를 실시간으로 회원에게 전달한다.")
+    @Test
+    fun sendOtherError() {
+        // given
+        val memberId = 123L
+        val ex = RuntimeException("exception")
+
+        given(stompPublisher.sendToUser(any(), any(), any())).willAnswer {}
+
+        // when
+        notificationStompService.sendOtherError(
+            memberId = memberId,
+            ex = ex
+        )
+
+        // then
+        then(stompPublisher).should().sendToUser(
+            memberId,
+            StompConstant.SUB_ERROR,
+            WsResponse(
+                type = ex.javaClass.simpleName,
+                payload = ex.message ?: "Unknown error"
+            )
+        )
 
     }
 }

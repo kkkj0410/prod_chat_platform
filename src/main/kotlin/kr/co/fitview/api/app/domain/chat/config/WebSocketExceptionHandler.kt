@@ -14,7 +14,7 @@ class WebSocketExceptionHandler(
     @MessageExceptionHandler(GlobalException::class)
     fun handleGlobalException(ex: GlobalException, headerAccessor: StompHeaderAccessor) {
         val userId = headerAccessor.user?.name?.toLong() ?: return
-        notificationStompService.sendError(userId, ex.errorCode)
+        notificationStompService.sendGlobalError(userId, ex.errorCode)
     }
 
     @MessageExceptionHandler(Exception::class)
