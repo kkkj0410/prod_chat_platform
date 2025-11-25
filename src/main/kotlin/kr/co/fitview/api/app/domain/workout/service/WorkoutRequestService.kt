@@ -6,6 +6,7 @@ import kr.co.fitview.api.app.domain.chat.entity.ChatMessage
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.workout.dto.response.LastWorkoutRequestMessage
 import kr.co.fitview.api.app.domain.workout.dto.response.WorkoutRequestUpdateResponse
+import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusForRequest
 import kr.co.fitview.api.app.domain.workout.repository.WorkoutRequestRepository
 import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequest
 import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
@@ -21,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional(readOnly = true)
 class WorkoutRequestService(
     private val workoutRequestRepository: WorkoutRequestRepository,
+    private val workoutHistoryService : WorkoutHistoryService,
     private val time: Time
 ) {
 
@@ -69,11 +71,13 @@ class WorkoutRequestService(
             .findWorkoutRequestByIdAndDeletedAtIsNullWithChatMessage(request.workoutRequestId)
             ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
 
-        validateNotUpdateStatus(findWorkoutRequest)
-
-        validateNotRejectOrNotCancel(findWorkoutRequest, memberId, request)
+        validateWorkoutRequestUpdate(request, findWorkoutRequest, memberId)
 
         findWorkoutRequest.updateStatus(request.status.toWorkoutRequestStatus())
+
+        if(isSuccessComplete(findWorkoutRequest)){
+            workoutHistoryService.addWorkoutHistory(findWorkoutRequest.fromMember!!, findWorkoutRequest.toMember!!)
+        }
 
         val response = WorkoutRequestUpdateResponse(
             chatRoomId = findWorkoutRequest.getChatRoomId()!!,
@@ -92,6 +96,38 @@ class WorkoutRequestService(
 
     fun findRecentWorkoutRequestFrom(chatRoomId: Long): WorkoutRequest? {
         return workoutRequestRepository.findRecentWorkoutRequestEntity(chatRoomId)
+    }
+
+    private fun validateWorkoutRequestUpdate(
+        request: WorkoutRequestUpdateRequest,
+        findWorkoutRequest: WorkoutRequest,
+        memberId: Long
+    ) {
+        validateSameStatus(request, findWorkoutRequest)
+
+        validateNotUpdateStatus(findWorkoutRequest)
+
+        validateNotRejectOrNotCancel(findWorkoutRequest, memberId, request)
+
+        validateUpdateComplete(request, findWorkoutRequest)
+    }
+
+    private fun validateSameStatus(
+        request: WorkoutRequestUpdateRequest,
+        findWorkoutRequest: WorkoutRequest
+    ) {
+        if (request.status.toWorkoutRequestStatus() == findWorkoutRequest.status) {
+            throw GlobalException(WorkoutRequestErrorCode.ALREADY_SAME_STATUS)
+        }
+    }
+
+    private fun validateUpdateComplete(
+        request: WorkoutRequestUpdateRequest,
+        findWorkoutRequest: WorkoutRequest
+    ) {
+        if (isRequestComplete(request.status) && isNotAccept(findWorkoutRequest.status!!)) {
+            throw GlobalException(WorkoutRequestErrorCode.CANNOT_COMPLETE_UNLESS_ACCEPTED)
+        }
     }
 
 
@@ -121,7 +157,7 @@ class WorkoutRequestService(
 
     private fun getNotUpdateStatus(): List<WorkoutRequestStatus> {
         val notUpdateStatus = enumValues<WorkoutRequestStatus>()
-            .filter { it != WorkoutRequestStatus.PENDING }
+            .filter { it != WorkoutRequestStatus.PENDING && it != WorkoutRequestStatus.ACCEPT }
 
         return notUpdateStatus
     }
@@ -153,6 +189,16 @@ class WorkoutRequestService(
         request: WorkoutRequestUpdateRequest
     ) =
         findWorkoutRequest.getFromMemberId() == memberId && request.status.toWorkoutRequestStatus() == WorkoutRequestStatus.REJECT
+
+
+    private fun isSuccessComplete(findWorkoutRequest: WorkoutRequest) =
+        findWorkoutRequest.status == WorkoutRequestStatus.COMPLETE
+
+    private fun isNotAccept(status: WorkoutRequestStatus) =
+        status != WorkoutRequestStatus.ACCEPT
+
+    private fun isRequestComplete(requestStatus: WorkoutRequestStatusForRequest) =
+        requestStatus.toWorkoutRequestStatus() == WorkoutRequestStatus.COMPLETE
 
 
     private fun isNotNull(value: Any?) = value != null
