@@ -7,6 +7,7 @@ import java.time.ZoneId
 data class ChatCondition(
     val size: Int? = 10,
     val lastMessageAt: Long? = null,
+    val isCompleteWorkout : Boolean? = false
 ){
     fun lastMessageAt(): LocalDateTime? =
         lastMessageAt?.let {

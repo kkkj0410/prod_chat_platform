@@ -17,6 +17,9 @@ import kr.co.fitview.api.app.domain.member.entity.enums.WorkoutTimeName
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.domain.oauth2.dto.request.OAuth2SignupServiceRequest
 import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
+import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequest
+import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
+import kr.co.fitview.api.app.domain.workout.repository.WorkoutRequestRepository
 import kr.co.fitview.api.app.global.entity.Gender
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.time.Time
@@ -32,6 +35,7 @@ class ChatRoomRepositoryTest @Autowired constructor(
     val chatRoomRepository: ChatRoomRepository,
     val chatParticipantRepository : ChatParticipantRepository,
     val chatMessageRepository : ChatMessageRepository,
+    val workoutRequestRepository : WorkoutRequestRepository,
     val oAuth2Service : OAuth2Service,
     val memberRepository : MemberRepository,
     val time : Time
@@ -174,6 +178,7 @@ class ChatRoomRepositoryTest @Autowired constructor(
 
         val condition = ChatCondition(
             size = 10,
+            isCompleteWorkout = false
         )
 
         // when
@@ -264,6 +269,7 @@ class ChatRoomRepositoryTest @Autowired constructor(
 
         val condition = ChatCondition(
             size = 10,
+            isCompleteWorkout = false
         )
 
         // when
@@ -340,7 +346,8 @@ class ChatRoomRepositoryTest @Autowired constructor(
             lastMessageAt = time.nowLocalDateTime.minusHours(3)
                 .atZone(ZoneId.systemDefault())
                 .toInstant()
-                .toEpochMilli()
+                .toEpochMilli(),
+            isCompleteWorkout = false
         )
 
         // when
@@ -351,6 +358,206 @@ class ChatRoomRepositoryTest @Autowired constructor(
             .extracting("chatRoomId", "profileImageUrl", "nickname")
             .contains(chatRoom2.id!!, signupRequest.profileImageUrl, other2.nickname)
 
+    }
+
+    @DisplayName("운동 완료가 없는 채팅방을 조회한다.")
+    @Test
+    fun findChatRoomProfileByDeletedAtIsNullIsCompleteWorkoutFalse() {
+        //given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val other1 = Member(
+            email = "email2",
+            password = "password2",
+            role = Role.USER,
+        )
+        val other2 = Member(
+            email = "email2",
+            password = "password2",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+        memberRepository.save(other1)
+        memberRepository.save(other2)
+
+        val signupRequest = createOAuth2SignupServiceRequest()
+
+        oAuth2Service.signup(signupRequest, me.id!!)
+        oAuth2Service.signup(signupRequest, other1.id!!)
+        oAuth2Service.signup(signupRequest, other2.id!!)
+
+        val chatRoom1 = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+        val chatRoom2 = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+
+        val chatParticipant1 = ChatParticipant(
+            chatRoom1,
+            me
+        )
+        val chatParticipant2 = ChatParticipant(
+            chatRoom1,
+            other1
+        )
+        val chatParticipant3 = ChatParticipant(
+            chatRoom2,
+            me
+        )
+        val chatParticipant4 = ChatParticipant(
+            chatRoom2,
+            other2
+        )
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+        chatParticipantRepository.save(chatParticipant3)
+        chatParticipantRepository.save(chatParticipant4)
+
+
+        val chatMessage1 = ChatMessage(
+            member = me,
+            chatRoom = chatRoom1,
+            type = ChatMessageType.TEXT,
+            content = "content",
+            sentAt = time.nowLocalDateTime.minusHours(3)
+        )
+        chatRoom1.updateLastMessageAt(time.nowLocalDateTime.minusHours(3))
+        chatMessageRepository.save(chatMessage1)
+
+        val chatMessage2 = ChatMessage(
+            member = me,
+            chatRoom = chatRoom2,
+            type = ChatMessageType.WORKOUT_REQUEST,
+            content = "content",
+            sentAt = time.nowLocalDateTime
+        )
+        val workoutRequest = WorkoutRequest.of(
+            chatMessage = chatMessage2,
+            fromMember = me,
+            toMember = other2,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime
+        )
+        workoutRequest.updateStatus(WorkoutRequestStatus.COMPLETE)
+        chatRoom2.updateLastMessageAt(time.nowLocalDateTime)
+        chatMessageRepository.save(chatMessage2)
+        workoutRequestRepository.save(workoutRequest)
+
+        val condition = ChatCondition(
+            size = 10,
+            isCompleteWorkout = false
+        )
+
+        // when
+        val response = chatRoomRepository.findChatRoomProfileByDeletedAtIsNull(me.id!!, condition)
+
+        // then
+        assertThat(response)
+            .extracting("chatRoomId", "profileImageUrl", "nickname")
+            .containsExactlyInAnyOrder(
+                tuple(chatRoom1.id!!, signupRequest.profileImageUrl, other1.nickname),
+            )
+    }
+
+    @DisplayName("운동 완료가 있는 채팅방을 조회한다.")
+    @Test
+    fun findChatRoomProfileByDeletedAtIsNullIsCompleteWorkoutTrue() {
+        //given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val other1 = Member(
+            email = "email2",
+            password = "password2",
+            role = Role.USER,
+        )
+        val other2 = Member(
+            email = "email2",
+            password = "password2",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+        memberRepository.save(other1)
+        memberRepository.save(other2)
+
+        val signupRequest = createOAuth2SignupServiceRequest()
+
+        oAuth2Service.signup(signupRequest, me.id!!)
+        oAuth2Service.signup(signupRequest, other1.id!!)
+        oAuth2Service.signup(signupRequest, other2.id!!)
+
+        val chatRoom1 = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+        val chatRoom2 = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+
+        val chatParticipant1 = ChatParticipant(
+            chatRoom1,
+            me
+        )
+        val chatParticipant2 = ChatParticipant(
+            chatRoom1,
+            other1
+        )
+        val chatParticipant3 = ChatParticipant(
+            chatRoom2,
+            me
+        )
+        val chatParticipant4 = ChatParticipant(
+            chatRoom2,
+            other2
+        )
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+        chatParticipantRepository.save(chatParticipant3)
+        chatParticipantRepository.save(chatParticipant4)
+
+
+        val chatMessage1 = ChatMessage(
+            member = me,
+            chatRoom = chatRoom1,
+            type = ChatMessageType.TEXT,
+            content = "content",
+            sentAt = time.nowLocalDateTime.minusHours(3)
+        )
+        chatRoom1.updateLastMessageAt(time.nowLocalDateTime.minusHours(3))
+        chatMessageRepository.save(chatMessage1)
+
+        val chatMessage2 = ChatMessage(
+            member = me,
+            chatRoom = chatRoom2,
+            type = ChatMessageType.WORKOUT_REQUEST,
+            content = "content",
+            sentAt = time.nowLocalDateTime
+        )
+        val workoutRequest = WorkoutRequest.of(
+            chatMessage = chatMessage2,
+            fromMember = me,
+            toMember = other2,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime
+        )
+        workoutRequest.updateStatus(WorkoutRequestStatus.COMPLETE)
+        chatRoom2.updateLastMessageAt(time.nowLocalDateTime)
+        chatMessageRepository.save(chatMessage2)
+        workoutRequestRepository.save(workoutRequest)
+
+        val condition = ChatCondition(
+            size = 10,
+            isCompleteWorkout = true
+        )
+
+        // when
+        val response = chatRoomRepository.findChatRoomProfileByDeletedAtIsNull(me.id!!, condition)
+
+        // then
+        assertThat(response)
+            .extracting("chatRoomId", "profileImageUrl", "nickname")
+            .containsExactlyInAnyOrder(
+                tuple(chatRoom2.id!!, signupRequest.profileImageUrl, other2.nickname),
+            )
     }
 
 
