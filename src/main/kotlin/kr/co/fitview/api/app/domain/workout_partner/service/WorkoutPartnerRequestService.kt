@@ -52,10 +52,6 @@ class WorkoutPartnerRequestService(
 
         val savedWorkoutPartner = workoutPartnerRequestRepository.save(workoutPartner)
 
-        notificationStompService.sendWorkoutPartnerRequest(
-            fromMemberId = memberId,
-            toMemberId = request.memberId
-        )
 
         return savedWorkoutPartner
     }

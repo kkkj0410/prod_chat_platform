@@ -10,6 +10,8 @@ import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutExperience
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutGoal
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutStyle
 import kr.co.fitview.api.app.domain.member.entity.enums.WorkoutTimeName
+import kr.co.fitview.api.app.domain.notification.service.NotificationStompService
+import kr.co.fitview.api.app.domain.oauth2.dto.response.OAuth2LoginResponse
 import kr.co.fitview.api.app.domain.workout_partner.controller.WorkoutPartnerController
 import kr.co.fitview.api.app.domain.workout_partner.dto.request.WorkoutPartnerCreateRequest
 import kr.co.fitview.api.app.domain.workout_partner.dto.request.WorkoutPartnerUpdateRequest
@@ -47,9 +49,10 @@ class WorkoutPartnerControllerDocsTest : RestDocsSupport() {
     private val workoutPartnerRequestService: WorkoutPartnerRequestService =
         mock(WorkoutPartnerRequestService::class.java)
     private val securityUtil: SecurityUtil = mock(SecurityUtil::class.java)
+    private val notificationStompService: NotificationStompService = mock(NotificationStompService::class.java)
 
     override fun initController(): Any {
-        return WorkoutPartnerController(workoutPartnerRequestService, securityUtil)
+        return WorkoutPartnerController(workoutPartnerRequestService, securityUtil, notificationStompService)
     }
 
     @DisplayName("핏버디 요청 API")
@@ -106,6 +109,9 @@ class WorkoutPartnerControllerDocsTest : RestDocsSupport() {
         val request = WorkoutPartnerUpdateRequest(
             type = WorkoutPartnerRequestUpdateStatus.ACCEPT
         )
+
+        given(notificationStompService.sendWorkoutPartnerRequest(any()))
+            .willAnswer {  }
 
         // when & then
         mockMvc.perform(

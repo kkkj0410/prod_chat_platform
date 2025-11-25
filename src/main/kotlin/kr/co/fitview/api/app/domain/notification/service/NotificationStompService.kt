@@ -6,8 +6,10 @@ import kr.co.fitview.api.app.domain.chat.dto.response.StompChatWorkoutRequestMes
 import kr.co.fitview.api.app.domain.chat.dto.response.withIsMe
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.domain.notification.constant.StompConstant
+import kr.co.fitview.api.app.domain.notification.dto.response.MemberWorkoutPartnerRequestProfileResponse
 import kr.co.fitview.api.app.domain.workout.dto.response.WorkoutRequestUpdateResponse
 import kr.co.fitview.api.app.domain.workout.entity.QWorkoutRequest.workoutRequest
+import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartnerRequest
 import kr.co.fitview.api.app.global.dto.WsMessageType
 import kr.co.fitview.api.app.global.dto.WsResponse
 import kr.co.fitview.api.app.global.exception.GlobalException
@@ -90,16 +92,23 @@ class NotificationStompService(
         }
     }
 
-    fun sendWorkoutPartnerRequest(fromMemberId : Long, toMemberId : Long){
-        val findMemberProfile = memberQueryService.findMemberWorkoutRequestProfileFrom(fromMemberId)
+    fun sendWorkoutPartnerRequest(workoutPartnerRequest : WorkoutPartnerRequest){
+        val findMemberProfile = memberQueryService.findMemberWorkoutRequestProfileFrom(workoutPartnerRequest.getFromMemberId())
             ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
 
+        val response = MemberWorkoutPartnerRequestProfileResponse(
+            workoutPartnerRequestId = workoutPartnerRequest.id!!,
+            memberId = findMemberProfile.memberId,
+            profileImageUrl = findMemberProfile.profileImageUrl,
+            nickname = findMemberProfile.nickname
+        )
+
         stompPublisher.sendToUser(
-            memberId = toMemberId,
+            memberId = workoutPartnerRequest.getToMemberId(),
             destination = StompConstant.SUB_WORKOUT_PARTNER,
             payload = WsResponse(
                 type = WsMessageType.WORKOUT_PARTNER_REQUEST.code,
-                payload = findMemberProfile
+                payload = response
             )
         )
 

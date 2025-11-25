@@ -47,6 +47,9 @@ class WorkoutPartnerControllerTest : ControllerTestSupport(){
             memberId = 123L
         )
 
+        given(notificationStompService.sendWorkoutPartnerRequest(any()))
+            .willAnswer {  }
+
         // when // then
         mockMvc.perform(
             post("/api/v1/workout-partners")
