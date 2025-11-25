@@ -17,8 +17,11 @@ import kr.co.fitview.api.app.domain.member.entity.enums.WorkoutTimeName
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.domain.oauth2.dto.request.OAuth2SignupServiceRequest
 import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
+import kr.co.fitview.api.app.domain.workout.entity.QWorkoutHistory.workoutHistory
+import kr.co.fitview.api.app.domain.workout.entity.WorkoutHistory
 import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequest
 import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
+import kr.co.fitview.api.app.domain.workout.repository.WorkoutHistoryRepository
 import kr.co.fitview.api.app.domain.workout.repository.WorkoutRequestRepository
 import kr.co.fitview.api.app.global.entity.Gender
 import kr.co.fitview.api.app.global.entity.Role
@@ -36,6 +39,7 @@ class ChatRoomRepositoryTest @Autowired constructor(
     val chatParticipantRepository : ChatParticipantRepository,
     val chatMessageRepository : ChatMessageRepository,
     val workoutRequestRepository : WorkoutRequestRepository,
+    val workoutHistoryRepository : WorkoutHistoryRepository,
     val oAuth2Service : OAuth2Service,
     val memberRepository : MemberRepository,
     val time : Time
@@ -444,6 +448,12 @@ class ChatRoomRepositoryTest @Autowired constructor(
         chatMessageRepository.save(chatMessage2)
         workoutRequestRepository.save(workoutRequest)
 
+         val workoutHistory = WorkoutHistory.of(
+            memberOne = me,
+            memberTwo = other2
+        )
+        workoutHistoryRepository.save(workoutHistory)
+
         val condition = ChatCondition(
             size = 10,
             isCompleteWorkout = false
@@ -543,6 +553,38 @@ class ChatRoomRepositoryTest @Autowired constructor(
         chatRoom2.updateLastMessageAt(time.nowLocalDateTime)
         chatMessageRepository.save(chatMessage2)
         workoutRequestRepository.save(workoutRequest)
+
+        val workoutHistory1 = WorkoutHistory.of(
+            memberOne = me,
+            memberTwo = other2
+        )
+        workoutHistoryRepository.save(workoutHistory1)
+
+        val chatMessage3 = ChatMessage(
+            member = me,
+            chatRoom = chatRoom2,
+            type = ChatMessageType.WORKOUT_REQUEST,
+            content = "content",
+            sentAt = time.nowLocalDateTime.plusHours(3)
+        )
+        val workoutRequest2 = WorkoutRequest.of(
+            chatMessage = chatMessage3,
+            fromMember = me,
+            toMember = other2,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime.plusHours(3)
+        )
+        workoutRequest.updateStatus(WorkoutRequestStatus.COMPLETE)
+        chatRoom2.updateLastMessageAt(time.nowLocalDateTime.plusHours(3))
+        chatMessageRepository.save(chatMessage3)
+        workoutRequestRepository.save(workoutRequest2)
+
+        val workoutHistory2 = WorkoutHistory.of(
+            memberOne = me,
+            memberTwo = other2
+        )
+        workoutHistoryRepository.save(workoutHistory2)
 
         val condition = ChatCondition(
             size = 10,

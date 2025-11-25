@@ -144,6 +144,7 @@ class ChatControllerDocsTest : RestDocsSupport() {
                 .contentType(MediaType.APPLICATION_JSON)
                 .param("size", "10")
                 .param("lastMessageAt", "1763714029931")
+                .param("isCompleteWorkout", "true")
         )
             .andExpect(status().isOk())
             .andDo(
@@ -159,6 +160,8 @@ class ChatControllerDocsTest : RestDocsSupport() {
                             .description("(Optional - default 10) 조회 크기"),
                         parameterWithName("lastMessageAt").optional()
                             .description("(Optional) 해당 부분에 값을 넣으면 해당 시간보다 더 옛날 시점의 채팅방이 조회됨"),
+                        parameterWithName("isCompleteWorkout").optional()
+                            .description("(Optional) 운동 신청에 대한 완료 여부. false = 새 메시지. true = 함께한 핏버디. 기본 false"),
                     ),
 
                     responseFields(
@@ -232,6 +235,8 @@ class ChatControllerDocsTest : RestDocsSupport() {
                 .contentType(MediaType.APPLICATION_JSON)
                 .param("size", "10")
                 .param("lastMessageAt", "1763714029931")
+                .param("isCompleteWorkout", "true")
+
         )
             .andExpect(status().isOk())
             .andDo(
@@ -247,6 +252,8 @@ class ChatControllerDocsTest : RestDocsSupport() {
                             .description("(Optional - default 10) 조회 크기"),
                         parameterWithName("lastMessageAt").optional()
                             .description("(Optional) 해당 부분에 값을 넣으면 해당 시간보다 더 옛날 시점의 채팅방이 조회됨"),
+                        parameterWithName("isCompleteWorkout").optional()
+                            .description("(Optional) 운동 신청에 대한 완료 여부. false = 새 메시지. true = 함께한 핏버디. 기본 false"),
                     ),
 
                     responseFields(

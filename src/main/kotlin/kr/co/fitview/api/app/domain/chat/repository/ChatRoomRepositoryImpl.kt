@@ -2,10 +2,12 @@ package kr.co.fitview.api.app.domain.chat.repository
 
 import com.querydsl.core.types.Projections
 import com.querydsl.core.types.dsl.BooleanExpression
+import com.querydsl.core.types.dsl.Expressions
+import com.querydsl.core.types.dsl.NumberTemplate
+import com.querydsl.jpa.JPAExpressions
 import com.querydsl.jpa.impl.JPAQueryFactory
 import kr.co.fitview.api.app.domain.chat.condition.ChatCondition
 import kr.co.fitview.api.app.domain.chat.dto.response.ChatRoomResponseProfile
-import kr.co.fitview.api.app.domain.chat.entity.ChatParticipant
 import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
 import kr.co.fitview.api.app.domain.chat.entity.QChatParticipant
 import kr.co.fitview.api.app.domain.chat.entity.QChatParticipant.chatParticipant
@@ -15,6 +17,7 @@ import kr.co.fitview.api.app.domain.image.entity.QImage.image
 import kr.co.fitview.api.app.domain.image.entity.QMemberImage.memberImage
 import kr.co.fitview.api.app.domain.image.entity.enums.MemberImageType
 import kr.co.fitview.api.app.domain.member.entity.QMember.member
+import kr.co.fitview.api.app.domain.workout.entity.QWorkoutHistory.workoutHistory
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Slice
 import org.springframework.data.domain.SliceImpl
@@ -78,6 +81,7 @@ class ChatRoomRepositoryImpl(
             .innerJoin(memberImage.image, image)
             .where(
                 whereCondition(),
+                isExistsWorkoutHistoryCondition(condition, meChatParticipant, otherChatParticipant),
                 chatRoom.deletedAt.isNull,
                 meChatParticipant.deletedAt.isNull,
                 otherChatParticipant.deletedAt.isNull,
@@ -94,6 +98,58 @@ class ChatRoomRepositoryImpl(
 
         return SliceImpl(content, PageRequest.of(0, condition.size), hasNext)
     }
+
+    private fun isExistsWorkoutHistoryCondition(
+        condition: ChatCondition,
+        meChatParticipant : QChatParticipant,
+        otherChatParticipant : QChatParticipant
+    ): BooleanExpression? {
+
+
+        val memberOneExpr = Expressions.numberTemplate(
+            Long::class.java,
+            "LEAST({0}, {1})",
+            meChatParticipant.member.id,
+            otherChatParticipant.member.id
+        )
+
+        val memberTwoExpr = Expressions.numberTemplate(
+            Long::class.java,
+            "GREATEST({0}, {1})",
+            meChatParticipant.member.id,
+            otherChatParticipant.member.id
+        )
+
+
+        if (condition.isCompleteWorkout == true) {
+            return isExistsWorkoutHistory(memberOneExpr, memberTwoExpr)
+        } else {
+            return isNotWorkoutHistory(memberOneExpr, memberTwoExpr)
+        }
+    }
+
+    private fun isExistsWorkoutHistory(
+        memberOneExpr: NumberTemplate<Long>?,
+        memberTwoExpr: NumberTemplate<Long>?
+    ): BooleanExpression? = JPAExpressions.selectOne()
+        .from(workoutHistory)
+        .where(
+            workoutHistory.memberOne.id.eq(memberOneExpr),
+            workoutHistory.memberTwo.id.eq(memberTwoExpr),
+        )
+        .exists()
+
+    private fun isNotWorkoutHistory(
+        memberOneExpr: NumberTemplate<Long>?,
+        memberTwoExpr: NumberTemplate<Long>?
+    ): BooleanExpression? = JPAExpressions.selectOne()
+        .from(workoutHistory)
+        .where(
+            workoutHistory.memberOne.id.eq(memberOneExpr),
+            workoutHistory.memberTwo.id.eq(memberTwoExpr),
+        )
+        .notExists()
+
 
 
     override fun findChatRoomByMemberIdAndChatRoomId(memberId: Long, chatRoomId: Long): ChatRoom? {

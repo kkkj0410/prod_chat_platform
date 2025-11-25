@@ -17,6 +17,7 @@ import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusForRequest
 import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequest
 import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
+import kr.co.fitview.api.app.domain.workout.repository.WorkoutHistoryRepository
 import kr.co.fitview.api.app.domain.workout.repository.WorkoutRequestRepository
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.exception.GlobalException
@@ -35,6 +36,7 @@ import org.springframework.beans.factory.annotation.Autowired
 class WorkoutRequestServiceTest @Autowired constructor(
     val workoutRequestRepository : WorkoutRequestRepository,
     val workoutRequestService: WorkoutRequestService,
+    val workoutHistoryRepository : WorkoutHistoryRepository,
     val memberRepository : MemberRepository,
     val chatRoomRepository : ChatRoomRepository,
     val chatParticipantRepository : ChatParticipantRepository,
@@ -441,8 +443,149 @@ class WorkoutRequestServiceTest @Autowired constructor(
             )
     }
 
+    @DisplayName("운동 요청의 상태를 완료로 바꾸면 운동 이력에 기록된다.")
+    @Test
+    fun modifyWorkoutRequestComplete() {
+        // given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val other = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+        memberRepository.save(other)
+
+        val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+
+        val chatParticipant1 = ChatParticipant(
+            chatRoom,
+            me
+        )
+        val chatParticipant2 = ChatParticipant(
+            chatRoom,
+            other
+        )
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+
+        val chatMessage = ChatMessage.ofWorkoutRequest(
+            member = me,
+            chatRoom = chatRoom,
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessage)
+
+        val workoutRequest = WorkoutRequest.of(
+            chatMessage = chatMessage,
+            fromMember = me,
+            toMember = other,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime
+        )
+        workoutRequest.updateStatus(WorkoutRequestStatus.ACCEPT)
+        workoutRequestRepository.save(workoutRequest)
+
+        val request = WorkoutRequestUpdateRequest(
+            workoutRequestId = workoutRequest.id!!,
+            status = WorkoutRequestStatusForRequest.COMPLETE
+        )
+
+        // when
+        val response = workoutRequestService.modifyWorkoutRequest(other.id!!, request)
+
+        // then
+        assertThat(response.status).isEqualTo(WorkoutRequestStatus.COMPLETE)
+        assertThat(response)
+            .extracting("chatRoomId", "workoutRequestId", "status", "fromMemberId", "toMemberId")
+            .contains(
+                chatRoom.id!!,
+                workoutRequest.id!!,
+                WorkoutRequestStatus.COMPLETE,
+                me.id!!,
+                other.id!!
+            )
+
+        val findWorkoutHistory = workoutHistoryRepository.findAll()[0]
+        assertThat(findWorkoutHistory)
+            .extracting("memberOne", "memberTwo")
+            .contains(me, other)
+    }
+
+    @DisplayName("운동 요청이 수락되지 않으면 운동 요청의 상태를 완료로 바꿀 수 없다.")
+    @Test
+    fun modifyWorkoutRequestCompleteWhenNotAccept() {
+        // given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val other = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+        memberRepository.save(other)
+
+        val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+
+        val chatParticipant1 = ChatParticipant(
+            chatRoom,
+            me
+        )
+        val chatParticipant2 = ChatParticipant(
+            chatRoom,
+            other
+        )
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+
+        val chatMessage = ChatMessage.ofWorkoutRequest(
+            member = me,
+            chatRoom = chatRoom,
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessage)
+
+        val workoutRequest = WorkoutRequest.of(
+            chatMessage = chatMessage,
+            fromMember = me,
+            toMember = other,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime
+        )
+        workoutRequest.updateStatus(WorkoutRequestStatus.PENDING)
+        workoutRequestRepository.save(workoutRequest)
+
+        val request = WorkoutRequestUpdateRequest(
+            workoutRequestId = workoutRequest.id!!,
+            status = WorkoutRequestStatusForRequest.COMPLETE
+        )
+
+        // when & then
+        assertThatThrownBy {
+            workoutRequestService.modifyWorkoutRequest(other.id!!, request)
+        }
+            .isInstanceOf(GlobalException::class.java)
+            .satisfies(ThrowingConsumer { ex ->
+                val globalEx = ex as GlobalException
+                assertThat(globalEx.errorCode)
+                    .isEqualTo(WorkoutRequestErrorCode.CANNOT_COMPLETE_UNLESS_ACCEPTED)
+            })
+    }
+
+
+
     @ParameterizedTest(name = "이미 상태가 종료된 운동 요청에 대해서 상태를 변화시킬 수 없다.")
-    @CsvSource("EXPIRE, ACCEPT", "REJECT, CANCEL",)
+    @CsvSource("EXPIRE, ACCEPT", "REJECT, CANCEL", "COMPLETE")
     fun modifyWorkoutRequestEndedStatus(status: String) {
         // given
         val me = Member(
@@ -505,6 +648,7 @@ class WorkoutRequestServiceTest @Autowired constructor(
                     .isEqualTo(WorkoutRequestErrorCode.TERMINATED_WORKOUT_REQUEST_STATUS_CHANGE)
             })
     }
+
 
     @DisplayName("운동 요청을 한 사람이 거절을 할 수 없다.")
     @Test
@@ -635,6 +779,71 @@ class WorkoutRequestServiceTest @Autowired constructor(
             })
     }
 
+    @DisplayName("운동 요청 상태 변경을 시도했으나, 변경 상태와 이미 기록된 상태가 같으면 요청을 거부한다.")
+    @Test
+    fun modifyWorkoutRequestDuplicateStatus() {
+        // given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val other = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+        memberRepository.save(other)
+
+        val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+
+        val chatParticipant1 = ChatParticipant(
+            chatRoom,
+            me
+        )
+        val chatParticipant2 = ChatParticipant(
+            chatRoom,
+            other
+        )
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+
+        val chatMessage = ChatMessage.ofWorkoutRequest(
+            member = me,
+            chatRoom = chatRoom,
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessage)
+
+        val workoutRequest = WorkoutRequest.of(
+            chatMessage = chatMessage,
+            fromMember = me,
+            toMember = other,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime
+        )
+        workoutRequest.updateStatus(WorkoutRequestStatus.ACCEPT)
+        workoutRequestRepository.save(workoutRequest)
+
+        val request = WorkoutRequestUpdateRequest(
+            workoutRequestId = workoutRequest.id!!,
+            status = WorkoutRequestStatusForRequest.ACCEPT
+        )
+
+        // when & then
+        assertThatThrownBy {
+            workoutRequestService.modifyWorkoutRequest(other.id!!, request)
+        }
+            .isInstanceOf(GlobalException::class.java)
+            .satisfies(ThrowingConsumer { ex ->
+                val globalEx = ex as GlobalException
+                assertThat(globalEx.errorCode)
+                    .isEqualTo(WorkoutRequestErrorCode.ALREADY_SAME_STATUS)
+            })
+    }
+
 
     @DisplayName("채팅방의 제일 최큰 운동 요청을 확인한다.")
     @Test
@@ -731,4 +940,5 @@ class WorkoutRequestServiceTest @Autowired constructor(
         // then
         assertThat(findWorkoutRequest).isNull()
     }
+
 }
