@@ -10,10 +10,15 @@ import kr.co.fitview.api.app.domain.member.dto.response.MemberWorkoutPartnerProf
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.domain.notification.constant.StompConstant
+import kr.co.fitview.api.app.domain.notification.dto.response.MemberWorkoutPartnerRequestProfileResponse
 import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
 import kr.co.fitview.api.app.domain.workout.dto.response.WorkoutRequestUpdateResponse
 import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusForResponse
 import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
+import kr.co.fitview.api.app.domain.workout_partner.entity.QWorkoutPartnerRequest.workoutPartnerRequest
+import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartnerRequest
+import kr.co.fitview.api.app.domain.workout_partner.repository.WorkoutPartnerRepository
+import kr.co.fitview.api.app.domain.workout_partner.repository.WorkoutPartnerRequestRepository
 import kr.co.fitview.api.app.global.dto.WsMessageType
 import kr.co.fitview.api.app.global.dto.WsResponse
 import kr.co.fitview.api.app.global.entity.Role
@@ -30,6 +35,7 @@ import org.springframework.beans.factory.annotation.Autowired
 class NotificationStompServiceTest @Autowired constructor(
     val notificationStompService: NotificationStompService,
     val memberRepository: MemberRepository,
+    val workoutPartnerRequestRepository : WorkoutPartnerRequestRepository,
     val oAuth2Service: OAuth2Service,
     val time: Time
 ) : IntegrationTestSupport() {
@@ -208,16 +214,24 @@ class NotificationStompServiceTest @Autowired constructor(
 
         given(stompPublisher.sendToUser(any(), any(), any())).willAnswer {}
 
-        val response = MemberWorkoutPartnerProfileResponse(
+        val workoutPartnerRequest = WorkoutPartnerRequest.of(
+            fromMember = fromMember,
+            toMember = toMember,
+            now = time.nowLocalDateTime
+        )
+        workoutPartnerRequestRepository.save(workoutPartnerRequest)
+
+        val response = MemberWorkoutPartnerRequestProfileResponse(
             memberId = fromMember.id!!,
             profileImageUrl = signupRequest.profileImageUrl,
-            nickname = signupRequest.nickname
+            nickname = signupRequest.nickname,
+            workoutPartnerRequestId = workoutPartnerRequest.id!!
         )
+
 
         // when
         notificationStompService.sendWorkoutPartnerRequest(
-            fromMemberId = fromMember.id!!,
-            toMemberId = toMember.id!!
+            workoutPartnerRequest = workoutPartnerRequest
         )
 
         // then

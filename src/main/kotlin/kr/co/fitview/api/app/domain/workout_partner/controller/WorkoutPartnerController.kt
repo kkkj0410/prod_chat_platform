@@ -1,6 +1,7 @@
 package kr.co.fitview.api.app.domain.workout_partner.controller
 
 import jakarta.validation.Valid
+import kr.co.fitview.api.app.domain.notification.service.NotificationStompService
 import kr.co.fitview.api.app.domain.workout_partner.condition.WorkoutPartnerRequestCondition
 import kr.co.fitview.api.app.domain.workout_partner.dto.request.WorkoutPartnerCreateRequest
 import kr.co.fitview.api.app.domain.workout_partner.dto.request.WorkoutPartnerUpdateRequest
@@ -17,7 +18,8 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/api/v1")
 class WorkoutPartnerController(
     private val workoutPartnerRequestService : WorkoutPartnerRequestService,
-    private val securityUtil : SecurityUtil
+    private val securityUtil : SecurityUtil,
+    private val notificationStompService : NotificationStompService
 ) {
 
     @PostMapping("/workout-partners")
@@ -27,7 +29,11 @@ class WorkoutPartnerController(
         request : WorkoutPartnerCreateRequest
     ) : ResponseEntity<ApiResponse<*>> {
 
-        workoutPartnerRequestService.addWorkoutPartnerRequest(securityUtil.getMemberId(), request.toServiceRequest())
+        val savedWorkoutPartnerRequest =  workoutPartnerRequestService.addWorkoutPartnerRequest(securityUtil.getMemberId(), request.toServiceRequest())
+
+        notificationStompService.sendWorkoutPartnerRequest(
+            workoutPartnerRequest = savedWorkoutPartnerRequest
+        )
 
         return ResponseEntity.ok(ApiResponse.success("ok"))
     }
