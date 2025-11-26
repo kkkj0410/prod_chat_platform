@@ -3,6 +3,7 @@ package kr.co.fitview.api.app.domain.workout_partner.entity
 import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
+import kr.co.fitview.api.app.domain.workout_partner.entity.enums.WorkoutPartnerRequestContent
 import kr.co.fitview.api.app.domain.workout_partner.entity.enums.WorkoutPartnerRequestStatus
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.time.Time
@@ -38,7 +39,8 @@ class WorkoutPartnerRequestTest @Autowired constructor(
         val workoutPartnerRequest = WorkoutPartnerRequest.of(
             fromMember = fromMember,
             toMember = toMember,
-            now = time.nowLocalDateTime
+            now = time.nowLocalDateTime,
+            content = WorkoutPartnerRequestContent.BURN
         )
 
         // then
@@ -67,7 +69,8 @@ class WorkoutPartnerRequestTest @Autowired constructor(
         val workoutPartnerRequest = WorkoutPartnerRequest.of(
             fromMember = fromMember,
             toMember = toMember,
-            now = time.nowLocalDateTime
+            now = time.nowLocalDateTime,
+            content = WorkoutPartnerRequestContent.BURN
         )
 
         // when
@@ -99,7 +102,8 @@ class WorkoutPartnerRequestTest @Autowired constructor(
         val workoutPartnerRequest = WorkoutPartnerRequest.of(
             fromMember = fromMember,
             toMember = toMember,
-            now = time.nowLocalDateTime
+            now = time.nowLocalDateTime,
+            content = WorkoutPartnerRequestContent.BURN
         )
 
         // when
@@ -131,7 +135,8 @@ class WorkoutPartnerRequestTest @Autowired constructor(
         val workoutPartnerRequest = WorkoutPartnerRequest.of(
             fromMember = fromMember,
             toMember = toMember,
-            now = time.nowLocalDateTime
+            now = time.nowLocalDateTime,
+            content = WorkoutPartnerRequestContent.BURN
         )
 
         // when
@@ -164,7 +169,8 @@ class WorkoutPartnerRequestTest @Autowired constructor(
         val workoutPartnerRequest = WorkoutPartnerRequest.of(
             fromMember = fromMember,
             toMember = toMember,
-            now = time.nowLocalDateTime
+            now = time.nowLocalDateTime,
+            content = WorkoutPartnerRequestContent.BURN
         )
 
         // when
@@ -194,7 +200,8 @@ class WorkoutPartnerRequestTest @Autowired constructor(
         val workoutPartnerRequest = WorkoutPartnerRequest.of(
             fromMember = fromMember,
             toMember = toMember,
-            now = time.nowLocalDateTime
+            now = time.nowLocalDateTime,
+            content = WorkoutPartnerRequestContent.BURN
         )
 
         // when

@@ -14,6 +14,7 @@ import kr.co.fitview.api.app.domain.workout_partner.dto.request.enums.WorkoutPar
 import kr.co.fitview.api.app.domain.workout_partner.dto.response.WorkoutPartnerRequestResponse
 import kr.co.fitview.api.app.domain.workout_partner.dto.response.enums.WorkoutPartnerRequestStatusForResponse
 import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartnerRequest
+import kr.co.fitview.api.app.domain.workout_partner.entity.enums.WorkoutPartnerRequestContent
 import kr.co.fitview.api.app.domain.workout_partner.entity.enums.WorkoutPartnerRequestStatus
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.exception.error.request.RequestErrorCode
@@ -46,8 +47,9 @@ class WorkoutPartnerControllerTest : ControllerTestSupport(){
     @Test
     fun workoutPartnerAdd() {
         // given
-        val request = WorkoutPartnerCreateRequest(
-            memberId = 123L
+        val requestMap = mapOf(
+            "memberId" to 123,
+            "workoutPartnerRequestContentIndex" to 1
         )
 
         given(notificationStompService.sendWorkoutPartnerRequest(any()))
@@ -56,7 +58,7 @@ class WorkoutPartnerControllerTest : ControllerTestSupport(){
         // when // then
         mockMvc.perform(
             post("/api/v1/workout-partners")
-                .content(objectMapper.writeValueAsString(request))
+                .content(objectMapper.writeValueAsString(requestMap))
                 .contentType(MediaType.APPLICATION_JSON)
         )
             .andDo(print())
@@ -68,14 +70,15 @@ class WorkoutPartnerControllerTest : ControllerTestSupport(){
     @Test
     fun workoutPartnerAddWithoutMemberId() {
         // given
-        val request = WorkoutPartnerCreateRequest(
-            memberId = null
+        val requestMap = mapOf(
+            "memberId" to null,
+            "workoutPartnerRequestContentIndex" to 1
         )
 
         // when // then
         mockMvc.perform(
             post("/api/v1/workout-partners")
-                .content(objectMapper.writeValueAsString(request))
+                .content(objectMapper.writeValueAsString(requestMap))
                 .contentType(MediaType.APPLICATION_JSON)
         )
             .andDo(print())
@@ -83,6 +86,52 @@ class WorkoutPartnerControllerTest : ControllerTestSupport(){
             .andExpect(jsonPath("$.code").value(RequestErrorCode.REQ_FIELD_NOT_VALID.code))
             .andExpect(jsonPath("$.status").value("400"))
             .andExpect(jsonPath("$.message").value("memberId is required"))
+            .andExpect(jsonPath("$.data").isEmpty())
+    }
+
+    @DisplayName("핏버디 요청 시, 핏버디 메시지는 필수다.")
+    @Test
+    fun workoutPartnerAddWithoutWorkoutPartnerRequestContentIndex() {
+        // given
+        val requestMap = mapOf(
+            "memberId" to 123,
+            "workoutPartnerRequestContentIndex" to null
+        )
+
+        // when // then
+        mockMvc.perform(
+            post("/api/v1/workout-partners")
+                .content(objectMapper.writeValueAsString(requestMap))
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andDo(print())
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value(RequestErrorCode.REQ_FIELD_NOT_VALID.code))
+            .andExpect(jsonPath("$.status").value("400"))
+            .andExpect(jsonPath("$.message").value("workoutPartnerRequestContentIndex is required"))
+            .andExpect(jsonPath("$.data").isEmpty())
+    }
+
+    @DisplayName("핏버디 요청 시, 운동 파트너 요청 메시지 인덱스는 유효 범위여야한다..")
+    @Test
+    fun workoutPartnerAddInvalidIndex() {
+        // given
+        val requestMap = mapOf(
+            "memberId" to 123,
+            "workoutPartnerRequestContentIndex" to 1000
+        )
+
+        // when // then
+        mockMvc.perform(
+            post("/api/v1/workout-partners")
+                .content(objectMapper.writeValueAsString(requestMap))
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andDo(print())
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value(RequestErrorCode.REQ_ENUM_MISMATCH.code))
+            .andExpect(jsonPath("$.status").value("400"))
+            .andExpect(jsonPath("$.message").value(RequestErrorCode.REQ_ENUM_MISMATCH.message))
             .andExpect(jsonPath("$.data").isEmpty())
     }
 

@@ -22,6 +22,7 @@ import kr.co.fitview.api.app.domain.workout_partner.dto.request.enums.WorkoutPar
 import kr.co.fitview.api.app.domain.workout_partner.dto.response.enums.WorkoutPartnerRequestStatusForResponse
 import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartner
 import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartnerRequest
+import kr.co.fitview.api.app.domain.workout_partner.entity.enums.WorkoutPartnerRequestContent
 import kr.co.fitview.api.app.global.entity.Gender
 import kr.co.fitview.api.app.global.entity.OAuth2Provider
 import kr.co.fitview.api.app.global.entity.Role
@@ -66,12 +67,14 @@ class WorkoutPartnerRequestRepositoryTest @Autowired constructor(
         val workoutPartnerRequest1 = WorkoutPartnerRequest.of(
             fromMember = savedFromMember,
             toMember = savedToMember,
-            now = time.nowLocalDateTime.minusHours(1)
+            now = time.nowLocalDateTime.minusHours(1),
+            content = WorkoutPartnerRequestContent.BURN
         )
         val workoutPartnerRequest2 = WorkoutPartnerRequest.of(
             fromMember = savedFromMember,
             toMember = savedToMember,
-            now = time.nowLocalDateTime
+            now = time.nowLocalDateTime,
+            content = WorkoutPartnerRequestContent.BURN
         )
         workoutPartnerRequestRepository.save(workoutPartnerRequest1)
         workoutPartnerRequestRepository.save(workoutPartnerRequest2)
@@ -110,7 +113,8 @@ class WorkoutPartnerRequestRepositoryTest @Autowired constructor(
         val workoutPartnerRequest = WorkoutPartnerRequest.of(
             fromMember = savedFromMember,
             toMember = savedToMember,
-            now = time.nowLocalDateTime
+            now = time.nowLocalDateTime,
+            content = WorkoutPartnerRequestContent.BURN
         )
         workoutPartnerRequestRepository.save(workoutPartnerRequest)
 
@@ -194,12 +198,14 @@ class WorkoutPartnerRequestRepositoryTest @Autowired constructor(
         val partnerRequest1 = WorkoutPartnerRequest.of(
             fromMember = otherMember,
             toMember = me,
-            now = time.nowLocalDateTime.minusHours(5)
+            now = time.nowLocalDateTime.minusHours(5),
+            content = WorkoutPartnerRequestContent.BURN
         )
         val partnerRequest2 = WorkoutPartnerRequest.of(
             fromMember = otherMember,
             toMember = me,
-            now = time.nowLocalDateTime.minusHours(3)
+            now = time.nowLocalDateTime.minusHours(3),
+            content = WorkoutPartnerRequestContent.BURN
         )
         workoutPartnerRequestRepository.save(partnerRequest1)
         workoutPartnerRequestRepository.save(partnerRequest2)
@@ -267,17 +273,20 @@ class WorkoutPartnerRequestRepositoryTest @Autowired constructor(
         val partnerRequest1 = WorkoutPartnerRequest.of(
             fromMember = me,
             toMember = otherMember,
-            now = time.nowLocalDateTime.minusHours(5)
+            now = time.nowLocalDateTime.minusHours(5),
+            content = WorkoutPartnerRequestContent.BURN
         )
         val partnerRequest2 = WorkoutPartnerRequest.of(
             fromMember = me,
             toMember = otherMember,
-            now = time.nowLocalDateTime.minusHours(3)
+            now = time.nowLocalDateTime.minusHours(3),
+            content = WorkoutPartnerRequestContent.BURN
         )
         val receivePartnerRequest = WorkoutPartnerRequest.of(
             fromMember = otherMember,
             toMember = me,
-            now = time.nowLocalDateTime.minusHours(3)
+            now = time.nowLocalDateTime.minusHours(3),
+            content = WorkoutPartnerRequestContent.BURN
         )
         workoutPartnerRequestRepository.save(partnerRequest1)
         workoutPartnerRequestRepository.save(partnerRequest2)
@@ -346,12 +355,14 @@ class WorkoutPartnerRequestRepositoryTest @Autowired constructor(
         val partnerRequest1 = WorkoutPartnerRequest.of(
             fromMember = otherMember,
             toMember = me,
-            now = time.nowLocalDateTime.minusHours(100)
+            now = time.nowLocalDateTime.minusHours(100),
+            content = WorkoutPartnerRequestContent.BURN
         )
         val partnerRequest2 = WorkoutPartnerRequest.of(
             fromMember = otherMember,
             toMember = me,
-            now = time.nowLocalDateTime.minusHours(3)
+            now = time.nowLocalDateTime.minusHours(3),
+            content = WorkoutPartnerRequestContent.BURN
         )
         workoutPartnerRequestRepository.save(partnerRequest1)
         workoutPartnerRequestRepository.save(partnerRequest2)
@@ -439,17 +450,20 @@ class WorkoutPartnerRequestRepositoryTest @Autowired constructor(
         val partnerRequest1 = WorkoutPartnerRequest.of(
             fromMember = otherMember,
             toMember = me,
-            now = time.nowLocalDateTime.minusHours(100)
+            now = time.nowLocalDateTime.minusHours(100),
+            content = WorkoutPartnerRequestContent.BURN
         )
         val partnerRequest2 = WorkoutPartnerRequest.of(
             fromMember = otherMember,
             toMember = me,
-            now = time.nowLocalDateTime.minusHours(10)
+            now = time.nowLocalDateTime.minusHours(10),
+            content = WorkoutPartnerRequestContent.BURN
         )
         val partnerRequest3 = WorkoutPartnerRequest.of(
             fromMember = otherMember,
             toMember = me,
-            now = time.nowLocalDateTime
+            now = time.nowLocalDateTime,
+            content = WorkoutPartnerRequestContent.BURN
         )
         workoutPartnerRequestRepository.save(partnerRequest1)
         workoutPartnerRequestRepository.save(partnerRequest2)

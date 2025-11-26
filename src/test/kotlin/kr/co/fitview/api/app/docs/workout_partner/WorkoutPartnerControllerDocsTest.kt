@@ -22,6 +22,7 @@ import kr.co.fitview.api.app.domain.workout_partner.dto.response.WorkoutPartnerR
 import kr.co.fitview.api.app.domain.workout_partner.dto.response.enums.WorkoutPartnerRequestStatusForResponse
 import kr.co.fitview.api.app.domain.workout_partner.entity.QWorkoutPartner.workoutPartner
 import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartnerRequest
+import kr.co.fitview.api.app.domain.workout_partner.entity.enums.WorkoutPartnerRequestContent
 import kr.co.fitview.api.app.domain.workout_partner.entity.enums.WorkoutPartnerRequestStatus
 import kr.co.fitview.api.app.domain.workout_partner.service.WorkoutPartnerRequestService
 import kr.co.fitview.api.app.global.entity.Gender
@@ -62,8 +63,9 @@ class WorkoutPartnerControllerDocsTest : RestDocsSupport() {
     @Test
     fun workoutPartnerAdd() {
         // given
-        val request = WorkoutPartnerCreateRequest(
-            memberId = 123L
+        val request = mapOf(
+            "memberId" to 123,
+            "workoutPartnerRequestContentIndex" to 1
         )
 
         // when & then
@@ -88,6 +90,8 @@ class WorkoutPartnerControllerDocsTest : RestDocsSupport() {
                     requestFields(
                         fieldWithPath("memberId").type(JsonFieldType.NUMBER)
                             .description("핏버디 요청할 상대 회원 id"),
+                        fieldWithPath("workoutPartnerRequestContentIndex").type(JsonFieldType.NUMBER)
+                            .description("운동 파트너 요청 index" + WorkoutPartnerRequestContent.allDescription()),
                     ),
 
                     responseFields(

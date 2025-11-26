@@ -4,6 +4,7 @@ import jakarta.persistence.*
 import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
 import kr.co.fitview.api.app.domain.member.entity.Member
+import kr.co.fitview.api.app.domain.workout_partner.entity.enums.WorkoutPartnerRequestContent
 import kr.co.fitview.api.app.domain.workout_partner.entity.enums.WorkoutPartnerRequestStatus
 import kr.co.fitview.api.app.global.entity.BaseEntity
 import java.time.LocalDateTime
@@ -30,7 +31,13 @@ class WorkoutPartnerRequest(
 
     @NotNull
     @Column(name = "requested_at", nullable = false)
-    var requestedAt: LocalDateTime? = null
+    var requestedAt: LocalDateTime? = null,
+
+    @Size(max = 100)
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name = "content", nullable = false, length = 100)
+    var content: WorkoutPartnerRequestContent? = null
 
 ) : BaseEntity() {
 
@@ -69,7 +76,8 @@ class WorkoutPartnerRequest(
         fun of(
             fromMember: Member,
             toMember: Member,
-            now: LocalDateTime
+            now: LocalDateTime,
+            content : WorkoutPartnerRequestContent
         ): WorkoutPartnerRequest {
 
             require(fromMember.id != null && toMember.id != null) {
@@ -80,7 +88,8 @@ class WorkoutPartnerRequest(
                 fromMember = fromMember,
                 toMember = toMember,
                 status = WorkoutPartnerRequestStatus.PENDING,
-                requestedAt = now
+                requestedAt = now,
+                content = content
             )
         }
     }

@@ -6,6 +6,7 @@ import kr.co.fitview.api.app.domain.chat.dto.response.StompChatWorkoutRequestMes
 import kr.co.fitview.api.app.domain.chat.dto.response.withIsMe
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.domain.notification.constant.StompConstant
+import kr.co.fitview.api.app.domain.notification.dto.response.MemberWorkoutPartnerRequestAcceptProfileResponse
 import kr.co.fitview.api.app.domain.notification.dto.response.MemberWorkoutPartnerRequestProfileResponse
 import kr.co.fitview.api.app.domain.workout.dto.response.WorkoutRequestUpdateResponse
 import kr.co.fitview.api.app.domain.workout.entity.QWorkoutRequest.workoutRequest
@@ -116,15 +117,23 @@ class NotificationStompService(
     }
 
     fun sendWorkoutPartnerAccept(workoutPartnerRequest : WorkoutPartnerRequest){
+
         val findMemberProfile = memberQueryService.findMemberWorkoutRequestProfileFrom(workoutPartnerRequest.getToMemberId())
             ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
+
+        val response = MemberWorkoutPartnerRequestAcceptProfileResponse(
+            memberId = findMemberProfile.memberId,
+            profileImageUrl = findMemberProfile.profileImageUrl,
+            nickname = findMemberProfile.nickname,
+            workoutPartnerRequestContentIndex = workoutPartnerRequest.content!!.index
+        )
 
         stompPublisher.sendToUser(
             memberId = workoutPartnerRequest.getFromMemberId(),
             destination = StompConstant.SUB_WORKOUT_PARTNER,
             payload = WsResponse(
                 type = WsMessageType.WORKOUT_PARTNER_ACCEPT.code,
-                payload = findMemberProfile
+                payload = response
             )
         )
     }

@@ -10,6 +10,7 @@ import kr.co.fitview.api.app.domain.member.dto.response.MemberWorkoutPartnerProf
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.domain.notification.constant.StompConstant
+import kr.co.fitview.api.app.domain.notification.dto.response.MemberWorkoutPartnerRequestAcceptProfileResponse
 import kr.co.fitview.api.app.domain.notification.dto.response.MemberWorkoutPartnerRequestProfileResponse
 import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
 import kr.co.fitview.api.app.domain.workout.dto.response.WorkoutRequestUpdateResponse
@@ -17,6 +18,7 @@ import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestSta
 import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
 import kr.co.fitview.api.app.domain.workout_partner.entity.QWorkoutPartnerRequest.workoutPartnerRequest
 import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartnerRequest
+import kr.co.fitview.api.app.domain.workout_partner.entity.enums.WorkoutPartnerRequestContent
 import kr.co.fitview.api.app.domain.workout_partner.repository.WorkoutPartnerRepository
 import kr.co.fitview.api.app.domain.workout_partner.repository.WorkoutPartnerRequestRepository
 import kr.co.fitview.api.app.global.dto.WsMessageType
@@ -219,7 +221,8 @@ class NotificationStompServiceTest @Autowired constructor(
         val workoutPartnerRequest = WorkoutPartnerRequest.of(
             fromMember = fromMember,
             toMember = toMember,
-            now = time.nowLocalDateTime
+            now = time.nowLocalDateTime,
+            content = WorkoutPartnerRequestContent.BURN
         )
         workoutPartnerRequestRepository.save(workoutPartnerRequest)
 
@@ -273,16 +276,17 @@ class NotificationStompServiceTest @Autowired constructor(
         val workoutPartnerRequest = WorkoutPartnerRequest.of(
             fromMember = fromMember,
             toMember = toMember,
-            now = time.nowLocalDateTime
+            now = time.nowLocalDateTime,
+            content = WorkoutPartnerRequestContent.BURN
         )
         workoutPartnerRequestRepository.save(workoutPartnerRequest)
 
-        val response = MemberWorkoutPartnerProfileResponse(
+        val response = MemberWorkoutPartnerRequestAcceptProfileResponse(
             memberId = toMember.id!!,
             profileImageUrl = signupRequest.profileImageUrl,
             nickname = signupRequest.nickname,
+            workoutPartnerRequestContentIndex = workoutPartnerRequest.content!!.index
         )
-
 
         // when
         notificationStompService.sendWorkoutPartnerAccept(

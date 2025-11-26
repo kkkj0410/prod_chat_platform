@@ -7,7 +7,6 @@ import kr.co.fitview.api.app.domain.workout_partner.dto.request.WorkoutPartnerCr
 import kr.co.fitview.api.app.domain.workout_partner.dto.request.WorkoutPartnerUpdateServiceRequest
 import kr.co.fitview.api.app.domain.workout_partner.dto.request.enums.WorkoutPartnerRequestUpdateStatus
 import kr.co.fitview.api.app.domain.workout_partner.dto.response.WorkoutPartnerRequestResponse
-import kr.co.fitview.api.app.domain.workout_partner.entity.QWorkoutPartnerRequest.workoutPartnerRequest
 import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartner
 import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartnerRequest
 import kr.co.fitview.api.app.domain.workout_partner.entity.enums.WorkoutPartnerRequestStatus
@@ -44,14 +43,14 @@ class WorkoutPartnerRequestService(
         // 정식상으로 다시 validate 활성화 필요
 //        validateAddWorkoutPartnerRequest(findWorkoutPartner)
 
-        val workoutPartner = WorkoutPartnerRequest(
-            memberReferenceProvider.findMemberReferenceFrom(memberId),
-            memberReferenceProvider.findMemberReferenceFrom(request.memberId),
-            WorkoutPartnerRequestStatus.PENDING,
-            time.nowLocalDateTime
+        val workoutPartnerRequest = WorkoutPartnerRequest.of(
+            fromMember = memberReferenceProvider.findMemberReferenceFrom(memberId),
+            toMember = memberReferenceProvider.findMemberReferenceFrom(request.memberId),
+            now = time.nowLocalDateTime,
+            content = request.workoutPartnerRequestContentIndex
         )
 
-        val savedWorkoutPartner = workoutPartnerRequestRepository.save(workoutPartner)
+        val savedWorkoutPartner = workoutPartnerRequestRepository.save(workoutPartnerRequest)
 
 
         return savedWorkoutPartner
