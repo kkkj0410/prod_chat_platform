@@ -192,6 +192,7 @@ class WorkoutPartnerControllerDocsTest : RestDocsSupport() {
                 workoutPartnerRequestId = 123L,
                 profileImageUrl = "https://example.com/profile1.png",
                 workoutImageUrl = null,
+                memberId = 123L,
                 nickname = "user_one",
                 workoutExperience = MemberWorkoutExperience.UNDER_ONE_YEAR,
                 workoutStyle = MemberWorkoutStyle.CARDIO,
@@ -203,6 +204,7 @@ class WorkoutPartnerControllerDocsTest : RestDocsSupport() {
                 workoutPartnerRequestId = 124L,
                 profileImageUrl = "https://example.com/profile2.png",
                 workoutImageUrl = null,
+                memberId = 123L,
                 nickname = "user_two",
                 workoutExperience = MemberWorkoutExperience.FOUR_TO_SIX_YEARS,
                 workoutStyle = MemberWorkoutStyle.STRENGTH,
@@ -214,6 +216,7 @@ class WorkoutPartnerControllerDocsTest : RestDocsSupport() {
                 workoutPartnerRequestId = 125L,
                 profileImageUrl = "https://example.com/profile3.png",
                 workoutImageUrl = "https://example.com/profile3.png",
+                memberId = 123L,
                 nickname = "user_three",
                 workoutExperience = MemberWorkoutExperience.UNDER_ONE_YEAR,
                 workoutStyle = MemberWorkoutStyle.CARDIO,
@@ -277,12 +280,14 @@ class WorkoutPartnerControllerDocsTest : RestDocsSupport() {
                             .description("회원 프로필 이미지 URL"),
                         fieldWithPath("data.content[].workoutImageUrl").type(JsonFieldType.STRING).optional()
                             .description("회원 운동 이미지 URL"),
+                        fieldWithPath("data.content[].memberId").type(JsonFieldType.NUMBER)
+                            .description("상대 회원 id"),
                         fieldWithPath("data.content[].nickname").type(JsonFieldType.STRING)
-                            .description("회원 닉네임"),
+                            .description("상대 회원 닉네임"),
                         fieldWithPath("data.content[].workoutExperience").type(JsonFieldType.STRING)
-                            .description("회원 운동 경력"),
+                            .description("상대 회원 운동 경력"),
                         fieldWithPath("data.content[].workoutStyle").type(JsonFieldType.STRING)
-                            .description("회원 운동 스타일"),
+                            .description("상대 회원 운동 스타일"),
                         fieldWithPath("data.content[].workoutGoal").type(JsonFieldType.STRING)
                             .description("회원 운동 목표"),
                         fieldWithPath("data.content[].status").type(JsonFieldType.STRING)

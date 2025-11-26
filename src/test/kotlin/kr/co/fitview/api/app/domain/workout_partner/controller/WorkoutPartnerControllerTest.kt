@@ -254,6 +254,7 @@ class WorkoutPartnerControllerTest : ControllerTestSupport(){
                 workoutPartnerRequestId = 123L,
                 profileImageUrl = "https://example.com/profile1.png",
                 workoutImageUrl = null,
+                memberId = 123L,
                 nickname = "user_one",
                 workoutExperience = MemberWorkoutExperience.UNDER_ONE_YEAR,
                 workoutStyle = MemberWorkoutStyle.CARDIO,
@@ -265,6 +266,7 @@ class WorkoutPartnerControllerTest : ControllerTestSupport(){
                 workoutPartnerRequestId = 124L,
                 profileImageUrl = "https://example.com/profile2.png",
                 workoutImageUrl = null,
+                memberId = 123L,
                 nickname = "user_two",
                 workoutExperience = MemberWorkoutExperience.FOUR_TO_SIX_YEARS,
                 workoutStyle = MemberWorkoutStyle.STRENGTH,
@@ -276,6 +278,7 @@ class WorkoutPartnerControllerTest : ControllerTestSupport(){
                 workoutPartnerRequestId = 125L,
                 profileImageUrl = "https://example.com/profile3.png",
                 workoutImageUrl = "https://example.com/profile3.png",
+                memberId = 123L,
                 nickname = "user_three",
                 workoutExperience = MemberWorkoutExperience.UNDER_ONE_YEAR,
                 workoutStyle = MemberWorkoutStyle.CARDIO,
@@ -311,6 +314,7 @@ class WorkoutPartnerControllerTest : ControllerTestSupport(){
             .andExpect(jsonPath("$.data.content[0].workoutPartnerRequestId").value(123))
             .andExpect(jsonPath("$.data.content[0].profileImageUrl").value("https://example.com/profile1.png"))
             .andExpect(jsonPath("$.data.content[0].workoutImageUrl").value(null))
+            .andExpect(jsonPath("$.data.content[0].memberId").value(123))
             .andExpect(jsonPath("$.data.content[0].nickname").value("user_one"))
             .andExpect(jsonPath("$.data.content[0].workoutExperience").value("UNDER_ONE_YEAR"))
             .andExpect(jsonPath("$.data.content[0].workoutStyle").value("CARDIO"))
@@ -321,6 +325,7 @@ class WorkoutPartnerControllerTest : ControllerTestSupport(){
             .andExpect(jsonPath("$.data.content[1].workoutPartnerRequestId").value(124))
             .andExpect(jsonPath("$.data.content[1].profileImageUrl").value("https://example.com/profile2.png"))
             .andExpect(jsonPath("$.data.content[1].workoutImageUrl").value(null))
+            .andExpect(jsonPath("$.data.content[1].memberId").value(123))
             .andExpect(jsonPath("$.data.content[1].nickname").value("user_two"))
             .andExpect(jsonPath("$.data.content[1].workoutExperience").value("FOUR_TO_SIX_YEARS"))
             .andExpect(jsonPath("$.data.content[1].workoutStyle").value("STRENGTH"))
@@ -331,6 +336,7 @@ class WorkoutPartnerControllerTest : ControllerTestSupport(){
             .andExpect(jsonPath("$.data.content[2].workoutPartnerRequestId").value(125))
             .andExpect(jsonPath("$.data.content[2].profileImageUrl").value("https://example.com/profile3.png"))
             .andExpect(jsonPath("$.data.content[2].workoutImageUrl").value("https://example.com/profile3.png"))
+            .andExpect(jsonPath("$.data.content[2].memberId").value(123))
             .andExpect(jsonPath("$.data.content[2].nickname").value("user_three"))
             .andExpect(jsonPath("$.data.content[2].workoutExperience").value("UNDER_ONE_YEAR"))
             .andExpect(jsonPath("$.data.content[2].workoutStyle").value("CARDIO"))
