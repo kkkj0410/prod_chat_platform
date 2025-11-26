@@ -501,4 +501,263 @@ class WorkoutPartnerRequestRepositoryTest @Autowired constructor(
 
         assertThat(slice.hasNext()).isFalse()
     }
+
+    @DisplayName("운동 요청 받은 것 조회 시, 상대방 프로필이 조회된다.")
+    @Test
+    fun findWorkoutPartnerByConditionOtherProfileByReceive() {
+        // given
+        val me = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+            provider = OAuth2Provider.APPLE,
+            providerId = "providerId"
+        )
+        val otherMember = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+            provider = OAuth2Provider.APPLE,
+            providerId = "providerId"
+        )
+        memberRepository.save(me)
+        memberRepository.save(otherMember)
+
+        val signupMeRequest = createOAuth2SignupServiceRequest()
+        oAuth2Service.signup(signupMeRequest, me.id!!)
+
+        val signupOtherRequest = createOAuth2SignupServiceRequest(
+            nickname = "other",
+            workoutExperience = MemberWorkoutExperience.FOUR_TO_SIX_YEARS,
+            workoutGoal = MemberWorkoutGoal.BODY_CORRECTION,
+            workoutStyle = MemberWorkoutStyle.PARTNER
+        )
+        oAuth2Service.signup(signupOtherRequest, otherMember.id!!)
+
+
+        val partnerRequest1 = WorkoutPartnerRequest.of(
+            fromMember = otherMember,
+            toMember = me,
+            now = time.nowLocalDateTime.minusHours(100),
+            content = WorkoutPartnerRequestContent.BURN
+        )
+        workoutPartnerRequestRepository.save(partnerRequest1)
+
+
+        val condition = WorkoutPartnerRequestCondition(
+            size = 10,
+            type = WorkoutPartnerRequestType.RECEIVE
+        )
+
+        // when
+        val slice = workoutPartnerRequestRepository.findWorkoutPartnerByConditionAndDeletedAtIsNull(me.id!!, condition)
+
+        // then
+        assertThat(slice.content).hasSize(1)
+
+        val response1 = slice.content[0]
+
+        assertThat(response1.workoutPartnerRequestId)
+            .isEqualTo(partnerRequest1.id)
+
+        assertThat(response1.nickname).isEqualTo(otherMember.nickname)
+        assertThat(response1.profileImageUrl).isEqualTo(signupOtherRequest.profileImageUrl)
+        assertThat(response1.workoutExperience).isEqualTo(otherMember.workoutExperience)
+        assertThat(response1.workoutGoal).isEqualTo(otherMember.workoutGoal)
+        assertThat(response1.workoutStyle).isEqualTo(otherMember.workoutStyle)
+
+        assertThat(response1.status).isEqualTo(WorkoutPartnerRequestStatusForResponse.PENDING)
+
+        assertThat(slice.hasNext()).isFalse()
+    }
+
+    @DisplayName("운동 요청 보낸 것 조회 시, 상대방 프로필이 조회된다.")
+    @Test
+    fun findWorkoutPartnerByConditionOtherProfileBySend() {
+        // given
+        val me = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+            provider = OAuth2Provider.APPLE,
+            providerId = "providerId"
+        )
+        val otherMember = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+            provider = OAuth2Provider.APPLE,
+            providerId = "providerId"
+        )
+        memberRepository.save(me)
+        memberRepository.save(otherMember)
+
+        val signupMeRequest = createOAuth2SignupServiceRequest()
+        oAuth2Service.signup(signupMeRequest, me.id!!)
+
+        val signupOtherRequest = createOAuth2SignupServiceRequest(
+            nickname = "other",
+            workoutExperience = MemberWorkoutExperience.FOUR_TO_SIX_YEARS,
+            workoutGoal = MemberWorkoutGoal.BODY_CORRECTION,
+            workoutStyle = MemberWorkoutStyle.PARTNER
+        )
+        oAuth2Service.signup(signupOtherRequest, otherMember.id!!)
+
+
+        val partnerRequest1 = WorkoutPartnerRequest.of(
+            fromMember = me,
+            toMember = otherMember,
+            now = time.nowLocalDateTime.minusHours(100),
+            content = WorkoutPartnerRequestContent.BURN
+        )
+        workoutPartnerRequestRepository.save(partnerRequest1)
+
+
+        val condition = WorkoutPartnerRequestCondition(
+            size = 10,
+            type = WorkoutPartnerRequestType.SEND
+        )
+
+        // when
+        val slice = workoutPartnerRequestRepository.findWorkoutPartnerByConditionAndDeletedAtIsNull(me.id!!, condition)
+
+        // then
+        assertThat(slice.content).hasSize(1)
+
+        val response1 = slice.content[0]
+
+        assertThat(response1.workoutPartnerRequestId)
+            .isEqualTo(partnerRequest1.id)
+
+        assertThat(response1.nickname).isEqualTo(otherMember.nickname)
+        assertThat(response1.profileImageUrl).isEqualTo(signupOtherRequest.profileImageUrl)
+        assertThat(response1.workoutExperience).isEqualTo(otherMember.workoutExperience)
+        assertThat(response1.workoutGoal).isEqualTo(otherMember.workoutGoal)
+        assertThat(response1.workoutStyle).isEqualTo(otherMember.workoutStyle)
+
+        assertThat(response1.status).isEqualTo(WorkoutPartnerRequestStatusForResponse.PENDING)
+
+        assertThat(slice.hasNext()).isFalse()
+    }
+
+    @DisplayName("운동 요청 보낸 것 조회 시, 제일 처음 운동 사진이 조회된다.")
+    @Test
+    fun findWorkoutPartnerByConditionWorkoutImageUrl() {
+        // given
+        val me = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+            provider = OAuth2Provider.APPLE,
+            providerId = "providerId"
+        )
+        val otherMember = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+            provider = OAuth2Provider.APPLE,
+            providerId = "providerId"
+        )
+        memberRepository.save(me)
+        memberRepository.save(otherMember)
+
+        val signupMeRequest = createOAuth2SignupServiceRequest()
+        oAuth2Service.signup(signupMeRequest, me.id!!)
+
+        val signupOtherRequest = createOAuth2SignupServiceRequest(
+            workoutImageUrls = listOf("otherWork1", "otherWork2")
+        )
+        oAuth2Service.signup(signupOtherRequest, otherMember.id!!)
+
+
+        val partnerRequest1 = WorkoutPartnerRequest.of(
+            fromMember = me,
+            toMember = otherMember,
+            now = time.nowLocalDateTime.minusHours(100),
+            content = WorkoutPartnerRequestContent.BURN
+        )
+        workoutPartnerRequestRepository.save(partnerRequest1)
+
+
+        val condition = WorkoutPartnerRequestCondition(
+            size = 10,
+            type = WorkoutPartnerRequestType.SEND
+        )
+
+        // when
+        val slice = workoutPartnerRequestRepository.findWorkoutPartnerByConditionAndDeletedAtIsNull(me.id!!, condition)
+
+        // then
+        assertThat(slice.content).hasSize(1)
+
+        val response1 = slice.content[0]
+
+        assertThat(response1.workoutPartnerRequestId)
+            .isEqualTo(partnerRequest1.id)
+
+        assertThat(response1.workoutImageUrl).isEqualTo("otherWork1")
+
+        assertThat(slice.hasNext()).isFalse()
+    }
+
+
+    @DisplayName("운동 요청 보낸 것 조회 시, 운동 사진이 없으면 운동 사진 조회에 실패한다..")
+    @Test
+    fun findWorkoutPartnerByConditionNotWorkoutImageUrl() {
+        // given
+        val me = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+            provider = OAuth2Provider.APPLE,
+            providerId = "providerId"
+        )
+        val otherMember = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+            provider = OAuth2Provider.APPLE,
+            providerId = "providerId"
+        )
+        memberRepository.save(me)
+        memberRepository.save(otherMember)
+
+        val signupMeRequest = createOAuth2SignupServiceRequest()
+        oAuth2Service.signup(signupMeRequest, me.id!!)
+
+        val signupOtherRequest = createOAuth2SignupServiceRequest(
+            workoutImageUrls = listOf()
+        )
+        oAuth2Service.signup(signupOtherRequest, otherMember.id!!)
+
+
+        val partnerRequest1 = WorkoutPartnerRequest.of(
+            fromMember = me,
+            toMember = otherMember,
+            now = time.nowLocalDateTime.minusHours(100),
+            content = WorkoutPartnerRequestContent.BURN
+        )
+        workoutPartnerRequestRepository.save(partnerRequest1)
+
+
+        val condition = WorkoutPartnerRequestCondition(
+            size = 10,
+            type = WorkoutPartnerRequestType.SEND
+        )
+
+        // when
+        val slice = workoutPartnerRequestRepository.findWorkoutPartnerByConditionAndDeletedAtIsNull(me.id!!, condition)
+
+        // then
+        assertThat(slice.content).hasSize(1)
+
+        val response1 = slice.content[0]
+
+        assertThat(response1.workoutPartnerRequestId)
+            .isEqualTo(partnerRequest1.id)
+
+        assertThat(response1.workoutImageUrl).isNull()
+
+        assertThat(slice.hasNext()).isFalse()
+    }
 }

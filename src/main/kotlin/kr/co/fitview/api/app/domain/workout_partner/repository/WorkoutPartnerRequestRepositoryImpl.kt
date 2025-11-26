@@ -2,7 +2,7 @@ package kr.co.fitview.api.app.domain.workout_partner.repository
 
 import com.querydsl.core.types.Projections
 import com.querydsl.core.types.dsl.BooleanExpression
-import com.querydsl.core.types.dsl.NumberPath
+import com.querydsl.core.types.dsl.Expressions
 import com.querydsl.jpa.impl.JPAQueryFactory
 import kr.co.fitview.api.app.domain.chat.entity.QChatParticipant
 import kr.co.fitview.api.app.domain.chat.entity.QChatRoom.chatRoom
@@ -15,6 +15,7 @@ import kr.co.fitview.api.app.domain.workout_partner.condition.WorkoutPartnerRequ
 import kr.co.fitview.api.app.domain.workout_partner.dto.WorkoutPartnerRequestResponseForChatRoom
 import kr.co.fitview.api.app.domain.workout_partner.dto.WorkoutPartnerRequestResponseForWorkoutPartner
 import kr.co.fitview.api.app.domain.workout_partner.dto.request.enums.WorkoutPartnerRequestType
+import kr.co.fitview.api.app.domain.workout_partner.dto.response.WorkoutImageMinResponse
 import kr.co.fitview.api.app.domain.workout_partner.dto.response.WorkoutPartnerRequestResponse
 import kr.co.fitview.api.app.domain.workout_partner.entity.QWorkoutPartnerRequest.workoutPartnerRequest
 import org.springframework.data.domain.PageRequest
@@ -30,28 +31,44 @@ class WorkoutPartnerRequestRepositoryImpl(
         condition: WorkoutPartnerRequestCondition
     ): Slice<WorkoutPartnerRequestResponse> {
 
-        fun memberJoinCondition(): BooleanExpression? {
-            if (condition.type == WorkoutPartnerRequestType.RECEIVE){
-                return workoutPartnerRequest.toMember.id.eq(member.id)
+        val workoutPartnerRequestResponses = findWorkoutPartnerByCondition(condition, memberId)
+
+        val targetMemberIds = workoutPartnerRequestResponses.map { it.targetMemberId }
+
+        val workoutPartnerWithWorkoutImageResponses = findWorkoutPartnerWithWorkoutImageUrlByMemberIds(targetMemberIds, workoutPartnerRequestResponses)
+
+        val chatRoomResponses = findChatRoomByMemberIds(memberId, targetMemberIds)
+
+        val responses: List<WorkoutPartnerRequestResponse> =
+            workoutPartnerWithWorkoutImageResponses.map { it.toResponse(chatRoomResponses) }
+
+        val hasNext = responses.size > condition.size!!
+
+        val sliceContent = if (hasNext) responses.dropLast(1) else responses
+
+        return SliceImpl(sliceContent, PageRequest.of(0, condition.size), hasNext)
+    }
+
+
+    private fun findWorkoutPartnerByCondition(
+        condition: WorkoutPartnerRequestCondition,
+        memberId: Long
+    ): List<WorkoutPartnerRequestResponseForWorkoutPartner> {
+
+        fun otherMemberJoinCondition(): BooleanExpression? {
+            if (condition.type == WorkoutPartnerRequestType.RECEIVE) {
+                return member.id.eq(workoutPartnerRequest.fromMember.id)
             }
 
-            return workoutPartnerRequest.fromMember.id.eq(member.id)
+            return member.id.eq(workoutPartnerRequest.toMember.id)
         }
 
-        fun memberWhereCondition(): BooleanExpression? {
-            if (condition.type == WorkoutPartnerRequestType.RECEIVE){
+        fun workoutPartnerRequestWhereCondition(): BooleanExpression? {
+            if (condition.type == WorkoutPartnerRequestType.RECEIVE) {
                 return workoutPartnerRequest.toMember.id.eq(memberId)
             }
 
             return workoutPartnerRequest.fromMember.id.eq(memberId)
-        }
-
-        fun memberIdExpression(): NumberPath<Long> {
-            return if (condition.type == WorkoutPartnerRequestType.RECEIVE) {
-                workoutPartnerRequest.fromMember.id
-            } else {
-                workoutPartnerRequest.toMember.id
-            }
         }
 
         fun lastRequestIdCondition(): BooleanExpression? {
@@ -69,7 +86,8 @@ class WorkoutPartnerRequestRepositoryImpl(
                     workoutPartnerRequest.requestedAt,
                     workoutPartnerRequest.status,
                     image.url,
-                    memberIdExpression(),
+                    Expressions.nullExpression(String::class.java),
+                    member.id,
                     member.nickname,
                     member.workoutExperience,
                     member.workoutStyle,
@@ -77,12 +95,12 @@ class WorkoutPartnerRequestRepositoryImpl(
                 )
             )
             .from(workoutPartnerRequest)
-            .join(member).on(memberJoinCondition())
+            .join(member).on(otherMemberJoinCondition())
             .join(memberImage).on(memberImage.member.id.eq(member.id))
             .join(image).on(image.id.eq(memberImage.image.id))
             .where(
                 lastRequestIdCondition(),
-                memberWhereCondition(),
+                workoutPartnerRequestWhereCondition(),
                 memberImage.type.eq(MemberImageType.PROFILE),
                 member.deletedAt.isNull,
                 workoutPartnerRequest.deletedAt.isNull,
@@ -93,11 +111,51 @@ class WorkoutPartnerRequestRepositoryImpl(
             .limit(limit.toLong())
             .fetch()
 
+        return workoutPartnerRequestResponses
+    }
+
+    private fun findWorkoutPartnerWithWorkoutImageUrlByMemberIds(
+        targetMemberIds: List<Long>,
+        workoutPartnerRequestResponses: List<WorkoutPartnerRequestResponseForWorkoutPartner>
+    ): List<WorkoutPartnerRequestResponseForWorkoutPartner> {
+        val findWorkoutImages = queryFactory
+            .select(
+                Projections.constructor(
+                    WorkoutImageMinResponse::class.java,
+                    member.id,
+                    image.url,
+                    memberImage.seq
+                )
+            )
+            .from(member)
+            .join(member.mutableMemberImages, memberImage)
+            .join(memberImage.image, image)
+            .where(
+                memberImage.type.eq(MemberImageType.WORKOUT),
+                member.id.`in`(targetMemberIds)
+            )
+            .orderBy(member.id.asc(), memberImage.seq.asc())
+            .fetch()
+
+        val workoutImageMap = findWorkoutImages
+            .groupBy { it.memberId }
+            .mapValues { (_, images) -> images.minByOrNull { it.seq }!! }
+
+        val workoutPartnerSecondResponses = workoutPartnerRequestResponses.map { request ->
+            val imgUrl = workoutImageMap[request.targetMemberId]?.workoutImageUrl
+            request.withWorkoutImageUrl(imgUrl)
+        }
+        return workoutPartnerSecondResponses
+    }
+
+
+    private fun findChatRoomByMemberIds(
+        memberId: Long,
+        targetMemberIds: List<Long>
+    ): List<WorkoutPartnerRequestResponseForChatRoom> {
 
         val chatParticipant1 = QChatParticipant("chatParticipant1")
         val chatParticipant2 = QChatParticipant("chatParticipant2")
-
-        val targetMemberIds = workoutPartnerRequestResponses.map { it.targetMemberId }
 
         val chatRoomResponses = queryFactory
             .select(
@@ -117,13 +175,7 @@ class WorkoutPartnerRequestRepositoryImpl(
             )
             .fetch()
 
-        val responses: List<WorkoutPartnerRequestResponse> =
-            workoutPartnerRequestResponses.map { it.toResponse(chatRoomResponses) }
-
-        val hasNext = responses.size > condition.size
-
-        val sliceContent = if (hasNext) responses.dropLast(1) else responses
-
-        return SliceImpl(sliceContent, PageRequest.of(0, condition.size), hasNext)
+        return chatRoomResponses
     }
+
 }
