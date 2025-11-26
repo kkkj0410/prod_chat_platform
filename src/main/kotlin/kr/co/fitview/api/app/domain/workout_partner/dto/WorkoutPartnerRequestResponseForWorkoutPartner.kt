@@ -13,6 +13,7 @@ data class WorkoutPartnerRequestResponseForWorkoutPartner (
     val requestedAt: LocalDateTime,
     val status: WorkoutPartnerRequestStatus,
     val profileImageUrl: String,
+    val workoutImageUrl : String?,
     val targetMemberId : Long,
     val nickname: String,
     val workoutExperience: MemberWorkoutExperience,
@@ -20,6 +21,9 @@ data class WorkoutPartnerRequestResponseForWorkoutPartner (
     val workoutGoal: MemberWorkoutGoal
 )
 {
+    fun withWorkoutImageUrl(url: String?): WorkoutPartnerRequestResponseForWorkoutPartner {
+        return this.copy(workoutImageUrl = url)
+    }
 
     fun toResponse(
         chatRooms: List<WorkoutPartnerRequestResponseForChatRoom>
@@ -29,6 +33,7 @@ data class WorkoutPartnerRequestResponseForWorkoutPartner (
         return WorkoutPartnerRequestResponse(
             workoutPartnerRequestId = this.workoutPartnerRequestId,
             profileImageUrl = this.profileImageUrl,
+            workoutImageUrl = this.workoutImageUrl,
             nickname = this.nickname,
             workoutExperience = this.workoutExperience,
             workoutStyle = this.workoutStyle,
