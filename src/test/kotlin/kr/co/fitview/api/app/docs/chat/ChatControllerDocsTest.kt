@@ -177,7 +177,12 @@ class ChatControllerDocsTest : RestDocsSupport() {
                         fieldWithPath("data.content[].chatRoomId").description("채팅방 ID"),
                         fieldWithPath("data.content[].profileImageUrl").description("상대 프로필 이미지 URL"),
                         fieldWithPath("data.content[].nickname").description("상대 닉네임"),
-                        fieldWithPath("data.content[].isRead").description("읽음 여부")
+                        fieldWithPath("data.content[].isRead").description("읽음 여부"),
+
+                        fieldWithPath("data.content[].lastChatMessage").description("마지막 메시지"),
+                        fieldWithPath("data.content[].lastWorkoutRequest")
+                            .optional()
+                            .description("마지막 운동 요청")
                     ),
 
                     responseFields(
@@ -271,7 +276,14 @@ class ChatControllerDocsTest : RestDocsSupport() {
                         fieldWithPath("data.content[].chatRoomId").description("채팅방 ID"),
                         fieldWithPath("data.content[].profileImageUrl").description("상대 프로필 이미지 URL"),
                         fieldWithPath("data.content[].nickname").description("상대 닉네임"),
-                        fieldWithPath("data.content[].isRead").description("읽음 여부")
+                        fieldWithPath("data.content[].isRead").description("읽음 여부"),
+
+                        fieldWithPath("data.content[].lastChatMessage").description("마지막 메시지"),
+                        fieldWithPath("data.content[].lastWorkoutRequest")
+                            .optional()
+                            .description("마지막 운동 요청")
+
+
                     ),
 
                     responseFields(
@@ -422,7 +434,13 @@ class ChatControllerDocsTest : RestDocsSupport() {
         val chatRoomId = 123L
 
         given(workoutRequestService.findRecentWorkoutRequestFrom(listOf(chatRoomId)))
-            .willReturn(listOf())
+            .willReturn(listOf(
+                LastWorkoutRequestMessage(
+                    workoutRequestId = 12L,
+                    status = WorkoutRequestStatusForResponse.ACCEPT,
+                    chatRoomId = chatRoomId
+                )
+            ))
 
         // when & then
         mockMvc.perform(
@@ -451,7 +469,7 @@ class ChatControllerDocsTest : RestDocsSupport() {
                         fieldWithPath("message").description("응답 메시지"),
                         fieldWithPath("data").type(JsonFieldType.OBJECT).optional()
                             .description("해당 채팅방의 마지막 운동 요청. 없으면 NULL"),
-                        fieldWithPath("data.workoutRequestId").type(JsonFieldType.STRING)
+                        fieldWithPath("data.workoutRequestId").type(JsonFieldType.NUMBER)
                             .description("운동 요청 id"),
                         fieldWithPath("data.status").type(JsonFieldType.STRING)
                             .description("마지막 운동 요청 상태" + WorkoutRequestStatusForResponse.allDescription()),
