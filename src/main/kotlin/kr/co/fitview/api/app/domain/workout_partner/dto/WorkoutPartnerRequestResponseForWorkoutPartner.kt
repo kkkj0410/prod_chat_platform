@@ -34,6 +34,7 @@ data class WorkoutPartnerRequestResponseForWorkoutPartner (
             workoutPartnerRequestId = this.workoutPartnerRequestId,
             profileImageUrl = this.profileImageUrl,
             workoutImageUrl = this.workoutImageUrl,
+            memberId = this.targetMemberId,
             nickname = this.nickname,
             workoutExperience = this.workoutExperience,
             workoutStyle = this.workoutStyle,

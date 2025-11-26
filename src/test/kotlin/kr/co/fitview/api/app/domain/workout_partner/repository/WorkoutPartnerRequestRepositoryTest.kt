@@ -312,6 +312,7 @@ class WorkoutPartnerRequestRepositoryTest @Autowired constructor(
         assertThat(response2.workoutPartnerRequestId)
             .isEqualTo(partnerRequest1.id)
 
+        assertThat(response1.memberId).isEqualTo(otherMember.id!!)
         assertThat(response1.nickname).isEqualTo(otherMember.nickname)
         assertThat(response1.profileImageUrl).isEqualTo(signupRequest.profileImageUrl)
         assertThat(response1.workoutExperience).isEqualTo(otherMember.workoutExperience)
