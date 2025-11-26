@@ -5,6 +5,7 @@ import kr.co.fitview.api.app.domain.member.dto.response.MemberChatProfileRespons
 
 data class ChatMessageDetailResponse(
     val chatRoomId: Long,
+    val isCompleteWorkout : Boolean,
     val profileImageUrl: String,
     val nickname: String,
     val chatMessage: StompChatMessage,
@@ -16,12 +17,14 @@ data class ChatMessageDetailResponse(
     companion object {
         fun of(
             chatRoomId: Long,
+            isCompleteWorkout: Boolean,
             chatProfile : MemberChatProfileResponse,
             chatMessage: StompChatMessage,
             otherMemberId : Long
         ): ChatMessageDetailResponse {
             return ChatMessageDetailResponse(
                 chatRoomId = chatRoomId,
+                isCompleteWorkout = isCompleteWorkout,
                 profileImageUrl = chatProfile.profileImageUrl,
                 nickname = chatProfile.nickname,
                 chatMessage = chatMessage,

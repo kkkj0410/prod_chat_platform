@@ -3,6 +3,7 @@ package kr.co.fitview.api.app.domain.workout_partner.controller
 import kr.co.fitview.api.app.ControllerTestSupport
 import kr.co.fitview.api.app.docs.RestDocsHeaders
 import kr.co.fitview.api.app.docs.RestDocsPagination
+import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutExperience
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutGoal
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutStyle
@@ -12,6 +13,8 @@ import kr.co.fitview.api.app.domain.workout_partner.dto.request.enums.WorkoutPar
 import kr.co.fitview.api.app.domain.workout_partner.dto.request.enums.WorkoutPartnerRequestUpdateStatus
 import kr.co.fitview.api.app.domain.workout_partner.dto.response.WorkoutPartnerRequestResponse
 import kr.co.fitview.api.app.domain.workout_partner.dto.response.enums.WorkoutPartnerRequestStatusForResponse
+import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartnerRequest
+import kr.co.fitview.api.app.domain.workout_partner.entity.enums.WorkoutPartnerRequestStatus
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.exception.error.request.RequestErrorCode
 import org.junit.jupiter.api.DisplayName
@@ -88,8 +91,70 @@ class WorkoutPartnerControllerTest : ControllerTestSupport(){
     fun workoutPartnerModify() {
         // given
         val request = WorkoutPartnerUpdateRequest(
+            type = WorkoutPartnerRequestUpdateStatus.REJECT
+        )
+
+        val fromMember = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val toMember = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+
+        given(workoutPartnerRequestService.updateWorkoutPartnerRequest(any(), any(), any()))
+            .willReturn(
+                WorkoutPartnerRequest(
+                    fromMember = fromMember,
+                    toMember = toMember,
+                    status = WorkoutPartnerRequestStatus.REJECT
+                )
+            )
+
+        // when // then
+        mockMvc.perform(
+            post("/api/v1/workout-partners/{workoutPartnerId}", 123)
+                .content(objectMapper.writeValueAsString(request))
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andDo(print())
+            .andExpect(status().isOk())
+    }
+
+    @DisplayName("핏버디 요청에 수락 시 실시간 알람을 요청자에게 전달한다.")
+    @Test
+    fun workoutPartnerModifyAccept() {
+        // given
+        val request = WorkoutPartnerUpdateRequest(
             type = WorkoutPartnerRequestUpdateStatus.ACCEPT
         )
+
+        val fromMember = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val toMember = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+
+        given(workoutPartnerRequestService.updateWorkoutPartnerRequest(any(), any(), any()))
+            .willReturn(
+                WorkoutPartnerRequest(
+                    fromMember = fromMember,
+                    toMember = toMember,
+                    status = WorkoutPartnerRequestStatus.ACCEPT
+                )
+            )
+
+
+        given(notificationStompService.sendWorkoutPartnerAccept(any()))
+            .willAnswer {  }
 
         // when // then
         mockMvc.perform(

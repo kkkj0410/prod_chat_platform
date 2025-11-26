@@ -14,6 +14,7 @@ import kr.co.fitview.api.app.domain.chat.repository.ChatParticipantRepository
 import kr.co.fitview.api.app.domain.member.service.MemberReferenceProvider
 import kr.co.fitview.api.app.domain.member.service.MemberService
 import kr.co.fitview.api.app.domain.notification.service.NotificationStompService
+import kr.co.fitview.api.app.domain.workout.service.WorkoutHistoryService
 import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestService
 import kr.co.fitview.api.app.domain.workout_partner.service.WorkoutPartnerService
 import kr.co.fitview.api.app.global.exception.GlobalException
@@ -34,7 +35,7 @@ class ChatService(
     private val chatMessageService : ChatMessageService,
     private val workoutRequestService : WorkoutRequestService,
     private val memberService : MemberService,
-    private val notificationStompService : NotificationStompService
+    private val workoutHistoryService : WorkoutHistoryService
 ) {
 
     @Transactional
@@ -90,12 +91,16 @@ class ChatService(
             memberId = memberId,
             chatRoomId = chatRoomId
         )
+        val otherMemberId = findOtherChatParticipant!!.getMemberId()
+
+        val isCompleteWorkout = workoutHistoryService.existsWorkoutHistoryFrom(memberId, otherMemberId)
 
         val response = ChatMessageDetailResponse.of(
             chatRoomId = chatRoomId,
+            isCompleteWorkout = isCompleteWorkout,
             chatProfile = findChatProfile,
             chatMessage = savedMessage,
-            otherMemberId = findOtherChatParticipant!!.getMemberId()
+            otherMemberId = otherMemberId
         )
 
         return response

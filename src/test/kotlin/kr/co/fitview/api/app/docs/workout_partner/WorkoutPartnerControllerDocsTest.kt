@@ -6,6 +6,7 @@ import kr.co.fitview.api.app.docs.RestDocsSupport
 import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
 import kr.co.fitview.api.app.domain.member.dto.request.Age
 import kr.co.fitview.api.app.domain.member.dto.response.MemberProfileResponse
+import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutExperience
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutGoal
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutStyle
@@ -20,6 +21,8 @@ import kr.co.fitview.api.app.domain.workout_partner.dto.request.enums.WorkoutPar
 import kr.co.fitview.api.app.domain.workout_partner.dto.response.WorkoutPartnerRequestResponse
 import kr.co.fitview.api.app.domain.workout_partner.dto.response.enums.WorkoutPartnerRequestStatusForResponse
 import kr.co.fitview.api.app.domain.workout_partner.entity.QWorkoutPartner.workoutPartner
+import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartnerRequest
+import kr.co.fitview.api.app.domain.workout_partner.entity.enums.WorkoutPartnerRequestStatus
 import kr.co.fitview.api.app.domain.workout_partner.service.WorkoutPartnerRequestService
 import kr.co.fitview.api.app.global.entity.Gender
 import kr.co.fitview.api.app.global.entity.Role
@@ -110,8 +113,29 @@ class WorkoutPartnerControllerDocsTest : RestDocsSupport() {
             type = WorkoutPartnerRequestUpdateStatus.ACCEPT
         )
 
-        given(notificationStompService.sendWorkoutPartnerRequest(any()))
+        val fromMember = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val toMember = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+
+        given(workoutPartnerRequestService.updateWorkoutPartnerRequest(any(), any(), any()))
+            .willReturn(
+                WorkoutPartnerRequest(
+                    fromMember = fromMember,
+                    toMember = toMember,
+                    status = WorkoutPartnerRequestStatus.ACCEPT
+                )
+            )
+
+        given(notificationStompService.sendWorkoutPartnerAccept(any()))
             .willAnswer {  }
+
 
         // when & then
         mockMvc.perform(

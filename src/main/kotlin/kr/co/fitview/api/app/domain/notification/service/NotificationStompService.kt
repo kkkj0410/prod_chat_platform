@@ -16,6 +16,8 @@ import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.ErrorCode
 import kr.co.fitview.api.app.global.exception.error.global.GlobalErrorCode
 import org.springframework.stereotype.Service
+import org.springframework.transaction.event.TransactionPhase
+import org.springframework.transaction.event.TransactionalEventListener
 
 @Service
 class NotificationStompService(
@@ -111,7 +113,20 @@ class NotificationStompService(
                 payload = response
             )
         )
+    }
 
+    fun sendWorkoutPartnerAccept(workoutPartnerRequest : WorkoutPartnerRequest){
+        val findMemberProfile = memberQueryService.findMemberWorkoutRequestProfileFrom(workoutPartnerRequest.getToMemberId())
+            ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
+
+        stompPublisher.sendToUser(
+            memberId = workoutPartnerRequest.getFromMemberId(),
+            destination = StompConstant.SUB_WORKOUT_PARTNER,
+            payload = WsResponse(
+                type = WsMessageType.WORKOUT_PARTNER_ACCEPT.code,
+                payload = findMemberProfile
+            )
+        )
     }
 
     fun sendGlobalError(memberId : Long, errorCode: ErrorCode) {

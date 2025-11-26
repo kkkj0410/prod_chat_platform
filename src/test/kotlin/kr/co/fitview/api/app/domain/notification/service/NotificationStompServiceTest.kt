@@ -60,6 +60,7 @@ class NotificationStompServiceTest @Autowired constructor(
 
         val response = ChatMessageDetailResponse.of(
             chatRoomId = 123L,
+            isCompleteWorkout = false,
             chatProfile = chatProfile,
             chatMessage = chatMessage,
             otherMemberId = otherMemberId
@@ -113,6 +114,7 @@ class NotificationStompServiceTest @Autowired constructor(
 
         val response = ChatMessageDetailResponse.of(
             chatRoomId = 123L,
+            isCompleteWorkout = false,
             chatProfile = chatProfile,
             chatMessage = workoutMessage,
             otherMemberId = otherMemberId
@@ -240,6 +242,59 @@ class NotificationStompServiceTest @Autowired constructor(
             StompConstant.SUB_WORKOUT_PARTNER,
             WsResponse(
                 type = WsMessageType.WORKOUT_PARTNER_REQUEST.code,
+                payload = response
+            )
+        )
+    }
+
+    @DisplayName("운동 파트너 승인을 처음 요청자에게 전달한다.")
+    @Test
+    fun sendWorkoutPartnerAccept() {
+        // given
+        val fromMember = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+
+        val toMember = Member(
+            email = "email2",
+            password = "password2",
+            role = Role.USER,
+        )
+        memberRepository.save(fromMember)
+        memberRepository.save(toMember)
+
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest, toMember.id!!)
+
+        given(stompPublisher.sendToUser(any(), any(), any())).willAnswer {}
+
+        val workoutPartnerRequest = WorkoutPartnerRequest.of(
+            fromMember = fromMember,
+            toMember = toMember,
+            now = time.nowLocalDateTime
+        )
+        workoutPartnerRequestRepository.save(workoutPartnerRequest)
+
+        val response = MemberWorkoutPartnerProfileResponse(
+            memberId = toMember.id!!,
+            profileImageUrl = signupRequest.profileImageUrl,
+            nickname = signupRequest.nickname,
+        )
+
+
+        // when
+        notificationStompService.sendWorkoutPartnerAccept(
+            workoutPartnerRequest = workoutPartnerRequest
+        )
+
+        // then
+        then(stompPublisher).should().sendToUser(
+            fromMember.id!!,
+            StompConstant.SUB_WORKOUT_PARTNER,
+            WsResponse(
+                type = WsMessageType.WORKOUT_PARTNER_ACCEPT.code,
                 payload = response
             )
         )
