@@ -10,7 +10,7 @@ data class ChatRoomResponse (
     val nickname: String,
     val isRead: Boolean,
     val lastChatMessage : LastChatMessage,
-    val lastWorkoutRequest : LastWorkoutRequestMessage
+    val lastWorkoutRequest : LastWorkoutRequestMessage?
 ){
     companion object {
 
@@ -32,10 +32,6 @@ data class ChatRoomResponse (
                     lastChatMessage = messageMap[profile.chatRoomId]
                         ?: throw IllegalStateException("LastChatMessage missing for chatRoomId=${profile.chatRoomId}"),
                     lastWorkoutRequest = workoutMap[profile.chatRoomId]
-                        ?: LastWorkoutRequestMessage(
-                            status = null,
-                            chatRoomId = null
-                        )
                 )
             }
         }

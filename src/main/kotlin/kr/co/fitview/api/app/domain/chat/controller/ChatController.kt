@@ -73,13 +73,11 @@ class ChatController(
     fun workoutRequestLast(
         @PathVariable
         chatRoomId : Long,
-    ) : ResponseEntity<ApiResponse<LastWorkoutRequestMessage>> {
+    ) : ResponseEntity<ApiResponse<LastWorkoutRequestMessage?>> {
 
         val response = workoutRequestService.findRecentWorkoutRequestFrom(listOf(chatRoomId))
 
-        val lastWorkoutRequest = response.firstOrNull() ?: LastWorkoutRequestMessage(
-            status = null
-        )
+        val lastWorkoutRequest = response.firstOrNull()
 
         return ResponseEntity.ok(ApiResponse.success(lastWorkoutRequest))
     }

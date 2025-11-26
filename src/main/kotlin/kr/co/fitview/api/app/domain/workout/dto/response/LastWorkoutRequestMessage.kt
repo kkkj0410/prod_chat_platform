@@ -4,7 +4,8 @@ import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestSta
 import com.fasterxml.jackson.annotation.JsonIgnore
 
 data class LastWorkoutRequestMessage(
-    val status : WorkoutRequestStatusForResponse? = null,
+    val workoutRequestId : Long,
+    val status : WorkoutRequestStatusForResponse,
 
     @get:JsonIgnore
     val chatRoomId : Long? = null

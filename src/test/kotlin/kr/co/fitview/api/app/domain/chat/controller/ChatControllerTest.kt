@@ -107,6 +107,7 @@ class ChatControllerTest : ControllerTestSupport(){
                     content = "오늘 운동할래?"
                 ),
                 lastWorkoutRequest = LastWorkoutRequestMessage(
+                    workoutRequestId = 123L,
                     status = WorkoutRequestStatusForResponse.PENDING,
                     chatRoomId = 1L
                 )
@@ -131,6 +132,7 @@ class ChatControllerTest : ControllerTestSupport(){
                     location = "스타벅스 앞"
                 ),
                 lastWorkoutRequest = LastWorkoutRequestMessage(
+                    workoutRequestId = 123L,
                     status = WorkoutRequestStatusForResponse.ACCEPT,
                     chatRoomId = 2L
                 )
@@ -151,10 +153,7 @@ class ChatControllerTest : ControllerTestSupport(){
                     memberId = 30L,
                     content = "ㅇㅋ 내일 보자"
                 ),
-                lastWorkoutRequest = LastWorkoutRequestMessage(
-                    status = null,
-                    chatRoomId = 3L
-                )
+                lastWorkoutRequest = null
             )
         )
 
@@ -185,6 +184,9 @@ class ChatControllerTest : ControllerTestSupport(){
             .andExpect(jsonPath("$.data.content[0].chatRoomId").value(1))
             .andExpect(jsonPath("$.data.content[0].nickname").value("철수"))
             .andExpect(jsonPath("$.data.content[0].lastChatMessage.chatMessageId").value(101))
+
+            .andExpect(jsonPath("$.data.content[0].lastWorkoutRequest.workoutRequestId").value(123L))
+            .andExpect(jsonPath("$.data.content[0].lastWorkoutRequest.status").value("PENDING"))
 
             .andExpect(jsonPath("$.data.pagination.size").value(10))
             .andExpect(jsonPath("$.data.pagination.hasNext").value(false))
@@ -255,6 +257,7 @@ class ChatControllerTest : ControllerTestSupport(){
 
         // given
         val lastWorkoutRequest = LastWorkoutRequestMessage(
+            workoutRequestId = 123L,
             status = WorkoutRequestStatusForResponse.PENDING,
             chatRoomId = chatRoomId
         )
@@ -271,6 +274,7 @@ class ChatControllerTest : ControllerTestSupport(){
             .andExpect(jsonPath("$.status").exists())
             .andExpect(jsonPath("$.code").value("ok"))
             .andExpect(jsonPath("$.message").value("ok"))
+            .andExpect(jsonPath("$.data.workoutRequestId").value(123L))
             .andExpect(jsonPath("$.data.status").value("PENDING"))
     }
 
