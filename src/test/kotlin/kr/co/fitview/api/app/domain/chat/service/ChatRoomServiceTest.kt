@@ -313,8 +313,8 @@ class ChatRoomServiceTest @Autowired constructor(
                 "location"
             )
 
-        assertThat(content[0].lastWorkoutRequest.status).isNull()
-        assertThat(content[1].lastWorkoutRequest.status).isEqualTo(WorkoutRequestStatusForResponse.PENDING)
+        assertThat(content[0].lastWorkoutRequest).isNull()
+        assertThat(content[1].lastWorkoutRequest!!.status).isEqualTo(WorkoutRequestStatusForResponse.PENDING)
 
         assertThat(response.hasNext()).isEqualTo(false)
     }

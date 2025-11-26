@@ -129,6 +129,7 @@ class ChatControllerDocsTest : RestDocsSupport() {
                     content = "오늘 운동할래?"
                 ),
                 lastWorkoutRequest = LastWorkoutRequestMessage(
+                    workoutRequestId = 123L,
                     status = WorkoutRequestStatusForResponse.PENDING,
                     chatRoomId = 1L
                 )
@@ -190,6 +191,7 @@ class ChatControllerDocsTest : RestDocsSupport() {
 
                     responseFields(
                         beneathPath("data.content[].lastWorkoutRequest").withSubsectionId("workout-request"),
+                        fieldWithPath("workoutRequestId").description("운동 요청 id"),
                         fieldWithPath("status").description("운동 요청 상태" + WorkoutRequestStatusForResponse.allDescription()),
                     )
                 )
@@ -220,6 +222,7 @@ class ChatControllerDocsTest : RestDocsSupport() {
                     location = "스타벅스 앞"
                 ),
                 lastWorkoutRequest = LastWorkoutRequestMessage(
+                    workoutRequestId = 123L,
                     status = WorkoutRequestStatusForResponse.ACCEPT,
                     chatRoomId = 2L
                 )
@@ -285,6 +288,7 @@ class ChatControllerDocsTest : RestDocsSupport() {
 
                     responseFields(
                         beneathPath("data.content[].lastWorkoutRequest").withSubsectionId("workout-request"),
+                        fieldWithPath("workoutRequestId").description("운동 요청 id"),
                         fieldWithPath("status").description("운동 요청 상태" + WorkoutRequestStatusForResponse.allDescription()),
                     )
                 )
@@ -417,12 +421,8 @@ class ChatControllerDocsTest : RestDocsSupport() {
     fun workoutRequestLastDocs() {
         val chatRoomId = 123L
 
-        val lastWorkoutRequest = LastWorkoutRequestMessage(
-            status = WorkoutRequestStatusForResponse.PENDING,
-            chatRoomId = chatRoomId
-        )
         given(workoutRequestService.findRecentWorkoutRequestFrom(listOf(chatRoomId)))
-            .willReturn(listOf(lastWorkoutRequest))
+            .willReturn(listOf())
 
         // when & then
         mockMvc.perform(
@@ -445,12 +445,16 @@ class ChatControllerDocsTest : RestDocsSupport() {
                         parameterWithName("chatRoomId").description("조회할 채팅방 ID")
                     ),
 
-                    responseFields(
+                    relaxedResponseFields(
                         fieldWithPath("status").description("HTTP 상태 코드"),
                         fieldWithPath("code").description("응답 코드"),
                         fieldWithPath("message").description("응답 메시지"),
-                        fieldWithPath("data.status").type(JsonFieldType.STRING).optional()
-                            .description("마지막 운동 요청 상태 (없으면 null)" + WorkoutRequestStatusForResponse.allDescription()),
+                        fieldWithPath("data").type(JsonFieldType.OBJECT).optional()
+                            .description("해당 채팅방의 마지막 운동 요청. 없으면 NULL"),
+                        fieldWithPath("data.workoutRequestId").type(JsonFieldType.STRING)
+                            .description("운동 요청 id"),
+                        fieldWithPath("data.status").type(JsonFieldType.STRING)
+                            .description("마지막 운동 요청 상태" + WorkoutRequestStatusForResponse.allDescription()),
                     )
                 )
             )

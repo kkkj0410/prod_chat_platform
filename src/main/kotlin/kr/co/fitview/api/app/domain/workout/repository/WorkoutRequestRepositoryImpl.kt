@@ -25,6 +25,7 @@ class WorkoutRequestRepositoryImpl(
         val sql = """
         WITH RankedRequests AS (
             SELECT
+                wr.workout_request_id,
                 wr.status,
                 wr.requested_at,
                 wr.scheduled_at,
@@ -39,6 +40,7 @@ class WorkoutRequestRepositoryImpl(
             WHERE cm.chat_room_id IN ($inClause)
         )
         SELECT 
+        r.workout_request_id,
         r.status,
         r.requested_at,
         r.scheduled_at,
@@ -55,13 +57,15 @@ class WorkoutRequestRepositoryImpl(
 
 
         return result.map { r ->
-            val dbStatusStr = r[0] as String?
+            val workoutRequestId = r[0] as Long
+            val dbStatusStr = r[1] as String?
             val dbStatus = dbStatusStr?.let { WorkoutRequestStatus.valueOf(it) }
-            val requestedAt = (r[1] as Timestamp).toLocalDateTime()
-            val scheduledAt = (r[2] as Timestamp).toLocalDateTime()
-            val chatRoomId = r[3] as Long
+            val requestedAt = (r[2] as Timestamp).toLocalDateTime()
+            val scheduledAt = (r[3] as Timestamp).toLocalDateTime()
+            val chatRoomId = r[4] as Long
 
             LastWorkoutRequestMessage(
+                workoutRequestId = workoutRequestId,
                 status = WorkoutRequestStatusForResponse.from(
                     dbStatus!!,
                     requestedAt,
