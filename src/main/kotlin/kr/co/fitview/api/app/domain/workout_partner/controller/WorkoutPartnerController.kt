@@ -6,6 +6,8 @@ import kr.co.fitview.api.app.domain.workout_partner.condition.WorkoutPartnerRequ
 import kr.co.fitview.api.app.domain.workout_partner.dto.request.WorkoutPartnerCreateRequest
 import kr.co.fitview.api.app.domain.workout_partner.dto.request.WorkoutPartnerUpdateRequest
 import kr.co.fitview.api.app.domain.workout_partner.dto.response.WorkoutPartnerRequestResponse
+import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartnerRequest
+import kr.co.fitview.api.app.domain.workout_partner.entity.enums.WorkoutPartnerRequestStatus
 import kr.co.fitview.api.app.domain.workout_partner.service.WorkoutPartnerRequestService
 import kr.co.fitview.api.app.global.dto.ApiResponse
 import kr.co.fitview.api.app.global.dto.SuccessCursorPagedResponse
@@ -48,10 +50,17 @@ class WorkoutPartnerController(
         request : WorkoutPartnerUpdateRequest
     ) : ResponseEntity<ApiResponse<*>> {
 
-        workoutPartnerRequestService.updateWorkoutPartnerRequest(securityUtil.getMemberId(), workoutPartnerRequestId, request.toServiceRequest())
+        val workoutPartnerRequest = workoutPartnerRequestService.updateWorkoutPartnerRequest(securityUtil.getMemberId(), workoutPartnerRequestId, request.toServiceRequest())
+
+        if(isAccept(workoutPartnerRequest)){
+            notificationStompService.sendWorkoutPartnerAccept(
+                workoutPartnerRequest = workoutPartnerRequest
+            )
+        }
 
         return ResponseEntity.ok(ApiResponse.success("ok"))
     }
+
 
     @GetMapping("/workout-partner-requests")
     fun workoutPartnerRequestList(
@@ -68,5 +77,9 @@ class WorkoutPartnerController(
             )
         )
     }
+
+    private fun isAccept(workoutPartnerRequest: WorkoutPartnerRequest): Boolean
+            =  workoutPartnerRequest.status == WorkoutPartnerRequestStatus.ACCEPT
+
 
 }

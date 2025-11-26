@@ -43,14 +43,14 @@ class WorkoutPartnerRequestService(
         // 정식상으로 다시 validate 활성화 필요
 //        validateAddWorkoutPartnerRequest(findWorkoutPartner)
 
-        val workoutPartner = WorkoutPartnerRequest(
-            memberReferenceProvider.findMemberReferenceFrom(memberId),
-            memberReferenceProvider.findMemberReferenceFrom(request.memberId),
-            WorkoutPartnerRequestStatus.PENDING,
-            time.nowLocalDateTime
+        val workoutPartnerRequest = WorkoutPartnerRequest.of(
+            fromMember = memberReferenceProvider.findMemberReferenceFrom(memberId),
+            toMember = memberReferenceProvider.findMemberReferenceFrom(request.memberId),
+            now = time.nowLocalDateTime,
+            content = request.workoutPartnerRequestContentIndex
         )
 
-        val savedWorkoutPartner = workoutPartnerRequestRepository.save(workoutPartner)
+        val savedWorkoutPartner = workoutPartnerRequestRepository.save(workoutPartnerRequest)
 
 
         return savedWorkoutPartner
