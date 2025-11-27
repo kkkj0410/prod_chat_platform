@@ -20,6 +20,19 @@ include::{snippets}/member-delete/request-headers.adoc[]
 include::{snippets}/member-delete/http-response.adoc[]
 include::{snippets}/member-delete/response-fields.adoc[]
 
+[[member-patch]]
+=== 본인 사용자 정보 수정
+null이 아닌 필드에 한해서 사용자 정보 수정
+
+==== HTTP Request
+include::{snippets}/member-patch/http-request.adoc[]
+include::{snippets}/member-patch/request-fields.adoc[]
+include::{snippets}/member-patch/request-headers.adoc[]
+
+==== HTTP Response
+include::{snippets}/member-patch/http-response.adoc[]
+include::{snippets}/member-patch/response-fields.adoc[]
+
 [[member-address-details]]
 === 본인 주소 조회 API
 
