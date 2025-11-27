@@ -111,8 +111,9 @@ class MemberService(
         condition: MemberLocalCondition,
         seed: Long
     ): Page<MemberLocalResponse> {
+        val randomId = 123L
 
-        val findMembers = memberRepository.findMemberWithinLocal(memberId, condition)
+        val findMembers = memberRepository.findMemberWithinLocal(memberId, randomId, condition)
 
         val random = Random(seed)
         val shuffledMembers = findMembers.shuffled(random)

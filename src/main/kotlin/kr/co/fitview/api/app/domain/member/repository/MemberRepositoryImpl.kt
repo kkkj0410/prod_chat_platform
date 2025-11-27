@@ -23,15 +23,17 @@ import kr.co.fitview.api.app.domain.member.entity.QWorkoutTime.workoutTime
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutExperience
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutGoal
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutStyle
+import kr.co.fitview.api.app.global.time.Time
 
 
 class MemberRepositoryImpl(
     private val queryFactory: JPAQueryFactory,
-    private val em: EntityManager
+    private val em: EntityManager,
+    private val time : Time
 ) : MemberRepositoryCustom {
 
 
-    override fun findMemberWithinLocal(memberId: Long, condition: MemberLocalCondition): List<MemberLocalResponse> {
+    override fun findMemberWithinLocal(memberId: Long, randomMemberId : Long,condition: MemberLocalCondition): List<MemberLocalResponse> {
 
 //        SELECT a.*
 //                from member m

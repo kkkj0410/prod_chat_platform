@@ -2,6 +2,7 @@ package kr.co.fitview.api.app.global.time
 
 import org.springframework.stereotype.Component
 import java.time.Instant
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
 
@@ -17,6 +18,9 @@ class TimeProvider() : Time{
 
     override val nowLocalDateTime: LocalDateTime
         get() = LocalDateTime.now()
+
+    override val nowLocalDate: LocalDate
+        get() = LocalDate.now()
 
     override val nowInstant: Instant
         get() = Instant.now()

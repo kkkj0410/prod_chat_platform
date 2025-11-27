@@ -15,7 +15,27 @@ object TestDataFactory {
     fun oAuth2SignupRequest(
         profileImageUrl: String = "profileImageUrl",
         nickname: String = "nickname",
-        gender: Gender = Gender.MALE
+        gender: Gender = Gender.MALE,
+        birthday: LocalDate = LocalDate.of(2000, 1, 1),
+        height: Int = 170,
+        weight: Int = 65,
+        workoutExperience: MemberWorkoutExperience = MemberWorkoutExperience.JUST_STARTED,
+        workoutStyle: MemberWorkoutStyle = MemberWorkoutStyle.STRENGTH,
+        workoutTimes: List<WorkoutTimeName> = listOf(
+            WorkoutTimeName.WEEKDAY_DAWN,
+            WorkoutTimeName.WEEKDAY_EVENING
+        ),
+        workoutGoal: MemberWorkoutGoal = MemberWorkoutGoal.PERFORMANCE_GOAL,
+        workoutImageUrls: List<String> = listOf("imageUrl1", "imageUrl2"),
+        intro: String = "intro",
+        address: AddressCreateServiceRequest = AddressCreateServiceRequest(
+            siDo = AddressSiDo.SEOUL,
+            siGunGu = "강남구",
+            eupMyeonDong = "역삼동",
+            lat = 37.4979,
+            lng = 127.0276,
+            fullAddress = "서울특별시 강남구 테헤란로 123"
+        )
     ): OAuth2SignupServiceRequest {
         return OAuth2SignupServiceRequest(
             profileImageUrl = profileImageUrl,

@@ -12,5 +12,7 @@ interface Time {
 
     val nowLocalDateTime: LocalDateTime
 
+    val nowLocalDate : LocalDate
+
     val nowInstant : Instant
 }

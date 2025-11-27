@@ -11,6 +11,7 @@ import java.time.LocalDate
 data class MemberUpdateRequest(
 
     val profileImageUrl : String?,
+    val nickname : String?,
     val intro: String?,
     val height : Int?,
     val weight : Int?,

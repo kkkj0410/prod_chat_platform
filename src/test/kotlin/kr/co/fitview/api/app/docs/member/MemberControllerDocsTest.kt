@@ -201,6 +201,7 @@ class MemberControllerDocsTest : RestDocsSupport() {
 
         val request = MemberUpdateRequest(
             profileImageUrl = "https://example.com/images/profile.jpg",
+            nickname = "nickname",
             intro = "안녕하세요! 운동 열심히 하고 있습니다.",
             height = 175,
             weight = 68,
@@ -238,6 +239,8 @@ class MemberControllerDocsTest : RestDocsSupport() {
                     requestFields(
                         fieldWithPath("profileImageUrl").type(JsonFieldType.STRING).optional()
                             .description("사용자 프로필 이미지 URL"),
+                        fieldWithPath("nickname").type(JsonFieldType.STRING).optional()
+                            .description("회원 별명"),
                         fieldWithPath("intro").type(JsonFieldType.STRING).optional()
                             .description("사용자 소개글"),
                         fieldWithPath("height").type(JsonFieldType.NUMBER).optional()

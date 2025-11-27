@@ -39,7 +39,6 @@ class MemberController(
         @RequestBody
         request : MemberUpdateRequest
     ) : ResponseEntity<ApiResponse<*>> {
-//        val response = memberService.findMemberProfile(securityUtil.getMemberId())
 
         return ResponseEntity.ok(ApiResponse.success("ok"))
     }
