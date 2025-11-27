@@ -236,7 +236,7 @@ class MemberControllerDocsTest : RestDocsSupport() {
 
 
                     requestFields(
-                        fieldWithPath("profileImageUrl").type(JsonFieldType.STRING)
+                        fieldWithPath("profileImageUrl").type(JsonFieldType.STRING).optional()
                             .description("사용자 프로필 이미지 URL"),
                         fieldWithPath("intro").type(JsonFieldType.STRING).optional()
                             .description("사용자 소개글"),
