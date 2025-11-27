@@ -41,23 +41,16 @@ object TestDataFactory {
             profileImageUrl = profileImageUrl,
             nickname = nickname,
             gender = gender,
-            birthday = LocalDate.of(2000, 1, 1),
-            height = 170,
-            weight = 65,
-            workoutExperience = MemberWorkoutExperience.JUST_STARTED,
-            workoutStyle = MemberWorkoutStyle.STRENGTH,
-            workoutTimes = listOf(WorkoutTimeName.WEEKDAY_DAWN, WorkoutTimeName.WEEKDAY_EVENING),
-            workoutGoal = MemberWorkoutGoal.PERFORMANCE_GOAL,
-            workoutImageUrls = listOf("imageUrl1", "imageUrl2"),
-            intro = "intro",
-            address = AddressCreateServiceRequest(
-                siDo = AddressSiDo.SEOUL,
-                siGunGu = "강남구",
-                eupMyeonDong = "역삼동",
-                lat = 37.4979,
-                lng = 127.0276,
-                fullAddress = "서울특별시 강남구 테헤란로 123"
-            )
+            birthday = birthday,
+            height = height,
+            weight = weight,
+            workoutExperience = workoutExperience,
+            workoutStyle = workoutStyle,
+            workoutTimes = workoutTimes,
+            workoutGoal = workoutGoal,
+            workoutImageUrls = workoutImageUrls,
+            intro = intro,
+            address = address
         )
     }
 }

@@ -80,6 +80,10 @@ class AddressService(
         return AddressResponse.from(findAddress)
     }
 
+    fun findAddressEntityFrom(memberId : Long) : Address?{
+        return addressRepository.findByMemberIdAndDeletedAtIsNull(memberId)
+    }
+
     fun findAddressFromAddressId(addressId: Long): AddressDetailResponse {
         val findAddress = addressRepository.findByIdAndDeletedAtIsNull(addressId)
         if (isNull(findAddress)) {
@@ -92,6 +96,7 @@ class AddressService(
 
         return AddressDetailResponse.from(findAddress)
     }
+
 
     private fun isNull(value: Any?) =
         value == null

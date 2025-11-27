@@ -2,19 +2,16 @@ package kr.co.fitview.api.app.domain.member.repository
 
 import com.querydsl.core.types.Projections
 import com.querydsl.core.types.dsl.BooleanExpression
-import com.querydsl.core.types.dsl.CaseBuilder
 import com.querydsl.core.types.dsl.Expressions
-import com.querydsl.jpa.JPAExpressions
-import com.querydsl.jpa.JPAExpressions.select
 import com.querydsl.jpa.impl.JPAQueryFactory
 import jakarta.persistence.EntityManager
-import kr.co.fitview.api.app.domain.address.entity.QAddress
 import kr.co.fitview.api.app.domain.address.entity.QAddress.address
 import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
 import kr.co.fitview.api.app.domain.image.entity.QImage.image
 import kr.co.fitview.api.app.domain.image.entity.QMemberImage.memberImage
 import kr.co.fitview.api.app.domain.image.entity.enums.MemberImageType
 import kr.co.fitview.api.app.domain.member.condition.MemberLocalCondition
+import kr.co.fitview.api.app.domain.member.dto.BoundingBox
 import kr.co.fitview.api.app.domain.member.dto.request.Age
 import kr.co.fitview.api.app.domain.member.dto.response.*
 import kr.co.fitview.api.app.domain.member.entity.QMember
@@ -24,6 +21,9 @@ import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutExperience
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutGoal
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutStyle
 import kr.co.fitview.api.app.global.time.Time
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Slice
+import org.springframework.data.domain.SliceImpl
 
 
 class MemberRepositoryImpl(
@@ -33,50 +33,63 @@ class MemberRepositoryImpl(
 ) : MemberRepositoryCustom {
 
 
-    override fun findMemberWithinLocal(memberId: Long, randomMemberId : Long,condition: MemberLocalCondition): List<MemberLocalResponse> {
+    override fun findMemberWithinLocal(memberId: Long, randomMemberId : Long, boundingBox : BoundingBox, condition: MemberLocalCondition): List<MemberLocalResponse> {
 
-//        SELECT a.*
-//                from member m
-//        join address a
-//        on m.member_id = a.member_id
-//                WHERE a.lat BETWEEN
-//        (SELECT lat - radius_km/111 FROM address WHERE member_id = 30)
-//        AND (SELECT lat + radius_km/111 FROM address WHERE member_id = 30)
-//        AND a.lng BETWEEN
-//        (SELECT lng - radius_km/(111 * COS(RADIANS(lat))) FROM address WHERE member_id = 30)
-//        AND (SELECT lng + radius_km/(111 * COS(RADIANS(lat))) FROM address WHERE member_id = 30);
+        val MAX_FETCH = 100
 
-        val defaultLat = 37.4900861966502
-        val defaultLng = 127.01953478052
+        val left = findMemberWithinLocalByCondition(
+            randomMemberId,
+            memberId,
+            boundingBox,
+            condition,
+            isLeft = true,
+            size = MAX_FETCH
+        )
 
-        val subAddress1 = QAddress("subAddress1")
-        val subAddress2 = QAddress("subAddress2")
-        val subAddress3 = QAddress("subAddress3")
-        val subAddress4 = QAddress("subAddress4")
+        val remain = MAX_FETCH - left.size
 
-        val subLat1 = CaseBuilder()
-            .`when`(subAddress1.siDo.eq(AddressSiDo.SEOUL))
-            .then(subAddress1.lat)
-            .otherwise(defaultLat)
+        val right =
+            if (remain > 0)
+                findMemberWithinLocalByCondition(
+                    randomMemberId,
+                    memberId,
+                    boundingBox,
+                    condition,
+                    isLeft = false,
+                    size = remain
+                )
+            else
+                emptyList()
 
-        val subLat2 = CaseBuilder()
-            .`when`(subAddress2.siDo.eq(AddressSiDo.SEOUL))
-            .then(subAddress2.lat)
-            .otherwise(defaultLat)
+        val combined = left + right
 
-        val subLng3 = CaseBuilder()
-            .`when`(subAddress3.siDo.eq(AddressSiDo.SEOUL))
-            .then(subAddress3.lng)
-            .otherwise(defaultLng)
+        return combined.take(MAX_FETCH)
+    }
 
-        val subLng4 = CaseBuilder()
-            .`when`(subAddress4.siDo.eq(AddressSiDo.SEOUL))
-            .then(subAddress4.lng)
-            .otherwise(defaultLng)
+    private fun findMemberWithinLocalByCondition(
+        randomMemberId: Long,
+        memberId: Long,
+        boundingBox: BoundingBox,
+        condition: MemberLocalCondition,
+        isLeft : Boolean,
+        size : Int
+    ): List<MemberLocalResponse> {
 
-        return queryFactory
+
+        val tuples = queryFactory
             .select(
-                QMemberLocalResponse(
+                address.lat,
+                address.lng
+            )
+            .from(address)
+            .fetch()
+
+        println(tuples)
+
+        val results = queryFactory
+            .select(
+                Projections.constructor(
+                    MemberLocalResponse::class.java,
                     member.id,
                     member.nickname,
                     member.workoutExperience,
@@ -86,10 +99,18 @@ class MemberRepositoryImpl(
                 )
             )
             .from(member)
-            .join(address).on(member.id.eq(address.member.id))
             .join(member.mutableMemberImages, memberImage)
             .join(memberImage.image, image)
+            .join(member.mutableAddresses, address)
             .where(
+                if (isLeft) member.id.loe(randomMemberId) else member.id.gt(randomMemberId),
+                member.id.ne(memberId),
+                address.siDo.eq(AddressSiDo.SEOUL),
+                address.lat.between(0, 2000),
+                address.lat.between(boundingBox.minLat, boundingBox.maxLat),
+                address.lng.between(boundingBox.minLng, boundingBox.maxLng),
+                memberImage.type.eq(MemberImageType.PROFILE),
+                memberImage.deletedAt.isNull,
                 gteHeight(condition.minHeight),
                 lteHeight(condition.maxHeight),
                 gteWeight(condition.minWeight),
@@ -98,47 +119,14 @@ class MemberRepositoryImpl(
                 inWorkoutGoal(condition.workoutGoal),
                 inWorkoutStyle(condition.workoutStyle),
                 betweenWorkoutExperience(condition.minWorkoutExperience, condition.maxWorkoutExperience),
-                member.id.ne(memberId),
-                address.siDo.eq(AddressSiDo.SEOUL),
-
-                address.lat.between(
-                    JPAExpressions.select(subLat1.subtract(subAddress1.radiusKm.divide(111)))
-                        .from(subAddress1)
-                        .where(subAddress1.member.id.eq(memberId)),
-                    JPAExpressions.select(subLat2.add(subAddress2.radiusKm.divide(111)))
-                        .from(subAddress2)
-                        .where(subAddress2.member.id.eq(memberId)),
-
-                    )
-                    .and(
-                        address.lng.between(
-                            JPAExpressions.select(
-                                subLng3.subtract(
-                                    subAddress3.radiusKm.divide(111).divide(
-                                        Expressions.numberTemplate(
-                                            Double::class.java, "COS(RADIANS({0}))", subAddress3.lat
-                                        )
-                                    )
-                                )
-                            ).from(subAddress3).where(subAddress3.member.id.eq(memberId)),
-                            JPAExpressions.select(
-                                subLng4.add(
-                                    subAddress4.radiusKm.divide(111).divide(
-                                        Expressions.numberTemplate(
-                                            Double::class.java, "COS(RADIANS({0}))", subAddress4.lat
-                                        )
-                                    )
-                                )
-                            ).from(subAddress4).where(subAddress4.member.id.eq(memberId))
-                        )
-                    )
-                    .and(
-                        memberImage.type.eq(MemberImageType.PROFILE)
-                    )
             )
-            .limit(100)
+            .orderBy(
+                if (isLeft) member.id.desc() else member.id.asc()
+            )
+            .limit(size.toLong())
             .fetch()
 
+        return results
     }
 
     override fun findAllMemberIdWithinRecommendation(memberId: Long): List<Long> {
@@ -535,7 +523,8 @@ class MemberRepositoryImpl(
 
         val koreanAge = Expressions.numberTemplate(
             Int::class.java,
-            "YEAR(current_date) - YEAR({0}) + 1",
+            "{0} - YEAR({1}) + 1",
+            time.nowLocalDate.year,
             member.birthday
         )
 

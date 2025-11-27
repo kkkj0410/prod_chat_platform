@@ -1,6 +1,8 @@
 package kr.co.fitview.api.app.domain.member.repository
 
+import jakarta.persistence.EntityManager
 import kr.co.fitview.api.app.IntegrationTestSupport
+import kr.co.fitview.api.app.domain.address.constant.AddressConstant
 import kr.co.fitview.api.app.domain.address.dto.request.AddressCreateServiceRequest
 import kr.co.fitview.api.app.domain.address.entity.Address
 import kr.co.fitview.api.app.domain.address.entity.QAddress.address
@@ -8,6 +10,7 @@ import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
 import kr.co.fitview.api.app.domain.address.repository.AddressRepository
 import kr.co.fitview.api.app.domain.image.entity.enums.MemberImageType
 import kr.co.fitview.api.app.domain.member.condition.MemberLocalCondition
+import kr.co.fitview.api.app.domain.member.dto.BoundingBox
 import kr.co.fitview.api.app.domain.member.dto.request.Age
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutExperience
@@ -316,15 +319,23 @@ class MemberRepositoryTest@Autowired constructor(
     }
 
     private fun createBoundingBox(address: Address) : BoundingBox {
+        var lat = address.lat
+        var lng = address.lng
+
+        if(address.siDo != AddressSiDo.SEOUL){
+            lat = AddressConstant.DEFAULT_LAT
+            lng = AddressConstant.DEFAULT_LNG
+        }
+
         val latDeg = address.radiusKm?.div(111)
         val latRad = Math.toRadians(address.lat!!)
         val lngDeg = address.radiusKm?.div(111 * cos(latRad))
 
-        val minLat = address.lat?.minus(latDeg!!)
-        val maxLat = address.lat?.plus(latDeg!!)
+        val minLat = lat?.minus(latDeg!!)
+        val maxLat = lat?.plus(latDeg!!)
 
-        val minLng = address.lng?.minus(lngDeg!!)
-        val maxLng = address.lng?.plus(lngDeg!!)
+        val minLng = lng?.minus(lngDeg!!)
+        val maxLng = lng?.plus(lngDeg!!)
 
         return BoundingBox(
             minLat = minLat!!,
@@ -333,13 +344,6 @@ class MemberRepositoryTest@Autowired constructor(
             maxLng = maxLng!!
         )
     }
-
-    data class BoundingBox(
-        val minLat : Double,
-        val maxLat : Double,
-        val minLng : Double,
-        val maxLng : Double
-    )
 
     @DisplayName("현재 회원 인근에 존재하는 회원을 조회한다.")
     @Test
@@ -363,6 +367,8 @@ class MemberRepositoryTest@Autowired constructor(
         )
         addressRepository.save(address)
 
+        val boundingBox = createBoundingBox(address)
+
         // BoundingBox(minLat=49.909909909909906, maxLat=50.090090090090094, minLng=49.85984470028284, maxLng=50.14015529971716)
 
         val member1 = Member(
@@ -375,7 +381,7 @@ class MemberRepositoryTest@Autowired constructor(
             siDo = AddressSiDo.SEOUL,
             siGunGu = "siGunGu",
             eupMyeonDong = "eupMyeonDong",
-            lat = 49.9,
+            lat = 49.91,
             lng = 50.14,
             fullAddress = "fullAddress"
         )
@@ -425,8 +431,8 @@ class MemberRepositoryTest@Autowired constructor(
             siDo = AddressSiDo.SEOUL,
             siGunGu = "siGunGu",
             eupMyeonDong = "eupMyeonDong",
-            lat = 49.90,
-            lng = 49.85,
+            lat = 49.91,
+            lng = 49.86,
             fullAddress = "fullAddress"
         )
         val signupRequest3 = TestDataFactory.oAuth2SignupRequest(
@@ -485,7 +491,7 @@ class MemberRepositoryTest@Autowired constructor(
         )
 
         // when
-        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, 5, condition)
+        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member5.id!!, boundingBox, condition)
 
         // then
         assertThat(response)
@@ -540,6 +546,7 @@ class MemberRepositoryTest@Autowired constructor(
             radiusKm = 10.0
         )
         addressRepository.save(address)
+        val boundingBox = createBoundingBox(address)
 
         // BoundingBox(minLat=49.909909909909906, maxLat=50.090090090090094, minLng=49.85984470028284, maxLng=50.14015529971716)
 
@@ -553,8 +560,8 @@ class MemberRepositoryTest@Autowired constructor(
             siDo = AddressSiDo.SEOUL,
             siGunGu = "siGunGu",
             eupMyeonDong = "eupMyeonDong",
-            lat = 49.9,
-            lng = 50.14,
+            lat = 50.0,
+            lng = 50.0,
             fullAddress = "fullAddress"
         )
         val signupRequest1 = TestDataFactory.oAuth2SignupRequest(
@@ -603,8 +610,8 @@ class MemberRepositoryTest@Autowired constructor(
             siDo = AddressSiDo.SEOUL,
             siGunGu = "siGunGu",
             eupMyeonDong = "eupMyeonDong",
-            lat = 49.90,
-            lng = 49.85,
+            lat = 50.0,
+            lng = 50.0,
             fullAddress = "fullAddress"
         )
         val signupRequest3 = TestDataFactory.oAuth2SignupRequest(
@@ -643,7 +650,7 @@ class MemberRepositoryTest@Autowired constructor(
         )
 
         // when
-        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, 2L, condition)
+        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member2.id!!, boundingBox, condition)
 
         // then
         assertThat(response).hasSize(3)
@@ -674,6 +681,7 @@ class MemberRepositoryTest@Autowired constructor(
             radiusKm = 10.0
         )
         addressRepository.save(address)
+        val boundingBox = createBoundingBox(address)
 
         // BoundingBox(minLat=49.909909909909906, maxLat=50.090090090090094, minLng=49.85984470028284, maxLng=50.14015529971716)
 
@@ -687,8 +695,8 @@ class MemberRepositoryTest@Autowired constructor(
             siDo = AddressSiDo.SEOUL,
             siGunGu = "siGunGu",
             eupMyeonDong = "eupMyeonDong",
-            lat = 49.9,
-            lng = 50.14,
+            lat = 50.0,
+            lng = 50.0,
             fullAddress = "fullAddress"
         )
         val signupRequest1 = TestDataFactory.oAuth2SignupRequest(
@@ -737,8 +745,8 @@ class MemberRepositoryTest@Autowired constructor(
             siDo = AddressSiDo.SEOUL,
             siGunGu = "siGunGu",
             eupMyeonDong = "eupMyeonDong",
-            lat = 49.90,
-            lng = 49.85,
+            lat = 50.0,
+            lng = 50.0,
             fullAddress = "fullAddress"
         )
         val signupRequest3 = TestDataFactory.oAuth2SignupRequest(
@@ -759,7 +767,7 @@ class MemberRepositoryTest@Autowired constructor(
         )
 
         // when
-        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member3.id!!, condition)
+        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member3.id!!, boundingBox, condition)
 
         // then
         assertThat(response).hasSize(2)
@@ -788,6 +796,8 @@ class MemberRepositoryTest@Autowired constructor(
             radiusKm = 10.0
         )
         addressRepository.save(address)
+        val boundingBox = createBoundingBox(address)
+
 
         // BoundingBox(minLat=49.909909909909906, maxLat=50.090090090090094, minLng=49.85984470028284, maxLng=50.14015529971716)
 
@@ -801,8 +811,8 @@ class MemberRepositoryTest@Autowired constructor(
             siDo = AddressSiDo.SEOUL,
             siGunGu = "siGunGu",
             eupMyeonDong = "eupMyeonDong",
-            lat = 49.9,
-            lng = 50.14,
+            lat = 50.0,
+            lng = 50.0,
             fullAddress = "fullAddress"
         )
         val signupRequest1 = TestDataFactory.oAuth2SignupRequest(
@@ -851,8 +861,8 @@ class MemberRepositoryTest@Autowired constructor(
             siDo = AddressSiDo.SEOUL,
             siGunGu = "siGunGu",
             eupMyeonDong = "eupMyeonDong",
-            lat = 49.90,
-            lng = 49.85,
+            lat = 50.0,
+            lng = 50.0,
             fullAddress = "fullAddress"
         )
         val signupRequest3 = TestDataFactory.oAuth2SignupRequest(
@@ -873,7 +883,7 @@ class MemberRepositoryTest@Autowired constructor(
         )
 
         // when
-        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member3.id!!, condition)
+        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member3.id!!, boundingBox, condition)
 
         // then
         assertThat(response).hasSize(2)
@@ -902,6 +912,7 @@ class MemberRepositoryTest@Autowired constructor(
             radiusKm = 10.0
         )
         addressRepository.save(address)
+        val boundingBox = createBoundingBox(address)
 
         // BoundingBox(minLat=49.909909909909906, maxLat=50.090090090090094, minLng=49.85984470028284, maxLng=50.14015529971716)
 
@@ -915,8 +926,8 @@ class MemberRepositoryTest@Autowired constructor(
             siDo = AddressSiDo.SEOUL,
             siGunGu = "siGunGu",
             eupMyeonDong = "eupMyeonDong",
-            lat = 49.9,
-            lng = 50.14,
+            lat = 50.0,
+            lng = 50.0,
             fullAddress = "fullAddress"
         )
         val signupRequest1 = TestDataFactory.oAuth2SignupRequest(
@@ -957,8 +968,8 @@ class MemberRepositoryTest@Autowired constructor(
             siDo = AddressSiDo.SEOUL,
             siGunGu = "siGunGu",
             eupMyeonDong = "eupMyeonDong",
-            lat = 49.90,
-            lng = 49.85,
+            lat = 50.0,
+            lng = 50.0,
             fullAddress = "fullAddress"
         )
         val signupRequest3 = TestDataFactory.oAuth2SignupRequest(
@@ -975,7 +986,7 @@ class MemberRepositoryTest@Autowired constructor(
         )
 
         // when
-        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member3.id!!, condition)
+        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member3.id!!, boundingBox, condition)
 
         // then
         assertThat(response).hasSize(2)
@@ -1004,6 +1015,8 @@ class MemberRepositoryTest@Autowired constructor(
             radiusKm = 10.0
         )
         addressRepository.save(address)
+        val boundingBox = createBoundingBox(address)
+
 
         // BoundingBox(minLat=49.909909909909906, maxLat=50.090090090090094, minLng=49.85984470028284, maxLng=50.14015529971716)
 
@@ -1017,8 +1030,8 @@ class MemberRepositoryTest@Autowired constructor(
             siDo = AddressSiDo.SEOUL,
             siGunGu = "siGunGu",
             eupMyeonDong = "eupMyeonDong",
-            lat = 49.9,
-            lng = 50.14,
+            lat = 50.0,
+            lng = 50.0,
             fullAddress = "fullAddress"
         )
         val signupRequest1 = TestDataFactory.oAuth2SignupRequest(
@@ -1077,7 +1090,7 @@ class MemberRepositoryTest@Autowired constructor(
         )
 
         // when
-        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member3.id!!, condition)
+        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member3.id!!, boundingBox, condition)
 
         // then
         assertThat(response).hasSize(2)
@@ -1106,8 +1119,8 @@ class MemberRepositoryTest@Autowired constructor(
             radiusKm = 10.0
         )
         addressRepository.save(address)
+        val boundingBox = createBoundingBox(address)
 
-        // BoundingBox(minLat=49.909909909909906, maxLat=50.090090090090094, minLng=49.85984470028284, maxLng=50.14015529971716)
 
         val member1 = Member(
             email = "email1",
@@ -1119,13 +1132,13 @@ class MemberRepositoryTest@Autowired constructor(
             siDo = AddressSiDo.SEOUL,
             siGunGu = "siGunGu",
             eupMyeonDong = "eupMyeonDong",
-            lat = 49.9,
-            lng = 50.14,
+            lat = 50.0,
+            lng = 50.0,
             fullAddress = "fullAddress"
         )
-        val koreanAgeTwentiesLate = time.nowLocalDate.minusYears(Age.TWENTIES_LATE.min.toLong())
+        val koreanAgeTwentiesMidExceed = time.nowLocalDate.minusYears(Age.TWENTIES_MID.max.toLong())
         val signupRequest1 = TestDataFactory.oAuth2SignupRequest(
-            birthday = koreanAgeTwentiesLate,
+            birthday = koreanAgeTwentiesMidExceed,
             address = inAddress1
         )
         oAuth2Service.signup(signupRequest1, member1.id!!)
@@ -1145,7 +1158,7 @@ class MemberRepositoryTest@Autowired constructor(
             lng = 50.00,
             fullAddress = "fullAddress"
         )
-        val koreanAgeTwentiesMid = time.nowLocalDate.minusYears(Age.TWENTIES_MID.max.toLong())
+        val koreanAgeTwentiesMid = time.nowLocalDate.minusYears(Age.TWENTIES_MID.max.toLong() - 1)
         val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
             birthday = koreanAgeTwentiesMid,
             address = inAddress2
@@ -1163,8 +1176,8 @@ class MemberRepositoryTest@Autowired constructor(
             siDo = AddressSiDo.SEOUL,
             siGunGu = "siGunGu",
             eupMyeonDong = "eupMyeonDong",
-            lat = 49.90,
-            lng = 49.85,
+            lat = 50.0,
+            lng = 50.0,
             fullAddress = "fullAddress"
         )
         val koreanAgeFortiesMid = time.nowLocalDate.minusYears(Age.FORTIES_MID.min.toLong())
@@ -1182,7 +1195,7 @@ class MemberRepositoryTest@Autowired constructor(
         )
 
         // when
-        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member3.id!!, condition)
+        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member3.id!!, boundingBox, condition)
 
         // then
         assertThat(response).hasSize(2)
@@ -1212,6 +1225,8 @@ class MemberRepositoryTest@Autowired constructor(
             radiusKm = 10.0
         )
         addressRepository.save(address)
+        val boundingBox = createBoundingBox(address)
+
 
         // BoundingBox(minLat=49.909909909909906, maxLat=50.090090090090094, minLng=49.85984470028284, maxLng=50.14015529971716)
 
@@ -1263,7 +1278,7 @@ class MemberRepositoryTest@Autowired constructor(
         )
 
         // when
-        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member2.id!!, condition)
+        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member2.id!!, boundingBox, condition)
 
         // then
         assertThat(response).hasSize(1)
@@ -1291,6 +1306,8 @@ class MemberRepositoryTest@Autowired constructor(
             radiusKm = 10.0
         )
         addressRepository.save(address)
+        val boundingBox = createBoundingBox(address)
+
 
         // BoundingBox(minLat=49.909909909909906, maxLat=50.090090090090094, minLng=49.85984470028284, maxLng=50.14015529971716)
 
@@ -1304,8 +1321,8 @@ class MemberRepositoryTest@Autowired constructor(
             siDo = AddressSiDo.SEOUL,
             siGunGu = "siGunGu",
             eupMyeonDong = "eupMyeonDong",
-            lat = 49.9,
-            lng = 50.14,
+            lat = 50.0,
+            lng = 50.00,
             fullAddress = "fullAddress"
         )
         val signupRequest1 = TestDataFactory.oAuth2SignupRequest(
@@ -1342,7 +1359,7 @@ class MemberRepositoryTest@Autowired constructor(
         )
 
         // when
-        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member2.id!!, condition)
+        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member2.id!!, boundingBox, condition)
 
         // then
         assertThat(response).hasSize(1)
@@ -1370,6 +1387,8 @@ class MemberRepositoryTest@Autowired constructor(
             radiusKm = 10.0
         )
         addressRepository.save(address)
+        val boundingBox = createBoundingBox(address)
+
 
         // BoundingBox(minLat=49.909909909909906, maxLat=50.090090090090094, minLng=49.85984470028284, maxLng=50.14015529971716)
 
@@ -1388,7 +1407,7 @@ class MemberRepositoryTest@Autowired constructor(
             fullAddress = "fullAddress"
         )
         val signupRequest1 = TestDataFactory.oAuth2SignupRequest(
-            weight = 50,
+            weight = 49,
             address = inAddress1
         )
         oAuth2Service.signup(signupRequest1, member1.id!!)
@@ -1409,7 +1428,7 @@ class MemberRepositoryTest@Autowired constructor(
             fullAddress = "fullAddress"
         )
         val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
-            weight = 51,
+            weight = 50,
             address = inAddress2
         )
         oAuth2Service.signup(signupRequest2, member2.id!!)
@@ -1421,11 +1440,11 @@ class MemberRepositoryTest@Autowired constructor(
         )
 
         // when
-        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member2.id!!, condition)
+        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member2.id!!, boundingBox, condition)
 
         // then
         assertThat(response).hasSize(1)
-        assertThat(response[0].memberId).isEqualTo(member1.id!!)
+        assertThat(response[0].memberId).isEqualTo(member2.id!!)
     }
 
     @DisplayName("인근 회원 조회 시, 최대 체중 이하의 회원만 조회한다.")
@@ -1449,6 +1468,8 @@ class MemberRepositoryTest@Autowired constructor(
             radiusKm = 10.0
         )
         addressRepository.save(address)
+        val boundingBox = createBoundingBox(address)
+
 
         // BoundingBox(minLat=49.909909909909906, maxLat=50.090090090090094, minLng=49.85984470028284, maxLng=50.14015529971716)
 
@@ -1500,7 +1521,93 @@ class MemberRepositoryTest@Autowired constructor(
         )
 
         // when
-        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member2.id!!, condition)
+        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member2.id!!, boundingBox, condition)
+
+        // then
+        assertThat(response).hasSize(1)
+        assertThat(response[0].memberId).isEqualTo(member2.id!!)
+    }
+
+    @DisplayName("인근 회원 조회 시, 본인은 조회되지 않는다.")
+    @Test
+    fun findMemberWithinLocalNotMe() {
+        // given
+        val baseMember = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        memberRepository.save(baseMember)
+        val baseAddress = AddressCreateServiceRequest(
+            siDo = AddressSiDo.SEOUL,
+            siGunGu = "siGunGu",
+            eupMyeonDong = "eupMyeonDong",
+            lat = 50.0,
+            lng = 50.0,
+            fullAddress = "fullAddress",
+        )
+        val baseSignupRequest = TestDataFactory.oAuth2SignupRequest(
+            weight = 81,
+            address = baseAddress
+        )
+        oAuth2Service.signup(baseSignupRequest, baseMember.id!!)
+        val findAddress = addressRepository.findByMemberIdAndDeletedAtIsNull(baseMember.id!!)
+        findAddress!!.radiusKm = 10.0
+
+        val boundingBox = createBoundingBox(findAddress)
+
+
+        // BoundingBox(minLat=49.909909909909906, maxLat=50.090090090090094, minLng=49.85984470028284, maxLng=50.14015529971716)
+
+        val member1 = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(member1)
+        val inAddress1 = AddressCreateServiceRequest(
+            siDo = AddressSiDo.SEOUL,
+            siGunGu = "siGunGu",
+            eupMyeonDong = "eupMyeonDong",
+            lat = 49.9,
+            lng = 50.14,
+            fullAddress = "fullAddress"
+        )
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest(
+            weight = 81,
+            address = inAddress1
+        )
+        oAuth2Service.signup(signupRequest1, member1.id!!)
+
+
+        val member2 = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(member2)
+        val inAddress2 = AddressCreateServiceRequest(
+            siDo = AddressSiDo.SEOUL,
+            siGunGu = "siGunGu",
+            eupMyeonDong = "eupMyeonDong",
+            lat = 50.00,
+            lng = 50.00,
+            fullAddress = "fullAddress"
+        )
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            weight = 80,
+            address = inAddress2
+        )
+        oAuth2Service.signup(signupRequest2, member2.id!!)
+
+        val condition = MemberLocalCondition(
+            size = 10,
+            page = 1,
+            maxWeight = 80
+        )
+
+        // when
+        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member2.id!!,boundingBox, condition)
 
         // then
         assertThat(response).hasSize(1)

@@ -1,6 +1,11 @@
 package kr.co.fitview.api.app.domain.member.service
 
+import kr.co.fitview.api.app.domain.address.constant.AddressConstant
+import kr.co.fitview.api.app.domain.address.entity.Address
+import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
+import kr.co.fitview.api.app.domain.address.service.AddressService
 import kr.co.fitview.api.app.domain.member.condition.MemberLocalCondition
+import kr.co.fitview.api.app.domain.member.dto.BoundingBox
 import kr.co.fitview.api.app.domain.member.dto.response.*
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.entity.WorkoutTime
@@ -17,6 +22,7 @@ import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import kotlin.math.cos
 import kotlin.random.Random
 
 
@@ -26,6 +32,7 @@ class MemberService(
     private val memberRepository : MemberRepository,
     private val workoutTimeRepository: WorkoutTimeRepository,
     private val workoutPartnerService : WorkoutPartnerService,
+    private val addressService : AddressService,
     private val time : Time
 ) {
 
@@ -113,7 +120,11 @@ class MemberService(
     ): Page<MemberLocalResponse> {
         val randomId = 123L
 
-        val findMembers = memberRepository.findMemberWithinLocal(memberId, randomId, condition)
+        val findAddress = addressService.findAddressEntityFrom(memberId)
+
+        val boundingBox = createBoundingBox(findAddress!!)
+
+        val findMembers = memberRepository.findMemberWithinLocal(memberId, randomId, boundingBox, condition)
 
         val random = Random(seed)
         val shuffledMembers = findMembers.shuffled(random)
@@ -175,5 +186,30 @@ class MemberService(
         .map { WorkoutTime(member = member, name = it) }
 
 
+    private fun createBoundingBox(address: Address) : BoundingBox {
+        var lat = address.lat
+        var lng = address.lng
 
+        if(address.siDo != AddressSiDo.SEOUL){
+            lat = AddressConstant.DEFAULT_LAT
+            lng = AddressConstant.DEFAULT_LNG
+        }
+
+        val latDeg = address.radiusKm?.div(111)
+        val latRad = Math.toRadians(address.lat!!)
+        val lngDeg = address.radiusKm?.div(111 * cos(latRad))
+
+        val minLat = lat?.minus(latDeg!!)
+        val maxLat = lat?.plus(latDeg!!)
+
+        val minLng = lng?.minus(lngDeg!!)
+        val maxLng = lng?.plus(lngDeg!!)
+
+        return BoundingBox(
+            minLat = minLat!!,
+            maxLat = maxLat!!,
+            minLng = minLng!!,
+            maxLng = maxLng!!
+        )
+    }
 }
