@@ -6,8 +6,10 @@ import kr.co.fitview.api.app.docs.RestDocsSupport
 import kr.co.fitview.api.app.domain.address.dto.response.AddressResponse
 import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
 import kr.co.fitview.api.app.domain.address.service.AddressService
+import kr.co.fitview.api.app.domain.image.enums.S3Prefix
 import kr.co.fitview.api.app.domain.member.controller.MemberController
 import kr.co.fitview.api.app.domain.member.dto.request.Age
+import kr.co.fitview.api.app.domain.member.dto.request.MemberUpdateRequest
 import kr.co.fitview.api.app.domain.member.dto.response.*
 import kr.co.fitview.api.app.domain.member.dto.response.enums.ProfileWorkoutPartnerStatus
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutExperience
@@ -27,6 +29,7 @@ import org.mockito.kotlin.given
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
+import org.springframework.http.MediaType
 import org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document
 import org.springframework.restdocs.operation.preprocess.Preprocessors.*
@@ -39,6 +42,7 @@ import org.springframework.restdocs.request.RequestDocumentation.queryParameters
 
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.time.LocalDate
@@ -175,6 +179,83 @@ class MemberControllerDocsTest : RestDocsSupport() {
 
                     requestHeaders(
                         RestDocsHeaders.authorizationHeader(Role.USER)
+                    ),
+
+                    responseFields(
+                        fieldWithPath("status").type(JsonFieldType.NUMBER)
+                            .description("상태"),
+                        fieldWithPath("code").type(JsonFieldType.STRING)
+                            .description("코드"),
+                        fieldWithPath("message").type(JsonFieldType.STRING)
+                            .description("에러 메시지"),
+                        fieldWithPath("data").type(JsonFieldType.STRING)
+                            .description("응답 데이터"),
+                    )
+                )
+            )
+    }
+
+    @DisplayName("사용자 본인 수정 API")
+    @Test
+    fun memberModify() {
+
+        val request = MemberUpdateRequest(
+            profileImageUrl = "https://example.com/images/profile.jpg",
+            intro = "안녕하세요! 운동 열심히 하고 있습니다.",
+            height = 175,
+            weight = 68,
+            birthday = LocalDate.of(1995, 5, 20),
+            workoutExperience = MemberWorkoutExperience.FOUR_TO_SIX_YEARS,
+            workoutStyle = MemberWorkoutStyle.STRENGTH,
+            workoutGoal = MemberWorkoutGoal.PERFORMANCE_GOAL,
+            workoutTimes = listOf(WorkoutTimeName.WEEKDAY_DAWN, WorkoutTimeName.WEEKDAY_MORNING),
+            workoutImageUrls = listOf(
+                "https://example.com/images/workout1.jpg",
+                "https://example.com/images/workout2.jpg"
+            )
+        )
+
+        // when & then
+        mockMvc.perform(
+            patch("/api/v1/members/me")
+                .header("Authorization", "Bearer jwt-token")
+                .content(objectMapper.writeValueAsString(request))
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andDo(
+                document(
+                    "member-patch",
+                    preprocessRequest(prettyPrint()),
+                    preprocessResponse(prettyPrint()),
+
+                    requestHeaders(
+                        RestDocsHeaders.authorizationHeader(Role.USER)
+                    ),
+
+
+                    requestFields(
+                        fieldWithPath("profileImageUrl").type(JsonFieldType.STRING)
+                            .description("사용자 프로필 이미지 URL"),
+                        fieldWithPath("intro").type(JsonFieldType.STRING).optional()
+                            .description("사용자 소개글"),
+                        fieldWithPath("height").type(JsonFieldType.NUMBER).optional()
+                            .description("사용자 키(cm)"),
+                        fieldWithPath("weight").type(JsonFieldType.NUMBER).optional()
+                            .description("사용자 몸무게(kg)"),
+                        fieldWithPath("birthday").type(JsonFieldType.STRING).optional()
+                            .description("사용자 생년월일(YYYY-MM-DD)"),
+                        fieldWithPath("workoutExperience").type(JsonFieldType.STRING).optional()
+                            .description("사용자 운동 경험" + MemberWorkoutExperience.allDescription()),
+                        fieldWithPath("workoutStyle").type(JsonFieldType.STRING).optional()
+                            .description("사용자 운동 스타일" + MemberWorkoutStyle.allDescription()),
+                        fieldWithPath("workoutGoal").type(JsonFieldType.STRING).optional()
+                            .description("사용자 운동 목표" + MemberWorkoutGoal.allDescription()),
+                        fieldWithPath("workoutTimes").type(JsonFieldType.ARRAY).optional()
+                            .description("사용자 운동 가능 시간 리스트" + WorkoutTimeName.allDescription()),
+                        fieldWithPath("workoutImageUrls").type(JsonFieldType.ARRAY).optional()
+                            .description("사용자가 등록한 운동 사진 URL 리스트")
                     ),
 
                     responseFields(

@@ -3,6 +3,7 @@ package kr.co.fitview.api.app.domain.member.controller
 import kr.co.fitview.api.app.domain.address.service.AddressService
 import kr.co.fitview.api.app.domain.member.condition.MemberLocalCondition
 import kr.co.fitview.api.app.domain.address.dto.response.AddressResponse
+import kr.co.fitview.api.app.domain.member.dto.request.MemberUpdateRequest
 import kr.co.fitview.api.app.domain.member.dto.response.*
 import kr.co.fitview.api.app.domain.member.service.MemberService
 import kr.co.fitview.api.app.global.dto.ApiResponse
@@ -30,6 +31,16 @@ class MemberController(
     @DeleteMapping("/me")
     fun memberRemove() : ResponseEntity<ApiResponse<*>> {
         memberService.removeMember(securityUtil.getMemberId())
+        return ResponseEntity.ok(ApiResponse.success("ok"))
+    }
+
+    @PatchMapping("/me")
+    fun memberModify(
+        @RequestBody
+        request : MemberUpdateRequest
+    ) : ResponseEntity<ApiResponse<*>> {
+//        val response = memberService.findMemberProfile(securityUtil.getMemberId())
+
         return ResponseEntity.ok(ApiResponse.success("ok"))
     }
 
