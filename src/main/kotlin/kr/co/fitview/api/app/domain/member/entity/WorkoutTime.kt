@@ -7,6 +7,7 @@ import kr.co.fitview.api.app.domain.member.entity.enums.WorkoutTimeName
 import kr.co.fitview.api.app.global.entity.BaseEntity
 import org.hibernate.annotations.ColumnDefault
 import java.time.Instant
+import java.time.LocalDateTime
 
 @Entity
 @Table(name = "workout_time")
@@ -28,4 +29,9 @@ class WorkoutTime(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "workout_time_id", nullable = false)
     var id: Long? = null
+
+    fun delete(now : LocalDateTime) : WorkoutTime{
+        this.deletedAt = now
+        return this
+    }
 }

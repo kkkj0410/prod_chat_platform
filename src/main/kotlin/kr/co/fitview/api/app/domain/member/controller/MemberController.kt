@@ -40,6 +40,8 @@ class MemberController(
         request : MemberUpdateRequest
     ) : ResponseEntity<ApiResponse<*>> {
 
+        memberService.modifyMember(securityUtil.getMemberId(), request.toServiceRequest())
+
         return ResponseEntity.ok(ApiResponse.success("ok"))
     }
 

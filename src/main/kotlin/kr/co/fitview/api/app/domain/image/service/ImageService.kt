@@ -22,7 +22,6 @@ class ImageService(
 ) {
     val maxMemberImageWorkout = 3
 
-
     @Transactional
     fun saveMemberImageProfile(member : Member, profileImageUrl : String) : MemberImage{
         val findMemberImage = memberImageRepository.findWithImageByMemberIdAndProfileAndDeletedAtIsNull(member.id!!)

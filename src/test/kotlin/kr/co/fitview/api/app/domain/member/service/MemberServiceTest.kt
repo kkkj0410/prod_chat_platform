@@ -7,8 +7,10 @@ import kr.co.fitview.api.app.domain.address.dto.request.AddressCreateServiceRequ
 import kr.co.fitview.api.app.domain.address.entity.Address
 import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
 import kr.co.fitview.api.app.domain.address.repository.AddressRepository
+import kr.co.fitview.api.app.domain.image.repository.MemberImageRepository
 import kr.co.fitview.api.app.domain.member.condition.MemberLocalCondition
 import kr.co.fitview.api.app.domain.member.dto.request.Age
+import kr.co.fitview.api.app.domain.member.dto.request.MemberUpdateServiceRequest
 import kr.co.fitview.api.app.domain.member.dto.response.enums.ProfileWorkoutPartnerStatus
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.entity.WorkoutTime
@@ -43,6 +45,7 @@ class MemberServiceTest @Autowired constructor(
     val workoutTimeRepository : WorkoutTimeRepository,
     val addressRepository: AddressRepository,
     val oAuth2Service : OAuth2Service,
+    val memberImageRepository : MemberImageRepository,
     val em : EntityManager
 ) : IntegrationTestSupport() {
 
@@ -382,7 +385,7 @@ class MemberServiceTest @Autowired constructor(
 
     }
 
-    @DisplayName("회원이 선호 운동시간을 기록하는데, 이미 DB에 있으면 저장하지 않는다.")
+    @DisplayName("회원이 선호 운동시간을 기록하는데, 이미 DB에 있으면 삭제하고 새로 저장한다.")
     @Test
     fun addWorkoutTimesDuplicatedWorkoutTime() {
         // given
@@ -423,7 +426,6 @@ class MemberServiceTest @Autowired constructor(
             .extracting("member", "name")
             .containsExactlyInAnyOrder(
                 tuple(savedMember, WorkoutTimeName.WEEKDAY_DAWN),
-                tuple(savedMember, WorkoutTimeName.WEEKDAY_EVENING),
                 tuple(savedMember, WorkoutTimeName.WEEKDAY_AFTERNOON),
             )
 
@@ -442,7 +444,6 @@ class MemberServiceTest @Autowired constructor(
             .extracting("member", "name")
             .containsExactlyInAnyOrder(
                 tuple(savedMember, WorkoutTimeName.WEEKDAY_DAWN),
-                tuple(savedMember, WorkoutTimeName.WEEKDAY_EVENING),
                 tuple(savedMember, WorkoutTimeName.WEEKDAY_AFTERNOON),
             )
 
@@ -1003,4 +1004,350 @@ class MemberServiceTest @Autowired constructor(
             .containsExactlyElementsOf(response.map { it.memberId })
     }
 
+    @DisplayName("회원 프로필 이미지를 수정한다.")
+    @Test
+    fun modifyMemberProfileImageUrl() {
+        // given
+        val member = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(member)
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest, member.id!!)
+
+        val request = MemberUpdateServiceRequest(
+            profileImageUrl = "updateProfile"
+        )
+
+        // when
+        memberService.modifyMember(member.id!!, request)
+
+        em.flush()
+        em.clear()
+
+        // then
+        val findMemberImage = memberImageRepository.findWithImageByMemberIdAndProfileAndDeletedAtIsNull(member.id!!)
+        val findImage = findMemberImage!!.image
+        assertThat(findImage!!.url).isEqualTo("updateProfile")
+    }
+
+    @DisplayName("회원 별명을 수정한다.")
+    @Test
+    fun modifyMemberNickname() {
+        // given
+        val member = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(member)
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest, member.id!!)
+
+        val request = MemberUpdateServiceRequest(
+            nickname = "updateNickname"
+        )
+
+        // when
+        memberService.modifyMember(member.id!!, request)
+
+        em.flush()
+        em.clear()
+
+        // then
+        val findMember = memberRepository.findAll()[0]
+        assertThat(findMember.nickname).isEqualTo("updateNickname")
+    }
+
+
+    @DisplayName("회원 자기소개를 수정한다.")
+    @Test
+    fun modifyMemberIntro() {
+        // given
+        val member = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(member)
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest, member.id!!)
+
+        val request = MemberUpdateServiceRequest(
+            intro = "updateIntro"
+        )
+
+        // when
+        memberService.modifyMember(member.id!!, request)
+
+        em.flush()
+        em.clear()
+
+        // then
+        val findMember = memberRepository.findAll()[0]
+        assertThat(findMember.intro).isEqualTo("updateIntro")
+    }
+
+    @DisplayName("회원 키를 수정한다.")
+    @Test
+    fun modifyMemberHeight() {
+        // given
+        val member = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(member)
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest, member.id!!)
+
+        val request = MemberUpdateServiceRequest(
+            height = 155
+        )
+
+        // when
+        memberService.modifyMember(member.id!!, request)
+
+        em.flush()
+        em.clear()
+
+        // then
+        val findMember = memberRepository.findAll()[0]
+        assertThat(findMember.height).isEqualTo(155)
+    }
+
+    @DisplayName("회원 체중을 수정한다.")
+    @Test
+    fun modifyMemberWeight() {
+        // given
+        val member = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(member)
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest, member.id!!)
+
+        val request = MemberUpdateServiceRequest(
+            weight = 99
+        )
+
+        // when
+        memberService.modifyMember(member.id!!, request)
+
+        em.flush()
+        em.clear()
+
+        // then
+        val findMember = memberRepository.findAll()[0]
+        assertThat(findMember.weight).isEqualTo(99)
+    }
+
+    @DisplayName("회원 생일을 수정한다.")
+    @Test
+    fun modifyMemberBirthday() {
+        // given
+        val member = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(member)
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest, member.id!!)
+
+        val request = MemberUpdateServiceRequest(
+            birthday = LocalDate.of(1999,12,30)
+        )
+
+        // when
+        memberService.modifyMember(member.id!!, request)
+
+        em.flush()
+        em.clear()
+
+        // then
+        val findMember = memberRepository.findAll()[0]
+        assertThat(findMember.birthday).isEqualTo(LocalDate.of(1999,12,30))
+    }
+
+    @DisplayName("회원 운동 경험을 수정한다.")
+    @Test
+    fun modifyMemberWorkoutExperience() {
+        // given
+        val member = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(member)
+        val signupRequest = TestDataFactory.oAuth2SignupRequest(
+            workoutExperience = MemberWorkoutExperience.JUST_STARTED
+        )
+        oAuth2Service.signup(signupRequest, member.id!!)
+
+        val request = MemberUpdateServiceRequest(
+            workoutExperience = MemberWorkoutExperience.FOUR_TO_SIX_YEARS
+        )
+
+        // when
+        memberService.modifyMember(member.id!!, request)
+
+        em.flush()
+        em.clear()
+
+        // then
+        val findMember = memberRepository.findAll()[0]
+        assertThat(findMember.workoutExperience).isEqualTo(MemberWorkoutExperience.FOUR_TO_SIX_YEARS)
+    }
+
+    @DisplayName("회원 운동 스타일을 수정한다.")
+    @Test
+    fun modifyMemberWorkoutStyle() {
+        // given
+        val member = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(member)
+        val signupRequest = TestDataFactory.oAuth2SignupRequest(
+            workoutStyle = MemberWorkoutStyle.PARTNER
+        )
+        oAuth2Service.signup(signupRequest, member.id!!)
+
+        val request = MemberUpdateServiceRequest(
+            workoutStyle = MemberWorkoutStyle.PERFORMANCE
+        )
+
+        // when
+        memberService.modifyMember(member.id!!, request)
+
+        em.flush()
+        em.clear()
+
+        // then
+        val findMember = memberRepository.findAll()[0]
+        assertThat(findMember.workoutStyle).isEqualTo(MemberWorkoutStyle.PERFORMANCE)
+    }
+
+    @DisplayName("회원 운동 목표를 수정한다.")
+    @Test
+    fun modifyMemberWorkoutGoal() {
+        // given
+        val member = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(member)
+        val signupRequest = TestDataFactory.oAuth2SignupRequest(
+            workoutGoal = MemberWorkoutGoal.BODY_CORRECTION
+        )
+        oAuth2Service.signup(signupRequest, member.id!!)
+
+        val request = MemberUpdateServiceRequest(
+            workoutGoal = MemberWorkoutGoal.HEALTH_MAINTENANCE
+        )
+
+        // when
+        memberService.modifyMember(member.id!!, request)
+
+        em.flush()
+        em.clear()
+
+        // then
+        val findMember = memberRepository.findAll()[0]
+        assertThat(findMember.workoutGoal).isEqualTo(MemberWorkoutGoal.HEALTH_MAINTENANCE)
+    }
+
+    @DisplayName("회원 운동 시간을 수정한다.")
+    @Test
+    fun modifyMemberWorkoutTimes() {
+        // given
+        val member = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(member)
+        val signupRequest = TestDataFactory.oAuth2SignupRequest(
+            workoutTimes = listOf(
+                WorkoutTimeName.WEEKDAY_DAWN,
+                WorkoutTimeName.WEEKDAY_EVENING
+            ),
+        )
+        oAuth2Service.signup(signupRequest, member.id!!)
+
+        val request = MemberUpdateServiceRequest(
+            workoutTimes = listOf(
+                WorkoutTimeName.WEEKEND_AFTERNOON,
+                WorkoutTimeName.WEEKEND_MORNING
+            ),
+        )
+
+        // when
+        memberService.modifyMember(member.id!!, request)
+
+        em.flush()
+        em.clear()
+
+        // then
+        val findMember = memberRepository.findById(member.id!!).orElseThrow()
+        val findWorkoutTimes = workoutTimeRepository.findAllByMemberIdAndDeletedAtIsNull(member.id!!)
+
+        assertThat(findWorkoutTimes).hasSize(2)
+        assertThat(findWorkoutTimes)
+            .extracting("member", "name")
+            .containsExactlyInAnyOrder(
+                tuple(findMember, WorkoutTimeName.WEEKEND_AFTERNOON),
+                tuple(findMember, WorkoutTimeName.WEEKEND_MORNING)
+            )
+    }
+
+    @DisplayName("회원 운동 사진을 수정한다.")
+    @Test
+    fun modifyMemberWorkoutImageUrls() {
+        // given
+        val member = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(member)
+        val signupRequest = TestDataFactory.oAuth2SignupRequest(
+            workoutImageUrls = listOf(
+                "workoutImageUrl1",
+                "workoutImageUrl2",
+            )
+        )
+        oAuth2Service.signup(signupRequest, member.id!!)
+
+        val request = MemberUpdateServiceRequest(
+            workoutImageUrls = listOf(
+                "updateWorkoutImageUrl1",
+                "updateWorkoutImageUrl2",
+            )
+        )
+
+        // when
+        memberService.modifyMember(member.id!!, request)
+
+        em.flush()
+        em.clear()
+
+        // then
+        val findWorkoutImages = memberImageRepository.findWithImageByMemberIdAndWorkoutAndDeletedAtIsNull(member.id!!)
+        val findImages = findWorkoutImages.map{it.image}
+
+        assertThat(findImages)
+            .extracting("url")
+            .containsExactlyInAnyOrder(
+                "updateWorkoutImageUrl1",
+                "updateWorkoutImageUrl2"
+            )
+    }
 }
