@@ -104,11 +104,6 @@ class MemberService(
         return MemberDetailResponse(otherProfile, findWorkoutPartnerStatus)
     }
 
-
-    fun findMemberReferenceFrom(memberId : Long)  : Member{
-        return memberRepository.getReferenceById(memberId)
-    }
-
     fun findMemberChatProfileFrom(memberId: Long): MemberChatProfileResponse? {
         return memberRepository.findMemberChatProfileByDeletedAtIsNull(memberId)
     }
@@ -118,27 +113,20 @@ class MemberService(
         condition: MemberLocalCondition,
         seed: Long
     ): Page<MemberLocalResponse> {
-        val randomId = 123L
-
-        val findAddress = addressService.findAddressEntityFrom(memberId)
-
-        val boundingBox = createBoundingBox(findAddress!!)
-
-        val findMembers = memberRepository.findMemberWithinLocal(memberId, randomId, boundingBox, condition)
+        val findMemberMaxId = memberRepository.findMemberMaxId()
+            ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
 
         val random = Random(seed)
+        val randomMemberId = random.nextLong(1, findMemberMaxId + 1)
+
+        val findAddress = addressService.findAddressEntityFrom(memberId)
+        val boundingBox = createBoundingBox(findAddress!!)
+
+        val findMembers = memberRepository.findMemberWithinLocal(memberId, randomMemberId, boundingBox, condition)
+
         val shuffledMembers = findMembers.shuffled(random)
 
-        val page = (condition.page ?: 1).coerceAtLeast(1)
-        val size = condition.size ?: 10
-
-        val fromIndex = (page - 1) * size
-        val toIndex = (fromIndex + size).coerceAtMost(shuffledMembers.size)
-
-        val pageContent = if (fromIndex >= shuffledMembers.size) emptyList()
-        else shuffledMembers.subList(fromIndex, toIndex)
-
-        return PageImpl(pageContent, PageRequest.of(page - 1, size), shuffledMembers.size.toLong())
+        return createProfilePage(condition, shuffledMembers)
     }
 
     fun findRandomMemberWithinRecommendation(memberId: Long) : List<MemberRecommendationResponse>{
@@ -185,7 +173,6 @@ class MemberService(
         .filterNot { it in findWorkoutNameSet }
         .map { WorkoutTime(member = member, name = it) }
 
-
     private fun createBoundingBox(address: Address) : BoundingBox {
         var lat = address.lat
         var lng = address.lng
@@ -211,5 +198,22 @@ class MemberService(
             minLng = minLng!!,
             maxLng = maxLng!!
         )
+    }
+
+    private fun createProfilePage(
+        condition: MemberLocalCondition,
+        shuffledMembers: List<MemberLocalResponse>
+    ): PageImpl<MemberLocalResponse> {
+
+        val page = (condition.page).coerceAtLeast(1)
+        val size = condition.size
+
+        val fromIndex = (page - 1) * size
+        val toIndex = (fromIndex + size).coerceAtMost(shuffledMembers.size)
+
+        val pageContent = if (fromIndex >= shuffledMembers.size) emptyList()
+        else shuffledMembers.subList(fromIndex, toIndex)
+
+        return PageImpl(pageContent, PageRequest.of(page - 1, size), shuffledMembers.size.toLong())
     }
 }

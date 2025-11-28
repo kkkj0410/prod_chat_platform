@@ -20,4 +20,6 @@ interface MemberRepositoryCustom {
     fun findMemberChatProfileByDeletedAtIsNull(memberId: Long): MemberChatProfileResponse?
 
     fun findMemberWorkoutRequestProfile(memberId: Long): MemberWorkoutPartnerProfileResponse?
+
+    fun findMemberMaxId(): Long?
 }

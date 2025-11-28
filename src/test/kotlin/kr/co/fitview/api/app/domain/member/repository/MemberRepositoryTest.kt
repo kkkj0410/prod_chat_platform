@@ -1,14 +1,11 @@
 package kr.co.fitview.api.app.domain.member.repository
 
-import jakarta.persistence.EntityManager
 import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.address.constant.AddressConstant
 import kr.co.fitview.api.app.domain.address.dto.request.AddressCreateServiceRequest
 import kr.co.fitview.api.app.domain.address.entity.Address
-import kr.co.fitview.api.app.domain.address.entity.QAddress.address
 import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
 import kr.co.fitview.api.app.domain.address.repository.AddressRepository
-import kr.co.fitview.api.app.domain.image.entity.enums.MemberImageType
 import kr.co.fitview.api.app.domain.member.condition.MemberLocalCondition
 import kr.co.fitview.api.app.domain.member.dto.BoundingBox
 import kr.co.fitview.api.app.domain.member.dto.request.Age
@@ -292,32 +289,6 @@ class MemberRepositoryTest@Autowired constructor(
     }
 
 
-
-    private fun createAddress(
-        lat : Double,
-        lng : Double,
-        radiusKm : Double = 5.0
-    ) : Address{
-        val baseMember = Member(
-            email = "email",
-            password = "password",
-            role = Role.USER,
-        )
-        memberRepository.save(baseMember)
-
-        val address = Address(
-            member = baseMember,
-            siDo = AddressSiDo.SEOUL,
-            siGunGu = "siGunGu",
-            eupMyeonDong = "eupMyeonDong",
-            lat = lat,
-            lng = lng,
-            fullAddress = "fullAddress",
-            radiusKm = radiusKm
-        )
-        return addressRepository.save(address)
-    }
-
     private fun createBoundingBox(address: Address) : BoundingBox {
         var lat = address.lat
         var lng = address.lng
@@ -525,7 +496,7 @@ class MemberRepositoryTest@Autowired constructor(
     }
 
 
-    @DisplayName("인근 회원 조회 시, randomId를 기점으로 왼쪽 회원 -> 오른쪽 회원 순으로 가져온다..")
+    @DisplayName("인근 회원 조회 시, randomId를 기점으로 오른쪽 회원 조회 + 부족하면 맨 처음 회원 조회순으로 가져온다..")
     @Test
     fun findMemberWithinLocalLeftAndRight() {
         // given
@@ -655,8 +626,8 @@ class MemberRepositoryTest@Autowired constructor(
         // then
         assertThat(response).hasSize(3)
         assertThat(response[0].memberId).isEqualTo(member2.id!!)
-        assertThat(response[1].memberId).isEqualTo(member1.id!!)
-        assertThat(response[2].memberId).isEqualTo(member3.id!!)
+        assertThat(response[1].memberId).isEqualTo(member3.id!!)
+        assertThat(response[2].memberId).isEqualTo(member1.id!!)
     }
 
 
@@ -1094,8 +1065,8 @@ class MemberRepositoryTest@Autowired constructor(
 
         // then
         assertThat(response).hasSize(2)
-        assertThat(response[0].memberId).isEqualTo(member2.id!!)
-        assertThat(response[1].memberId).isEqualTo(member1.id!!)
+        assertThat(response[0].memberId).isEqualTo(member1.id!!)
+        assertThat(response[1].memberId).isEqualTo(member2.id!!)
     }
 
     @DisplayName("인근 회원 조회 시, 나이대가 지정된 범위의 회원만 조회한다.")
@@ -1614,5 +1585,34 @@ class MemberRepositoryTest@Autowired constructor(
         assertThat(response[0].memberId).isEqualTo(member2.id!!)
     }
 
+    @DisplayName("회원의 최대 id를 조회한다.")
+    @Test
+    fun findMemberMaxId() {
+        // given
+        val member1 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        val member2 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        val member3 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        memberRepository.save(member1)
+        memberRepository.save(member2)
+        memberRepository.save(member3)
+
+        // when
+        val memberMaxId = memberRepository.findMemberMaxId()
+
+        // then
+        assertThat(memberMaxId).isEqualTo(memberMaxId)
+    }
 
 }

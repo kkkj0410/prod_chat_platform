@@ -1,5 +1,6 @@
 package kr.co.fitview.api.app.domain.member.repository
 
+import com.querydsl.core.QueryModifiers.limit
 import com.querydsl.core.types.Projections
 import com.querydsl.core.types.dsl.BooleanExpression
 import com.querydsl.core.types.dsl.Expressions
@@ -42,7 +43,7 @@ class MemberRepositoryImpl(
             memberId,
             boundingBox,
             condition,
-            isLeft = true,
+            isFromRandom = true,
             size = MAX_FETCH
         )
 
@@ -55,7 +56,7 @@ class MemberRepositoryImpl(
                     memberId,
                     boundingBox,
                     condition,
-                    isLeft = false,
+                    isFromRandom = false,
                     size = remain
                 )
             else
@@ -71,20 +72,9 @@ class MemberRepositoryImpl(
         memberId: Long,
         boundingBox: BoundingBox,
         condition: MemberLocalCondition,
-        isLeft : Boolean,
+        isFromRandom : Boolean,
         size : Int
     ): List<MemberLocalResponse> {
-
-
-        val tuples = queryFactory
-            .select(
-                address.lat,
-                address.lng
-            )
-            .from(address)
-            .fetch()
-
-        println(tuples)
 
         val results = queryFactory
             .select(
@@ -103,10 +93,13 @@ class MemberRepositoryImpl(
             .join(memberImage.image, image)
             .join(member.mutableAddresses, address)
             .where(
-                if (isLeft) member.id.loe(randomMemberId) else member.id.gt(randomMemberId),
+                if (isFromRandom) {
+                    member.id.goe(randomMemberId)
+                } else {
+                    member.id.goe(1).and(member.id.lt(randomMemberId))
+                },
                 member.id.ne(memberId),
                 address.siDo.eq(AddressSiDo.SEOUL),
-                address.lat.between(0, 2000),
                 address.lat.between(boundingBox.minLat, boundingBox.maxLat),
                 address.lng.between(boundingBox.minLng, boundingBox.maxLng),
                 memberImage.type.eq(MemberImageType.PROFILE),
@@ -119,9 +112,6 @@ class MemberRepositoryImpl(
                 inWorkoutGoal(condition.workoutGoal),
                 inWorkoutStyle(condition.workoutStyle),
                 betweenWorkoutExperience(condition.minWorkoutExperience, condition.maxWorkoutExperience),
-            )
-            .orderBy(
-                if (isLeft) member.id.desc() else member.id.asc()
             )
             .limit(size.toLong())
             .fetch()
@@ -498,6 +488,13 @@ class MemberRepositoryImpl(
                 image.deletedAt.isNull
             )
             .limit(1)
+            .fetchOne()
+    }
+
+    override fun findMemberMaxId(): Long?{
+        return queryFactory
+            .select(member.id.max())
+            .from(member)
             .fetchOne()
     }
 
