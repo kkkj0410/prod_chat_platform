@@ -9,6 +9,7 @@ import org.springframework.data.domain.Slice
 interface ChatMessageRepositoryCustom {
 
     fun findRecentChatMessageByMemberIdAndIn(memberId: Long, chatRoomIds: List<Long>): List<LastChatMessage>
+
     fun findChatMessageByCondition(chatRoomId: Long, condition: ChatCondition) : Slice<ChatMessageAndWorkoutRequest>
 
 }
