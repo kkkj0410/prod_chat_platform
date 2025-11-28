@@ -7,14 +7,10 @@ import kr.co.fitview.api.app.domain.address.service.AddressService
 import kr.co.fitview.api.app.domain.image.service.ImageService
 import kr.co.fitview.api.app.domain.member.condition.MemberLocalCondition
 import kr.co.fitview.api.app.domain.member.dto.BoundingBox
-import kr.co.fitview.api.app.domain.member.dto.request.MemberUpdateRequest
 import kr.co.fitview.api.app.domain.member.dto.request.MemberUpdateServiceRequest
 import kr.co.fitview.api.app.domain.member.dto.response.*
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.entity.WorkoutTime
-import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutExperience
-import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutGoal
-import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutStyle
 import kr.co.fitview.api.app.domain.member.entity.enums.WorkoutTimeName
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.domain.member.repository.WorkoutTimeRepository
@@ -28,7 +24,6 @@ import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.time.LocalDate
 import kotlin.math.cos
 import kotlin.random.Random
 
@@ -193,8 +188,21 @@ class MemberService(
         val boundingBox = createBoundingBox(findAddress!!)
 
         val findMembers = memberRepository.findMemberWithinLocal(memberId, randomMemberId, boundingBox, condition)
+        val shuffledMembers = findMembers.shuffled(random).toMutableList()
 
-        val shuffledMembers = findMembers.shuffled(random)
+        if(findMembers.size < 100){
+            val remainSize = 100 - findMembers.size
+            val findMemberIds = findMembers.map{it.memberId}
+            val findSeoulMembers = memberRepository.findMemberWithinSeoulByNotMemberIds(
+                meMemberId = memberId,
+                size = remainSize,
+                memberIds = findMemberIds
+            )
+
+            val shuffledSeoulMembers = findSeoulMembers.shuffled(random)
+
+            shuffledMembers.addAll(shuffledSeoulMembers)
+        }
 
         return createProfilePage(condition, shuffledMembers)
     }
