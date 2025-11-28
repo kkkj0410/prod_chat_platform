@@ -1585,6 +1585,57 @@ class MemberRepositoryTest@Autowired constructor(
         assertThat(response[0].memberId).isEqualTo(member2.id!!)
     }
 
+
+    private fun signupMember(siDo : AddressSiDo) : Member{
+        val member = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(member)
+        val address = AddressCreateServiceRequest(
+            siDo = siDo,
+            siGunGu = "siGunGu",
+            eupMyeonDong = "eupMyeonDong",
+            lat = 50.00,
+            lng = 50.00,
+            fullAddress = "fullAddress"
+        )
+        val signupRequest = TestDataFactory.oAuth2SignupRequest(
+            address = address
+        )
+        oAuth2Service.signup(signupRequest, member.id!!)
+        return member
+    }
+
+    @DisplayName("각 회원 id를 제외한 서울 회원들을 찾는다.")
+    @Test
+    fun findMemberWithinSeoulByNotMemberIds() {
+        // given
+        val member1 = signupMember(AddressSiDo.SEOUL)
+        val member2 = signupMember(AddressSiDo.SEOUL)
+        val member3 = signupMember(AddressSiDo.SEOUL)
+        val member4 = signupMember(AddressSiDo.SEOUL)
+        val member5 = signupMember(AddressSiDo.BUSAN)
+
+        val meMemberId = member1.id!!
+        val size = 10
+        val memberIds = listOf(member2.id!!, member3.id!!)
+
+        // when
+        val response = memberRepository.findMemberWithinSeoulByNotMemberIds(
+            meMemberId = meMemberId,
+            size = size,
+            memberIds = memberIds
+        )
+
+        // then
+        assertThat(response).hasSize(1)
+        assertThat(response[0].memberId).isEqualTo(member4.id!!)
+    }
+
+
+
     @DisplayName("회원의 최대 id를 조회한다.")
     @Test
     fun findMemberMaxId() {
@@ -1614,5 +1665,6 @@ class MemberRepositoryTest@Autowired constructor(
         // then
         assertThat(memberMaxId).isEqualTo(memberMaxId)
     }
+
 
 }

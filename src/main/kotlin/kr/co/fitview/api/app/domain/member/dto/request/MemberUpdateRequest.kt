@@ -11,19 +11,22 @@ import java.time.LocalDate
 
 data class MemberUpdateRequest(
 
-    val nickname: String?,
-    val intro: String?,
-    val height: Int?,
-    val weight: Int?,
-    val birthday: LocalDate?,
-    val workoutExperience: MemberWorkoutExperience?,
-    val workoutStyle: MemberWorkoutStyle?,
-    val workoutGoal: MemberWorkoutGoal?,
+    val nickname: String? = null,
+    val intro: String? = null,
+    val height: Int? = null,
+    val weight: Int? = null,
+    val birthday: LocalDate? = null,
+    val workoutExperience: MemberWorkoutExperience? = null,
+    val workoutStyle: MemberWorkoutStyle? = null,
+    val workoutGoal: MemberWorkoutGoal? = null,
+
     @field:Size(min = 1, message = "workoutTimes cannot be empty")
-    val workoutTimes: List<WorkoutTimeName>?,
-    val profileImageUrl: String?,
+    val workoutTimes: List<WorkoutTimeName>? = null,
+
+    val profileImageUrl: String? = null,
+
     @field:Size(min = 1, message = "workoutImageUrls cannot be empty")
-    val workoutImageUrls: List<String>?,
+    val workoutImageUrls: List<String>? = null,
 ) {
     fun toServiceRequest(): MemberUpdateServiceRequest {
         return MemberUpdateServiceRequest(

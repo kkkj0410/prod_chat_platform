@@ -5,6 +5,7 @@ import kr.co.fitview.api.app.docs.RestDocsHeaders
 import kr.co.fitview.api.app.domain.address.dto.response.AddressResponse
 import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
 import kr.co.fitview.api.app.domain.member.dto.request.Age
+import kr.co.fitview.api.app.domain.member.dto.request.MemberUpdateRequest
 import kr.co.fitview.api.app.domain.member.dto.response.MemberDetailResponse
 import kr.co.fitview.api.app.domain.member.dto.response.MemberProfileResponse
 import kr.co.fitview.api.app.domain.member.dto.response.OtherMemberProfileResponse
@@ -14,7 +15,9 @@ import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutExperience
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutGoal
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutStyle
 import kr.co.fitview.api.app.domain.member.entity.enums.WorkoutTimeName
+import kr.co.fitview.api.app.domain.oauth2.dto.request.OAuth2LoginRequest
 import kr.co.fitview.api.app.global.entity.Gender
+import kr.co.fitview.api.app.global.entity.OAuth2Provider
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.exception.error.jwt.JwtErrorCode
 import kr.co.fitview.api.app.global.exception.error.request.RequestErrorCode
@@ -25,6 +28,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.given
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.MediaType
 import org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document
 import org.springframework.restdocs.operation.preprocess.Preprocessors.*
@@ -33,8 +37,7 @@ import org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath
 import org.springframework.restdocs.payload.PayloadDocumentation.responseFields
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
@@ -202,4 +205,48 @@ class MemberControllerTest : ControllerTestSupport() {
             .andExpect(jsonPath("$.data.workoutPartner.chatRoomId").isEmpty)
     }
 
+    @DisplayName("본인 프로필 수정 시, 운동 시간 배열이 비어서는 안된다.")
+    @Test
+    fun memberModifyEmptyWorkoutTimes() {
+        // given
+        val request = MemberUpdateRequest(
+            workoutTimes = listOf()
+        )
+
+        // when // then
+        mockMvc.perform(
+            patch("/api/v1/members/me")
+                .content(objectMapper.writeValueAsString(request))
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andDo(print())
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value(RequestErrorCode.REQ_FIELD_NOT_VALID.code))
+            .andExpect(jsonPath("$.status").value("400"))
+            .andExpect(jsonPath("$.message").value("workoutTimes cannot be empty"))
+            .andExpect(jsonPath("$.data").isEmpty())
+    }
+
+
+    @DisplayName("본인 프로필 수정 시, 운동 사진 배열이 비어서는 안된다.")
+    @Test
+    fun memberModifyEmptyWorkoutImageUrls() {
+        // given
+        val request = MemberUpdateRequest(
+            workoutImageUrls = listOf()
+        )
+
+        // when // then
+        mockMvc.perform(
+            patch("/api/v1/members/me")
+                .content(objectMapper.writeValueAsString(request))
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andDo(print())
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value(RequestErrorCode.REQ_FIELD_NOT_VALID.code))
+            .andExpect(jsonPath("$.status").value("400"))
+            .andExpect(jsonPath("$.message").value("workoutImageUrls cannot be empty"))
+            .andExpect(jsonPath("$.data").isEmpty())
+    }
 }

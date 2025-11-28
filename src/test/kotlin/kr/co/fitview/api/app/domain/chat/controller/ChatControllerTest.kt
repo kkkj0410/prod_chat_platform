@@ -11,12 +11,14 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.given
+import org.mockito.kotlin.willAnswer
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Slice
 import org.springframework.data.domain.SliceImpl
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch
 
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
@@ -276,6 +278,27 @@ class ChatControllerTest : ControllerTestSupport(){
             .andExpect(jsonPath("$.message").value("ok"))
             .andExpect(jsonPath("$.data.workoutRequestId").value(123L))
             .andExpect(jsonPath("$.data.status").value("PENDING"))
+    }
+
+    @DisplayName("채팅방 마지막 운동 요청 조회 API")
+    @Test
+    fun chatMessageRead() {
+        val chatRoomId = 123L
+
+        given(messageReadStatusService.modifyMessageReadStatusFrom(any(), any()))
+            .willAnswer {}
+
+        // when & then
+        mockMvc.perform(
+            patch("/api/v1/chats/{chatRoomId}/read", chatRoomId)
+                .header("Authorization", "Bearer jwt-token")
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.status").exists())
+            .andExpect(jsonPath("$.code").value("ok"))
+            .andExpect(jsonPath("$.message").value("ok"))
+            .andExpect(jsonPath("$.data").value("ok"))
     }
 
 }

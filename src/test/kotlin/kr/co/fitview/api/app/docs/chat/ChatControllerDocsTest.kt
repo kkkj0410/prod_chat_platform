@@ -10,6 +10,7 @@ import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
 import kr.co.fitview.api.app.domain.chat.service.ChatMessageService
 import kr.co.fitview.api.app.domain.chat.service.ChatRoomService
 import kr.co.fitview.api.app.domain.chat.service.ChatService
+import kr.co.fitview.api.app.domain.chat.service.MessageReadStatusService
 import kr.co.fitview.api.app.domain.workout.dto.response.LastWorkoutRequestMessage
 import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusForResponse
 import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestService
@@ -46,9 +47,10 @@ class ChatControllerDocsTest : RestDocsSupport() {
     private val chatMessageService: ChatMessageService = mock(ChatMessageService::class.java)
     private val workoutRequestService: WorkoutRequestService = mock(WorkoutRequestService::class.java)
     private val securityUtil: SecurityUtil = mock(SecurityUtil::class.java)
+    private val messageReadStatusService: MessageReadStatusService = mock(MessageReadStatusService::class.java)
 
     override fun initController(): Any {
-        return ChatController(chatService, chatRoomService, chatMessageService, securityUtil, workoutRequestService)
+        return ChatController(chatService, chatRoomService, chatMessageService, securityUtil, workoutRequestService, messageReadStatusService)
     }
 
     @DisplayName("채팅방을 생성한다.")
@@ -473,6 +475,45 @@ class ChatControllerDocsTest : RestDocsSupport() {
                             .description("운동 요청 id"),
                         fieldWithPath("data.status").type(JsonFieldType.STRING)
                             .description("마지막 운동 요청 상태" + WorkoutRequestStatusForResponse.allDescription()),
+                    )
+                )
+            )
+    }
+
+    @DisplayName("채팅방 모든 메시지 읽음 API")
+    @Test
+    fun chatMessageRead() {
+        val chatRoomId = 123L
+
+        given(messageReadStatusService.modifyMessageReadStatusFrom(any(), any()))
+            .willAnswer {}
+
+        // when & then
+        mockMvc.perform(
+            patch("/api/v1/chats/{chatRoomId}/read", chatRoomId)
+                .header("Authorization", "Bearer jwt-token")
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isOk)
+            .andDo(
+                document(
+                    "chat-read-all-update",
+                    preprocessRequest(prettyPrint()),
+                    preprocessResponse(prettyPrint()),
+
+                    requestHeaders(
+                        RestDocsHeaders.authorizationHeader(Role.USER)
+                    ),
+
+                    pathParameters(
+                        parameterWithName("chatRoomId").description("해당 채팅방 id. 해당 채팅방의 모든 메시지를 읽음 처리")
+                    ),
+
+                    responseFields(
+                        fieldWithPath("status").description("HTTP 상태 코드"),
+                        fieldWithPath("code").description("응답 코드"),
+                        fieldWithPath("message").description("응답 메시지"),
+                        fieldWithPath("data").type(JsonFieldType.STRING).description("응답 데이터")
                     )
                 )
             )

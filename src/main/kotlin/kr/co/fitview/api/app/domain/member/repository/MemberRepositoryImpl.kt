@@ -67,6 +67,35 @@ class MemberRepositoryImpl(
         return combined.take(MAX_FETCH)
     }
 
+
+    override fun findMemberWithinSeoulByNotMemberIds(meMemberId : Long, size : Int, memberIds: List<Long>) : List<MemberLocalResponse> {
+        return queryFactory
+            .select(
+                Projections.constructor(
+                    MemberLocalResponse::class.java,
+                    member.id,
+                    member.nickname,
+                    member.workoutExperience,
+                    member.workoutStyle,
+                    member.workoutGoal,
+                    image.url
+                )
+            )
+            .from(member)
+            .join(member.mutableMemberImages, memberImage)
+            .join(memberImage.image, image)
+            .join(member.mutableAddresses, address)
+            .where(
+                member.id.ne(meMemberId),
+                member.id.notIn(memberIds),
+                address.siDo.eq(AddressSiDo.SEOUL),
+                memberImage.type.eq(MemberImageType.PROFILE),
+                memberImage.deletedAt.isNull,
+            )
+            .limit(size.toLong())
+            .fetch()
+    }
+
     private fun findMemberWithinLocalByCondition(
         randomMemberId: Long,
         memberId: Long,

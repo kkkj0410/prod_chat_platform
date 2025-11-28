@@ -4,6 +4,7 @@ import kr.co.fitview.api.app.domain.notification.service.StompPublisher
 import kr.co.fitview.api.app.domain.oauth2.service.AppleAuthService
 import kr.co.fitview.api.app.global.config.TestJwtConfig
 import kr.co.fitview.api.app.global.network.NetworkService
+import kr.co.fitview.api.app.global.redis.service.RedisClient
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
 import org.springframework.test.context.ActiveProfiles
@@ -25,5 +26,8 @@ abstract class IntegrationTestSupport {
 
     @MockitoBean
     lateinit var stompPublisher: StompPublisher
+
+    @MockitoBean
+    lateinit var redisClient: RedisClient
 
 }

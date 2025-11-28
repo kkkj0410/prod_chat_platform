@@ -1,5 +1,6 @@
 package kr.co.fitview.api.app.domain.chat.service
 
+import jakarta.persistence.EntityManager
 import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.chat.condition.ChatCondition
 import kr.co.fitview.api.app.domain.chat.dto.request.ChatTextMessageServiceRequest
@@ -41,7 +42,8 @@ class ChatMessageServiceTest @Autowired constructor(
     val messageReadStatusRepository: MessageReadStatusRepository,
     val oAuth2Service: OAuth2Service,
     val memberRepository: MemberRepository,
-    val time: Time
+    val time: Time,
+    val em : EntityManager
 )
     : IntegrationTestSupport(){
 
@@ -564,4 +566,5 @@ class ChatMessageServiceTest @Autowired constructor(
                     .isEqualTo(ChatErrorCode.EXISTING_WORKOUT_REQUEST)
             })
     }
+
 }

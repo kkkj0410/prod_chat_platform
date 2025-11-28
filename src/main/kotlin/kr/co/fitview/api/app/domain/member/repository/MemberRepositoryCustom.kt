@@ -22,4 +22,6 @@ interface MemberRepositoryCustom {
     fun findMemberWorkoutRequestProfile(memberId: Long): MemberWorkoutPartnerProfileResponse?
 
     fun findMemberMaxId(): Long?
+
+    fun findMemberWithinSeoulByNotMemberIds(meMemberId : Long, size : Int, memberIds: List<Long>) : List<MemberLocalResponse>
 }

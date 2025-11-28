@@ -9,6 +9,7 @@ import kr.co.fitview.api.app.domain.chat.dto.response.LastChatMessage
 import kr.co.fitview.api.app.domain.chat.service.ChatMessageService
 import kr.co.fitview.api.app.domain.chat.service.ChatRoomService
 import kr.co.fitview.api.app.domain.chat.service.ChatService
+import kr.co.fitview.api.app.domain.chat.service.MessageReadStatusService
 import kr.co.fitview.api.app.domain.workout.dto.response.LastWorkoutRequestMessage
 import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestService
 import kr.co.fitview.api.app.global.dto.ApiResponse
@@ -25,7 +26,8 @@ class ChatController(
     private val chatRoomService : ChatRoomService,
     private val chatMessageService : ChatMessageService,
     private val securityUtil : SecurityUtil,
-    private val workoutRequestService : WorkoutRequestService
+    private val workoutRequestService : WorkoutRequestService,
+    private val messageReadStatusService : MessageReadStatusService
 ) {
 
     @PostMapping("")
@@ -81,6 +83,20 @@ class ChatController(
 
         return ResponseEntity.ok(ApiResponse.success(lastWorkoutRequest))
     }
+
+    @PatchMapping("/{chatRoomId}/read")
+    fun chatMessageRead(
+        @PathVariable
+        chatRoomId : Long,
+
+    ) : ResponseEntity<ApiResponse<*>> {
+
+        messageReadStatusService.modifyMessageReadStatusFrom(securityUtil.getMemberId(), chatRoomId)
+
+        return ResponseEntity.ok(ApiResponse.success("ok"))
+    }
+
+
 
 
 

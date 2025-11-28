@@ -85,3 +85,17 @@ include::{snippets}/chat-workout-request-last/path-parameters.adoc[]
 ==== HTTP Response
 include::{snippets}/chat-workout-request-last/http-response.adoc[]
 include::{snippets}/chat-workout-request-last/response-fields.adoc[]
+
+
+[[chat-read-all-update]]
+=== 해당 채팅방의 모든 메시지 읽음 처리 API
+
+==== HTTP Request
+include::{snippets}/chat-read-all-update/http-request.adoc[]
+include::{snippets}/chat-read-all-update/request-headers.adoc[]
+include::{snippets}/chat-read-all-update/path-parameters.adoc[]
+
+
+==== HTTP Response
+include::{snippets}/chat-read-all-update/http-response.adoc[]
+include::{snippets}/chat-read-all-update/response-fields.adoc[]
