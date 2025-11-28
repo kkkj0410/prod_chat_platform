@@ -1,5 +1,6 @@
 package kr.co.fitview.api.app.domain.member.service
 
+import com.nimbusds.jose.jwk.JWKSet
 import jakarta.persistence.EntityManager
 import jakarta.persistence.EntityNotFoundException
 import kr.co.fitview.api.app.IntegrationTestSupport
@@ -35,6 +36,8 @@ import org.assertj.core.api.ThrowingConsumer
 import org.hibernate.proxy.HibernateProxy
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
+import org.mockito.kotlin.given
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import kotlin.random.Random
@@ -810,6 +813,8 @@ class MemberServiceTest @Autowired constructor(
             size = 10
         )
 
+        given(redisClient.get(any()))
+            .willReturn(null)
 
         // when
         val response = memberService.findRandomMemberWithinLocal(
@@ -960,6 +965,9 @@ class MemberServiceTest @Autowired constructor(
         )
 
         val seed = 123L
+
+        given(redisClient.get(any()))
+            .willReturn(null)
 
         // when
         val response = memberService.findRandomMemberWithinLocal(
@@ -1147,6 +1155,9 @@ class MemberServiceTest @Autowired constructor(
             size = 10
         )
 
+        given(redisClient.get(any()))
+            .willReturn(null)
+
         val seed = 123L
 
         // when
@@ -1176,6 +1187,130 @@ class MemberServiceTest @Autowired constructor(
         assertThat(response).hasSize(5)
         assertThat(response.content.map { it.memberId })
             .containsExactlyElementsOf(shuffledResponseMember.map { it.id })
+    }
+
+    @DisplayName("인근 회원 조회 시, 캐시된 회원 랜덤 id가 있으면 사용한다.")
+    @Test
+    fun findRandomMemberWithinLocalByCacheMemberRandomId() {
+        // given
+        val baseMember = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        memberRepository.save(baseMember)
+        val address = Address(
+            member = baseMember,
+            siDo = AddressSiDo.SEOUL,
+            siGunGu = "siGunGu",
+            eupMyeonDong = "eupMyeonDong",
+            lat = 50.0,
+            lng = 50.0,
+            fullAddress = "fullAddress",
+            radiusKm = 10.0
+        )
+        addressRepository.save(address)
+
+        val member1 = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(member1)
+        val inAddress1 = AddressCreateServiceRequest(
+            siDo = AddressSiDo.SEOUL,
+            siGunGu = "siGunGu",
+            eupMyeonDong = "eupMyeonDong",
+            lat = 49.91,
+            lng = 50.14,
+            fullAddress = "fullAddress"
+        )
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nickname1",
+            workoutExperience = MemberWorkoutExperience.JUST_STARTED,
+            workoutStyle = MemberWorkoutStyle.STRENGTH,
+            workoutGoal = MemberWorkoutGoal.HEALTH_MAINTENANCE,
+            profileImageUrl = "profileImageUrl1",
+            address = inAddress1
+        )
+        oAuth2Service.signup(signupRequest1, member1.id!!)
+
+
+        val member2 = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(member2)
+        val inAddress2 = AddressCreateServiceRequest(
+            siDo = AddressSiDo.SEOUL,
+            siGunGu = "siGunGu",
+            eupMyeonDong = "eupMyeonDong",
+            lat = 50.00,
+            lng = 50.00,
+            fullAddress = "fullAddress"
+        )
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nickname2",
+            workoutExperience = MemberWorkoutExperience.FOUR_TO_SIX_YEARS,
+            workoutStyle = MemberWorkoutStyle.PERFORMANCE,
+            workoutGoal = MemberWorkoutGoal.STRENGTH_GAIN,
+            profileImageUrl = "profileImageUrl2",
+            address = inAddress2
+        )
+        oAuth2Service.signup(signupRequest2, member2.id!!)
+
+
+        val member3 = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(member3)
+        val inAddress3 = AddressCreateServiceRequest(
+            siDo = AddressSiDo.SEOUL,
+            siGunGu = "siGunGu",
+            eupMyeonDong = "eupMyeonDong",
+            lat = 49.91,
+            lng = 49.86,
+            fullAddress = "fullAddress"
+        )
+        val signupRequest3 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nickname3",
+            workoutExperience = MemberWorkoutExperience.ONE_TO_THREE_YEARS,
+            workoutStyle = MemberWorkoutStyle.PARTNER,
+            workoutGoal = MemberWorkoutGoal.STRESS_RELIEF,
+            profileImageUrl = "profileImageUrl3",
+            address = inAddress3
+        )
+        oAuth2Service.signup(signupRequest3, member3.id!!)
+
+
+        val condition = MemberLocalCondition(
+            size = 10
+        )
+
+        given(redisClient.get(any()))
+            .willReturn(member1.id!!.toString())
+
+        val seed = 123L
+
+        // when
+        val response = memberService.findRandomMemberWithinLocal(
+            memberId = baseMember.id!!,
+            condition = condition,
+            seed = seed
+        )
+
+        // then
+        val random = Random(seed)
+
+        val members = listOf(member1, member2, member3)
+        val shuffledMembers = members.shuffled(random)
+
+        assertThat(response).hasSize(3)
+        assertThat(response.content.map { it.memberId })
+            .containsExactlyElementsOf(shuffledMembers.map { it.id })
     }
 
 

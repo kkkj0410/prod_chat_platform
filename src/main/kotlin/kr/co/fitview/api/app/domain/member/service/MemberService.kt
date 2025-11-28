@@ -18,6 +18,7 @@ import kr.co.fitview.api.app.domain.workout_partner.service.WorkoutPartnerServic
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.global.GlobalErrorCode
 import kr.co.fitview.api.app.global.exception.error.member.MemberErrorCode
+import kr.co.fitview.api.app.global.redis.service.RedisService
 import kr.co.fitview.api.app.global.time.Time
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
@@ -36,6 +37,7 @@ class MemberService(
     private val workoutPartnerService : WorkoutPartnerService,
     private val addressService : AddressService,
     private val imageService : ImageService,
+    private val redisService : RedisService,
     private val time : Time
 ) {
 
@@ -178,11 +180,9 @@ class MemberService(
         condition: MemberLocalCondition,
         seed: Long
     ): Page<MemberLocalResponse> {
-        val findMemberMaxId = memberRepository.findMemberMaxId()
-            ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
-
         val random = Random(seed)
-        val randomMemberId = random.nextLong(1, findMemberMaxId + 1)
+
+        val randomMemberId: Long = createRandomMemberId(memberId, seed, random)
 
         val findAddress = addressService.findAddressEntityFrom(memberId)
         val boundingBox = createBoundingBox(findAddress!!)
@@ -205,6 +205,26 @@ class MemberService(
         }
 
         return createProfilePage(condition, shuffledMembers)
+    }
+
+    private fun createRandomMemberId(memberId: Long, seed: Long, random: Random): Long {
+        val cacheRandomMemberId = redisService.getMemberLocalKey(memberId, seed)
+        if (isNotNull(cacheRandomMemberId)) {
+            return cacheRandomMemberId!!
+        }
+
+        val findMemberMaxId = memberRepository.findMemberMaxId()
+            ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
+
+        val randomMemberId = random.nextLong(1, findMemberMaxId + 1)
+
+        redisService.setMemberLocalKey(
+            memberId = memberId,
+            randomMemberId = randomMemberId,
+            seed = seed
+        )
+
+        return randomMemberId
     }
 
     fun findRandomMemberWithinRecommendation(memberId: Long) : List<MemberRecommendationResponse>{

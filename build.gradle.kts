@@ -88,6 +88,9 @@ dependencies {
 
 	// spring security - WebSocket
 	implementation("org.springframework.security:spring-security-messaging")
+
+	// redis
+	implementation("org.springframework.boot:spring-boot-starter-data-redis")
 }
 
 kotlin {
