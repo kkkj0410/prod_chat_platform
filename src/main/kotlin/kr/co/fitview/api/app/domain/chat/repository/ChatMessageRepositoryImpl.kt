@@ -14,6 +14,7 @@ import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
 import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusForResponse
 import kr.co.fitview.api.app.domain.workout.entity.QWorkoutRequest.workoutRequest
 import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
+import kr.co.fitview.api.app.global.enums.Direction
 import kr.co.fitview.api.app.global.time.Time
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Slice
@@ -141,10 +142,53 @@ class ChatMessageRepositoryImpl(
 
     override fun findChatMessageByCondition(chatRoomId: Long, condition: ChatCondition) : Slice<ChatMessageAndWorkoutRequest> {
 
+//        fun ltLastMessageAt(): BooleanExpression? {
+//            return condition.lastMessageAt()?.let { lastAt ->
+//                chatMessage.sentAt.lt(lastAt)
+//            }
+//        }
+//
+//        val result = queryFactory
+//            .select(chatMessage, workoutRequest)
+//            .from(chatMessage)
+//            .join(chatRoom)
+//            .on(
+//                chatRoom.id.eq(chatMessage.chatRoom.id),
+//                chatRoom.id.eq(chatRoomId)
+//            )
+//            .leftJoin(workoutRequest).fetchJoin()
+//            .on(workoutRequest.chatMessage.id.eq(chatMessage.id))
+//            .where(ltLastMessageAt())
+//            .orderBy(chatMessage.sentAt.desc().nullsLast())
+//            .limit((condition.size!! + 1).toLong())
+//            .fetch()
+//
+//        val hasNext = result.size > condition.size
+//        val content = if (hasNext) result.subList(0, condition.size) else result
+//
+//        val mappedEntity = content.map { tuple ->
+//            ChatMessageAndWorkoutRequest(
+//                chatMessage = tuple.get(chatMessage)!!,
+//                workoutRequest = tuple.get(workoutRequest)
+//            )
+//        }
+//
+//        return SliceImpl(mappedEntity, PageRequest.of(0, condition.size), hasNext)
+
         fun ltLastMessageAt(): BooleanExpression? {
             return condition.lastMessageAt()?.let { lastAt ->
-                chatMessage.sentAt.lt(lastAt)
+                if (condition.direction == Direction.ASC) {
+                    chatMessage.sentAt.gt(lastAt)
+                } else {
+                    chatMessage.sentAt.lt(lastAt)
+                }
             }
+        }
+
+        val orderSpecifier = if (condition.direction == Direction.ASC) {
+            chatMessage.sentAt.asc().nullsLast()
+        } else {
+            chatMessage.sentAt.desc().nullsLast()
         }
 
         val result = queryFactory
@@ -158,7 +202,7 @@ class ChatMessageRepositoryImpl(
             .leftJoin(workoutRequest).fetchJoin()
             .on(workoutRequest.chatMessage.id.eq(chatMessage.id))
             .where(ltLastMessageAt())
-            .orderBy(chatMessage.sentAt.desc().nullsLast())
+            .orderBy(orderSpecifier)
             .limit((condition.size!! + 1).toLong())
             .fetch()
 
