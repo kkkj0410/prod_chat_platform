@@ -1,6 +1,7 @@
 package kr.co.fitview.api.app.global.time
 
 import java.time.Instant
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.*
@@ -19,6 +20,9 @@ class TestTime(
 
     override val nowLocalDateTime: LocalDateTime
         get() = localDateTime
+
+    override val nowLocalDate: LocalDate
+        get() = localDateTime.toLocalDate()
 
     override fun nowDatePlus(millis: Long): Date {
         return Date(nowDate.time + millis)

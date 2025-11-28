@@ -722,5 +722,46 @@ class AddressServiceTest @Autowired constructor(
 
     }
 
+    @DisplayName("회원의 주소를 조회한다.")
+    @Test
+    fun findAddressEntityFrom() {
+        // given
+        val member = Member(
+            email = "email1",
+            password = "password",
+            role = Role.USER,
+        )
+       memberRepository.save(member)
+
+        val address = Address(
+            member = member,
+            siDo = AddressSiDo.SEOUL,
+            siGunGu = "강남구",
+            eupMyeonDong = "테헤란로",
+            lat = 10.123,
+            lng = 10.234,
+            fullAddress = "fullAddress"
+        )
+        addressRepository.save(address)
+
+        // when
+        val findAddress = addressService.findAddressEntityFrom(member.id!!)
+
+        // then
+        assertThat(findAddress)
+            .extracting("member", "siDo", "siGunGu", "eupMyeonDong", "lat", "lng", "fullAddress", "radiusKm")
+            .contains(
+                member,
+                address.siDo,
+                address.siGunGu,
+                address.eupMyeonDong,
+                address.lat,
+                address.lng,
+                address.fullAddress,
+                address.radiusKm,
+            )
+
+    }
+
 
 }

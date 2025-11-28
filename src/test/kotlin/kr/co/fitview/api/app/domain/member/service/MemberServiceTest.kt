@@ -4,8 +4,13 @@ import jakarta.persistence.EntityManager
 import jakarta.persistence.EntityNotFoundException
 import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.address.dto.request.AddressCreateServiceRequest
+import kr.co.fitview.api.app.domain.address.entity.Address
 import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
+import kr.co.fitview.api.app.domain.address.repository.AddressRepository
+import kr.co.fitview.api.app.domain.image.repository.MemberImageRepository
+import kr.co.fitview.api.app.domain.member.condition.MemberLocalCondition
 import kr.co.fitview.api.app.domain.member.dto.request.Age
+import kr.co.fitview.api.app.domain.member.dto.request.MemberUpdateServiceRequest
 import kr.co.fitview.api.app.domain.member.dto.response.enums.ProfileWorkoutPartnerStatus
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.entity.WorkoutTime
@@ -24,6 +29,7 @@ import kr.co.fitview.api.app.global.entity.OAuth2Provider
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.global.GlobalErrorCode
 import kr.co.fitview.api.app.global.exception.error.member.MemberErrorCode
+import kr.co.fitview.api.app.global.util.TestDataFactory
 import org.assertj.core.api.Assertions.*
 import org.assertj.core.api.ThrowingConsumer
 import org.hibernate.proxy.HibernateProxy
@@ -31,12 +37,15 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
+import kotlin.random.Random
 
 class MemberServiceTest @Autowired constructor(
     val memberService : MemberService,
     val memberRepository : MemberRepository,
     val workoutTimeRepository : WorkoutTimeRepository,
+    val addressRepository: AddressRepository,
     val oAuth2Service : OAuth2Service,
+    val memberImageRepository : MemberImageRepository,
     val em : EntityManager
 ) : IntegrationTestSupport() {
 
@@ -376,7 +385,7 @@ class MemberServiceTest @Autowired constructor(
 
     }
 
-    @DisplayName("회원이 선호 운동시간을 기록하는데, 이미 DB에 있으면 저장하지 않는다.")
+    @DisplayName("회원이 선호 운동시간을 기록하는데, 이미 DB에 있으면 삭제하고 새로 저장한다.")
     @Test
     fun addWorkoutTimesDuplicatedWorkoutTime() {
         // given
@@ -417,7 +426,6 @@ class MemberServiceTest @Autowired constructor(
             .extracting("member", "name")
             .containsExactlyInAnyOrder(
                 tuple(savedMember, WorkoutTimeName.WEEKDAY_DAWN),
-                tuple(savedMember, WorkoutTimeName.WEEKDAY_EVENING),
                 tuple(savedMember, WorkoutTimeName.WEEKDAY_AFTERNOON),
             )
 
@@ -436,7 +444,6 @@ class MemberServiceTest @Autowired constructor(
             .extracting("member", "name")
             .containsExactlyInAnyOrder(
                 tuple(savedMember, WorkoutTimeName.WEEKDAY_DAWN),
-                tuple(savedMember, WorkoutTimeName.WEEKDAY_EVENING),
                 tuple(savedMember, WorkoutTimeName.WEEKDAY_AFTERNOON),
             )
 
@@ -680,4 +687,667 @@ class MemberServiceTest @Autowired constructor(
             .contains(request.profileImageUrl, request.nickname)
     }
 
+    @DisplayName("인근 회원을 페이징 형태로 조회한다.")
+    @Test
+    fun findRandomMemberWithinLocal() {
+        // given
+        val baseMember = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        memberRepository.save(baseMember)
+        val address = Address(
+            member = baseMember,
+            siDo = AddressSiDo.SEOUL,
+            siGunGu = "siGunGu",
+            eupMyeonDong = "eupMyeonDong",
+            lat = 50.0,
+            lng = 50.0,
+            fullAddress = "fullAddress",
+            radiusKm = 10.0
+        )
+        addressRepository.save(address)
+
+        // BoundingBox(minLat=49.909909909909906, maxLat=50.090090090090094, minLng=49.85984470028284, maxLng=50.14015529971716)
+
+        val member1 = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(member1)
+        val inAddress1 = AddressCreateServiceRequest(
+            siDo = AddressSiDo.SEOUL,
+            siGunGu = "siGunGu",
+            eupMyeonDong = "eupMyeonDong",
+            lat = 49.91,
+            lng = 50.14,
+            fullAddress = "fullAddress"
+        )
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nickname1",
+            workoutExperience = MemberWorkoutExperience.JUST_STARTED,
+            workoutStyle = MemberWorkoutStyle.STRENGTH,
+            workoutGoal = MemberWorkoutGoal.HEALTH_MAINTENANCE,
+            profileImageUrl = "profileImageUrl1",
+            address = inAddress1
+        )
+        oAuth2Service.signup(signupRequest1, member1.id!!)
+
+
+        val member2 = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(member2)
+        val inAddress2 = AddressCreateServiceRequest(
+            siDo = AddressSiDo.SEOUL,
+            siGunGu = "siGunGu",
+            eupMyeonDong = "eupMyeonDong",
+            lat = 50.00,
+            lng = 50.00,
+            fullAddress = "fullAddress"
+        )
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nickname2",
+            workoutExperience = MemberWorkoutExperience.FOUR_TO_SIX_YEARS,
+            workoutStyle = MemberWorkoutStyle.PERFORMANCE,
+            workoutGoal = MemberWorkoutGoal.STRENGTH_GAIN,
+            profileImageUrl = "profileImageUrl2",
+            address = inAddress2
+        )
+        oAuth2Service.signup(signupRequest2, member2.id!!)
+
+
+        val member3 = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(member3)
+        val inAddress3 = AddressCreateServiceRequest(
+            siDo = AddressSiDo.SEOUL,
+            siGunGu = "siGunGu",
+            eupMyeonDong = "eupMyeonDong",
+            lat = 49.91,
+            lng = 49.86,
+            fullAddress = "fullAddress"
+        )
+        val signupRequest3 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nickname3",
+            workoutExperience = MemberWorkoutExperience.ONE_TO_THREE_YEARS,
+            workoutStyle = MemberWorkoutStyle.PARTNER,
+            workoutGoal = MemberWorkoutGoal.STRESS_RELIEF,
+            profileImageUrl = "profileImageUrl3",
+            address = inAddress3
+        )
+        oAuth2Service.signup(signupRequest3, member3.id!!)
+
+
+        val member4 = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(member4)
+        val outAddress1 = AddressCreateServiceRequest(
+            siDo = AddressSiDo.SEOUL,
+            siGunGu = "siGunGu",
+            eupMyeonDong = "eupMyeonDong",
+            lat = 49.90,
+            lng = 49.85,
+            fullAddress = "fullAddress"
+        )
+        val signupRequest4 = TestDataFactory.oAuth2SignupRequest(
+            address = outAddress1
+        )
+        oAuth2Service.signup(signupRequest4, member4.id!!)
+
+        val condition = MemberLocalCondition(
+            page = 1,
+            size = 10
+        )
+
+
+        // when
+        val response = memberService.findRandomMemberWithinLocal(
+            memberId = baseMember.id!!,
+            condition = condition,
+            seed = 123L
+        )
+
+        // then
+        assertThat(response.number).isEqualTo(0)
+        assertThat(response.size).isEqualTo(10)
+        assertThat(response.numberOfElements).isEqualTo(3)
+        assertThat(response.hasNext()).isFalse()
+
+
+        val content = response.content
+        assertThat(content)
+            .extracting("memberId", "nickname", "workoutExperience", "workoutStyle", "workoutGoal", "profileImageUrl")
+            .containsExactlyInAnyOrder(
+                tuple(
+                    member3.id!!,
+                    signupRequest3.nickname,
+                    signupRequest3.workoutExperience,
+                    signupRequest3.workoutStyle,
+                    signupRequest3.workoutGoal,
+                    signupRequest3.profileImageUrl,
+                ),
+                tuple(
+                    member2.id!!,
+                    signupRequest2.nickname,
+                    signupRequest2.workoutExperience,
+                    signupRequest2.workoutStyle,
+                    signupRequest2.workoutGoal,
+                    signupRequest2.profileImageUrl,
+                ),
+                tuple(
+                    member1.id!!,
+                    signupRequest1.nickname,
+                    signupRequest1.workoutExperience,
+                    signupRequest1.workoutStyle,
+                    signupRequest1.workoutGoal,
+                    signupRequest1.profileImageUrl,
+                ),
+            )
+    }
+
+    @DisplayName("인근 회원 조회 시, seed 기반의 랜덤 셔플링을 해서 조회한다.")
+    @Test
+    fun findRandomMemberWithinLocalRandom() {
+        // given
+        val baseMember = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        memberRepository.save(baseMember)
+        val address = Address(
+            member = baseMember,
+            siDo = AddressSiDo.SEOUL,
+            siGunGu = "siGunGu",
+            eupMyeonDong = "eupMyeonDong",
+            lat = 50.0,
+            lng = 50.0,
+            fullAddress = "fullAddress",
+            radiusKm = 10.0
+        )
+        addressRepository.save(address)
+
+        // BoundingBox(minLat=49.909909909909906, maxLat=50.090090090090094, minLng=49.85984470028284, maxLng=50.14015529971716)
+
+        val member1 = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(member1)
+        val inAddress1 = AddressCreateServiceRequest(
+            siDo = AddressSiDo.SEOUL,
+            siGunGu = "siGunGu",
+            eupMyeonDong = "eupMyeonDong",
+            lat = 49.91,
+            lng = 50.14,
+            fullAddress = "fullAddress"
+        )
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nickname1",
+            workoutExperience = MemberWorkoutExperience.JUST_STARTED,
+            workoutStyle = MemberWorkoutStyle.STRENGTH,
+            workoutGoal = MemberWorkoutGoal.HEALTH_MAINTENANCE,
+            profileImageUrl = "profileImageUrl1",
+            address = inAddress1
+        )
+        oAuth2Service.signup(signupRequest1, member1.id!!)
+
+
+        val member2 = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(member2)
+        val inAddress2 = AddressCreateServiceRequest(
+            siDo = AddressSiDo.SEOUL,
+            siGunGu = "siGunGu",
+            eupMyeonDong = "eupMyeonDong",
+            lat = 50.00,
+            lng = 50.00,
+            fullAddress = "fullAddress"
+        )
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nickname2",
+            workoutExperience = MemberWorkoutExperience.FOUR_TO_SIX_YEARS,
+            workoutStyle = MemberWorkoutStyle.PERFORMANCE,
+            workoutGoal = MemberWorkoutGoal.STRENGTH_GAIN,
+            profileImageUrl = "profileImageUrl2",
+            address = inAddress2
+        )
+        oAuth2Service.signup(signupRequest2, member2.id!!)
+
+
+        val member3 = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(member3)
+        val inAddress3 = AddressCreateServiceRequest(
+            siDo = AddressSiDo.SEOUL,
+            siGunGu = "siGunGu",
+            eupMyeonDong = "eupMyeonDong",
+            lat = 49.91,
+            lng = 49.86,
+            fullAddress = "fullAddress"
+        )
+        val signupRequest3 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nickname3",
+            workoutExperience = MemberWorkoutExperience.ONE_TO_THREE_YEARS,
+            workoutStyle = MemberWorkoutStyle.PARTNER,
+            workoutGoal = MemberWorkoutGoal.STRESS_RELIEF,
+            profileImageUrl = "profileImageUrl3",
+            address = inAddress3
+        )
+        oAuth2Service.signup(signupRequest3, member3.id!!)
+
+
+        val member4 = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(member4)
+        val outAddress1 = AddressCreateServiceRequest(
+            siDo = AddressSiDo.SEOUL,
+            siGunGu = "siGunGu",
+            eupMyeonDong = "eupMyeonDong",
+            lat = 49.90,
+            lng = 49.85,
+            fullAddress = "fullAddress"
+        )
+        val signupRequest4 = TestDataFactory.oAuth2SignupRequest(
+            address = outAddress1
+        )
+        oAuth2Service.signup(signupRequest4, member4.id!!)
+
+        val condition = MemberLocalCondition(
+            size = 10
+        )
+
+        val seed = 123L
+
+        // when
+        val response = memberService.findRandomMemberWithinLocal(
+            memberId = baseMember.id!!,
+            condition = condition,
+            seed = seed
+        )
+
+        // then
+        val random = Random(seed)
+        val memberMaxId = member4.id!!
+        val randomMemberId = random.nextLong(1, memberMaxId + 1)
+        val members = listOf(member3, member2, member1)
+
+        val left = members.filter { it.id!! >= randomMemberId }.sortedBy { it.id }
+        val right = members.filter { it.id!! in 1..<randomMemberId }.sortedBy { it.id }
+
+        val responseMember = left + right
+
+        responseMember.shuffled(random)
+
+        assertThat(response.content.map { it.memberId })
+            .containsExactlyElementsOf(response.map { it.memberId })
+    }
+
+    @DisplayName("회원 프로필 이미지를 수정한다.")
+    @Test
+    fun modifyMemberProfileImageUrl() {
+        // given
+        val member = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(member)
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest, member.id!!)
+
+        val request = MemberUpdateServiceRequest(
+            profileImageUrl = "updateProfile"
+        )
+
+        // when
+        memberService.modifyMember(member.id!!, request)
+
+        em.flush()
+        em.clear()
+
+        // then
+        val findMemberImage = memberImageRepository.findWithImageByMemberIdAndProfileAndDeletedAtIsNull(member.id!!)
+        val findImage = findMemberImage!!.image
+        assertThat(findImage!!.url).isEqualTo("updateProfile")
+    }
+
+    @DisplayName("회원 별명을 수정한다.")
+    @Test
+    fun modifyMemberNickname() {
+        // given
+        val member = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(member)
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest, member.id!!)
+
+        val request = MemberUpdateServiceRequest(
+            nickname = "updateNickname"
+        )
+
+        // when
+        memberService.modifyMember(member.id!!, request)
+
+        em.flush()
+        em.clear()
+
+        // then
+        val findMember = memberRepository.findAll()[0]
+        assertThat(findMember.nickname).isEqualTo("updateNickname")
+    }
+
+
+    @DisplayName("회원 자기소개를 수정한다.")
+    @Test
+    fun modifyMemberIntro() {
+        // given
+        val member = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(member)
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest, member.id!!)
+
+        val request = MemberUpdateServiceRequest(
+            intro = "updateIntro"
+        )
+
+        // when
+        memberService.modifyMember(member.id!!, request)
+
+        em.flush()
+        em.clear()
+
+        // then
+        val findMember = memberRepository.findAll()[0]
+        assertThat(findMember.intro).isEqualTo("updateIntro")
+    }
+
+    @DisplayName("회원 키를 수정한다.")
+    @Test
+    fun modifyMemberHeight() {
+        // given
+        val member = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(member)
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest, member.id!!)
+
+        val request = MemberUpdateServiceRequest(
+            height = 155
+        )
+
+        // when
+        memberService.modifyMember(member.id!!, request)
+
+        em.flush()
+        em.clear()
+
+        // then
+        val findMember = memberRepository.findAll()[0]
+        assertThat(findMember.height).isEqualTo(155)
+    }
+
+    @DisplayName("회원 체중을 수정한다.")
+    @Test
+    fun modifyMemberWeight() {
+        // given
+        val member = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(member)
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest, member.id!!)
+
+        val request = MemberUpdateServiceRequest(
+            weight = 99
+        )
+
+        // when
+        memberService.modifyMember(member.id!!, request)
+
+        em.flush()
+        em.clear()
+
+        // then
+        val findMember = memberRepository.findAll()[0]
+        assertThat(findMember.weight).isEqualTo(99)
+    }
+
+    @DisplayName("회원 생일을 수정한다.")
+    @Test
+    fun modifyMemberBirthday() {
+        // given
+        val member = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(member)
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest, member.id!!)
+
+        val request = MemberUpdateServiceRequest(
+            birthday = LocalDate.of(1999,12,30)
+        )
+
+        // when
+        memberService.modifyMember(member.id!!, request)
+
+        em.flush()
+        em.clear()
+
+        // then
+        val findMember = memberRepository.findAll()[0]
+        assertThat(findMember.birthday).isEqualTo(LocalDate.of(1999,12,30))
+    }
+
+    @DisplayName("회원 운동 경험을 수정한다.")
+    @Test
+    fun modifyMemberWorkoutExperience() {
+        // given
+        val member = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(member)
+        val signupRequest = TestDataFactory.oAuth2SignupRequest(
+            workoutExperience = MemberWorkoutExperience.JUST_STARTED
+        )
+        oAuth2Service.signup(signupRequest, member.id!!)
+
+        val request = MemberUpdateServiceRequest(
+            workoutExperience = MemberWorkoutExperience.FOUR_TO_SIX_YEARS
+        )
+
+        // when
+        memberService.modifyMember(member.id!!, request)
+
+        em.flush()
+        em.clear()
+
+        // then
+        val findMember = memberRepository.findAll()[0]
+        assertThat(findMember.workoutExperience).isEqualTo(MemberWorkoutExperience.FOUR_TO_SIX_YEARS)
+    }
+
+    @DisplayName("회원 운동 스타일을 수정한다.")
+    @Test
+    fun modifyMemberWorkoutStyle() {
+        // given
+        val member = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(member)
+        val signupRequest = TestDataFactory.oAuth2SignupRequest(
+            workoutStyle = MemberWorkoutStyle.PARTNER
+        )
+        oAuth2Service.signup(signupRequest, member.id!!)
+
+        val request = MemberUpdateServiceRequest(
+            workoutStyle = MemberWorkoutStyle.PERFORMANCE
+        )
+
+        // when
+        memberService.modifyMember(member.id!!, request)
+
+        em.flush()
+        em.clear()
+
+        // then
+        val findMember = memberRepository.findAll()[0]
+        assertThat(findMember.workoutStyle).isEqualTo(MemberWorkoutStyle.PERFORMANCE)
+    }
+
+    @DisplayName("회원 운동 목표를 수정한다.")
+    @Test
+    fun modifyMemberWorkoutGoal() {
+        // given
+        val member = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(member)
+        val signupRequest = TestDataFactory.oAuth2SignupRequest(
+            workoutGoal = MemberWorkoutGoal.BODY_CORRECTION
+        )
+        oAuth2Service.signup(signupRequest, member.id!!)
+
+        val request = MemberUpdateServiceRequest(
+            workoutGoal = MemberWorkoutGoal.HEALTH_MAINTENANCE
+        )
+
+        // when
+        memberService.modifyMember(member.id!!, request)
+
+        em.flush()
+        em.clear()
+
+        // then
+        val findMember = memberRepository.findAll()[0]
+        assertThat(findMember.workoutGoal).isEqualTo(MemberWorkoutGoal.HEALTH_MAINTENANCE)
+    }
+
+    @DisplayName("회원 운동 시간을 수정한다.")
+    @Test
+    fun modifyMemberWorkoutTimes() {
+        // given
+        val member = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(member)
+        val signupRequest = TestDataFactory.oAuth2SignupRequest(
+            workoutTimes = listOf(
+                WorkoutTimeName.WEEKDAY_DAWN,
+                WorkoutTimeName.WEEKDAY_EVENING
+            ),
+        )
+        oAuth2Service.signup(signupRequest, member.id!!)
+
+        val request = MemberUpdateServiceRequest(
+            workoutTimes = listOf(
+                WorkoutTimeName.WEEKEND_AFTERNOON,
+                WorkoutTimeName.WEEKEND_MORNING
+            ),
+        )
+
+        // when
+        memberService.modifyMember(member.id!!, request)
+
+        em.flush()
+        em.clear()
+
+        // then
+        val findMember = memberRepository.findById(member.id!!).orElseThrow()
+        val findWorkoutTimes = workoutTimeRepository.findAllByMemberIdAndDeletedAtIsNull(member.id!!)
+
+        assertThat(findWorkoutTimes).hasSize(2)
+        assertThat(findWorkoutTimes)
+            .extracting("member", "name")
+            .containsExactlyInAnyOrder(
+                tuple(findMember, WorkoutTimeName.WEEKEND_AFTERNOON),
+                tuple(findMember, WorkoutTimeName.WEEKEND_MORNING)
+            )
+    }
+
+    @DisplayName("회원 운동 사진을 수정한다.")
+    @Test
+    fun modifyMemberWorkoutImageUrls() {
+        // given
+        val member = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(member)
+        val signupRequest = TestDataFactory.oAuth2SignupRequest(
+            workoutImageUrls = listOf(
+                "workoutImageUrl1",
+                "workoutImageUrl2",
+            )
+        )
+        oAuth2Service.signup(signupRequest, member.id!!)
+
+        val request = MemberUpdateServiceRequest(
+            workoutImageUrls = listOf(
+                "updateWorkoutImageUrl1",
+                "updateWorkoutImageUrl2",
+            )
+        )
+
+        // when
+        memberService.modifyMember(member.id!!, request)
+
+        em.flush()
+        em.clear()
+
+        // then
+        val findWorkoutImages = memberImageRepository.findWithImageByMemberIdAndWorkoutAndDeletedAtIsNull(member.id!!)
+        val findImages = findWorkoutImages.map{it.image}
+
+        assertThat(findImages)
+            .extracting("url")
+            .containsExactlyInAnyOrder(
+                "updateWorkoutImageUrl1",
+                "updateWorkoutImageUrl2"
+            )
+    }
 }

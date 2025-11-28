@@ -1,9 +1,20 @@
 package kr.co.fitview.api.app.domain.member.service
 
+import kr.co.fitview.api.app.domain.address.constant.AddressConstant
+import kr.co.fitview.api.app.domain.address.entity.Address
+import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
+import kr.co.fitview.api.app.domain.address.service.AddressService
+import kr.co.fitview.api.app.domain.image.service.ImageService
 import kr.co.fitview.api.app.domain.member.condition.MemberLocalCondition
+import kr.co.fitview.api.app.domain.member.dto.BoundingBox
+import kr.co.fitview.api.app.domain.member.dto.request.MemberUpdateRequest
+import kr.co.fitview.api.app.domain.member.dto.request.MemberUpdateServiceRequest
 import kr.co.fitview.api.app.domain.member.dto.response.*
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.entity.WorkoutTime
+import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutExperience
+import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutGoal
+import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutStyle
 import kr.co.fitview.api.app.domain.member.entity.enums.WorkoutTimeName
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.domain.member.repository.WorkoutTimeRepository
@@ -17,6 +28,8 @@ import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDate
+import kotlin.math.cos
 import kotlin.random.Random
 
 
@@ -26,6 +39,8 @@ class MemberService(
     private val memberRepository : MemberRepository,
     private val workoutTimeRepository: WorkoutTimeRepository,
     private val workoutPartnerService : WorkoutPartnerService,
+    private val addressService : AddressService,
+    private val imageService : ImageService,
     private val time : Time
 ) {
 
@@ -48,13 +63,15 @@ class MemberService(
 
         val findWorkoutTimes = workoutTimeRepository.findAllByMemberIdAndDeletedAtIsNull(member.id!!)
 
-        val findWorkoutTimeNameSet = createWorkoutTimeNameSet(findWorkoutTimes)
+        findWorkoutTimes.forEach{
+            it.delete(time.nowLocalDateTime)
+        }
 
-        val newWorkoutTimes = createNewWorkoutTimes(workoutTimeNames, findWorkoutTimeNameSet, member)
+        val newWorkoutTimes = createNewWorkoutTimes(workoutTimeNames, member)
 
         workoutTimeRepository.saveAll(newWorkoutTimes)
 
-        return findWorkoutTimes + newWorkoutTimes
+        return newWorkoutTimes
     }
 
     @Transactional
@@ -63,6 +80,66 @@ class MemberService(
             ?: throw GlobalException(MemberErrorCode.MEMBER_NOT_FOUND)
 
         return findMember.delete(time.nowLocalDateTime)
+    }
+
+    @Transactional
+    fun modifyMember(memberId: Long, request: MemberUpdateServiceRequest) : Member{
+        val findMember = findMemberOrElseThrow(memberId)
+
+        if(isNotNull(request.nickname)){
+            findMember.nickname = request.nickname
+        }
+
+        if(isNotNull(request.intro)){
+            findMember.intro = request.intro
+        }
+
+        if(isNotNull(request.height)){
+            findMember.height = request.height
+        }
+
+        if(isNotNull(request.weight)){
+            findMember.weight = request.weight
+        }
+
+        if(isNotNull(request.birthday)){
+            findMember.birthday = request.birthday
+        }
+
+        if(isNotNull(request.workoutExperience)){
+            findMember.workoutExperience = request.workoutExperience
+        }
+
+        if(isNotNull(request.workoutStyle)){
+            findMember.workoutStyle = request.workoutStyle
+        }
+
+        if(isNotNull(request.workoutGoal)){
+            findMember.workoutGoal = request.workoutGoal
+        }
+
+        if(isNotNull(request.workoutTimes)){
+            this.addWorkoutTimes(
+                member = findMember,
+                workoutTimeNames = request.workoutTimes!!
+            )
+        }
+
+        if(isNotNull(request.profileImageUrl)){
+            imageService.saveMemberImageProfile(
+                member = findMember,
+                profileImageUrl = request.profileImageUrl!!
+            )
+        }
+
+        if(isNotNull(request.workoutImageUrls)){
+            imageService.saveMemberImageWorkouts(
+                member = findMember,
+                imageUrls = request.workoutImageUrls!!
+            )
+        }
+
+        return findMember
     }
 
     fun findMemberFromEmail(email : String) : Member?{
@@ -97,11 +174,6 @@ class MemberService(
         return MemberDetailResponse(otherProfile, findWorkoutPartnerStatus)
     }
 
-
-    fun findMemberReferenceFrom(memberId : Long)  : Member{
-        return memberRepository.getReferenceById(memberId)
-    }
-
     fun findMemberChatProfileFrom(memberId: Long): MemberChatProfileResponse? {
         return memberRepository.findMemberChatProfileByDeletedAtIsNull(memberId)
     }
@@ -111,22 +183,20 @@ class MemberService(
         condition: MemberLocalCondition,
         seed: Long
     ): Page<MemberLocalResponse> {
-
-        val findMembers = memberRepository.findMemberWithinLocal(memberId, condition)
+        val findMemberMaxId = memberRepository.findMemberMaxId()
+            ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
 
         val random = Random(seed)
+        val randomMemberId = random.nextLong(1, findMemberMaxId + 1)
+
+        val findAddress = addressService.findAddressEntityFrom(memberId)
+        val boundingBox = createBoundingBox(findAddress!!)
+
+        val findMembers = memberRepository.findMemberWithinLocal(memberId, randomMemberId, boundingBox, condition)
+
         val shuffledMembers = findMembers.shuffled(random)
 
-        val page = (condition.page ?: 1).coerceAtLeast(1)
-        val size = condition.size ?: 10
-
-        val fromIndex = (page - 1) * size
-        val toIndex = (fromIndex + size).coerceAtMost(shuffledMembers.size)
-
-        val pageContent = if (fromIndex >= shuffledMembers.size) emptyList()
-        else shuffledMembers.subList(fromIndex, toIndex)
-
-        return PageImpl(pageContent, PageRequest.of(page - 1, size), shuffledMembers.size.toLong())
+        return createProfilePage(condition, shuffledMembers)
     }
 
     fun findRandomMemberWithinRecommendation(memberId: Long) : List<MemberRecommendationResponse>{
@@ -162,17 +232,56 @@ class MemberService(
         }
     }
 
-    private fun createWorkoutTimeNameSet(workoutTimes: List<WorkoutTime>) : Set<WorkoutTimeName> =
-        workoutTimes.map { it.name!! }.toSet()
 
     private fun createNewWorkoutTimes(
         workoutTimeNames: List<WorkoutTimeName>,
-        findWorkoutNameSet: Set<WorkoutTimeName>,
         member: Member
     ) = workoutTimeNames
-        .filterNot { it in findWorkoutNameSet }
         .map { WorkoutTime(member = member, name = it) }
 
+    private fun createBoundingBox(address: Address) : BoundingBox {
+        var lat = address.lat
+        var lng = address.lng
 
+        if(address.siDo != AddressSiDo.SEOUL){
+            lat = AddressConstant.DEFAULT_LAT
+            lng = AddressConstant.DEFAULT_LNG
+        }
 
+        val latDeg = address.radiusKm?.div(111)
+        val latRad = Math.toRadians(address.lat!!)
+        val lngDeg = address.radiusKm?.div(111 * cos(latRad))
+
+        val minLat = lat?.minus(latDeg!!)
+        val maxLat = lat?.plus(latDeg!!)
+
+        val minLng = lng?.minus(lngDeg!!)
+        val maxLng = lng?.plus(lngDeg!!)
+
+        return BoundingBox(
+            minLat = minLat!!,
+            maxLat = maxLat!!,
+            minLng = minLng!!,
+            maxLng = maxLng!!
+        )
+    }
+
+    private fun createProfilePage(
+        condition: MemberLocalCondition,
+        shuffledMembers: List<MemberLocalResponse>
+    ): PageImpl<MemberLocalResponse> {
+
+        val page = (condition.page).coerceAtLeast(1)
+        val size = condition.size
+
+        val fromIndex = (page - 1) * size
+        val toIndex = (fromIndex + size).coerceAtMost(shuffledMembers.size)
+
+        val pageContent = if (fromIndex >= shuffledMembers.size) emptyList()
+        else shuffledMembers.subList(fromIndex, toIndex)
+
+        return PageImpl(pageContent, PageRequest.of(page - 1, size), shuffledMembers.size.toLong())
+    }
+
+    private fun isNotNull(value : Any?) = value != null
 }
