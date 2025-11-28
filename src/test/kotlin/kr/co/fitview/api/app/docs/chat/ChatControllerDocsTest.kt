@@ -15,6 +15,7 @@ import kr.co.fitview.api.app.domain.workout.dto.response.LastWorkoutRequestMessa
 import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusForResponse
 import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestService
 import kr.co.fitview.api.app.global.entity.Role
+import kr.co.fitview.api.app.global.enums.Direction
 import kr.co.fitview.api.app.global.util.SecurityUtil
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -347,7 +348,9 @@ class ChatControllerDocsTest : RestDocsSupport() {
 
                     queryParameters(
                         parameterWithName("size").optional().description("(Optional - default 10) 조회 크기"),
-                        parameterWithName("lastMessageAt").optional().description("Optional - 해당 시간보다 더 옛날 시점의 메시지 조회")
+                        parameterWithName("lastMessageAt").optional().description("Optional - 기준 메시지 시간 - direction과 혼합 시, lastMessageAt 기점으로 ASC, DESC 문자 조회"),
+                        parameterWithName("direction").optional().description("Optional - ASC(오래된 메시지 -> 최신 메시지 조회), DESC(최신 메시지 -> 오래된 메시지 조회)" + Direction.allDescription())
+
                     ),
 
                     responseFields(
@@ -406,7 +409,8 @@ class ChatControllerDocsTest : RestDocsSupport() {
 
                     queryParameters(
                         parameterWithName("size").optional().description("(Optional - default 10) 조회 크기"),
-                        parameterWithName("lastMessageAt").optional().description("Optional - 해당 시간보다 더 옛날 시점의 메시지 조회")
+                        parameterWithName("lastMessageAt").optional().description("Optional - 기준 메시지 시간 - direction과 혼합 시, lastMessageAt 기점으로 ASC, DESC 문자 조회"),
+                        parameterWithName("direction").optional().description("Optional - ASC(오래된 메시지 -> 최신 메시지 조회), DESC(최신 메시지 -> 오래된 메시지 조회)" + Direction.allDescription())
                     ),
 
                     responseFields(

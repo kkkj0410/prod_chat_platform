@@ -395,7 +395,7 @@ class ChatMessageRepositoryTest @Autowired constructor(
     }
 
     @DisplayName("채팅방의 메시지를 최근순으로 조회한다.")
-//    @Test
+    @Test
     fun findChatMessageByConditionAsc() {
         //given
         val me = Member(
