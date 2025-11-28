@@ -349,7 +349,7 @@ class ChatControllerDocsTest : RestDocsSupport() {
                     queryParameters(
                         parameterWithName("size").optional().description("(Optional - default 10) 조회 크기"),
                         parameterWithName("lastMessageAt").optional().description("Optional - 기준 메시지 시간 - direction과 혼합 시, lastMessageAt 기점으로 ASC, DESC 문자 조회"),
-                        parameterWithName("direction").optional().description("Optional - ASC(오래된 메시지 -> 최신 메시지 조회), DESC(최신 메시지 -> 오래된 메시지 조회)" + Direction.allDescription())
+                        parameterWithName("direction").optional().description("Optional(기본 DESC) - ASC(오래된 메시지 -> 최신 메시지 조회), DESC(최신 메시지 -> 오래된 메시지 조회)" + Direction.allDescription())
 
                     ),
 
@@ -410,7 +410,7 @@ class ChatControllerDocsTest : RestDocsSupport() {
                     queryParameters(
                         parameterWithName("size").optional().description("(Optional - default 10) 조회 크기"),
                         parameterWithName("lastMessageAt").optional().description("Optional - 기준 메시지 시간 - direction과 혼합 시, lastMessageAt 기점으로 ASC, DESC 문자 조회"),
-                        parameterWithName("direction").optional().description("Optional - ASC(오래된 메시지 -> 최신 메시지 조회), DESC(최신 메시지 -> 오래된 메시지 조회)" + Direction.allDescription())
+                        parameterWithName("direction").optional().description("Optional(기본 DESC) - ASC(오래된 메시지 -> 최신 메시지 조회), DESC(최신 메시지 -> 오래된 메시지 조회)" + Direction.allDescription())
                     ),
 
                     responseFields(
