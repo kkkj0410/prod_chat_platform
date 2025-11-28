@@ -8,6 +8,12 @@ plugins {
 	id ("org.asciidoctor.jvm.convert") version "4.0.5"
 }
 
+if (project.hasProperty("local")) {
+	tasks.withType<Test>().configureEach {
+		isEnabled = false
+	}
+}
+
 group = "kr.co.fitview.api"
 version = "0.0.1-SNAPSHOT"
 description = "fitview 2nd app"

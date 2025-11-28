@@ -256,9 +256,9 @@ class MemberControllerDocsTest : RestDocsSupport() {
                         fieldWithPath("workoutGoal").type(JsonFieldType.STRING).optional()
                             .description("사용자 운동 목표" + MemberWorkoutGoal.allDescription()),
                         fieldWithPath("workoutTimes").type(JsonFieldType.ARRAY).optional()
-                            .description("사용자 운동 가능 시간 리스트" + WorkoutTimeName.allDescription()),
+                            .description("사용자 운동 가능 시간 리스트 - 빈 배열 불가 " + WorkoutTimeName.allDescription()),
                         fieldWithPath("workoutImageUrls").type(JsonFieldType.ARRAY).optional()
-                            .description("사용자가 등록한 운동 사진 URL 리스트")
+                            .description("사용자가 등록한 운동 사진 URL 리스트 - 빈 배열 불가")
                     ),
 
                     responseFields(

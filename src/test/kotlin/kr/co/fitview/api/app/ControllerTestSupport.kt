@@ -8,10 +8,7 @@ import kr.co.fitview.api.app.domain.auth.service.AuthService
 import kr.co.fitview.api.app.domain.auth.service.RefreshTokenService
 import kr.co.fitview.api.app.domain.auth.service.TestAuthService
 import kr.co.fitview.api.app.domain.chat.controller.ChatController
-import kr.co.fitview.api.app.domain.chat.service.ChatMessageService
-import kr.co.fitview.api.app.domain.chat.service.ChatParticipantService
-import kr.co.fitview.api.app.domain.chat.service.ChatRoomService
-import kr.co.fitview.api.app.domain.chat.service.ChatService
+import kr.co.fitview.api.app.domain.chat.service.*
 import kr.co.fitview.api.app.domain.image.controller.ImageController
 import kr.co.fitview.api.app.domain.image.service.S3Service
 import kr.co.fitview.api.app.domain.member.controller.MemberController
@@ -119,6 +116,9 @@ abstract class ControllerTestSupport {
 
     @MockitoBean
     protected lateinit var workoutRequestService: WorkoutRequestService
+
+    @MockitoBean
+    protected lateinit var messageReadStatusService: MessageReadStatusService
 
     @MockitoBean
     protected lateinit var notificationStompService: NotificationStompService

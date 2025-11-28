@@ -1,5 +1,6 @@
 package kr.co.fitview.api.app.domain.member.controller
 
+import jakarta.validation.Valid
 import kr.co.fitview.api.app.domain.address.service.AddressService
 import kr.co.fitview.api.app.domain.member.condition.MemberLocalCondition
 import kr.co.fitview.api.app.domain.address.dto.response.AddressResponse
@@ -36,6 +37,7 @@ class MemberController(
 
     @PatchMapping("/me")
     fun memberModify(
+        @Valid
         @RequestBody
         request : MemberUpdateRequest
     ) : ResponseEntity<ApiResponse<*>> {

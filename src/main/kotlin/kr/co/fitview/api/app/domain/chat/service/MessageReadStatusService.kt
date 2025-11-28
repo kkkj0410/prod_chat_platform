@@ -52,4 +52,8 @@ class MessageReadStatusService(
 
         return listOf(meMessageReadStatus, otherMessageReadStatus)
     }
+
+    fun modifyMessageReadStatusFrom(memberId: Long, chatRoomId: Long) {
+        messageReadStatusRepository.updateAllMessageReadStatusBy(memberId, chatRoomId)
+    }
 }
