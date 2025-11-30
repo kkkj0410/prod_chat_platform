@@ -19,6 +19,7 @@ import kr.co.fitview.api.app.domain.member.entity.enums.WorkoutTimeName
 import kr.co.fitview.api.app.domain.member.service.MemberService
 import kr.co.fitview.api.app.global.entity.Gender
 import kr.co.fitview.api.app.global.entity.Role
+import kr.co.fitview.api.app.global.enums.Direction
 import kr.co.fitview.api.app.global.util.SecurityUtil
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -332,7 +333,7 @@ class MemberControllerDocsTest : RestDocsSupport() {
     @DisplayName("추천 핏버디 API")
     @Test
     fun memberRecommendationList() {
-        given(memberService.findRandomMemberWithinRecommendation(any()))
+        given(memberService.findRandomMemberWithinRecommendation(any(), any(), any()))
             .willReturn(
                 listOf(
                     MemberRecommendationResponse(
@@ -360,6 +361,7 @@ class MemberControllerDocsTest : RestDocsSupport() {
         mockMvc.perform(
             get("/api/v1/members/recommendations")
                 .header("Authorization", "Bearer jwt-token")
+                .param("size", "10")
         )
             .andDo(print())
             .andExpect(status().isOk())
@@ -371,6 +373,10 @@ class MemberControllerDocsTest : RestDocsSupport() {
 
                     requestHeaders(
                         RestDocsHeaders.authorizationHeader(Role.USER)
+                    ),
+
+                    queryParameters(
+                        parameterWithName("size").optional().description("(Optional - default 10) 조회 크기"),
                     ),
 
                     responseFields(

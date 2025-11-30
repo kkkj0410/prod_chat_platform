@@ -58,13 +58,11 @@ class MemberController(
 
     @GetMapping("/recommendations")
     fun memberRecommendationList(
-
+        @RequestParam(name = "size", defaultValue = "10") size: Int
     ) : ResponseEntity<ApiResponse<List<MemberRecommendationResponse>>> {
 
+        val response = memberService.findRandomMemberWithinRecommendation(securityUtil.getMemberId(), size)
 
-        val response = memberService.findRandomMemberWithinRecommendation(securityUtil.getMemberId())
-
-        // 최대 10개 응답
         return ResponseEntity.ok(ApiResponse.success(response))
     }
 

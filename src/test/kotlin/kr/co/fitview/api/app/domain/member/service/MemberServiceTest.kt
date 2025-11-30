@@ -1,6 +1,5 @@
 package kr.co.fitview.api.app.domain.member.service
 
-import com.nimbusds.jose.jwk.JWKSet
 import jakarta.persistence.EntityManager
 import jakarta.persistence.EntityNotFoundException
 import kr.co.fitview.api.app.IntegrationTestSupport
@@ -24,7 +23,6 @@ import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.domain.member.repository.WorkoutTimeRepository
 import kr.co.fitview.api.app.domain.oauth2.dto.request.OAuth2SignupServiceRequest
 import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
-import kr.co.fitview.api.app.domain.workout_partner.dto.request.enums.WorkoutPartnerRequestType
 import kr.co.fitview.api.app.global.entity.Gender
 import kr.co.fitview.api.app.global.entity.OAuth2Provider
 import kr.co.fitview.api.app.global.exception.GlobalException
@@ -41,7 +39,6 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.given
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
-import kotlin.random.Random
 
 class MemberServiceTest @Autowired constructor(
     val memberService : MemberService,
@@ -1659,29 +1656,215 @@ class MemberServiceTest @Autowired constructor(
             )
     }
 
-    @DisplayName("랜덤 셔플링 시, seed가 동일해도 1번 셔플링했을때와 2번 셔플링했을때 결과 값이 다르다")
+    @DisplayName("추천 핏버디 - 운동 경력/스타일/목표가 2개 이상 맞는 회원을 조회한다.")
     @Test
-    fun shuffled() {
+    fun findRandomMemberWithinRecommendation() {
         // given
-        val values = listOf(1, 2, 3)
-        val trash = listOf(4, 5, 6)
-        val seed = 1234L
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+        val signupRequest = TestDataFactory.oAuth2SignupRequest(
+            workoutExperience = MemberWorkoutExperience.FOUR_TO_SIX_YEARS,
+            workoutStyle = MemberWorkoutStyle.PARTNER,
+            workoutGoal = MemberWorkoutGoal.STRENGTH_GAIN
+        )
+        oAuth2Service.signup(signupRequest, me.id!!)
 
-        val random1 = Random(seed)
-        val random2 = Random(seed)
-        val random3 = Random(seed)
+        val matchMember1 = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(matchMember1)
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "update1",
+            workoutExperience = MemberWorkoutExperience.JUST_STARTED,
+            workoutStyle = MemberWorkoutStyle.PARTNER,
+            workoutGoal = MemberWorkoutGoal.STRENGTH_GAIN,
+            workoutImageUrls = listOf("updateMember1Workout1", "updateMember1Workout2")
+        )
+        oAuth2Service.signup(signupRequest2, matchMember1.id!!)
+
+        val matchMember2 = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(matchMember2)
+        val signupRequest3 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "update2",
+            workoutExperience = MemberWorkoutExperience.FOUR_TO_SIX_YEARS,
+            workoutStyle = MemberWorkoutStyle.TENSION,
+            workoutGoal = MemberWorkoutGoal.STRENGTH_GAIN,
+            workoutImageUrls = listOf("updateMember2Workout1", "updateMember2Workout2")
+        )
+        oAuth2Service.signup(signupRequest3, matchMember2.id!!)
+
+        val matchMember3 = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(matchMember3)
+        val signupRequest4 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "update3",
+            workoutExperience = MemberWorkoutExperience.OVER_SEVEN_YEARS,
+            workoutStyle = MemberWorkoutStyle.PARTNER,
+            workoutGoal = MemberWorkoutGoal.STRENGTH_GAIN,
+            workoutImageUrls = listOf("updateMember3Workout1", "updateMember3Workout2")
+        )
+        oAuth2Service.signup(signupRequest4, matchMember3.id!!)
+
+        val notMatchMember1 = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val address1 = AddressCreateServiceRequest(
+            siDo = AddressSiDo.BUSAN,
+            siGunGu = "siGunGu",
+            eupMyeonDong = "eupMyeonDong",
+            lat = 37.4979,
+            lng = 127.0276,
+            fullAddress = "fullAddress"
+        )
+        memberRepository.save(notMatchMember1)
+        val signupRequest5 = TestDataFactory.oAuth2SignupRequest(
+            workoutExperience = MemberWorkoutExperience.JUST_STARTED,
+            workoutStyle = MemberWorkoutStyle.PERFORMANCE,
+            workoutGoal = MemberWorkoutGoal.STRENGTH_GAIN,
+            address = address1
+        )
+        oAuth2Service.signup(signupRequest5, notMatchMember1.id!!)
+
+        val seed = 123L
 
         // when
-        val shuffledValues1 = values.shuffled(random1)
-
-        trash.shuffled(random2)
-        val shuffledValues2 = values.shuffled(random2)
-
-        val shuffledValues3 = values.shuffled(random3)
-
+        val response = memberService.findRandomMemberWithinRecommendation(
+            memberId = me.id!!,
+            size = 10,
+            seed = seed
+        )
 
         // then
-        assertThat(shuffledValues1).isNotEqualTo(shuffledValues2)
-        assertThat(shuffledValues1).isEqualTo(shuffledValues3)
+        assertThat(response).hasSize(3)
+        assertThat(response)
+            .extracting("memberId", "nickname", "workoutImageUrl")
+            .containsExactlyInAnyOrder(
+                tuple(matchMember1.id!!, "update1", "updateMember1Workout1"),
+                tuple(matchMember2.id!!, "update2", "updateMember2Workout1"),
+                tuple(matchMember3.id!!, "update3", "updateMember3Workout1"),
+            )
     }
+
+    @DisplayName("추천 핏버디 조회 시, 조회 개수가 못미치면 아무 서울 인원도 추가 조회한다.")
+    @Test
+    fun findRandomMemberWithinRecommendationNotEnoughMember() {
+        // given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+        val signupRequest = TestDataFactory.oAuth2SignupRequest(
+            workoutExperience = MemberWorkoutExperience.FOUR_TO_SIX_YEARS,
+            workoutStyle = MemberWorkoutStyle.PARTNER,
+            workoutGoal = MemberWorkoutGoal.STRENGTH_GAIN
+        )
+        oAuth2Service.signup(signupRequest, me.id!!)
+
+        val matchMember1 = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(matchMember1)
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "update1",
+            workoutExperience = MemberWorkoutExperience.JUST_STARTED,
+            workoutStyle = MemberWorkoutStyle.PARTNER,
+            workoutGoal = MemberWorkoutGoal.STRENGTH_GAIN,
+            workoutImageUrls = listOf("updateMember1Workout1", "updateMember1Workout2")
+        )
+        oAuth2Service.signup(signupRequest2, matchMember1.id!!)
+
+        val matchMember2 = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(matchMember2)
+        val signupRequest3 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "update2",
+            workoutExperience = MemberWorkoutExperience.FOUR_TO_SIX_YEARS,
+            workoutStyle = MemberWorkoutStyle.TENSION,
+            workoutGoal = MemberWorkoutGoal.STRENGTH_GAIN,
+            workoutImageUrls = listOf("updateMember2Workout1", "updateMember2Workout2")
+        )
+        oAuth2Service.signup(signupRequest3, matchMember2.id!!)
+
+        val matchMember3 = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(matchMember3)
+        val signupRequest4 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "update3",
+            workoutExperience = MemberWorkoutExperience.OVER_SEVEN_YEARS,
+            workoutStyle = MemberWorkoutStyle.PARTNER,
+            workoutGoal = MemberWorkoutGoal.STRENGTH_GAIN,
+            workoutImageUrls = listOf("updateMember3Workout1", "updateMember3Workout2")
+        )
+        oAuth2Service.signup(signupRequest4, matchMember3.id!!)
+
+        val notMatchMember1 = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val address1 = AddressCreateServiceRequest(
+            siDo = AddressSiDo.SEOUL,
+            siGunGu = "siGunGu",
+            eupMyeonDong = "eupMyeonDong",
+            lat = 37.4979,
+            lng = 127.0276,
+            fullAddress = "fullAddress"
+        )
+        memberRepository.save(notMatchMember1)
+        val signupRequest5 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "update4",
+            workoutExperience = MemberWorkoutExperience.FOUR_TO_SIX_YEARS,
+            workoutStyle = MemberWorkoutStyle.PARTNER,
+            workoutGoal = MemberWorkoutGoal.STRENGTH_GAIN,
+            address = address1,
+            workoutImageUrls = listOf("updateMember4Workout1", "updateMember4Workout2")
+        )
+        oAuth2Service.signup(signupRequest5, notMatchMember1.id!!)
+
+        val seed = 123L
+
+        // when
+        val response = memberService.findRandomMemberWithinRecommendation(
+            memberId = me.id!!,
+            size = 10,
+            seed = seed
+        )
+
+        // then
+        assertThat(response).hasSize(4)
+        assertThat(response)
+            .extracting("memberId", "nickname", "workoutImageUrl")
+            .containsExactlyInAnyOrder(
+                tuple(matchMember1.id!!, "update1", "updateMember1Workout1"),
+                tuple(matchMember2.id!!, "update2", "updateMember2Workout1"),
+                tuple(matchMember3.id!!, "update3", "updateMember3Workout1"),
+                tuple(notMatchMember1.id!!, "update4", "updateMember4Workout1"),
+            )
+    }
+
 }
