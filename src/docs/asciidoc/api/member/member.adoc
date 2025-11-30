@@ -52,6 +52,7 @@ API 호출할때마다, 조회되는 회원은 랜덤으로 바뀜
 ==== HTTP Request
 include::{snippets}/member-recommendation/http-request.adoc[]
 include::{snippets}/member-recommendation/request-headers.adoc[]
+include::{snippets}/member-recommendation/query-parameters.adoc[]
 
 ==== HTTP Response
 include::{snippets}/member-recommendation/http-response.adoc[]

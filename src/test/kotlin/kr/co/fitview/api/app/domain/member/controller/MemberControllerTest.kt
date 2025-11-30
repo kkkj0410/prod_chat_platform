@@ -6,10 +6,7 @@ import kr.co.fitview.api.app.domain.address.dto.response.AddressResponse
 import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
 import kr.co.fitview.api.app.domain.member.dto.request.Age
 import kr.co.fitview.api.app.domain.member.dto.request.MemberUpdateRequest
-import kr.co.fitview.api.app.domain.member.dto.response.MemberDetailResponse
-import kr.co.fitview.api.app.domain.member.dto.response.MemberProfileResponse
-import kr.co.fitview.api.app.domain.member.dto.response.OtherMemberProfileResponse
-import kr.co.fitview.api.app.domain.member.dto.response.WorkoutPartnerStatusResponse
+import kr.co.fitview.api.app.domain.member.dto.response.*
 import kr.co.fitview.api.app.domain.member.dto.response.enums.ProfileWorkoutPartnerStatus
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutExperience
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutGoal
@@ -28,6 +25,9 @@ import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.given
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.PageRequest
 import org.springframework.http.MediaType
 import org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document
@@ -248,5 +248,137 @@ class MemberControllerTest : ControllerTestSupport() {
             .andExpect(jsonPath("$.status").value("400"))
             .andExpect(jsonPath("$.message").value("workoutImageUrls cannot be empty"))
             .andExpect(jsonPath("$.data").isEmpty())
+    }
+
+    @DisplayName("추천 핏버디(운동 경력/스타일/목적이 2개 이상 일치) 회원을 조회한다. ")
+    @Test
+    fun memberRecommendationList() {
+        given(memberService.findRandomMemberWithinRecommendation(any(), any(), any()))
+            .willReturn(
+                listOf(
+                    MemberRecommendationResponse(
+                        memberId = 1L,
+                        nickname = "홍길동",
+                        workoutExperience = MemberWorkoutExperience.FOUR_TO_SIX_YEARS,
+                        workoutStyle = MemberWorkoutStyle.CARDIO,
+                        workoutGoal = MemberWorkoutGoal.WEIGHT_LOSS,
+                        profileImageUrl = "https://example.com/profile/1.jpg",
+                        workoutImageUrl = "https://example.com/workout/1.jpg"
+                    ),
+                    MemberRecommendationResponse(
+                        memberId = 2L,
+                        nickname = "김철수",
+                        workoutExperience = MemberWorkoutExperience.UNDER_ONE_YEAR,
+                        workoutStyle = MemberWorkoutStyle.BALANCE,
+                        workoutGoal = MemberWorkoutGoal.PERFORMANCE_GOAL,
+                        profileImageUrl = "https://example.com/profile/2.jpg",
+                        workoutImageUrl = null
+                    )
+                )
+            )
+
+        // when // then
+        mockMvc.perform(
+            get("/api/v1/members/recommendations")
+                .header("Authorization", "Bearer jwt-token")
+        )
+            .andDo(print())
+            .andExpect(status().isOk())
+
+            .andExpect(jsonPath("$.status").exists())
+            .andExpect(jsonPath("$.code").value("ok"))
+            .andExpect(jsonPath("$.message").value("ok"))
+
+            .andExpect(jsonPath("$.data[0].memberId").value(1L))
+            .andExpect(jsonPath("$.data[0].nickname").value("홍길동"))
+            .andExpect(jsonPath("$.data[0].workoutExperience").value("FOUR_TO_SIX_YEARS"))
+            .andExpect(jsonPath("$.data[0].workoutStyle").value("CARDIO"))
+            .andExpect(jsonPath("$.data[0].workoutGoal").value("WEIGHT_LOSS"))
+            .andExpect(jsonPath("$.data[0].profileImageUrl").value("https://example.com/profile/1.jpg"))
+            .andExpect(jsonPath("$.data[0].workoutImageUrl").value("https://example.com/workout/1.jpg"))
+
+            .andExpect(jsonPath("$.data[1].memberId").value(2L))
+            .andExpect(jsonPath("$.data[1].nickname").value("김철수"))
+            .andExpect(jsonPath("$.data[1].workoutExperience").value("UNDER_ONE_YEAR"))
+            .andExpect(jsonPath("$.data[1].workoutStyle").value("BALANCE"))
+            .andExpect(jsonPath("$.data[1].workoutGoal").value("PERFORMANCE_GOAL"))
+            .andExpect(jsonPath("$.data[1].profileImageUrl").value("https://example.com/profile/2.jpg"))
+            .andExpect(jsonPath("$.data[1].workoutImageUrl").doesNotExist())
+    }
+
+    @DisplayName("우리 동네 핏버디(주소 인근 회원 조회)를 조회한다")
+    @Test
+    fun memberLocalList() {
+        val mockMembers = listOf(
+            MemberLocalResponse(
+                memberId = 1L,
+                nickname = "ironman",
+                workoutExperience = MemberWorkoutExperience.UNDER_ONE_YEAR,
+                workoutStyle = MemberWorkoutStyle.CARDIO,
+                workoutGoal = MemberWorkoutGoal.WEIGHT_LOSS,
+                profileImageUrl = "https://static.fitview.co.kr/member/profile/0cca097d-630a-46cb-9da6-685be5d3e1f2"
+            ),
+            MemberLocalResponse(
+                memberId = 2L,
+                nickname = "hulk",
+                workoutExperience = MemberWorkoutExperience.ONE_TO_THREE_YEARS,
+                workoutStyle = MemberWorkoutStyle.BALANCE,
+                workoutGoal = MemberWorkoutGoal.PERFORMANCE_GOAL,
+                profileImageUrl = "https://static.fitview.co.kr/member/profile/0cca097d-630a-46cb-9da6-685be5d3e1f2"
+            ),
+            MemberLocalResponse(
+                memberId = 3L,
+                nickname = "thor",
+                workoutExperience = MemberWorkoutExperience.FOUR_TO_SIX_YEARS,
+                workoutStyle = MemberWorkoutStyle.BALANCE,
+                workoutGoal = MemberWorkoutGoal.ENDURANCE,
+                profileImageUrl = "https://static.fitview.co.kr/member/profile/0cca097d-630a-46cb-9da6-685be5d3e1f2"
+            )
+        )
+
+        val mockPage: Page<MemberLocalResponse> = PageImpl(
+            mockMembers,
+            PageRequest.of(1, 3),
+            10L
+        )
+
+        given(memberService.findRandomMemberWithinLocal(any(), any(), any()))
+            .willReturn(mockPage)
+
+        // when // then
+        mockMvc.perform(
+            get("/api/v1/members/local/{seed}", 1)
+                .header("Authorization", "Bearer jwt-token")
+        )
+            .andDo(print())
+            .andExpect(status().isOk())
+
+            .andExpect(jsonPath("$.status").exists())
+            .andExpect(jsonPath("$.code").value("ok"))
+            .andExpect(jsonPath("$.message").value("OK"))
+
+            .andExpect(jsonPath("$.data.content[0].memberId").value(1))
+            .andExpect(jsonPath("$.data.content[0].nickname").value("ironman"))
+            .andExpect(jsonPath("$.data.content[0].workoutExperience").value("UNDER_ONE_YEAR"))
+            .andExpect(jsonPath("$.data.content[0].workoutStyle").value("CARDIO"))
+            .andExpect(jsonPath("$.data.content[0].workoutGoal").value("WEIGHT_LOSS"))
+            .andExpect(jsonPath("$.data.content[0].profileImageUrl")
+                .value("https://static.fitview.co.kr/member/profile/0cca097d-630a-46cb-9da6-685be5d3e1f2"))
+
+            .andExpect(jsonPath("$.data.content[1].memberId").value(2))
+            .andExpect(jsonPath("$.data.content[1].nickname").value("hulk"))
+            .andExpect(jsonPath("$.data.content[1].workoutExperience").value("ONE_TO_THREE_YEARS"))
+            .andExpect(jsonPath("$.data.content[1].workoutStyle").value("BALANCE"))
+            .andExpect(jsonPath("$.data.content[1].workoutGoal").value("PERFORMANCE_GOAL"))
+            .andExpect(jsonPath("$.data.content[1].profileImageUrl")
+                .value("https://static.fitview.co.kr/member/profile/0cca097d-630a-46cb-9da6-685be5d3e1f2"))
+
+            .andExpect(jsonPath("$.data.content[2].memberId").value(3))
+            .andExpect(jsonPath("$.data.content[2].nickname").value("thor"))
+            .andExpect(jsonPath("$.data.content[2].workoutExperience").value("FOUR_TO_SIX_YEARS"))
+            .andExpect(jsonPath("$.data.content[2].workoutStyle").value("BALANCE"))
+            .andExpect(jsonPath("$.data.content[2].workoutGoal").value("ENDURANCE"))
+            .andExpect(jsonPath("$.data.content[2].profileImageUrl")
+                .value("https://static.fitview.co.kr/member/profile/0cca097d-630a-46cb-9da6-685be5d3e1f2"))
     }
 }

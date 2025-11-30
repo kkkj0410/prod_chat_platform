@@ -9,12 +9,6 @@ import org.springframework.data.domain.Slice
 interface MemberRepositoryCustom {
     fun findMemberWithinLocal(memberId: Long, randomMemberId : Long, boundingBox : BoundingBox, condition: MemberLocalCondition) : List<MemberLocalResponse>
 
-    fun findAllMemberIdWithinRecommendation(memberId: Long) : List<Long>
-
-    fun findRecommendationMemberByIdIn(memberIds: List<Long>): List<MemberRecommendationResponse>
-
-    fun findAllRandomMemberIdByCountAndSeoul(count: Int, seed : Long) : List<Long>
-
     fun findMemberProfileByDeletedAtIsNull(memberId: Long): MemberProfileResponse?
 
     fun findMemberChatProfileByDeletedAtIsNull(memberId: Long): MemberChatProfileResponse?
@@ -24,4 +18,8 @@ interface MemberRepositoryCustom {
     fun findMemberMaxId(): Long?
 
     fun findMemberWithinSeoulByNotMemberIds(meMemberId : Long, size : Int, memberIds: List<Long>) : List<MemberLocalResponse>
+
+    fun findMemberWithinRecommendation(member: Member, randomMemberId : Long, size: Int): List<MemberRecommendationResponse>
+
+    fun findMemberByNotMemberIdsWithinRecommendationsAndSeoul(memberId: Long, memberIds : List<Long>, size: Int): List<MemberRecommendationResponse>
 }

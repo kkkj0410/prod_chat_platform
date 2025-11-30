@@ -1,9 +1,10 @@
 package kr.co.fitview.api.app.domain.member.repository
 
-import com.querydsl.core.QueryModifiers.limit
 import com.querydsl.core.types.Projections
 import com.querydsl.core.types.dsl.BooleanExpression
+import com.querydsl.core.types.dsl.CaseBuilder
 import com.querydsl.core.types.dsl.Expressions
+import com.querydsl.core.types.dsl.NumberExpression
 import com.querydsl.jpa.impl.JPAQueryFactory
 import jakarta.persistence.EntityManager
 import kr.co.fitview.api.app.domain.address.entity.QAddress.address
@@ -15,6 +16,7 @@ import kr.co.fitview.api.app.domain.member.condition.MemberLocalCondition
 import kr.co.fitview.api.app.domain.member.dto.BoundingBox
 import kr.co.fitview.api.app.domain.member.dto.request.Age
 import kr.co.fitview.api.app.domain.member.dto.response.*
+import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.entity.QMember
 import kr.co.fitview.api.app.domain.member.entity.QMember.member
 import kr.co.fitview.api.app.domain.member.entity.QWorkoutTime.workoutTime
@@ -22,19 +24,21 @@ import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutExperience
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutGoal
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutStyle
 import kr.co.fitview.api.app.global.time.Time
-import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Slice
-import org.springframework.data.domain.SliceImpl
 
 
 class MemberRepositoryImpl(
     private val queryFactory: JPAQueryFactory,
     private val em: EntityManager,
-    private val time : Time
+    private val time: Time
 ) : MemberRepositoryCustom {
 
 
-    override fun findMemberWithinLocal(memberId: Long, randomMemberId : Long, boundingBox : BoundingBox, condition: MemberLocalCondition): List<MemberLocalResponse> {
+    override fun findMemberWithinLocal(
+        memberId: Long,
+        randomMemberId: Long,
+        boundingBox: BoundingBox,
+        condition: MemberLocalCondition
+    ): List<MemberLocalResponse> {
 
         val MAX_FETCH = 100
 
@@ -68,7 +72,11 @@ class MemberRepositoryImpl(
     }
 
 
-    override fun findMemberWithinSeoulByNotMemberIds(meMemberId : Long, size : Int, memberIds: List<Long>) : List<MemberLocalResponse> {
+    override fun findMemberWithinSeoulByNotMemberIds(
+        meMemberId: Long,
+        size: Int,
+        memberIds: List<Long>
+    ): List<MemberLocalResponse> {
         return queryFactory
             .select(
                 Projections.constructor(
@@ -96,13 +104,14 @@ class MemberRepositoryImpl(
             .fetch()
     }
 
+
     private fun findMemberWithinLocalByCondition(
         randomMemberId: Long,
         memberId: Long,
         boundingBox: BoundingBox,
         condition: MemberLocalCondition,
-        isFromRandom : Boolean,
-        size : Int
+        isFromRandom: Boolean,
+        size: Int
     ): List<MemberLocalResponse> {
 
         val results = queryFactory
@@ -148,286 +157,51 @@ class MemberRepositoryImpl(
         return results
     }
 
-    override fun findAllMemberIdWithinRecommendation(memberId: Long): List<Long> {
+    override fun findMemberWithinRecommendation(member: Member, randomMemberId : Long, size: Int): List<MemberRecommendationResponse> {
 
-        val subMember = QMember("subMember")
+        val first = findMemberByRandomMemberIdWithinRecommendation(member, randomMemberId, size, true)
+        val second = findFirstSearchMemberByRandomMemberIdWithinRecommendation(size, first, member, randomMemberId)
 
-//        val builder = BooleanBuilder()
-//
-//        builder.or(member.workoutExperience.eq(subMember.workoutExperience)
-//            .and(member.workoutStyle.eq(subMember.workoutStyle)))
-//
-//        builder.or(member.workoutExperience.eq(subMember.workoutExperience)
-//            .and(member.workoutGoal.eq(subMember.workoutGoal)))
-//
-//        builder.or(member.workoutStyle.eq(subMember.workoutStyle)
-//            .and(member.workoutGoal.eq(subMember.workoutGoal)))
+        val combined = first + second
 
-//        val twoOfThreeMatch = (
-//            member.workoutExperience.eq(subMember.workoutExperience)
-//                .and(member.workoutStyle.eq(subMember.workoutStyle))
-//            ).or(
-//            member.workoutExperience.eq(subMember.workoutExperience)
-//                .and(member.workoutGoal.eq(subMember.workoutGoal))
-//            ).or(
-//                member.workoutStyle.eq(subMember.workoutStyle)
-//                    .and(member.workoutGoal.eq(subMember.workoutGoal))
-//            )
-
-//        val matchCount = Expressions.numberTemplate(
-//            Integer::class.java,
-//            "(CASE WHEN {0} = {1} THEN 1 ELSE 0 END) + " +
-//                    "(CASE WHEN {2} = {3} THEN 1 ELSE 0 END) + " +
-//                    "(CASE WHEN {4} = {5} THEN 1 ELSE 0 END)",
-//            member.workoutExperience, subMember.workoutExperience,
-//            member.workoutStyle, subMember.workoutStyle,
-//            member.workoutGoal, subMember.workoutGoal
-//        )
-//
-//
-//        val twoOfThreeMatch = matchCount.goe(2)
-//
-//        val subQueryAddress = JPAExpressions
-//            .selectOne()
-//            .from(address)
-//            .join(subMember).on(subMember.id.eq(memberId))
-//            .where(
-//                address.siDo.eq("서울특별시"),
-//                twoOfThreeMatch
-//            )
-//            .limit(1)
+        return addWorkoutImageUrl(combined)
+    }
 
 
-        val matchCount = Expressions.numberTemplate(
-            Integer::class.java,
-            "(CASE WHEN {0} = {1} THEN 1 ELSE 0 END) + " +
-                    "(CASE WHEN {2} = {3} THEN 1 ELSE 0 END) + " +
-                    "(CASE WHEN {4} = {5} THEN 1 ELSE 0 END)",
-            member.workoutExperience, subMember.workoutExperience,
-            member.workoutStyle, subMember.workoutStyle,
-            member.workoutGoal, subMember.workoutGoal
-        )
+    override fun findMemberByNotMemberIdsWithinRecommendationsAndSeoul(memberId: Long, memberIds : List<Long>,size: Int): List<MemberRecommendationResponse> {
 
-        return queryFactory
-            .select(member.id)
+        val findMember = queryFactory
+            .select(
+                Projections.constructor(
+                    MemberRecommendationResponse::class.java,
+                    member.id,
+                    member.nickname,
+                    member.workoutExperience,
+                    member.workoutStyle,
+                    member.workoutGoal,
+                    image.url
+                )
+            )
             .from(member)
-            .join(address).on(address.member.eq(member))
-            .join(subMember).on(subMember.id.eq(memberId))
+            .join(member.mutableMemberImages, memberImage)
+            .join(memberImage.image, image)
+            .join(member.mutableAddresses, address)
             .where(
                 address.siDo.eq(AddressSiDo.SEOUL),
-                matchCount.goe(2)
+                member.id.ne(memberId),
+                member.id.notIn(memberIds),
+                memberImage.type.eq(MemberImageType.PROFILE),
+                member.deletedAt.isNull,
+                memberImage.deletedAt.isNull,
+                image.deletedAt.isNull,
+                address.deletedAt.isNull
             )
+            .limit(size.toLong())
             .fetch()
 
-//        val sql = """
-//        SELECT
-//            m.member_id,
-//            m.nickname,
-//            m.workout_experience,
-//            m.workout_style,
-//            m.workout_goal,
-//            MAX(CASE WHEN ranked.type = 'PROFILE' THEN i.url END) AS profile_image_url,
-//            MAX(CASE WHEN ranked.type = 'WORKOUT' THEN i.url END) AS workout_image_url
-//        FROM member m
-//        LEFT JOIN (
-//            SELECT
-//                mi.member_id,
-//                mi.type,
-//                mi.image_id
-//            FROM (
-//                SELECT
-//                    member_id,
-//                    type,
-//                    image_id,
-//                    ROW_NUMBER() OVER (PARTITION BY member_id, type ORDER BY seq ASC) AS rn
-//                FROM member_image
-//                WHERE type IN ('PROFILE', 'WORKOUT')
-//            ) mi
-//            WHERE mi.rn = 1
-//        ) ranked ON ranked.member_id = m.member_id
-//        LEFT JOIN image i ON i.image_id = ranked.image_id
-//        WHERE m.member_id IN (:memberIds)
-//        GROUP BY m.member_id
-//        $orderBy
-//    """.trimIndent()
+        return addWorkoutImageUrl(findMember)
     }
 
-//    override fun findRecommendationMemberByIdIn(memberIds: List<Long>): List<MemberRecommendationResponse> {
-//
-////        val profileImage = QImage("profileImage")
-////        val workoutImage = QImage("workoutImage")
-//////
-//////        val profileImageUrlSubquery = JPAExpressions
-//////            .select(profileImage.url)
-//////            .from(profileImage)
-//////            .join(memberImage).on(memberImage.image.id.eq(profileImage.id))
-//////            .where(
-//////                memberImage.member.id.eq(member.id),
-//////                memberImage.type.eq(MemberImageType.PROFILE)
-//////            )
-//////            .limit(1)
-//////
-//////        val workoutImageUrlSubquery = JPAExpressions
-//////            .select(workoutImage.url)
-//////            .from(workoutImage)
-//////            .join(memberImage).on(memberImage.image.id.eq(workoutImage.id))
-//////            .where(
-//////                memberImage.member.id.eq(member.id),
-//////                memberImage.type.eq(MemberImageType.WORKOUT),
-//////            )
-//////            .orderBy(memberImage.seq.asc())
-//////
-//////
-//////
-//////        return queryFactory
-//////            .select(
-//////                QMemberRecommendationResponse(
-//////                    member.id,
-//////                    member.nickname,
-//////                    member.workoutExperience,
-//////                    member.workoutStyle,
-//////                    member.workoutGoal,
-//////                    profileImageUrlSubquery,
-//////                    workoutImageUrlSubquery
-//////                )
-//////            )
-//////            .from(member)
-//////            .where(member.id.`in`(memberIds))
-//////            .fetch()
-////
-////
-////        return queryFactory
-////            .select(
-////                QMemberRecommendationResponse(
-////                    member.id,
-////                    member.nickname,
-////                    member.workoutExperience,
-////                    member.workoutStyle,
-////                    member.workoutGoal,
-////                    profileImage.url,
-////                    workoutImage.url
-////                )
-////            )
-////            .from(member)
-////            .leftJoin(memberImage).on(memberImage.member.eq(member))
-////            .leftJoin(profileImage).on(profileImage.id.eq(memberImage.image.id)
-////                .and(memberImage.type.eq(MemberImageType.PROFILE)))
-////            .leftJoin(workoutImage).on(workoutImage.id.eq(memberImage.image.id)
-////                .and(memberImage.type.eq(MemberImageType.WORKOUT)))
-////            .where(member.id.`in`(memberIds))
-////            .groupBy(member.id)
-////            .orderBy(memberImage.seq.min().asc())
-////            .fetch()
-//
-////        println(tuples)
-//
-//        val sql = """
-//        SELECT
-//            m.member_id,
-//            MAX(CASE WHEN ranked.type = 'PROFILE' THEN i.url END) AS profile_image_url,
-//            MAX(CASE WHEN ranked.type = 'WORKOUT' THEN i.url END) AS workout_image_url
-//        FROM member m
-//        LEFT JOIN (
-//            SELECT
-//                mi.member_id,
-//                mi.type,
-//                mi.image_id
-//            FROM (
-//                SELECT
-//                    member_id,
-//                    type,
-//                    image_id,
-//                    ROW_NUMBER() OVER (PARTITION BY member_id, type ORDER BY seq ASC) AS rn
-//                FROM member_image
-//                WHERE type IN ('PROFILE', 'WORKOUT')
-//            ) mi
-//            WHERE mi.rn = 1
-//        ) ranked ON ranked.member_id = m.member_id
-//        LEFT JOIN image i ON i.image_id = ranked.image_id
-//        WHERE m.member_id IN (:memberIds)
-//        GROUP BY m.member_id
-//    """.trimIndent()
-//
-//        val query = em.createNativeQuery(sql, "MemberRecommendationMapping") // SQLResultSetMapping 필요
-//        query.setParameter("memberIds", memberIds)
-//
-//        return query.resultList as List<MemberRecommendationResponse>
-//
-//    }
-
-    override fun findRecommendationMemberByIdIn(memberIds: List<Long>): List<MemberRecommendationResponse> {
-
-        val orderBy = "ORDER BY FIELD(m.member_id, ${memberIds.joinToString(",")})"
-        val sql = """
-        SELECT
-            m.member_id,
-            m.nickname,
-            m.workout_experience,
-            m.workout_style,
-            m.workout_goal,
-            MAX(CASE WHEN ranked.type = 'PROFILE' THEN i.url END) AS profile_image_url,
-            MAX(CASE WHEN ranked.type = 'WORKOUT' THEN i.url END) AS workout_image_url
-        FROM member m
-        LEFT JOIN (
-            SELECT
-                mi.member_id,
-                mi.type,
-                mi.image_id
-            FROM (
-                SELECT
-                    member_id,
-                    type,
-                    image_id,
-                    ROW_NUMBER() OVER (PARTITION BY member_id, type ORDER BY seq ASC) AS rn
-                FROM member_image
-                WHERE type IN ('PROFILE', 'WORKOUT')
-            ) mi
-            WHERE mi.rn = 1
-        ) ranked ON ranked.member_id = m.member_id
-        LEFT JOIN image i ON i.image_id = ranked.image_id
-        WHERE m.member_id IN (:memberIds)
-        GROUP BY m.member_id
-        $orderBy
-    """.trimIndent()
-
-        val query = em.createNativeQuery(sql)
-        query.setParameter("memberIds", memberIds)
-
-
-        // Native Query 결과를 Object[]로 받고 DTO로 변환
-        return query.resultList.map { row ->
-            val arr = row as Array<Any>
-            MemberRecommendationResponse(
-                memberId = (arr[0] as Number).toLong(),
-                nickname = arr[1] as String,
-                workoutExperience = (arr[2] as String).let { MemberWorkoutExperience.valueOf(it) },
-                workoutStyle = (arr[3] as String).let { MemberWorkoutStyle.valueOf(it) },
-                workoutGoal = (arr[4] as String).let { MemberWorkoutGoal.valueOf(it) },
-                profileImageUrl = arr[5] as String,
-                workoutImageUrl = arr[6] as String?,
-            )
-        }
-    }
-
-    override fun findAllRandomMemberIdByCountAndSeoul(count: Int, seed: Long): List<Long> {
-        val sql = """
-        SELECT m.member_id
-        FROM member m
-        JOIN address a ON a.member_id = m.member_id
-        WHERE a.si_do = '서울'
-        ORDER BY RAND(:seed)
-        LIMIT :count
-        """.trimIndent()
-
-        val query = em.createNativeQuery(sql)
-        query.setParameter("seed", seed)
-        query.setParameter("count", count)
-
-
-        return query.resultList.map { row ->
-            row as Long
-        }
-    }
 
     override fun findMemberProfileByDeletedAtIsNull(memberId: Long): MemberProfileResponse? {
 
@@ -520,7 +294,7 @@ class MemberRepositoryImpl(
             .fetchOne()
     }
 
-    override fun findMemberMaxId(): Long?{
+    override fun findMemberMaxId(): Long? {
         return queryFactory
             .select(member.id.max())
             .from(member)
@@ -603,4 +377,112 @@ class MemberRepositoryImpl(
         return member.workoutExperience.`in`(targetExperiences)
 
     }
+
+    private fun findMemberByRandomMemberIdWithinRecommendation(
+        member: Member,
+        randomMemberId : Long,
+        size: Int,
+        isFromRandom : Boolean
+    ): List<MemberRecommendationResponse> {
+
+        val targetMember = QMember("targetMember")
+
+        val matchCount: NumberExpression<Int> =
+            CaseBuilder()
+                .`when`(targetMember.workoutExperience.eq(member.workoutExperience)).then(1).otherwise(0)
+                .add(CaseBuilder().`when`(targetMember.workoutStyle.eq(member.workoutStyle)).then(1).otherwise(0))
+                .add(CaseBuilder().`when`(targetMember.workoutGoal.eq(member.workoutGoal)).then(1).otherwise(0))
+
+        val findMember = queryFactory
+            .select(
+                Projections.constructor(
+                    MemberRecommendationResponse::class.java,
+                    targetMember.id,
+                    targetMember.nickname,
+                    targetMember.workoutExperience,
+                    targetMember.workoutStyle,
+                    targetMember.workoutGoal,
+                    image.url
+                )
+            )
+            .from(targetMember)
+            .join(targetMember.mutableMemberImages, memberImage)
+            .join(memberImage.image, image)
+            .join(targetMember.mutableAddresses , address)
+            .where(
+                if (isFromRandom) {
+                    targetMember.id.goe(randomMemberId)
+                } else {
+                    targetMember.id.goe(1).and(targetMember.id.lt(randomMemberId))
+                },
+                targetMember.id.ne(member.id),
+                memberImage.type.eq(MemberImageType.PROFILE),
+                matchCount.goe(2),
+                address.siDo.eq(AddressSiDo.SEOUL),
+                targetMember.deletedAt.isNull,
+                memberImage.deletedAt.isNull,
+                image.deletedAt.isNull,
+                address.deletedAt.isNull
+            )
+            .limit(size.toLong())
+            .fetch()
+        return findMember
+    }
+
+    private fun findFirstSearchMemberByRandomMemberIdWithinRecommendation(
+        size: Int,
+        first: List<MemberRecommendationResponse>,
+        member: Member,
+        randomMemberId: Long
+    ): List<MemberRecommendationResponse> {
+        val remain = size - first.size
+        val second =
+            if (remain > 0)
+                findMemberByRandomMemberIdWithinRecommendation(
+                    member,
+                    randomMemberId,
+                    size,
+                    false
+                )
+            else
+                emptyList()
+        return second
+    }
+
+
+    private fun addWorkoutImageUrl(
+        members: List<MemberRecommendationResponse>,
+    ): List<MemberRecommendationResponse> {
+        val memberIds = members.map { it.memberId }
+
+        val findMemberAllWorkoutImages = queryFactory
+            .select(
+                Projections.constructor(
+                    MemberImageResponse::class.java,
+                    member.id,
+                    image.url,
+                    memberImage.seq
+                )
+            )
+            .from(member)
+            .join(member.mutableMemberImages, memberImage)
+            .join(memberImage.image, image)
+            .where(
+                member.id.`in`(memberIds),
+                memberImage.type.eq(MemberImageType.WORKOUT),
+                memberImage.deletedAt.isNull,
+                image.deletedAt.isNull
+            )
+            .fetch()
+
+        return members.map { target ->
+            target.copy(
+                workoutImageUrl = findMemberAllWorkoutImages
+                    .filter { it.memberId == target.memberId }
+                    .minByOrNull { it.seq }
+                    ?.imageUrl
+            )
+        }
+    }
+
 }

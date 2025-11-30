@@ -12,5 +12,14 @@ data class MemberRecommendationResponse @QueryProjection constructor(
     val workoutStyle: MemberWorkoutStyle,
     val workoutGoal: MemberWorkoutGoal,
     val profileImageUrl : String,
-    val workoutImageUrl : String?
-)
+    val workoutImageUrl : String? = null
+){
+    constructor(
+        memberId: Long,
+        nickname: String,
+        workoutExperience: MemberWorkoutExperience,
+        workoutStyle: MemberWorkoutStyle,
+        workoutGoal: MemberWorkoutGoal,
+        profileImageUrl: String
+    ) : this(memberId, nickname, workoutExperience, workoutStyle, workoutGoal, profileImageUrl, null)
+}
