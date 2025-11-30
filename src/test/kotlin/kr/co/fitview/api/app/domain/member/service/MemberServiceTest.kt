@@ -30,6 +30,7 @@ import kr.co.fitview.api.app.global.entity.OAuth2Provider
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.global.GlobalErrorCode
 import kr.co.fitview.api.app.global.exception.error.member.MemberErrorCode
+import kr.co.fitview.api.app.global.random.RandomCustom
 import kr.co.fitview.api.app.global.util.TestDataFactory
 import org.assertj.core.api.Assertions.*
 import org.assertj.core.api.ThrowingConsumer
@@ -49,7 +50,8 @@ class MemberServiceTest @Autowired constructor(
     val addressRepository: AddressRepository,
     val oAuth2Service : OAuth2Service,
     val memberImageRepository : MemberImageRepository,
-    val em : EntityManager
+    val em : EntityManager,
+    val randomCustom : RandomCustom
 ) : IntegrationTestSupport() {
 
     @DisplayName("사용자 정보를 저장한다")
@@ -977,17 +979,16 @@ class MemberServiceTest @Autowired constructor(
         )
 
         // then
-        val random = Random(seed)
         val memberMaxId = member3.id!!
-        val randomMemberId = random.nextLong(1, memberMaxId + 1)
-        val members = listOf(member3, member2, member1)
+        val randomMemberId = randomCustom.nextLong(seed, 1, memberMaxId + 1)
+        val members = listOf(member1, member2, member3)
 
         val left = members.filter { it.id!! >= randomMemberId }.sortedBy { it.id }
         val right = members.filter { it.id!! in 1..<randomMemberId }.sortedBy { it.id }
 
         val responseMember = left + right
 
-        val shuffledResponseMember = responseMember.shuffled(random).toMutableList()
+        val shuffledResponseMember = randomCustom.shuffled(seed, responseMember).toMutableList()
 
         assertThat(response).hasSize(3)
         assertThat(response.content.map { it.memberId })
@@ -1168,9 +1169,8 @@ class MemberServiceTest @Autowired constructor(
         )
 
         // then
-        val random = Random(seed)
         val memberMaxId = member6.id!!
-        val randomMemberId = random.nextLong(1, memberMaxId + 1)
+        val randomMemberId = randomCustom.nextLong(seed, 1, memberMaxId + 1)
         val members = listOf(member1, member2, member3)
 
         val left = members.filter { it.id!! >= randomMemberId }.sortedBy { it.id }
@@ -1178,9 +1178,9 @@ class MemberServiceTest @Autowired constructor(
 
         val responseMember = left + right
 
-        val shuffledResponseMember = responseMember.shuffled(random).toMutableList()
+        val shuffledResponseMember = randomCustom.shuffled(seed, responseMember).toMutableList()
 
-        val shuffledSeoulMembers = listOf(member4, member6).shuffled(random)
+        val shuffledSeoulMembers = randomCustom.shuffled(seed, listOf(member4, member6))
 
         shuffledResponseMember.addAll(shuffledSeoulMembers)
 
@@ -1303,10 +1303,8 @@ class MemberServiceTest @Autowired constructor(
         )
 
         // then
-        val random = Random(seed)
-
         val members = listOf(member1, member2, member3)
-        val shuffledMembers = members.shuffled(random)
+        val shuffledMembers = randomCustom.shuffled(seed, members)
 
         assertThat(response).hasSize(3)
         assertThat(response.content.map { it.memberId })
@@ -1659,5 +1657,31 @@ class MemberServiceTest @Autowired constructor(
                 "updateWorkoutImageUrl1",
                 "updateWorkoutImageUrl2"
             )
+    }
+
+    @DisplayName("랜덤 셔플링 시, seed가 동일해도 1번 셔플링했을때와 2번 셔플링했을때 결과 값이 다르다")
+    @Test
+    fun shuffled() {
+        // given
+        val values = listOf(1, 2, 3)
+        val trash = listOf(4, 5, 6)
+        val seed = 1234L
+
+        val random1 = Random(seed)
+        val random2 = Random(seed)
+        val random3 = Random(seed)
+
+        // when
+        val shuffledValues1 = values.shuffled(random1)
+
+        trash.shuffled(random2)
+        val shuffledValues2 = values.shuffled(random2)
+
+        val shuffledValues3 = values.shuffled(random3)
+
+
+        // then
+        assertThat(shuffledValues1).isNotEqualTo(shuffledValues2)
+        assertThat(shuffledValues1).isEqualTo(shuffledValues3)
     }
 }

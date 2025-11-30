@@ -4,6 +4,8 @@ import kr.co.fitview.api.app.global.cookie.CookieProvider
 import kr.co.fitview.api.app.global.id.IdGenerator
 import kr.co.fitview.api.app.global.id.TestIdGenerator
 import kr.co.fitview.api.app.global.jwt.JwtTokenProvider
+import kr.co.fitview.api.app.global.random.RandomCustom
+import kr.co.fitview.api.app.global.random.TestRandomCustom
 import kr.co.fitview.api.app.global.time.TestTime
 import kr.co.fitview.api.app.global.time.Time
 import org.springframework.boot.test.context.TestConfiguration
@@ -37,5 +39,10 @@ class TestJwtConfig {
     @Bean
     fun idGenerator() : IdGenerator {
         return TestIdGenerator("test-uuid")
+    }
+
+    @Bean
+    fun randomCustom() : RandomCustom {
+        return TestRandomCustom()
     }
 }

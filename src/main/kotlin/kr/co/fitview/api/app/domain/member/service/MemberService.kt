@@ -18,6 +18,7 @@ import kr.co.fitview.api.app.domain.workout_partner.service.WorkoutPartnerServic
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.global.GlobalErrorCode
 import kr.co.fitview.api.app.global.exception.error.member.MemberErrorCode
+import kr.co.fitview.api.app.global.random.RandomCustom
 import kr.co.fitview.api.app.global.redis.service.RedisService
 import kr.co.fitview.api.app.global.time.Time
 import org.springframework.data.domain.Page
@@ -38,7 +39,8 @@ class MemberService(
     private val addressService : AddressService,
     private val imageService : ImageService,
     private val redisService : RedisService,
-    private val time : Time
+    private val time : Time,
+    private val randomCustom : RandomCustom
 ) {
 
     @Transactional
@@ -180,15 +182,14 @@ class MemberService(
         condition: MemberLocalCondition,
         seed: Long
     ): Page<MemberLocalResponse> {
-        val random = Random(seed)
 
-        val randomMemberId: Long = createRandomMemberId(memberId, seed, random)
+        val randomMemberId: Long = createRandomMemberId(memberId, seed)
 
         val findAddress = addressService.findAddressEntityFrom(memberId)
         val boundingBox = createBoundingBox(findAddress!!)
 
         val findMembers = memberRepository.findMemberWithinLocal(memberId, randomMemberId, boundingBox, condition)
-        val shuffledMembers = findMembers.shuffled(random).toMutableList()
+        val shuffledMembers = randomCustom.shuffled(seed, findMembers).toMutableList()
 
         if(findMembers.size < 100){
             val remainSize = 100 - findMembers.size
@@ -199,7 +200,7 @@ class MemberService(
                 memberIds = findMemberIds
             )
 
-            val shuffledSeoulMembers = findSeoulMembers.shuffled(random)
+            val shuffledSeoulMembers = randomCustom.shuffled(seed, findSeoulMembers)
 
             shuffledMembers.addAll(shuffledSeoulMembers)
         }
@@ -207,7 +208,7 @@ class MemberService(
         return createProfilePage(condition, shuffledMembers)
     }
 
-    private fun createRandomMemberId(memberId: Long, seed: Long, random: Random): Long {
+    private fun createRandomMemberId(memberId: Long, seed: Long): Long {
         val cacheRandomMemberId = redisService.getMemberLocalKey(memberId, seed)
         if (isNotNull(cacheRandomMemberId)) {
             return cacheRandomMemberId!!
@@ -216,7 +217,7 @@ class MemberService(
         val findMemberMaxId = memberRepository.findMemberMaxId()
             ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
 
-        val randomMemberId = random.nextLong(1, findMemberMaxId + 1)
+        val randomMemberId = randomCustom.nextLong(seed, 1, findMemberMaxId + 1)
 
         redisService.setMemberLocalKey(
             memberId = memberId,
