@@ -51,3 +51,6 @@ out/
 
 ### p8 - ex) apple auth key
 *.p8
+
+### .json
+/src/main/resources/firebase/*.json
