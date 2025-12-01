@@ -6,6 +6,11 @@ import kr.co.fitview.api.app.domain.address.dto.request.AddressCreateServiceRequ
 import kr.co.fitview.api.app.domain.address.entity.Address
 import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
 import kr.co.fitview.api.app.domain.address.repository.AddressRepository
+import kr.co.fitview.api.app.domain.chat.entity.ChatParticipant
+import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
+import kr.co.fitview.api.app.domain.chat.entity.enums.ChatRoomType
+import kr.co.fitview.api.app.domain.chat.repository.ChatParticipantRepository
+import kr.co.fitview.api.app.domain.chat.repository.ChatRoomRepository
 import kr.co.fitview.api.app.domain.member.condition.MemberLocalCondition
 import kr.co.fitview.api.app.domain.member.dto.BoundingBox
 import kr.co.fitview.api.app.domain.member.dto.request.Age
@@ -34,6 +39,8 @@ class MemberRepositoryTest@Autowired constructor(
     val memberRepository : MemberRepository,
     val addressRepository: AddressRepository,
     val oAuth2Service : OAuth2Service,
+    val chatRoomRepository : ChatRoomRepository,
+    val chatParticipantRepository : ChatParticipantRepository,
     val time : Time
 ) : IntegrationTestSupport() {
 
@@ -2101,6 +2108,54 @@ class MemberRepositoryTest@Autowired constructor(
             .containsExactly(
                 tuple(notMatchMember1.id!!, "update3", "updateMember3Workout1"),
             )
+    }
+
+
+    @DisplayName("개인 채팅방의 상대 회원 프로필을 조회한다.")
+    @Test
+    fun findMemberChatRoomProfile() {
+        // given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest1, me.id!!)
+
+        val other = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(other)
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "updateNick",
+            profileImageUrl = "updateProfile"
+        )
+        oAuth2Service.signup(signupRequest2, other.id!!)
+
+        val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+
+        val chatParticipant1 = ChatParticipant(
+            chatRoom,
+            me
+        )
+        val chatParticipant2 = ChatParticipant(
+            chatRoom,
+            other
+        )
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+
+        // when
+        val response = memberRepository.findOtherMemberChatRoomProfile(me.id!!, chatRoom.id!!)
+
+        // then
+        assertThat(response)
+            .extracting("memberId", "nickname", "profileImageUrl")
+            .contains(other.id!!, signupRequest2.nickname, signupRequest2.profileImageUrl)
     }
 
 

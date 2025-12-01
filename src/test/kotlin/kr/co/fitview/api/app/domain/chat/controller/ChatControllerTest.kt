@@ -4,6 +4,7 @@ import kr.co.fitview.api.app.ControllerTestSupport
 import kr.co.fitview.api.app.domain.chat.dto.request.ChatRoomCreateRequest
 import kr.co.fitview.api.app.domain.chat.dto.response.*
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
+import kr.co.fitview.api.app.domain.member.dto.response.MemberChatRoomProfile
 import kr.co.fitview.api.app.domain.workout.dto.response.LastWorkoutRequestMessage
 import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusForResponse
 import kr.co.fitview.api.app.global.exception.error.request.RequestErrorCode
@@ -11,7 +12,6 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.given
-import org.mockito.kotlin.willAnswer
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Slice
 import org.springframework.data.domain.SliceImpl
@@ -201,6 +201,11 @@ class ChatControllerTest : ControllerTestSupport(){
         val chatRoomId = 456L
         val now = LocalDateTime.now()
 
+        val otherMember = MemberChatRoomProfile(
+            memberId = 123L,
+            nickname = "nickname",
+            profileImageUrl = "profile"
+        )
 
         val messages: List<LastChatMessage> = listOf(
             ChatMessageContent(
@@ -219,10 +224,14 @@ class ChatControllerTest : ControllerTestSupport(){
                 location = "헬스장 앞"
             )
         )
-        val slice: Slice<LastChatMessage> = SliceImpl(messages, PageRequest.of(0, 10), false)
+        val sliceChatMessages: Slice<LastChatMessage> = SliceImpl(messages, PageRequest.of(0, 10), false)
 
-        // 서비스 mocking
-        given(chatMessageService.findChatMessages(any(), any(), any())).willReturn(slice)
+        val response = ChatRoomMessageResponse(
+            otherMember = otherMember,
+            chatMessages = sliceChatMessages
+        )
+
+        given(chatMessageService.findChatMessagesWithOtherMember(any(), any(), any())).willReturn(response)
 
         mockMvc.perform(
             get("/api/v1/chats/{chatRoomId}/messages", chatRoomId)
@@ -233,6 +242,11 @@ class ChatControllerTest : ControllerTestSupport(){
             .andExpect(jsonPath("$.status").exists())
             .andExpect(jsonPath("$.code").value("ok"))
             .andExpect(jsonPath("$.message").value("OK"))
+
+            .andExpect(jsonPath("$.data.otherMember.memberId").value(123L))
+            .andExpect(jsonPath("$.data.otherMember.nickname").value("nickname"))
+            .andExpect(jsonPath("$.data.otherMember.profileImageUrl").value("profile"))
+
             .andExpect(jsonPath("$.data.content").isArray)
             .andExpect(jsonPath("$.data.content.length()").value(2))
 

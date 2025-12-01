@@ -137,10 +137,9 @@ data class CursorPagination(
 }
 
 
-
 data class SuccessCursorAtPagedResponse<T>(
     val content: List<T>,
-    val pagination: CursorAtPagination // 시간 기반 Pagination DTO와 명확히 연결
+    val pagination: CursorAtPagination
 )
 
 data class CursorAtPagination(

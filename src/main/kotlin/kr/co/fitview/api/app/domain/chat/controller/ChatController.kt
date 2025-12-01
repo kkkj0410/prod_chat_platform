@@ -3,13 +3,12 @@ package kr.co.fitview.api.app.domain.chat.controller
 import jakarta.validation.Valid
 import kr.co.fitview.api.app.domain.chat.condition.ChatCondition
 import kr.co.fitview.api.app.domain.chat.dto.request.ChatRoomCreateRequest
-import kr.co.fitview.api.app.domain.chat.dto.response.ChatRoomCreateResponse
-import kr.co.fitview.api.app.domain.chat.dto.response.ChatRoomResponse
-import kr.co.fitview.api.app.domain.chat.dto.response.LastChatMessage
+import kr.co.fitview.api.app.domain.chat.dto.response.*
 import kr.co.fitview.api.app.domain.chat.service.ChatMessageService
 import kr.co.fitview.api.app.domain.chat.service.ChatRoomService
 import kr.co.fitview.api.app.domain.chat.service.ChatService
 import kr.co.fitview.api.app.domain.chat.service.MessageReadStatusService
+import kr.co.fitview.api.app.domain.member.dto.response.MemberChatRoomProfile
 import kr.co.fitview.api.app.domain.workout.dto.response.LastWorkoutRequestMessage
 import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestService
 import kr.co.fitview.api.app.global.dto.ApiResponse
@@ -61,13 +60,14 @@ class ChatController(
 
         @ModelAttribute
         condition : ChatCondition
-    ) : ResponseEntity<ApiResponse<SuccessCursorAtPagedResponse<LastChatMessage>>> {
+    ) : ResponseEntity<ApiResponse<SuccessCursorAtPagedResponseByChatMessage<LastChatMessage, MemberChatRoomProfile>>> {
 
-        val response = chatMessageService.findChatMessages(securityUtil.getMemberId(), chatRoomId, condition)
+        val response = chatMessageService.findChatMessagesWithOtherMember(securityUtil.getMemberId(), chatRoomId, condition)
 
-        return ResponseEntity.ok(ApiResponse.successWithCursorAtPagination(
-            slice = response,
-            timeExtractor = { it.sentAt },
+        return ResponseEntity.ok(SuccessCursorAtPagedResponseByChatMessage.from(
+            slice = response.chatMessages,
+            otherMember = response.otherMember,
+            timeExtractor = { it.sentAt }
         ))
     }
 
