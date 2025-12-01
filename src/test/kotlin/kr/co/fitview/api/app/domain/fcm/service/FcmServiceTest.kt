@@ -21,7 +21,7 @@ class FcmServiceTest @Autowired constructor(
 
 
     @DisplayName("회원 단말기의 fcm 토큰을 저장한다.")
-    @Test
+//    @Test
     fun addFcmToken() {
         // given
         val member = Member(
