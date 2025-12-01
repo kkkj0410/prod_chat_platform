@@ -1,0 +1,10 @@
+[[fcm-token-add]]
+=== FCM 토큰 저장 API
+
+==== HTTP Request
+include::{snippets}/fcm-token-add/http-request.adoc[]
+include::{snippets}/fcm-token-add/request-fields.adoc[]
+include::{snippets}/fcm-token-add/request-headers.adoc[]
+
+==== HTTP Response
+include::{snippets}/fcm-token-add/http-response.adoc[]
