@@ -7,6 +7,7 @@ import kr.co.fitview.api.app.domain.fcm.dto.request.FcmTokenCreateRequest
 import kr.co.fitview.api.app.domain.fcm.entity.enums.FcmTokenPlatform
 import kr.co.fitview.api.app.domain.fcm.service.FcmService
 import kr.co.fitview.api.app.global.dto.ApiResponse
+import kr.co.fitview.api.app.global.util.SecurityUtil
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -17,7 +18,8 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/api/v1/fcm-tokens")
 class FcmController(
-    private val fcmService : FcmService
+    private val fcmService : FcmService,
+    private val securityUtil : SecurityUtil
 ) {
 
     @PostMapping("")
@@ -32,6 +34,7 @@ class FcmController(
             platform = FcmTokenPlatform.ANDROID
         )
 
+        fcmService.addFcmToken(securityUtil.getMemberId(), request)
 
         return ResponseEntity.ok(ApiResponse.success("ok"))
     }

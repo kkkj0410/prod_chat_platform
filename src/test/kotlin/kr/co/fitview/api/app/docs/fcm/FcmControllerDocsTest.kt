@@ -55,9 +55,10 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 class FcmControllerDocsTest : RestDocsSupport() {
 
     private val fcmService: FcmService = mock(FcmService::class.java)
+    private val securityUtil: SecurityUtil = mock(SecurityUtil::class.java)
 
     override fun initController(): Any {
-        return FcmController(fcmService)
+        return FcmController(fcmService, securityUtil)
     }
 
     @DisplayName("fcm 토큰 저장 API")
