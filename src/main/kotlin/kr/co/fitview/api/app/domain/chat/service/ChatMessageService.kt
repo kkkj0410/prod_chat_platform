@@ -8,13 +8,16 @@ import kr.co.fitview.api.app.domain.chat.entity.ChatMessage
 import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
 import kr.co.fitview.api.app.domain.chat.repository.ChatMessageRepository
+import kr.co.fitview.api.app.domain.member.dto.response.MemberChatRoomProfile
 import kr.co.fitview.api.app.domain.member.entity.Member
+import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.domain.member.service.MemberReferenceProvider
 import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusForResponse
 import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
 import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestService
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.chat.ChatErrorCode
+import kr.co.fitview.api.app.global.exception.error.member.MemberErrorCode
 import kr.co.fitview.api.app.global.time.Time
 import org.springframework.data.domain.Slice
 import org.springframework.data.domain.SliceImpl
@@ -30,6 +33,7 @@ class ChatMessageService(
     private val workoutRequestService: WorkoutRequestService,
     private val memberReferenceProvider : MemberReferenceProvider,
     private val messageReadStatusService : MessageReadStatusService,
+    private val memberQueryService : MemberQueryService,
     private val time: Time
 ) {
 
@@ -141,6 +145,15 @@ class ChatMessageService(
 
     fun findLastChatMessages(memberId: Long, chatRoomIds: List<Long>): List<LastChatMessage> {
         return chatMessageRepository.findRecentChatMessageByMemberIdAndIn(memberId, chatRoomIds)
+    }
+
+    fun findChatMessagesWithOtherMember(memberId : Long, chatRoomId : Long, condition : ChatCondition) : ChatRoomMessageResponse{
+        val otherMember = memberQueryService.findOtherMemberChatRoomProfile(memberId, chatRoomId)
+            ?: throw GlobalException(MemberErrorCode.MEMBER_NOT_FOUND)
+
+        val sliceChatMessages = findChatMessages(memberId, chatRoomId, condition)
+
+        return ChatRoomMessageResponse(otherMember, sliceChatMessages)
     }
 
     fun findChatMessages(memberId: Long, chatRoomId: Long, condition: ChatCondition): Slice<LastChatMessage> {

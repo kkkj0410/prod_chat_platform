@@ -22,4 +22,6 @@ interface MemberRepositoryCustom {
     fun findMemberWithinRecommendation(member: Member, randomMemberId : Long, size: Int): List<MemberRecommendationResponse>
 
     fun findMemberByNotMemberIdsWithinRecommendationsAndSeoul(memberId: Long, memberIds : List<Long>, size: Int): List<MemberRecommendationResponse>
+
+    fun findOtherMemberChatRoomProfile(memberId: Long, chatRoomId : Long) : MemberChatRoomProfile?
 }
