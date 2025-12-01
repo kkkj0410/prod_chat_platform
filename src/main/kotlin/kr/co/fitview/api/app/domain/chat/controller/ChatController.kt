@@ -6,6 +6,7 @@ import kr.co.fitview.api.app.domain.chat.dto.request.ChatRoomCreateRequest
 import kr.co.fitview.api.app.domain.chat.dto.response.ChatRoomCreateResponse
 import kr.co.fitview.api.app.domain.chat.dto.response.ChatRoomResponse
 import kr.co.fitview.api.app.domain.chat.dto.response.LastChatMessage
+import kr.co.fitview.api.app.domain.chat.dto.response.SuccessCursorAtPagedResponseByChatMessage
 import kr.co.fitview.api.app.domain.chat.service.ChatMessageService
 import kr.co.fitview.api.app.domain.chat.service.ChatRoomService
 import kr.co.fitview.api.app.domain.chat.service.ChatService
