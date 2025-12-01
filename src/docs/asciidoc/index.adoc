@@ -45,5 +45,10 @@ include::api/workout_partner/workoutPartner.adoc[]
 
 include::api/chat/chat.adoc[]
 
+[[FCM-API]]
+== FCM API
+
+include::api/fcm/fcm.adoc[]
+
 
 
