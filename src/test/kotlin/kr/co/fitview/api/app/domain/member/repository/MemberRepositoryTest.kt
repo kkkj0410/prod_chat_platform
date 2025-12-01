@@ -2149,6 +2149,33 @@ class MemberRepositoryTest@Autowired constructor(
         chatParticipantRepository.save(chatParticipant1)
         chatParticipantRepository.save(chatParticipant2)
 
+
+        val other2 = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(other2)
+        val signupRequest3 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "updateNick",
+            profileImageUrl = "updateProfile"
+        )
+        oAuth2Service.signup(signupRequest3, other2.id!!)
+
+        val chatRoom2 = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+
+        val chatParticipant3 = ChatParticipant(
+            chatRoom2,
+            me
+        )
+        val chatParticipant4 = ChatParticipant(
+            chatRoom2,
+            other2
+        )
+        chatParticipantRepository.save(chatParticipant3)
+        chatParticipantRepository.save(chatParticipant4)
+
+
         // when
         val response = memberRepository.findOtherMemberChatRoomProfile(me.id!!, chatRoom.id!!)
 
@@ -2157,6 +2184,7 @@ class MemberRepositoryTest@Autowired constructor(
             .extracting("memberId", "nickname", "profileImageUrl")
             .contains(other.id!!, signupRequest2.nickname, signupRequest2.profileImageUrl)
     }
+
 
 
 }

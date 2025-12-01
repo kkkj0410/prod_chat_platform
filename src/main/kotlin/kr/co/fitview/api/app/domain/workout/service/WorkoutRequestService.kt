@@ -34,9 +34,10 @@ class WorkoutRequestService(
         toMember: Member,
         message: ChatWorkoutRequestMessageServiceRequest
     ): WorkoutRequest {
-        val findWorkoutRequest = findRecentWorkoutRequestFrom(chatRoomId)
-
-        validateExistsWorkoutRequest(findWorkoutRequest)
+        // FE 테스트를 위해 validate 꺼둠. FE 검토 끝나면 다시 켜기(25.12.1)
+//        val findWorkoutRequest = findRecentWorkoutRequestFrom(chatRoomId)
+//
+//        validateExistsWorkoutRequest(findWorkoutRequest)
 
         val workoutRequest = WorkoutRequest.of(
             chatMessage = chatMessage,

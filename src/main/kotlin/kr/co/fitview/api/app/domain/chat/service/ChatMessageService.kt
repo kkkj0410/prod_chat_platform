@@ -103,20 +103,6 @@ class ChatMessageService(
             chatRoom = chatRoom
         )
 
-//        val response = ChatMessageWorkoutRequest(
-//            chatMessageId = chatMessage.id!!,
-//            sentAt = now,
-//            workoutRequestId = savedWorkoutRequest.id!!,
-//            status = WorkoutRequestStatusForResponse.from(
-//                dbStatus = WorkoutRequestStatus.PENDING,
-//                requestedAt = now,
-//                scheduledAt = message.scheduledAt,
-//                now = now
-//            ),
-//            scheduledAt = message.scheduledAt,
-//            location = message.location,
-//        )
-
         val response = StompChatWorkoutRequestMessage(
             chatMessageId = chatMessage.id!!,
             sentAt = now,

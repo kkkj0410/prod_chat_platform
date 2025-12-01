@@ -2,6 +2,7 @@ package kr.co.fitview.api.app.domain.fcm.service
 
 import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.fcm.dto.request.FcmTokenCreateRequest
+import kr.co.fitview.api.app.domain.fcm.dto.request.FcmTokenCreateServiceRequest
 import kr.co.fitview.api.app.domain.fcm.entity.FcmToken
 import kr.co.fitview.api.app.domain.fcm.entity.enums.FcmTokenPlatform
 import kr.co.fitview.api.app.domain.fcm.repository.FcmTokenRepository
@@ -21,7 +22,7 @@ class FcmServiceTest @Autowired constructor(
 
 
     @DisplayName("회원 단말기의 fcm 토큰을 저장한다.")
-//    @Test
+    @Test
     fun addFcmToken() {
         // given
         val member = Member(
@@ -31,7 +32,7 @@ class FcmServiceTest @Autowired constructor(
         )
         memberRepository.save(member)
 
-        val request = FcmTokenCreateRequest(
+        val request = FcmTokenCreateServiceRequest(
             deviceId = "deviceId",
             token = "token",
             platform = FcmTokenPlatform.ANDROID
@@ -45,7 +46,7 @@ class FcmServiceTest @Autowired constructor(
         val findFcmTokens = fcmTokenRepository.findAll()
         val findFcmToken = findFcmTokens[0]
 
-        val findMember = memberRepository.findById(member.id!!)
+        val findMember = memberRepository.findById(member.id!!).orElseThrow()
 
         assertThat(findFcmTokens).hasSize(1)
         assertThat(findFcmToken)

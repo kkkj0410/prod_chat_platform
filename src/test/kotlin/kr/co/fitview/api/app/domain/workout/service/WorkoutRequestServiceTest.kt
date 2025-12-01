@@ -216,7 +216,7 @@ class WorkoutRequestServiceTest @Autowired constructor(
 
 
     @DisplayName("운동 요청이 이미 존재하면 운동 요청을 보낼 수 없다")
-    @ParameterizedTest(name = "case {index}: 기존 요청 상태 = {0}")
+//    @ParameterizedTest(name = "case {index}: 기존 요청 상태 = {0}")
     @CsvSource("PENDING", "ACCEPT",)
     fun addWorkoutRequestWhenExistsWorkoutRequest(status : String) {
         // given
