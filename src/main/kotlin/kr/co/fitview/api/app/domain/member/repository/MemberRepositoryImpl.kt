@@ -505,6 +505,7 @@ class MemberRepositoryImpl(
             .join(memberImage.image, image)
             .where(
                 chatRoom.type.eq(ChatRoomType.PRIVATE),
+                chatRoom.id.eq(chatRoomId), // 해당 부분 여부에 따른 테스트 필요
                 member.id.ne(memberId),
                 memberImage.type.eq(MemberImageType.PROFILE),
                 chatRoom.deletedAt.isNull,

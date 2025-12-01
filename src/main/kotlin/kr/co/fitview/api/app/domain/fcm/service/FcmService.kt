@@ -1,6 +1,8 @@
 package kr.co.fitview.api.app.domain.fcm.service
 
 import com.google.firebase.messaging.FirebaseMessaging
+import kr.co.fitview.api.app.domain.fcm.dto.request.FcmTokenCreateRequest
+import kr.co.fitview.api.app.domain.fcm.entity.FcmToken
 import kr.co.fitview.api.app.domain.fcm.entity.enums.FcmTokenPlatform
 import org.springframework.stereotype.Service
 
@@ -23,5 +25,13 @@ class FcmService(
         )
 
 
+    }
+
+    fun addFcmToken(memberId: Long, request: FcmTokenCreateRequest) {
+        FcmToken(
+
+        )
+
+        TODO()
     }
 }

@@ -45,4 +45,21 @@ class FcmToken(
     @Column(name = "fcm_token_id", nullable = false)
     var id: Long? = null
 
+    companion object {
+        fun of(
+            member: Member,
+            deviceId: String,
+            token: String,
+            platform: FcmTokenPlatform
+        ): FcmToken {
+            return FcmToken(
+                member = member,
+                deviceId = deviceId,
+                token = token,
+                isActive = true,
+                platform = platform
+            )
+        }
+    }
+
 }
