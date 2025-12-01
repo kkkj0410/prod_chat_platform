@@ -8,3 +8,4 @@ include::{snippets}/fcm-token-add/request-headers.adoc[]
 
 ==== HTTP Response
 include::{snippets}/fcm-token-add/http-response.adoc[]
+include::{snippets}/fcm-token-add/response-fields.adoc[]
