@@ -28,13 +28,8 @@ class FcmController(
         @RequestBody
         request : FcmTokenCreateRequest
     ) : ResponseEntity<ApiResponse<*>> {
-        val request = FcmTokenCreateRequest(
-            deviceId = "dfjaiofjoepfjapiefjoiaejfapefj",
-            token = "fcmToken",
-            platform = FcmTokenPlatform.ANDROID
-        )
 
-        fcmService.addFcmToken(securityUtil.getMemberId(), request)
+        fcmService.addFcmToken(securityUtil.getMemberId(), request.toServiceRequest())
 
         return ResponseEntity.ok(ApiResponse.success("ok"))
     }

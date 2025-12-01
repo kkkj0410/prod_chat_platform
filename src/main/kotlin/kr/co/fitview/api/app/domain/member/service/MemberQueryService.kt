@@ -2,6 +2,7 @@ package kr.co.fitview.api.app.domain.member.service
 
 import kr.co.fitview.api.app.domain.member.dto.response.MemberChatRoomProfile
 import kr.co.fitview.api.app.domain.member.dto.response.MemberWorkoutPartnerProfileResponse
+import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -19,6 +20,10 @@ class MemberQueryService(
 
     fun findOtherMemberChatRoomProfile(memberId: Long, chatRoomId: Long) : MemberChatRoomProfile? {
         return memberRepository.findOtherMemberChatRoomProfile(memberId, chatRoomId)
+    }
+
+    fun findMemberFromId(memberId : Long) : Member?{
+        return memberRepository.findByIdAndDeletedAtIsNull(memberId)
     }
 
 }

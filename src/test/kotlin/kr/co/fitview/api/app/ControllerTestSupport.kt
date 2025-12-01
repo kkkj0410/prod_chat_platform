@@ -9,6 +9,8 @@ import kr.co.fitview.api.app.domain.auth.service.RefreshTokenService
 import kr.co.fitview.api.app.domain.auth.service.TestAuthService
 import kr.co.fitview.api.app.domain.chat.controller.ChatController
 import kr.co.fitview.api.app.domain.chat.service.*
+import kr.co.fitview.api.app.domain.fcm.controller.FcmController
+import kr.co.fitview.api.app.domain.fcm.service.FcmService
 import kr.co.fitview.api.app.domain.image.controller.ImageController
 import kr.co.fitview.api.app.domain.image.service.S3Service
 import kr.co.fitview.api.app.domain.member.controller.MemberController
@@ -51,6 +53,7 @@ import org.springframework.test.web.servlet.MockMvc
     AddressController::class,
     WorkoutPartnerController::class,
     ChatController::class,
+    FcmController::class,
     GlobalExceptionHandler::class
 ],
 excludeFilters = [
@@ -122,5 +125,8 @@ abstract class ControllerTestSupport {
 
     @MockitoBean
     protected lateinit var notificationStompService: NotificationStompService
+
+    @MockitoBean
+    protected lateinit var fcmService: FcmService
 
 }
