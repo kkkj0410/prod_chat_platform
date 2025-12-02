@@ -20,6 +20,7 @@ import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequest
 import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
 import kr.co.fitview.api.app.domain.workout.repository.WorkoutRequestRepository
 import kr.co.fitview.api.app.global.entity.Role
+import kr.co.fitview.api.app.global.enums.Direction
 import kr.co.fitview.api.app.global.time.Time
 import kr.co.fitview.api.app.global.util.TestDataFactory
 import org.assertj.core.api.Assertions.assertThat
@@ -219,11 +220,12 @@ class ChatRoomServiceTest @Autowired constructor(
             content = "content",
             sentAt = time.nowLocalDateTime
         )
+
         val message1ByChatRoom2 = ChatMessage(
             member = other2,
             chatRoom = chatRoom2,
             type = ChatMessageType.WORKOUT_REQUEST,
-            sentAt = time.nowLocalDateTime
+            sentAt = time.nowLocalDateTime.minusHours(3)
         )
         val workout1ByChatRoom2 = WorkoutRequest(
             chatMessage = message1ByChatRoom2,
@@ -237,6 +239,9 @@ class ChatRoomServiceTest @Autowired constructor(
         chatMessageRepository.save(message1ByChatRoom1)
         chatMessageRepository.save(message2ByChatRoom1)
         chatMessageRepository.save(message1ByChatRoom2)
+
+        chatRoom1.updateLastMessageAt(time.nowLocalDateTime)
+        chatRoom2.updateLastMessageAt(time.nowLocalDateTime.minusHours(3))
 
         workoutRequestRepository.save(workout1ByChatRoom2)
 
@@ -302,7 +307,7 @@ class ChatRoomServiceTest @Autowired constructor(
             .contains(
                 message1ByChatRoom2.id!!,
                 ChatMessageType.WORKOUT_REQUEST,
-                time.nowLocalDateTime,
+                time.nowLocalDateTime.minusHours(3),
                 false,
                 true,
                 chatRoom2.id!!,

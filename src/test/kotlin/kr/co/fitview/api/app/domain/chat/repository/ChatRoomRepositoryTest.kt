@@ -159,7 +159,10 @@ class ChatRoomRepositoryTest @Autowired constructor(
         oAuth2Service.signup(signupRequest, other2.id!!)
 
         val chatRoom1 = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+        chatRoom1.updateLastMessageAt(time.nowLocalDateTime)
+
         val chatRoom2 = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+        chatRoom2.updateLastMessageAt(time.nowLocalDateTime.minusHours(3))
 
         val chatParticipant1 = ChatParticipant(
             chatRoom1,
