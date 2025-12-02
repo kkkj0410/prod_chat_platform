@@ -1,5 +1,6 @@
 package kr.co.fitview.api.app.domain.chat.repository
 
+import jakarta.persistence.EntityManager
 import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.address.dto.request.AddressCreateServiceRequest
 import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
@@ -42,6 +43,7 @@ class ChatRoomRepositoryTest @Autowired constructor(
     val workoutHistoryRepository : WorkoutHistoryRepository,
     val oAuth2Service : OAuth2Service,
     val memberRepository : MemberRepository,
+    val em : EntityManager,
     val time : Time
 ) : IntegrationTestSupport() {
 
@@ -599,6 +601,81 @@ class ChatRoomRepositoryTest @Autowired constructor(
             .extracting("chatRoomId", "profileImageUrl", "nickname")
             .containsExactlyInAnyOrder(
                 tuple(chatRoom2.id!!, signupRequest.profileImageUrl, other2.nickname),
+            )
+    }
+
+    @DisplayName("채팅방 조회 시, 채팅방 메시지 이력이 없으면 조회하지 않는다.")
+    @Test
+    fun findChatRoomProfileByDeletedAtIsNullNotSendMessage() {
+        //given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val other1 = Member(
+            email = "email2",
+            password = "password2",
+            role = Role.USER,
+        )
+        val other2 = Member(
+            email = "email2",
+            password = "password2",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+        memberRepository.save(other1)
+        memberRepository.save(other2)
+
+        val signupRequest = createOAuth2SignupServiceRequest()
+
+        oAuth2Service.signup(signupRequest, me.id!!)
+        oAuth2Service.signup(signupRequest, other1.id!!)
+        oAuth2Service.signup(signupRequest, other2.id!!)
+
+        val chatRoom1 = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+        chatRoom1.updateLastMessageAt(time.nowLocalDateTime)
+
+        val chatRoom2 = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+
+        val chatParticipant1 = ChatParticipant(
+            chatRoom1,
+            me
+        )
+        val chatParticipant2 = ChatParticipant(
+            chatRoom1,
+            other1
+        )
+        val chatParticipant3 = ChatParticipant(
+            chatRoom2,
+            me
+        )
+        val chatParticipant4 = ChatParticipant(
+            chatRoom2,
+            other2
+        )
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+        chatParticipantRepository.save(chatParticipant3)
+        chatParticipantRepository.save(chatParticipant4)
+
+        val condition = ChatCondition(
+            size = 10,
+            isCompleteWorkout = false
+        )
+
+        em.flush()
+        em.clear()
+
+        // when
+        val response = chatRoomRepository.findChatRoomProfileByDeletedAtIsNull(me.id!!, condition)
+
+        // then
+        assertThat(response).hasSize(1)
+        assertThat(response)
+            .extracting("chatRoomId", "profileImageUrl", "nickname")
+            .containsExactlyInAnyOrder(
+                tuple(chatRoom1.id!!, signupRequest.profileImageUrl, other1.nickname),
             )
     }
 

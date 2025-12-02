@@ -38,6 +38,12 @@ enum class WorkoutRequestErrorCode(
         "005",
         "Cannot change to the same status as current",
         "요청 상태가 이미 현재 상태와 동일하여 변경할 수 없음"
+    ),
+
+    FROM_MEMBER_CANNOT_ACCEPT(
+    "006",
+    "Workout request cannot be accepted by the sender",
+    "운동 요청을 한 사람이 수락을 시도함"
     )
 
     ;

@@ -844,6 +844,70 @@ class WorkoutRequestServiceTest @Autowired constructor(
             })
     }
 
+    @DisplayName("운동 요청을 보낸자가 수락을 할 수 없다.")
+    @Test
+    fun modifyWorkoutRequestNotSenderAccept() {
+        // given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val other = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+        memberRepository.save(other)
+
+        val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+
+        val chatParticipant1 = ChatParticipant(
+            chatRoom,
+            me
+        )
+        val chatParticipant2 = ChatParticipant(
+            chatRoom,
+            other
+        )
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+
+        val chatMessage = ChatMessage.ofWorkoutRequest(
+            member = me,
+            chatRoom = chatRoom,
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessage)
+
+        val workoutRequest = WorkoutRequest.of(
+            chatMessage = chatMessage,
+            fromMember = me,
+            toMember = other,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime
+        )
+        workoutRequestRepository.save(workoutRequest)
+
+        val request = WorkoutRequestUpdateRequest(
+            workoutRequestId = workoutRequest.id!!,
+            status = WorkoutRequestStatusForRequest.ACCEPT
+        )
+
+        // when & then
+        assertThatThrownBy {
+            workoutRequestService.modifyWorkoutRequest(me.id!!, request)
+        }
+            .isInstanceOf(GlobalException::class.java)
+            .satisfies(ThrowingConsumer { ex ->
+                val globalEx = ex as GlobalException
+                assertThat(globalEx.errorCode)
+                    .isEqualTo(WorkoutRequestErrorCode.FROM_MEMBER_CANNOT_ACCEPT)
+            })
+    }
+
 
     @DisplayName("채팅방의 제일 최큰 운동 요청을 확인한다.")
     @Test

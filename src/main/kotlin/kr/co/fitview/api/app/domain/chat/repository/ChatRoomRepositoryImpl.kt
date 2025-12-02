@@ -82,6 +82,7 @@ class ChatRoomRepositoryImpl(
             .where(
                 whereCondition(),
                 isExistsWorkoutHistoryCondition(condition, meChatParticipant, otherChatParticipant),
+                chatRoom.lastMessageAt.isNotNull,
                 chatRoom.deletedAt.isNull,
                 meChatParticipant.deletedAt.isNull,
                 otherChatParticipant.deletedAt.isNull,
