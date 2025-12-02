@@ -110,6 +110,8 @@ class WorkoutRequestService(
 
         validateNotRejectOrNotCancel(findWorkoutRequest, memberId, request)
 
+        validateNotAcceptFromMember(request, findWorkoutRequest, memberId)
+
         validateUpdateComplete(request, findWorkoutRequest)
     }
 
@@ -155,6 +157,20 @@ class WorkoutRequestService(
             throw GlobalException(WorkoutRequestErrorCode.TERMINATED_WORKOUT_REQUEST_STATUS_CHANGE)
         }
     }
+
+    private fun validateNotAcceptFromMember(request: WorkoutRequestUpdateRequest, workoutRequest: WorkoutRequest, memberId : Long) {
+        if(isFromMember(memberId, workoutRequest) && isAccept(request)){
+            throw GlobalException(WorkoutRequestErrorCode.FROM_MEMBER_CANNOT_ACCEPT)
+        }
+    }
+
+    private fun isFromMember(
+        memberId: Long,
+        findWorkoutRequest: WorkoutRequest
+    ) = memberId == findWorkoutRequest.getFromMemberId()
+
+    private fun isAccept(request: WorkoutRequestUpdateRequest) =
+        request.status == WorkoutRequestStatusForRequest.ACCEPT
 
     private fun getNotUpdateStatus(): List<WorkoutRequestStatus> {
         val notUpdateStatus = enumValues<WorkoutRequestStatus>()
