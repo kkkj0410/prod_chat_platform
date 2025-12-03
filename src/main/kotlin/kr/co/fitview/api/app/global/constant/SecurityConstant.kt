@@ -30,6 +30,7 @@ object SecurityConstant {
         "$API_BASE/docs/**",
         "$API_BASE/exception/**",
         "$API_BASE/oauth2/login",
+        "$API_BASE/reviews/tags/**",
         "$API_BASE/test/**",
         "$WS_STOMP_URI/**",
 
