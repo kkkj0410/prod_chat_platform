@@ -4,6 +4,7 @@ import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.address.dto.request.AddressCreateServiceRequest
 import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
 import kr.co.fitview.api.app.domain.chat.condition.ChatCondition
+import kr.co.fitview.api.app.domain.chat.condition.ChatMessageCondition
 import kr.co.fitview.api.app.domain.chat.entity.*
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatRoomType
@@ -300,7 +301,7 @@ class ChatMessageRepositoryTest @Autowired constructor(
         chatMessageRepository.save(chatMessage2)
         workoutRequestRepository.save(workoutRequest)
 
-        val condition = ChatCondition(
+        val condition = ChatMessageCondition(
             size = 10,
         )
 
@@ -376,7 +377,7 @@ class ChatMessageRepositoryTest @Autowired constructor(
         chatMessageRepository.save(chatMessage2)
         workoutRequestRepository.save(workoutRequest)
 
-        val condition = ChatCondition(
+        val condition = ChatMessageCondition(
             size = 10,
             lastMessageAt = time.nowLocalDateTime.minusHours(10)
                 .atZone(ZoneId.systemDefault())
@@ -453,7 +454,7 @@ class ChatMessageRepositoryTest @Autowired constructor(
         chatMessageRepository.save(chatMessage2)
         workoutRequestRepository.save(workoutRequest)
 
-        val condition = ChatCondition(
+        val condition = ChatMessageCondition(
             size = 10,
             direction = Direction.ASC
         )

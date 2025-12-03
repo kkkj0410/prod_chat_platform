@@ -3,6 +3,7 @@ package kr.co.fitview.api.app.domain.chat.service
 import jakarta.persistence.EntityManager
 import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.chat.condition.ChatCondition
+import kr.co.fitview.api.app.domain.chat.condition.ChatMessageCondition
 import kr.co.fitview.api.app.domain.chat.dto.request.ChatTextMessageServiceRequest
 import kr.co.fitview.api.app.domain.chat.dto.request.ChatWorkoutRequestMessageServiceRequest
 import kr.co.fitview.api.app.domain.chat.entity.ChatMessage
@@ -258,7 +259,7 @@ class ChatMessageServiceTest @Autowired constructor(
         chatMessageRepository.save(chatMessage2)
         workoutRequestRepository.save(workoutRequest)
 
-        val condition = ChatCondition(
+        val condition = ChatMessageCondition(
             size = 10,
         )
 
@@ -343,7 +344,7 @@ class ChatMessageServiceTest @Autowired constructor(
         chatMessageRepository.save(chatMessage2)
         workoutRequestRepository.save(workoutRequest)
 
-        val condition = ChatCondition(
+        val condition = ChatMessageCondition(
             size = 10,
         )
 

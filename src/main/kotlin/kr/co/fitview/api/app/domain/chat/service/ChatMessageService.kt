@@ -1,6 +1,7 @@
 package kr.co.fitview.api.app.domain.chat.service
 
 import kr.co.fitview.api.app.domain.chat.condition.ChatCondition
+import kr.co.fitview.api.app.domain.chat.condition.ChatMessageCondition
 import kr.co.fitview.api.app.domain.chat.dto.ChatMessageAndWorkoutRequest
 import kr.co.fitview.api.app.domain.chat.dto.request.*
 import kr.co.fitview.api.app.domain.chat.dto.response.*
@@ -133,7 +134,7 @@ class ChatMessageService(
         return chatMessageRepository.findRecentChatMessageByMemberIdAndIn(memberId, chatRoomIds)
     }
 
-    fun findChatMessages(memberId: Long, chatRoomId: Long, condition: ChatCondition): Slice<LastChatMessage> {
+    fun findChatMessages(memberId: Long, chatRoomId: Long, condition: ChatMessageCondition): Slice<LastChatMessage> {
         validateMemberInChatRoom(memberId, chatRoomId)
 
         val slice = chatMessageRepository.findChatMessageByCondition(chatRoomId, condition)

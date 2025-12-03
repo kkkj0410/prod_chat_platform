@@ -4,6 +4,7 @@ import com.querydsl.core.types.dsl.BooleanExpression
 import com.querydsl.jpa.impl.JPAQueryFactory
 import jakarta.persistence.EntityManager
 import kr.co.fitview.api.app.domain.chat.condition.ChatCondition
+import kr.co.fitview.api.app.domain.chat.condition.ChatMessageCondition
 import kr.co.fitview.api.app.domain.chat.dto.ChatMessageAndWorkoutRequest
 import kr.co.fitview.api.app.domain.chat.dto.response.ChatMessageContent
 import kr.co.fitview.api.app.domain.chat.dto.response.ChatMessageWorkoutRequest
@@ -140,40 +141,8 @@ class ChatMessageRepositoryImpl(
         }
     }
 
-    override fun findChatMessageByCondition(chatRoomId: Long, condition: ChatCondition) : Slice<ChatMessageAndWorkoutRequest> {
+    override fun findChatMessageByCondition(chatRoomId: Long, condition: ChatMessageCondition) : Slice<ChatMessageAndWorkoutRequest> {
 
-//        fun ltLastMessageAt(): BooleanExpression? {
-//            return condition.lastMessageAt()?.let { lastAt ->
-//                chatMessage.sentAt.lt(lastAt)
-//            }
-//        }
-//
-//        val result = queryFactory
-//            .select(chatMessage, workoutRequest)
-//            .from(chatMessage)
-//            .join(chatRoom)
-//            .on(
-//                chatRoom.id.eq(chatMessage.chatRoom.id),
-//                chatRoom.id.eq(chatRoomId)
-//            )
-//            .leftJoin(workoutRequest).fetchJoin()
-//            .on(workoutRequest.chatMessage.id.eq(chatMessage.id))
-//            .where(ltLastMessageAt())
-//            .orderBy(chatMessage.sentAt.desc().nullsLast())
-//            .limit((condition.size!! + 1).toLong())
-//            .fetch()
-//
-//        val hasNext = result.size > condition.size
-//        val content = if (hasNext) result.subList(0, condition.size) else result
-//
-//        val mappedEntity = content.map { tuple ->
-//            ChatMessageAndWorkoutRequest(
-//                chatMessage = tuple.get(chatMessage)!!,
-//                workoutRequest = tuple.get(workoutRequest)
-//            )
-//        }
-//
-//        return SliceImpl(mappedEntity, PageRequest.of(0, condition.size), hasNext)
 
         fun ltLastMessageAt(): BooleanExpression? {
             return condition.lastMessageAt()?.let { lastAt ->

@@ -2,6 +2,7 @@ package kr.co.fitview.api.app.domain.chat.controller
 
 import jakarta.validation.Valid
 import kr.co.fitview.api.app.domain.chat.condition.ChatCondition
+import kr.co.fitview.api.app.domain.chat.condition.ChatMessageCondition
 import kr.co.fitview.api.app.domain.chat.dto.request.ChatRoomCreateRequest
 import kr.co.fitview.api.app.domain.chat.dto.response.*
 import kr.co.fitview.api.app.domain.chat.service.ChatMessageService
@@ -62,7 +63,7 @@ class ChatController(
         chatRoomId : Long,
 
         @ModelAttribute
-        condition : ChatCondition
+        condition : ChatMessageCondition
     ) : ResponseEntity<ApiResponse<SuccessCursorAtPagedResponse<LastChatMessage>>> {
 
         val response = chatMessageService.findChatMessages(securityUtil.getMemberId(), chatRoomId, condition)
