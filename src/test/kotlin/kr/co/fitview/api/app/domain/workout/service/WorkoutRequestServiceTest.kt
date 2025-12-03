@@ -15,6 +15,7 @@ import kr.co.fitview.api.app.domain.chat.repository.ChatParticipantRepository
 import kr.co.fitview.api.app.domain.chat.repository.ChatRoomRepository
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
+import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
 import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusForRequest
 import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequest
 import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
@@ -26,6 +27,7 @@ import kr.co.fitview.api.app.global.exception.error.chat.ChatErrorCode
 import kr.co.fitview.api.app.global.exception.error.member.MemberErrorCode
 import kr.co.fitview.api.app.global.exception.error.workout_request.WorkoutRequestErrorCode
 import kr.co.fitview.api.app.global.time.Time
+import kr.co.fitview.api.app.global.util.TestDataFactory
 import org.assertj.core.api.Assertions.*
 import org.assertj.core.api.ThrowingConsumer
 import org.junit.jupiter.api.DisplayName
@@ -42,6 +44,7 @@ class WorkoutRequestServiceTest @Autowired constructor(
     val chatRoomRepository : ChatRoomRepository,
     val chatParticipantRepository : ChatParticipantRepository,
     val chatMessageRepository : ChatMessageRepository,
+    val oAuth2Service : OAuth2Service,
     val time : Time
 ) : IntegrationTestSupport() {
 
@@ -393,6 +396,10 @@ class WorkoutRequestServiceTest @Autowired constructor(
         memberRepository.save(me)
         memberRepository.save(other)
 
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest, me.id!!)
+        oAuth2Service.signup(signupRequest, other.id!!)
+
         val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
 
         val chatParticipant1 = ChatParticipant(
@@ -467,6 +474,10 @@ class WorkoutRequestServiceTest @Autowired constructor(
         )
         memberRepository.save(me)
         memberRepository.save(other)
+
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest, me.id!!)
+        oAuth2Service.signup(signupRequest, other.id!!)
 
         val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
 
@@ -934,6 +945,10 @@ class WorkoutRequestServiceTest @Autowired constructor(
         memberRepository.save(me)
         memberRepository.save(other)
 
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest, me.id!!)
+        oAuth2Service.signup(signupRequest, other.id!!)
+
         val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
 
         val chatParticipant1 = ChatParticipant(
@@ -997,6 +1012,10 @@ class WorkoutRequestServiceTest @Autowired constructor(
         )
         memberRepository.save(me)
         memberRepository.save(other)
+
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest, me.id!!)
+        oAuth2Service.signup(signupRequest, other.id!!)
 
         val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
 
@@ -1063,6 +1082,10 @@ class WorkoutRequestServiceTest @Autowired constructor(
         memberRepository.save(me)
         memberRepository.save(other)
 
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest, me.id!!)
+        oAuth2Service.signup(signupRequest, other.id!!)
+
         val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
 
         val chatParticipant1 = ChatParticipant(
@@ -1126,6 +1149,10 @@ class WorkoutRequestServiceTest @Autowired constructor(
         )
         memberRepository.save(me)
         memberRepository.save(other)
+
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest, me.id!!)
+        oAuth2Service.signup(signupRequest, other.id!!)
 
         val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
 

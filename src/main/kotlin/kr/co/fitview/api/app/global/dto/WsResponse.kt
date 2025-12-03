@@ -15,6 +15,7 @@ enum class WsMessageType(
 ) : WsTypeIdentifier {
     TEXT("TEXT"),
     WORKOUT_REQUEST("WORKOUT_REQUEST"),
+    NOTICE("NOTICE"),
 
     WORKOUT_REQUEST_UPDATE("WORKOUT_REQUEST_UPDATE"),
 

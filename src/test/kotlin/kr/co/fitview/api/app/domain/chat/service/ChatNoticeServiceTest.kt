@@ -11,11 +11,13 @@ import kr.co.fitview.api.app.domain.chat.repository.ChatParticipantRepository
 import kr.co.fitview.api.app.domain.chat.repository.ChatRoomRepository
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
+import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
 import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequest
 import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
 import kr.co.fitview.api.app.domain.workout.repository.WorkoutRequestRepository
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.time.Time
+import kr.co.fitview.api.app.global.util.TestDataFactory
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.tuple
 import org.junit.jupiter.api.Assertions.*
@@ -30,6 +32,7 @@ class ChatNoticeServiceTest @Autowired constructor(
     private val chatParticipantRepository : ChatParticipantRepository,
     private val chatMessageRepository : ChatMessageRepository,
     private val workoutRequestRepository : WorkoutRequestRepository,
+    private val oAuth2Service : OAuth2Service,
     private val time : Time
 ) : IntegrationTestSupport(){
 
@@ -50,6 +53,10 @@ class ChatNoticeServiceTest @Autowired constructor(
         )
         memberRepository.save(me)
         memberRepository.save(other)
+
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest, me.id!!)
+        oAuth2Service.signup(signupRequest, other.id!!)
 
         val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
 
@@ -84,6 +91,7 @@ class ChatNoticeServiceTest @Autowired constructor(
 
         // when
         val savedChatMessage = chatNoticeService.addChatNoticeFrom(
+            me.id!!,
             workoutRequestId = workoutRequest.id!!,
             content = ChatMessageNoticeContent.WORKOUT_REQUEST_COMPLETE
         )

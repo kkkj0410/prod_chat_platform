@@ -6,6 +6,7 @@ import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
 import kr.co.fitview.api.app.domain.chat.condition.ChatCondition
 import kr.co.fitview.api.app.domain.chat.condition.ChatMessageCondition
 import kr.co.fitview.api.app.domain.chat.entity.*
+import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageNoticeContent
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatRoomType
 import kr.co.fitview.api.app.domain.member.entity.Member
@@ -239,6 +240,85 @@ class ChatMessageRepositoryTest @Autowired constructor(
                 WorkoutRequestStatusForResponse.PENDING,
                 time.nowLocalDateTime.plusHours(24),
                 "location"
+            )
+    }
+
+    @DisplayName("안내 문구 유형의 최근 문자를 조회한다.")
+    @Test
+    fun findRecentChatMessageByMemberIdAndInNotice() {
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val other1 = Member(
+            email = "email2",
+            password = "password2",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+        memberRepository.save(other1)
+
+        val signupRequest = createOAuth2SignupServiceRequest()
+
+        oAuth2Service.signup(signupRequest, me.id!!)
+        oAuth2Service.signup(signupRequest, other1.id!!)
+
+        val chatRoom1 = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+
+        val chatParticipant1 = ChatParticipant(
+            chatRoom1,
+            me
+        )
+        val chatParticipant2 = ChatParticipant(
+            chatRoom1,
+            other1
+        )
+
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+
+        val message1ByChatRoom1 = ChatMessage(
+            member = me,
+            chatRoom = chatRoom1,
+            type = ChatMessageType.TEXT,
+            content = "content",
+            sentAt = time.nowLocalDateTime.minusHours(3)
+        )
+        val message2ByChatRoom1 = ChatMessage.ofNotice(
+            chatRoom = chatRoom1,
+            content = ChatMessageNoticeContent.WORKOUT_REQUEST_COMPLETE,
+            sentAt = time.nowLocalDateTime
+        )
+        chatRoom1.updateLastMessageAt(time.nowLocalDateTime)
+
+
+        chatMessageRepository.save(message1ByChatRoom1)
+        chatMessageRepository.save(message2ByChatRoom1)
+
+
+        val chatRoomIds = listOf(chatRoom1.id!!)
+
+        // when
+        val response = chatMessageRepository.findRecentChatMessageByMemberIdAndIn(me.id!!, chatRoomIds)
+
+        assertThat(response).hasSize(1)
+        assertThat(response[0])
+            .extracting(
+                "chatMessageId",
+                "type",
+                "sentAt",
+                "isRead",
+                "chatRoomId",
+                "content"
+            )
+            .contains(
+                message2ByChatRoom1.id!!,
+                ChatMessageType.NOTICE,
+                time.nowLocalDateTime,
+                false,
+                chatRoom1.id!!,
+                ChatMessageNoticeContent.WORKOUT_REQUEST_COMPLETE
             )
     }
 

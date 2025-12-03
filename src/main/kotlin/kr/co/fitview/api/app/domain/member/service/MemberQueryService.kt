@@ -1,6 +1,7 @@
 package kr.co.fitview.api.app.domain.member.service
 
 import kr.co.fitview.api.app.domain.member.dto.response.ChatMemberProfileResponse
+import kr.co.fitview.api.app.domain.member.dto.response.MemberChatProfileResponse
 import kr.co.fitview.api.app.domain.member.dto.response.MemberChatRoomProfile
 import kr.co.fitview.api.app.domain.member.dto.response.MemberWorkoutPartnerProfileResponse
 import kr.co.fitview.api.app.domain.member.entity.Member
@@ -31,6 +32,10 @@ class MemberQueryService(
             ?: throw GlobalException(MemberErrorCode.MEMBER_NOT_FOUND)
 
         return response
+    }
+
+    fun findMemberChatProfileFrom(memberId: Long): MemberChatProfileResponse? {
+        return memberRepository.findMemberChatProfileByDeletedAtIsNull(memberId)
     }
 
 }

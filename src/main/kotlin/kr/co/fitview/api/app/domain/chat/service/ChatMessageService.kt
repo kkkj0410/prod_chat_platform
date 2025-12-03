@@ -158,6 +158,10 @@ class ChatMessageService(
                     now = time.nowLocalDateTime
                 )
 
+            ChatMessageType.NOTICE ->
+                ChatNoticeMessage.from(chatAndRequest.chatMessage)
+
+
             else -> throw IllegalArgumentException("Unknown ChatMessageType: ${chatAndRequest.chatMessage.type}")
         }
     }

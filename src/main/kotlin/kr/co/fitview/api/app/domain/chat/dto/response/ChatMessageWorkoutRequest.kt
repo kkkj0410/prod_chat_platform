@@ -12,14 +12,14 @@ data class ChatMessageWorkoutRequest(
     override val chatMessageId: Long,
     override val type: ChatMessageType = ChatMessageType.WORKOUT_REQUEST,
     override val sentAt: LocalDateTime,
-    override val isMe: Boolean = false,
 
+    val isMe: Boolean = false,
     @get:JsonIgnore
     override val isRead: Boolean? = null,
     @get:JsonIgnore
     override val chatRoomId: Long? = null,
     @get:JsonIgnore
-    override val memberId: Long? = null,
+    val memberId: Long? = null,
 
     val workoutRequestId: Long,
     val status: WorkoutRequestStatusForResponse,

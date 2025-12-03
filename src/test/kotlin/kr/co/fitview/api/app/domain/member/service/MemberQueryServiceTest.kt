@@ -145,4 +145,27 @@ class MemberQueryServiceTest @Autowired constructor(
                     .isEqualTo(MemberErrorCode.MEMBER_NOT_FOUND)
             })
     }
+
+    @DisplayName("회원의 채팅방 프로필을 확인한다.")
+    @Test
+    fun findMemberChatProfileFrom() {
+        // given
+        val me = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(me)
+
+        val request = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(request, me.id!!)
+
+        // when
+        val response = memberQueryService.findMemberChatProfileFrom(me.id!!)
+
+        // then
+        assertThat(response)
+            .extracting("profileImageUrl", "nickname")
+            .contains(request.profileImageUrl, request.nickname)
+    }
 }

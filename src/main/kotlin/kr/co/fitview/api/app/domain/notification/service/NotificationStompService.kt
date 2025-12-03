@@ -1,9 +1,6 @@
 package kr.co.fitview.api.app.domain.notification.service
 
-import kr.co.fitview.api.app.domain.chat.dto.response.ChatMessageDetailResponse
-import kr.co.fitview.api.app.domain.chat.dto.response.StompChatTextMessage
-import kr.co.fitview.api.app.domain.chat.dto.response.StompChatWorkoutRequestMessage
-import kr.co.fitview.api.app.domain.chat.dto.response.withIsMe
+import kr.co.fitview.api.app.domain.chat.dto.response.*
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.domain.notification.constant.StompConstant
 import kr.co.fitview.api.app.domain.notification.dto.StompSendEvent
@@ -70,6 +67,28 @@ class NotificationStompService(
                     payload = WsResponse(
                         type = WsMessageType.WORKOUT_REQUEST.code,
                         payload = response.withIsMe(false)
+                    )
+                )
+            )
+        }else if (response.chatMessage is StompChatNoticeMessage) {
+            stompPublisher.sendToUser(
+                StompSendEvent(
+                    memberId = memberId,
+                    destination = StompConstant.SUB_CHAT_MESSAGE,
+                    payload = WsResponse(
+                        type = WsMessageType.NOTICE.code,
+                        payload = response
+                    )
+                )
+            )
+
+            stompPublisher.sendToUser(
+                StompSendEvent(
+                    memberId = response.otherMemberId,
+                    destination = StompConstant.SUB_CHAT_MESSAGE,
+                    payload = WsResponse(
+                        type = WsMessageType.NOTICE.code,
+                        payload = response
                     )
                 )
             )

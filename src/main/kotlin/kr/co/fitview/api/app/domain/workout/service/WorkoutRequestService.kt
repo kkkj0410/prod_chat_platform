@@ -83,7 +83,7 @@ class WorkoutRequestService(
             workoutHistoryService.addWorkoutHistory(findWorkoutRequest.fromMember!!, findWorkoutRequest.toMember!!)
         }
 
-        addChatNoticeMessage(request)
+        addChatNoticeMessage(memberId, request)
 
         val response = WorkoutRequestUpdateResponse(
             chatRoomId = findWorkoutRequest.getChatRoomId()!!,
@@ -174,9 +174,10 @@ class WorkoutRequestService(
         findWorkoutRequest: WorkoutRequest
     ) = memberId == findWorkoutRequest.getFromMemberId()
 
-    private fun addChatNoticeMessage(request: WorkoutRequestUpdateRequest) {
+    private fun addChatNoticeMessage(memberId : Long, request: WorkoutRequestUpdateRequest) {
         if (isAccept(request)) {
             chatNoticeService.addChatNoticeFrom(
+                memberId,
                 request.workoutRequestId,
                 ChatMessageNoticeContent.WORKOUT_REQUEST_ACCEPT
             )
@@ -184,6 +185,7 @@ class WorkoutRequestService(
 
         if (isComplete(request)) {
             chatNoticeService.addChatNoticeFrom(
+                memberId,
                 request.workoutRequestId,
                 ChatMessageNoticeContent.WORKOUT_REQUEST_COMPLETE
             )
@@ -191,6 +193,7 @@ class WorkoutRequestService(
 
         if (isReject(request)) {
             chatNoticeService.addChatNoticeFrom(
+                memberId,
                 request.workoutRequestId,
                 ChatMessageNoticeContent.WORKOUT_REQUEST_REJECT
             )
@@ -198,6 +201,7 @@ class WorkoutRequestService(
 
         if (isCancel(request)) {
             chatNoticeService.addChatNoticeFrom(
+                memberId,
                 request.workoutRequestId,
                 ChatMessageNoticeContent.WORKOUT_REQUEST_CANCEL
             )

@@ -1,10 +1,8 @@
 package kr.co.fitview.api.app.domain.notification.service
 
 import kr.co.fitview.api.app.IntegrationTestSupport
-import kr.co.fitview.api.app.domain.chat.dto.response.ChatMessageDetailResponse
-import kr.co.fitview.api.app.domain.chat.dto.response.StompChatTextMessage
-import kr.co.fitview.api.app.domain.chat.dto.response.StompChatWorkoutRequestMessage
-import kr.co.fitview.api.app.domain.chat.dto.response.withIsMe
+import kr.co.fitview.api.app.domain.chat.dto.response.*
+import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageNoticeContent
 import kr.co.fitview.api.app.domain.member.dto.response.MemberChatProfileResponse
 import kr.co.fitview.api.app.domain.member.dto.response.MemberWorkoutPartnerProfileResponse
 import kr.co.fitview.api.app.domain.member.entity.Member
@@ -151,6 +149,61 @@ class NotificationStompServiceTest @Autowired constructor(
                 payload = WsResponse(
                     type = WsMessageType.WORKOUT_REQUEST.code,
                     payload = response.withIsMe(false)
+                )
+            )
+        )
+    }
+
+    @DisplayName("채팅 안내 문구 메시지를 송신자, 수신자에게 보낸다.")
+    @Test
+    fun sendChatNoticeMessage() {
+        // given
+        val memberId = 123L
+        val otherMemberId = 234L
+
+        val chatMessage = StompChatNoticeMessage(
+            chatMessageId = 1L,
+            sentAt = time.nowLocalDateTime,
+            content = ChatMessageNoticeContent.WORKOUT_REQUEST_COMPLETE
+        )
+
+        val chatProfile = MemberChatProfileResponse(
+            profileImageUrl = "https://example.com/profile.jpg",
+            nickname = "홍길동"
+        )
+
+        val response = ChatMessageDetailResponse.of(
+            chatRoomId = 123L,
+            isCompleteWorkout = false,
+            chatProfile = chatProfile,
+            chatMessage = chatMessage,
+            otherMemberId = otherMemberId
+        )
+
+        given(stompPublisher.sendToUser(any())).willAnswer {}
+
+
+        // when
+        notificationStompService.sendChatMessage(memberId, response)
+
+        // then
+        then(stompPublisher).should().sendToUser(
+            StompSendEvent(
+                memberId = memberId,
+                destination = StompConstant.SUB_CHAT_MESSAGE,
+                payload = WsResponse(
+                    type = WsMessageType.NOTICE.code,
+                    payload = response
+                )
+            )
+        )
+        then(stompPublisher).should().sendToUser(
+            StompSendEvent(
+                memberId = otherMemberId,
+                destination = StompConstant.SUB_CHAT_MESSAGE,
+                payload = WsResponse(
+                    type = WsMessageType.NOTICE.code,
+                    payload = response
                 )
             )
         )

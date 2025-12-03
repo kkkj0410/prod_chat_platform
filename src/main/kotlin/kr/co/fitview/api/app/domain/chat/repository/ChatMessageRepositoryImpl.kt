@@ -8,9 +8,11 @@ import kr.co.fitview.api.app.domain.chat.condition.ChatMessageCondition
 import kr.co.fitview.api.app.domain.chat.dto.ChatMessageAndWorkoutRequest
 import kr.co.fitview.api.app.domain.chat.dto.response.ChatMessageContent
 import kr.co.fitview.api.app.domain.chat.dto.response.ChatMessageWorkoutRequest
+import kr.co.fitview.api.app.domain.chat.dto.response.ChatNoticeMessage
 import kr.co.fitview.api.app.domain.chat.dto.response.LastChatMessage
 import kr.co.fitview.api.app.domain.chat.entity.QChatMessage.chatMessage
 import kr.co.fitview.api.app.domain.chat.entity.QChatRoom.chatRoom
+import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageNoticeContent
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
 import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusForResponse
 import kr.co.fitview.api.app.domain.workout.entity.QWorkoutRequest.workoutRequest
@@ -97,9 +99,8 @@ class ChatMessageRepositoryImpl(
             val type = ChatMessageType.valueOf(row[2] as String)
             val content = row[3] as String?
             val sentAt = (row[4] as Timestamp).toLocalDateTime()
-            val targetMemberId = row[5] as Long
-            val isMe = isMe(targetMemberId, memberId)
-            val isRead = if (isMe) true else (row[6] as? Boolean) ?: false
+            val targetMemberId = row[5] as Long?
+            val isRead = (row[6] as Boolean?) ?: false
 
             val workoutRequestId = row[7] as Long?
             val status = (row[8] as? String)?.let { WorkoutRequestStatus.valueOf(it) }
@@ -107,15 +108,17 @@ class ChatMessageRepositoryImpl(
             val scheduledAt = (row[10] as? Timestamp)?.toLocalDateTime()
             val location = row[11] as String?
 
-            if (workoutRequestId != null) {
+
+            if (type == ChatMessageType.WORKOUT_REQUEST) {
+                val isMe = isMe(targetMemberId!!, memberId)
                 ChatMessageWorkoutRequest(
                     chatMessageId = chatMessageId,
                     type = type,
                     sentAt = sentAt,
                     isMe = isMe,
-                    isRead = isRead,
+                    isRead = if (isMe) true else isRead,
                     chatRoomId = chatRoomId,
-                    workoutRequestId = workoutRequestId,
+                    workoutRequestId = workoutRequestId!!,
                     status = WorkoutRequestStatusForResponse.from(
                         dbStatus = status!!,
                         requestedAt = requestedAt!!,
@@ -126,16 +129,26 @@ class ChatMessageRepositoryImpl(
                     location = location!!,
                     memberId = targetMemberId
                 )
-            } else {
+            } else if(type == ChatMessageType.TEXT) {
+                val isMe = isMe(targetMemberId!!, memberId)
                 ChatMessageContent(
                     chatMessageId = chatMessageId,
                     type = type,
                     sentAt = sentAt,
                     isMe = isMe,
-                    isRead = isRead,
+                    isRead = if (isMe) true else isRead,
                     chatRoomId = chatRoomId,
                     content = content ?: "",
                     memberId = targetMemberId
+                )
+            }else{
+                ChatNoticeMessage(
+                    chatMessageId = chatMessageId,
+                    type = type,
+                    sentAt = sentAt,
+                    isRead = isRead,
+                    chatRoomId = chatRoomId,
+                    content = ChatMessageNoticeContent.valueOf(content!!)
                 )
             }
         }

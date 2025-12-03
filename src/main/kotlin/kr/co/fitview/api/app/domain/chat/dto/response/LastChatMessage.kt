@@ -8,12 +8,9 @@ sealed interface LastChatMessage {
     val chatMessageId: Long
     val type: ChatMessageType
     val sentAt: LocalDateTime
-    val isMe: Boolean
 
     @get:JsonIgnore
     val isRead : Boolean?
     @get:JsonIgnore
     val chatRoomId : Long?
-    @get:JsonIgnore
-    val memberId : Long?
 }
