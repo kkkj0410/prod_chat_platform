@@ -21,9 +21,6 @@ class MemberQueryService(
         return memberRepository.findMemberWorkoutRequestProfile(memberId)
     }
 
-    fun findOtherMemberChatRoomProfile(memberId: Long, chatRoomId: Long) : MemberChatRoomProfile? {
-        return memberRepository.findOtherMemberChatRoomProfile(memberId, chatRoomId)
-    }
 
     fun findMemberFromId(memberId : Long) : Member?{
         return memberRepository.findByIdAndDeletedAtIsNull(memberId)

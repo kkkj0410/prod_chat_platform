@@ -491,33 +491,6 @@ class MemberRepositoryImpl(
         }
     }
 
-    override fun findOtherMemberChatRoomProfile(memberId: Long, chatRoomId : Long): MemberChatRoomProfile? {
-        return queryFactory
-            .select(
-                Projections.constructor(
-                    MemberChatRoomProfile::class.java,
-                    member.id,
-                    member.nickname,
-                    image.url,
-                )
-            )
-            .from(chatRoom)
-            .join(chatRoom.chatParticipants, chatParticipant)
-            .join(chatParticipant.member, member)
-            .join(member.mutableMemberImages, memberImage)
-            .join(memberImage.image, image)
-            .where(
-                chatRoom.type.eq(ChatRoomType.PRIVATE),
-                chatRoom.id.eq(chatRoomId),
-                member.id.ne(memberId),
-                memberImage.type.eq(MemberImageType.PROFILE),
-                chatRoom.deletedAt.isNull,
-                chatParticipant.deletedAt.isNull,
-                memberImage.deletedAt.isNull,
-                member.deletedAt.isNull,
-            )
-            .fetchOne()
-    }
 
     override fun findMemberByPrivateChatRoomId(memberId : Long, chatRoomId: Long): ChatMemberProfileResponse? {
 

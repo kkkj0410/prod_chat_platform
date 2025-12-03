@@ -53,52 +53,6 @@ class MemberQueryServiceTest @Autowired constructor(
             .contains(me.id!!, request.profileImageUrl, request.nickname)
     }
 
-    @DisplayName("개인 채팅방의 상대 회원 프로필을 조회한다.")
-    @Test
-    fun findOtherMemberChatRoomProfile() {
-        // given
-        val me = Member(
-            email = "email1",
-            password = "password1",
-            role = Role.USER,
-        )
-        memberRepository.save(me)
-        val signupRequest1 = TestDataFactory.oAuth2SignupRequest()
-        oAuth2Service.signup(signupRequest1, me.id!!)
-
-        val other = Member(
-            email = "email1",
-            password = "password1",
-            role = Role.USER,
-        )
-        memberRepository.save(other)
-        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
-            nickname = "updateNick",
-            profileImageUrl = "updateProfile"
-        )
-        oAuth2Service.signup(signupRequest2, other.id!!)
-
-        val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
-
-        val chatParticipant1 = ChatParticipant(
-            chatRoom,
-            me
-        )
-        val chatParticipant2 = ChatParticipant(
-            chatRoom,
-            other
-        )
-        chatParticipantRepository.save(chatParticipant1)
-        chatParticipantRepository.save(chatParticipant2)
-
-        // when
-        val response = memberQueryService.findOtherMemberChatRoomProfile(me.id!!, chatRoom.id!!)
-
-        // then
-        assertThat(response)
-            .extracting("memberId", "nickname", "profileImageUrl")
-            .contains(other.id!!, signupRequest2.nickname, signupRequest2.profileImageUrl)
-    }
 
     @DisplayName("채팅방의 각 회원을 조회한다.")
     @Test
