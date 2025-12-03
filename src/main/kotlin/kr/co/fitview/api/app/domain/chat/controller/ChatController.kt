@@ -63,13 +63,12 @@ class ChatController(
 
         @ModelAttribute
         condition : ChatCondition
-    ) : ResponseEntity<ApiResponse<SuccessCursorAtPagedResponseByChatMessage<LastChatMessage, MemberChatRoomProfile>>> {
+    ) : ResponseEntity<ApiResponse<SuccessCursorAtPagedResponse<LastChatMessage>>> {
 
-        val response = chatMessageService.findChatMessagesWithOtherMember(securityUtil.getMemberId(), chatRoomId, condition)
+        val response = chatMessageService.findChatMessages(securityUtil.getMemberId(), chatRoomId, condition)
 
-        return ResponseEntity.ok(SuccessCursorAtPagedResponseByChatMessage.from(
-            slice = response.chatMessages,
-            otherMember = response.otherMember,
+        return ResponseEntity.ok(ApiResponse.successWithCursorAtPagination(
+            slice = response,
             timeExtractor = { it.sentAt }
         ))
     }

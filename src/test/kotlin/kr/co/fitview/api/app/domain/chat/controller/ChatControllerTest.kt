@@ -203,12 +203,6 @@ class ChatControllerTest : ControllerTestSupport(){
         val chatRoomId = 456L
         val now = LocalDateTime.now()
 
-        val otherMember = MemberChatRoomProfile(
-            memberId = 123L,
-            nickname = "nickname",
-            profileImageUrl = "profile"
-        )
-
         val messages: List<LastChatMessage> = listOf(
             ChatMessageContent(
                 chatMessageId = 1L,
@@ -228,12 +222,8 @@ class ChatControllerTest : ControllerTestSupport(){
         )
         val sliceChatMessages: Slice<LastChatMessage> = SliceImpl(messages, PageRequest.of(0, 10), false)
 
-        val response = ChatRoomMessageResponse(
-            otherMember = otherMember,
-            chatMessages = sliceChatMessages
-        )
 
-        given(chatMessageService.findChatMessagesWithOtherMember(any(), any(), any())).willReturn(response)
+        given(chatMessageService.findChatMessages(any(), any(), any())).willReturn(sliceChatMessages)
 
         mockMvc.perform(
             get("/api/v1/chats/{chatRoomId}/messages", chatRoomId)
@@ -244,10 +234,6 @@ class ChatControllerTest : ControllerTestSupport(){
             .andExpect(jsonPath("$.status").exists())
             .andExpect(jsonPath("$.code").value("ok"))
             .andExpect(jsonPath("$.message").value("OK"))
-
-            .andExpect(jsonPath("$.data.otherMember.memberId").value(123L))
-            .andExpect(jsonPath("$.data.otherMember.nickname").value("nickname"))
-            .andExpect(jsonPath("$.data.otherMember.profileImageUrl").value("profile"))
 
             .andExpect(jsonPath("$.data.content").isArray)
             .andExpect(jsonPath("$.data.content.length()").value(2))

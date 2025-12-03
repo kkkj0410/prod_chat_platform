@@ -322,12 +322,6 @@ class ChatControllerDocsTest : RestDocsSupport() {
         val chatRoomId = 456L
         val now = LocalDateTime.now()
 
-        val otherMember = MemberChatRoomProfile(
-            memberId = 123L,
-            nickname = "nickname",
-            profileImageUrl = "profile"
-        )
-
         val chatMessages: List<LastChatMessage> = listOf(
             ChatMessageContent(
                 chatMessageId = 1L,
@@ -338,12 +332,8 @@ class ChatControllerDocsTest : RestDocsSupport() {
         )
         val sliceChatMessages: Slice<LastChatMessage> = SliceImpl(chatMessages, PageRequest.of(0, 10), false)
 
-        val response = ChatRoomMessageResponse(
-            otherMember = otherMember,
-            chatMessages = sliceChatMessages
-        )
 
-        given(chatMessageService.findChatMessagesWithOtherMember(any(), any(), any())).willReturn(response)
+        given(chatMessageService.findChatMessages(any(), any(), any())).willReturn(sliceChatMessages)
 
         mockMvc.perform(
             get("/api/v1/chats/{chatRoomId}/messages", chatRoomId)
@@ -376,10 +366,6 @@ class ChatControllerDocsTest : RestDocsSupport() {
                         fieldWithPath("message").description("응답 메시지"),
                         *RestDocsPagination.paginationByCursorAt(),
 
-                        fieldWithPath("data.otherMember.memberId").description("상대방 멤버 ID"),
-                        fieldWithPath("data.otherMember.nickname").description("상대방 닉네임"),
-                        fieldWithPath("data.otherMember.profileImageUrl").description("상대방 프로필 이미지 URL"),
-
                         fieldWithPath("data.content").type(JsonFieldType.ARRAY).description("채팅 메시지 리스트"),
                         fieldWithPath("data.content[].chatMessageId").description("메시지 ID"),
                         fieldWithPath("data.content[].type").description("TEXT"),
@@ -397,12 +383,6 @@ class ChatControllerDocsTest : RestDocsSupport() {
         val chatRoomId = 456L
         val now = LocalDateTime.now()
 
-        val otherMember = MemberChatRoomProfile(
-            memberId = 123L,
-            nickname = "nickname",
-            profileImageUrl = "profile"
-        )
-
         val chatMessages: List<LastChatMessage> = listOf(
             ChatMessageWorkoutRequest(
                 chatMessageId = 2L,
@@ -416,12 +396,7 @@ class ChatControllerDocsTest : RestDocsSupport() {
         )
         val sliceChatMessages: Slice<LastChatMessage> = SliceImpl(chatMessages, PageRequest.of(0, 10), false)
 
-        val response = ChatRoomMessageResponse(
-            otherMember = otherMember,
-            chatMessages = sliceChatMessages
-        )
-
-        given(chatMessageService.findChatMessagesWithOtherMember(any(), any(), any())).willReturn(response)
+        given(chatMessageService.findChatMessages(any(), any(), any())).willReturn(sliceChatMessages)
 
         mockMvc.perform(
             get("/api/v1/chats/{chatRoomId}/messages", chatRoomId)
@@ -452,10 +427,6 @@ class ChatControllerDocsTest : RestDocsSupport() {
                         fieldWithPath("code").description("응답 코드"),
                         fieldWithPath("message").description("응답 메시지"),
                         *RestDocsPagination.paginationByCursorAt(),
-
-                        fieldWithPath("data.otherMember.memberId").description("상대방 멤버 ID"),
-                        fieldWithPath("data.otherMember.nickname").description("상대방 닉네임"),
-                        fieldWithPath("data.otherMember.profileImageUrl").description("상대방 프로필 이미지 URL"),
 
                         fieldWithPath("data.content").type(JsonFieldType.ARRAY).description("채팅 메시지 리스트"),
                         fieldWithPath("data.content[].chatMessageId").description("메시지 ID"),
