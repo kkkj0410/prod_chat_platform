@@ -1,0 +1,17 @@
+package kr.co.fitview.api.app.domain.chat.service
+
+import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
+import kr.co.fitview.api.app.domain.chat.repository.ChatRoomRepository
+import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
+
+@Service
+@Transactional(readOnly = true)
+class ChatRoomQueryService(
+    private val chatRoomRepository : ChatRoomRepository
+) {
+
+    fun findChatRoomFrom(workoutRequestId : Long) : ChatRoom?{
+        return chatRoomRepository.findChatRoomByWorkoutRequestId(workoutRequestId)
+    }
+}

@@ -7,6 +7,7 @@ import kr.co.fitview.api.app.domain.chat.entity.ChatMessage
 import kr.co.fitview.api.app.domain.chat.entity.ChatParticipant
 import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
 import kr.co.fitview.api.app.domain.chat.entity.QChatMessage.chatMessage
+import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageNoticeContent
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatRoomType
 import kr.co.fitview.api.app.domain.chat.repository.ChatMessageRepository
@@ -441,6 +442,13 @@ class WorkoutRequestServiceTest @Autowired constructor(
                 me.id!!,
                 other.id!!
             )
+
+        val findNoticeMessages = chatMessageRepository.findByType(ChatMessageType.NOTICE)
+
+        assertThat(findNoticeMessages).hasSize(1)
+        assertThat(findNoticeMessages[0])
+            .extracting("type", "content")
+            .contains(ChatMessageType.NOTICE, ChatMessageNoticeContent.WORKOUT_REQUEST_ACCEPT.name)
     }
 
     @DisplayName("운동 요청의 상태를 완료로 바꾸면 운동 이력에 기록된다.")
@@ -515,6 +523,7 @@ class WorkoutRequestServiceTest @Autowired constructor(
         assertThat(findWorkoutHistory)
             .extracting("memberOne", "memberTwo")
             .contains(me, other)
+
     }
 
     @DisplayName("운동 요청이 수락되지 않으면 운동 요청의 상태를 완료로 바꿀 수 없다.")
@@ -907,6 +916,264 @@ class WorkoutRequestServiceTest @Autowired constructor(
                     .isEqualTo(WorkoutRequestErrorCode.FROM_MEMBER_CANNOT_ACCEPT)
             })
     }
+
+    @DisplayName("운동 요청 수락 시, 수락 안내 문구 생성")
+    @Test
+    fun modifyWorkoutRequestNoticeAccept() {
+        // given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val other = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+        memberRepository.save(other)
+
+        val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+
+        val chatParticipant1 = ChatParticipant(
+            chatRoom,
+            me
+        )
+        val chatParticipant2 = ChatParticipant(
+            chatRoom,
+            other
+        )
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+
+        val chatMessage = ChatMessage.ofWorkoutRequest(
+            member = me,
+            chatRoom = chatRoom,
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessage)
+
+        val workoutRequest = WorkoutRequest.of(
+            chatMessage = chatMessage,
+            fromMember = me,
+            toMember = other,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime
+        )
+        workoutRequestRepository.save(workoutRequest)
+
+        val request = WorkoutRequestUpdateRequest(
+            workoutRequestId = workoutRequest.id!!,
+            status = WorkoutRequestStatusForRequest.ACCEPT
+        )
+
+        // when
+        val response = workoutRequestService.modifyWorkoutRequest(other.id!!, request)
+
+        // then
+        val findNoticeMessages = chatMessageRepository.findByType(ChatMessageType.NOTICE)
+
+        assertThat(findNoticeMessages).hasSize(1)
+        assertThat(findNoticeMessages[0])
+            .extracting("type", "content")
+            .contains(ChatMessageType.NOTICE, ChatMessageNoticeContent.WORKOUT_REQUEST_ACCEPT.name)
+    }
+
+    @DisplayName("운동 요청 수락 시, 완료 안내 문구 생성")
+    @Test
+    fun modifyWorkoutRequestNoticeComplete() {
+        // given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val other = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+        memberRepository.save(other)
+
+        val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+
+        val chatParticipant1 = ChatParticipant(
+            chatRoom,
+            me
+        )
+        val chatParticipant2 = ChatParticipant(
+            chatRoom,
+            other
+        )
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+
+        val chatMessage = ChatMessage.ofWorkoutRequest(
+            member = me,
+            chatRoom = chatRoom,
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessage)
+
+        val workoutRequest = WorkoutRequest.of(
+            chatMessage = chatMessage,
+            fromMember = me,
+            toMember = other,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime
+        )
+        workoutRequest.updateStatus(WorkoutRequestStatus.ACCEPT)
+        workoutRequestRepository.save(workoutRequest)
+
+        val request = WorkoutRequestUpdateRequest(
+            workoutRequestId = workoutRequest.id!!,
+            status = WorkoutRequestStatusForRequest.COMPLETE
+        )
+
+        // when
+        val response = workoutRequestService.modifyWorkoutRequest(other.id!!, request)
+
+        // then
+        val findNoticeMessages = chatMessageRepository.findByType(ChatMessageType.NOTICE)
+
+        assertThat(findNoticeMessages).hasSize(1)
+        assertThat(findNoticeMessages[0])
+            .extracting("type", "content")
+            .contains(ChatMessageType.NOTICE, ChatMessageNoticeContent.WORKOUT_REQUEST_COMPLETE.name)
+    }
+
+    @DisplayName("운동 요청 거절 시, 취소 안내 문구 생성")
+    @Test
+    fun modifyWorkoutRequestNoticeReject() {
+        // given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val other = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+        memberRepository.save(other)
+
+        val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+
+        val chatParticipant1 = ChatParticipant(
+            chatRoom,
+            me
+        )
+        val chatParticipant2 = ChatParticipant(
+            chatRoom,
+            other
+        )
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+
+        val chatMessage = ChatMessage.ofWorkoutRequest(
+            member = me,
+            chatRoom = chatRoom,
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessage)
+
+        val workoutRequest = WorkoutRequest.of(
+            chatMessage = chatMessage,
+            fromMember = me,
+            toMember = other,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime
+        )
+        workoutRequestRepository.save(workoutRequest)
+
+        val request = WorkoutRequestUpdateRequest(
+            workoutRequestId = workoutRequest.id!!,
+            status = WorkoutRequestStatusForRequest.REJECT
+        )
+
+        // when
+        workoutRequestService.modifyWorkoutRequest(other.id!!, request)
+
+        // then
+        val findNoticeMessages = chatMessageRepository.findByType(ChatMessageType.NOTICE)
+
+        assertThat(findNoticeMessages).hasSize(1)
+        assertThat(findNoticeMessages[0])
+            .extracting("type", "content")
+            .contains(ChatMessageType.NOTICE, ChatMessageNoticeContent.WORKOUT_REQUEST_REJECT.name)
+    }
+
+    @DisplayName("운동 요청 취소 시, 취소 안내 문구 생성")
+    @Test
+    fun modifyWorkoutRequestNoticeCancel() {
+        // given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val other = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+        memberRepository.save(other)
+
+        val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+
+        val chatParticipant1 = ChatParticipant(
+            chatRoom,
+            me
+        )
+        val chatParticipant2 = ChatParticipant(
+            chatRoom,
+            other
+        )
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+
+        val chatMessage = ChatMessage.ofWorkoutRequest(
+            member = me,
+            chatRoom = chatRoom,
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessage)
+
+        val workoutRequest = WorkoutRequest.of(
+            chatMessage = chatMessage,
+            fromMember = me,
+            toMember = other,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime
+        )
+        workoutRequestRepository.save(workoutRequest)
+
+        val request = WorkoutRequestUpdateRequest(
+            workoutRequestId = workoutRequest.id!!,
+            status = WorkoutRequestStatusForRequest.CANCEL
+        )
+
+        // when
+        workoutRequestService.modifyWorkoutRequest(me.id!!, request)
+
+        // then
+        val findNoticeMessages = chatMessageRepository.findByType(ChatMessageType.NOTICE)
+
+        assertThat(findNoticeMessages).hasSize(1)
+        assertThat(findNoticeMessages[0])
+            .extracting("type", "content")
+            .contains(ChatMessageType.NOTICE, ChatMessageNoticeContent.WORKOUT_REQUEST_CANCEL.name)
+    }
+
 
 
     @DisplayName("채팅방의 제일 최큰 운동 요청을 확인한다.")

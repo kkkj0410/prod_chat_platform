@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
 import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.chat.entity.QChatRoom.chatRoom
+import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageNoticeContent
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatRoomType
 import kr.co.fitview.api.app.domain.member.entity.Member
@@ -71,5 +72,24 @@ class ChatMessageTest @Autowired constructor(
             .extracting("member", "chatRoom", "type", "sentAt")
             .contains(member, chatRoom, ChatMessageType.WORKOUT_REQUEST, time.nowLocalDateTime)
 
+    }
+
+    @DisplayName("안내 문구 유형의 메시지를 생성한다.")
+    @Test
+    fun ofNotice() {
+        // given
+        val chatRoom = ChatRoom(ChatRoomType.PRIVATE)
+
+        //when
+        val chatMessage = ChatMessage.ofNotice(
+            chatRoom = chatRoom,
+            content = ChatMessageNoticeContent.WORKOUT_REQUEST_CANCEL,
+            sentAt = time.nowLocalDateTime
+        )
+
+        // then
+        assertThat(chatMessage)
+            .extracting("chatRoom", "type", "content", "sentAt")
+            .contains(chatRoom, ChatMessageType.NOTICE, "WORKOUT_REQUEST_CANCEL", time.nowLocalDateTime)
     }
 }

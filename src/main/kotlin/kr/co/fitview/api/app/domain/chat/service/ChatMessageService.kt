@@ -57,12 +57,6 @@ class ChatMessageService(
             chatRoom = chatRoom
         )
 
-//        val response = ChatMessageContent(
-//            chatMessageId = chatMessage.id!!,
-//            sentAt = now,
-//            content = message.content
-//        )
-
         val response = StompChatTextMessage(
             chatMessageId = chatMessage.id!!,
             sentAt = now,

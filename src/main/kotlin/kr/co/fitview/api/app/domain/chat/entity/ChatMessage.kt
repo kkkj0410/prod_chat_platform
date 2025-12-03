@@ -3,6 +3,7 @@ package kr.co.fitview.api.app.domain.chat.entity
 import jakarta.persistence.*
 import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
+import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageNoticeContent
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequest
@@ -14,9 +15,9 @@ import java.time.LocalDateTime
 @Entity
 @Table(name = "chat_message")
 class ChatMessage(
-    @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "member_id", nullable = false)
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "member_id", nullable = true)
     var member: Member? = null,
 
     @NotNull
@@ -75,6 +76,15 @@ class ChatMessage(
                 member = member,
                 chatRoom = chatRoom,
                 type = ChatMessageType.WORKOUT_REQUEST,
+                sentAt = sentAt
+            )
+        }
+
+        fun ofNotice(chatRoom : ChatRoom, content : ChatMessageNoticeContent, sentAt : LocalDateTime) : ChatMessage{
+            return ChatMessage(
+                chatRoom = chatRoom,
+                type = ChatMessageType.NOTICE,
+                content = content.name,
                 sentAt = sentAt
             )
         }

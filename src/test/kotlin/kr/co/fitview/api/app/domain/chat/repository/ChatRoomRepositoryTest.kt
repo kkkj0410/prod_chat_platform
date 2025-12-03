@@ -18,7 +18,6 @@ import kr.co.fitview.api.app.domain.member.entity.enums.WorkoutTimeName
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.domain.oauth2.dto.request.OAuth2SignupServiceRequest
 import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
-import kr.co.fitview.api.app.domain.workout.entity.QWorkoutHistory.workoutHistory
 import kr.co.fitview.api.app.domain.workout.entity.WorkoutHistory
 import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequest
 import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
@@ -682,6 +681,63 @@ class ChatRoomRepositoryTest @Autowired constructor(
             )
     }
 
+    @DisplayName("운동 요청이 있는 채팅방을 조회한다.")
+    @Test
+    fun findChatRoomByWorkoutRequestId() {
+        //given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val other1 = Member(
+            email = "email2",
+            password = "password2",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+        memberRepository.save(other1)
+
+
+        val chatRoom1 = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+
+        val chatParticipant1 = ChatParticipant(
+            chatRoom1,
+            me
+        )
+        val chatParticipant2 = ChatParticipant(
+            chatRoom1,
+            other1
+        )
+
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+
+
+        val chatMessage1 = ChatMessage(
+            member = me,
+            chatRoom = chatRoom1,
+            type = ChatMessageType.WORKOUT_REQUEST,
+            content = "content",
+            sentAt = time.nowLocalDateTime
+        )
+        val workoutRequest = WorkoutRequest.of(
+            chatMessage = chatMessage1,
+            fromMember = me,
+            toMember = other1,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessage1)
+        workoutRequestRepository.save(workoutRequest)
+
+        // when
+        val findChatRoom = chatRoomRepository.findChatRoomByWorkoutRequestId(workoutRequest.id!!)
+
+        // then
+        assertThat(findChatRoom).isEqualTo(chatRoom1)
+    }
 
 
 }

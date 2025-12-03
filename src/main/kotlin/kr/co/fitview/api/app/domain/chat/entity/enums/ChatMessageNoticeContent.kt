@@ -2,11 +2,13 @@ package kr.co.fitview.api.app.domain.chat.entity.enums
 
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutGoal
 
-enum class ChatMessageType(val description : String) {
+enum class ChatMessageNoticeContent(val description : String) {
 
-    TEXT("string 문자열 문자 메시지"),
-    WORKOUT_REQUEST("운동 요청"),
-    NOTICE("안내 문구")
+    WORKOUT_REQUEST_ACCEPT("운동 예약 확정"),
+    WORKOUT_REQUEST_CANCEL("운동 취소"),
+    WORKOUT_REQUEST_REJECT("운동 취소"),
+    WORKOUT_REQUEST_EXPIRE("운동 만료"),
+    WORKOUT_REQUEST_COMPLETE("운동 완료")
 
     ;
 

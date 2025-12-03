@@ -13,4 +13,6 @@ interface ChatRoomRepositoryCustom {
     fun findChatRoomProfileByDeletedAtIsNull(memberId: Long, condition: ChatCondition): Slice<ChatRoomResponseProfile>
 
     fun findChatRoomByMemberIdAndChatRoomId(memberId: Long, chatRoomId: Long): ChatRoom?
+
+    fun findChatRoomByWorkoutRequestId(workoutRequestId: Long): ChatRoom?
 }
