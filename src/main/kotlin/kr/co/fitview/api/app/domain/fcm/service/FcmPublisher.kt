@@ -12,14 +12,12 @@ class FcmPublisher(
 
 
     fun send(token : String, title : String, body : String, platform : FcmTokenPlatform) {
-
         if(isAndroid(platform)){
             firebaseMessaging.send(buildAndroidMessage(token, title, body))
             return
         }
 
         firebaseMessaging.send(buildIosMessage(token, title, body))
-
     }
 
     private fun isAndroid(platform: FcmTokenPlatform) =
