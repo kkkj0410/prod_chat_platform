@@ -6,6 +6,7 @@ import kr.co.fitview.api.app.docs.RestDocsSupport
 import kr.co.fitview.api.app.domain.chat.controller.ChatController
 import kr.co.fitview.api.app.domain.chat.dto.request.ChatRoomCreateRequest
 import kr.co.fitview.api.app.domain.chat.dto.response.*
+import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageNoticeContent
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
 import kr.co.fitview.api.app.domain.chat.service.ChatMessageService
 import kr.co.fitview.api.app.domain.chat.service.ChatRoomService
@@ -310,6 +311,95 @@ class ChatControllerDocsTest : RestDocsSupport() {
             )
     }
 
+    @DisplayName("채팅방 목록 조회 API - NOTICE 메시지")
+    @Test
+    fun chatRoomListNoticeDocs() {
+        // given
+        val responses = listOf(
+            ChatRoomResponse(
+                chatRoomId = 1L,
+                profileImageUrl = "https://example.com/profile1.jpg",
+                nickname = "철수",
+                isRead = false,
+                lastChatMessage = ChatNoticeMessage(
+                    chatMessageId = 101L,
+                    type = ChatMessageType.NOTICE,
+                    sentAt = LocalDateTime.now(),
+                    isRead = false,
+                    chatRoomId = 1L,
+                    content = ChatMessageNoticeContent.WORKOUT_REQUEST_COMPLETE
+                ),
+                lastWorkoutRequest = LastWorkoutRequestMessage(
+                    workoutRequestId = 123L,
+                    status = WorkoutRequestStatusForResponse.PENDING,
+                    chatRoomId = 1L
+                )
+            )
+        )
+
+        val slice: Slice<ChatRoomResponse> = SliceImpl(responses, PageRequest.of(0, 10), false)
+        given(chatRoomService.findChatRooms(any(), any())).willReturn(slice)
+
+        mockMvc.perform(
+            get("/api/v1/chats")
+                .header("Authorization", "Bearer jwt-token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .param("size", "10")
+                .param("lastMessageAt", "1763714029931")
+                .param("isCompleteWorkout", "true")
+        )
+            .andExpect(status().isOk())
+            .andDo(
+                document(
+                    "chat-room-list-notice",
+                    preprocessRequest(prettyPrint()),
+                    preprocessResponse(prettyPrint()),
+
+                    requestHeaders(RestDocsHeaders.authorizationHeader(Role.USER)),
+
+                    queryParameters(
+                        parameterWithName("size").optional()
+                            .description("(Optional - default 10) 조회 크기"),
+                        parameterWithName("lastMessageAt").optional()
+                            .description("(Optional) 해당 부분에 값을 넣으면 해당 시간보다 더 옛날 시점의 채팅방이 조회됨"),
+                        parameterWithName("isCompleteWorkout").optional()
+                            .description("(Optional) 운동 신청에 대한 완료 여부. false = 새 메시지. true = 함께한 핏버디. 기본 false"),
+                    ),
+
+                    responseFields(
+                        fieldWithPath("status").description("HTTP 상태 코드"),
+                        fieldWithPath("code").description("응답 코드"),
+                        fieldWithPath("message").description("응답 메시지"),
+                        *RestDocsPagination.paginationByCursorAt(),
+                        fieldWithPath("data").type(JsonFieldType.OBJECT).description("응답 데이터"),
+                        fieldWithPath("data.content").type(JsonFieldType.ARRAY).description("채팅방 리스트"),
+                        subsectionWithPath("data.content[].lastChatMessage").description("마지막 NOTICE 메시지"),
+                        subsectionWithPath("data.content[].lastWorkoutRequest")
+                            .optional()
+                            .description("마지막 운동 요청 정보"),
+                        fieldWithPath("data.content[].chatRoomId").description("채팅방 ID"),
+                        fieldWithPath("data.content[].profileImageUrl").description("상대 프로필 이미지 URL"),
+                        fieldWithPath("data.content[].nickname").description("상대 닉네임"),
+                        fieldWithPath("data.content[].isRead").description("읽음 여부"),
+
+                        ),
+
+                    responseFields(
+                        beneathPath("data.content[].lastChatMessage").withSubsectionId("notice-message"),
+                        fieldWithPath("chatMessageId").description("메시지 ID"),
+                        fieldWithPath("type").description("NOTICE"),
+                        fieldWithPath("sentAt").description("보낸 시간"),
+                        fieldWithPath("content").description("텍스트 내용" + ChatMessageNoticeContent.allDescription())
+                    ),
+
+                    responseFields(
+                        beneathPath("data.content[].lastWorkoutRequest").withSubsectionId("workout-request"),
+                        fieldWithPath("workoutRequestId").description("운동 요청 id"),
+                        fieldWithPath("status").description("운동 요청 상태" + WorkoutRequestStatusForResponse.allDescription()),
+                    )
+                )
+            )
+    }
 
     @DisplayName("채팅방 메시지 목록 조회 API - TEXT 메시지")
     @Test
@@ -435,6 +525,68 @@ class ChatControllerDocsTest : RestDocsSupport() {
 
                     ),
 
+                )
+            )
+    }
+
+    @DisplayName("채팅방 메시지 목록 조회 API - NOTICE 메시지")
+    @Test
+    fun chatMessageListNotice() {
+        val chatRoomId = 456L
+        val now = LocalDateTime.now()
+
+        val chatMessages: List<LastChatMessage> = listOf(
+            ChatNoticeMessage(
+                chatMessageId = 101L,
+                type = ChatMessageType.NOTICE,
+                sentAt = LocalDateTime.now(),
+                isRead = false,
+                chatRoomId = 1L,
+                content = ChatMessageNoticeContent.WORKOUT_REQUEST_COMPLETE
+            ),
+        )
+        val sliceChatMessages: Slice<LastChatMessage> = SliceImpl(chatMessages, PageRequest.of(0, 10), false)
+
+
+        given(chatMessageService.findChatMessages(any(), any(), any())).willReturn(sliceChatMessages)
+
+        mockMvc.perform(
+            get("/api/v1/chats/{chatRoomId}/messages", chatRoomId)
+                .header("Authorization", "Bearer jwt-token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .param("size", "10")
+                .param("lastMessageAt", now.toEpochSecond(ZoneOffset.UTC).toString())
+        )
+            .andExpect(status().isOk())
+            .andDo(
+                document(
+                    "chat-message-list-notice",
+                    preprocessRequest(prettyPrint()),
+                    preprocessResponse(prettyPrint()),
+
+                    requestHeaders(
+                        RestDocsHeaders.authorizationHeader(Role.USER)
+                    ),
+
+                    queryParameters(
+                        parameterWithName("size").optional().description("(Optional - default 10) 조회 크기"),
+                        parameterWithName("lastMessageAt").optional().description("Optional - 기준 메시지 시간 - direction과 혼합 시, lastMessageAt 기점으로 ASC, DESC 문자 조회"),
+                        parameterWithName("direction").optional().description("Optional(기본 DESC) - ASC(오래된 메시지 -> 최신 메시지 조회), DESC(최신 메시지 -> 오래된 메시지 조회)" + Direction.allDescription())
+
+                    ),
+
+                    responseFields(
+                        fieldWithPath("status").description("HTTP 상태 코드"),
+                        fieldWithPath("code").description("응답 코드"),
+                        fieldWithPath("message").description("응답 메시지"),
+                        *RestDocsPagination.paginationByCursorAt(),
+
+                        fieldWithPath("data.content").type(JsonFieldType.ARRAY).description("채팅 메시지 리스트"),
+                        fieldWithPath("data.content[].chatMessageId").description("메시지 ID"),
+                        fieldWithPath("data.content[].type").description("NOTICE"),
+                        fieldWithPath("data.content[].sentAt").description("보낸 시간"),
+                        fieldWithPath("data.content[].content").description("메시지 내용" + ChatMessageNoticeContent.allDescription())
+                    ),
                 )
             )
     }
