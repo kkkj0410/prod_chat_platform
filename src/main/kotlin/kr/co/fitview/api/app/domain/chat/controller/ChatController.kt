@@ -8,7 +8,9 @@ import kr.co.fitview.api.app.domain.chat.service.ChatMessageService
 import kr.co.fitview.api.app.domain.chat.service.ChatRoomService
 import kr.co.fitview.api.app.domain.chat.service.ChatService
 import kr.co.fitview.api.app.domain.chat.service.MessageReadStatusService
+import kr.co.fitview.api.app.domain.member.dto.response.ChatMemberProfileResponse
 import kr.co.fitview.api.app.domain.member.dto.response.MemberChatRoomProfile
+import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.domain.workout.dto.response.LastWorkoutRequestMessage
 import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestService
 import kr.co.fitview.api.app.global.dto.ApiResponse
@@ -26,7 +28,8 @@ class ChatController(
     private val chatMessageService : ChatMessageService,
     private val securityUtil : SecurityUtil,
     private val workoutRequestService : WorkoutRequestService,
-    private val messageReadStatusService : MessageReadStatusService
+    private val messageReadStatusService : MessageReadStatusService,
+    private val memberQueryService : MemberQueryService
 ) {
 
     @PostMapping("")
@@ -69,6 +72,16 @@ class ChatController(
             otherMember = response.otherMember,
             timeExtractor = { it.sentAt }
         ))
+    }
+
+    @GetMapping("/{chatRoomId}/members")
+    fun chatMember(
+        @PathVariable
+        chatRoomId : Long
+    ) : ResponseEntity<ApiResponse<ChatMemberProfileResponse>>{
+        val response = memberQueryService.findChatMemberFromOrElseThrow(securityUtil.getMemberId(), chatRoomId)
+
+        return ResponseEntity.ok(ApiResponse.success(response))
     }
 
     @GetMapping("/{chatRoomId}/workout-requests/last")

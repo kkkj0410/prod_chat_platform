@@ -1,9 +1,12 @@
 package kr.co.fitview.api.app.domain.member.service
 
+import kr.co.fitview.api.app.domain.member.dto.response.ChatMemberProfileResponse
 import kr.co.fitview.api.app.domain.member.dto.response.MemberChatRoomProfile
 import kr.co.fitview.api.app.domain.member.dto.response.MemberWorkoutPartnerProfileResponse
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
+import kr.co.fitview.api.app.global.exception.GlobalException
+import kr.co.fitview.api.app.global.exception.error.member.MemberErrorCode
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -24,6 +27,13 @@ class MemberQueryService(
 
     fun findMemberFromId(memberId : Long) : Member?{
         return memberRepository.findByIdAndDeletedAtIsNull(memberId)
+    }
+
+    fun findChatMemberFromOrElseThrow(memberId : Long, chatRoomId: Long): ChatMemberProfileResponse {
+        val response = memberRepository.findMemberByPrivateChatRoomId(memberId, chatRoomId)
+            ?: throw GlobalException(MemberErrorCode.MEMBER_NOT_FOUND)
+
+        return response
     }
 
 }

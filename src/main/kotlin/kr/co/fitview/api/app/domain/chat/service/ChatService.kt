@@ -115,4 +115,5 @@ class ChatService(
 
     private fun isNotNull(value : Any?) = value != null
 
+
 }

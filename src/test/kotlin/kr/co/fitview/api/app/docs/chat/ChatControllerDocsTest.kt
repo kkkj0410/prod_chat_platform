@@ -11,7 +11,10 @@ import kr.co.fitview.api.app.domain.chat.service.ChatMessageService
 import kr.co.fitview.api.app.domain.chat.service.ChatRoomService
 import kr.co.fitview.api.app.domain.chat.service.ChatService
 import kr.co.fitview.api.app.domain.chat.service.MessageReadStatusService
+import kr.co.fitview.api.app.domain.member.dto.response.ChatMemberProfile
+import kr.co.fitview.api.app.domain.member.dto.response.ChatMemberProfileResponse
 import kr.co.fitview.api.app.domain.member.dto.response.MemberChatRoomProfile
+import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.domain.workout.dto.response.LastWorkoutRequestMessage
 import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusForResponse
 import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestService
@@ -50,9 +53,10 @@ class ChatControllerDocsTest : RestDocsSupport() {
     private val workoutRequestService: WorkoutRequestService = mock(WorkoutRequestService::class.java)
     private val securityUtil: SecurityUtil = mock(SecurityUtil::class.java)
     private val messageReadStatusService: MessageReadStatusService = mock(MessageReadStatusService::class.java)
+    private val memberQueryService: MemberQueryService = mock(MemberQueryService::class.java)
 
     override fun initController(): Any {
-        return ChatController(chatService, chatRoomService, chatMessageService, securityUtil, workoutRequestService, messageReadStatusService)
+        return ChatController(chatService, chatRoomService, chatMessageService, securityUtil, workoutRequestService, messageReadStatusService, memberQueryService)
     }
 
     @DisplayName("채팅방을 생성한다.")
@@ -557,4 +561,68 @@ class ChatControllerDocsTest : RestDocsSupport() {
                 )
             )
     }
+
+
+    @DisplayName("채팅방 전체 회원 조회 API")
+    @Test
+    fun chatMember() {
+        val chatRoomId = 123L
+
+        given(memberQueryService.findChatMemberFromOrElseThrow(any(), any()))
+            .willReturn(
+                ChatMemberProfileResponse(
+                    me = ChatMemberProfile(
+                        memberId = 1L,
+                        nickname = "meNickname",
+                        profileImageUrl = "meProfileImageUrl"
+                    ),
+                    other = ChatMemberProfile(
+                        memberId = 2L,
+                        nickname = "otherNickname",
+                        profileImageUrl = "otherProfileImageUrl"
+                    )
+                )
+            )
+
+        // when & then
+        mockMvc.perform(
+            get("/api/v1/chats/{chatRoomId}/members", chatRoomId)
+                .header("Authorization", "Bearer jwt-token")
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isOk)
+            .andDo(
+                document(
+                    "chat-member-get",
+                    preprocessRequest(prettyPrint()),
+                    preprocessResponse(prettyPrint()),
+
+                    requestHeaders(
+                        RestDocsHeaders.authorizationHeader(Role.USER)
+                    ),
+
+                    pathParameters(
+                        parameterWithName("chatRoomId").description("해당 채팅방 id")
+                    ),
+
+                    responseFields(
+                        fieldWithPath("status").description("HTTP 상태 코드"),
+                        fieldWithPath("code").description("응답 코드"),
+                        fieldWithPath("message").description("응답 메시지"),
+                        fieldWithPath("data").type(JsonFieldType.OBJECT).description("응답 데이터"),
+
+                        fieldWithPath("data.me").type(JsonFieldType.OBJECT).description("요청 사용자 정보"),
+                        fieldWithPath("data.me.memberId").type(JsonFieldType.NUMBER).description("요청 사용자 ID"),
+                        fieldWithPath("data.me.nickname").type(JsonFieldType.STRING).description("요청 사용자 닉네임"),
+                        fieldWithPath("data.me.profileImageUrl").type(JsonFieldType.STRING).description("요청 사용자 프로필 이미지 URL"),
+
+                        fieldWithPath("data.other").type(JsonFieldType.OBJECT).description("상대방 정보"),
+                        fieldWithPath("data.other.memberId").type(JsonFieldType.NUMBER).description("상대방 사용자 ID"),
+                        fieldWithPath("data.other.nickname").type(JsonFieldType.STRING).description("상대방 닉네임"),
+                        fieldWithPath("data.other.profileImageUrl").type(JsonFieldType.STRING).description("상대방 프로필 이미지 URL")
+                    )
+                )
+            )
+    }
+
 }

@@ -99,3 +99,18 @@ include::{snippets}/chat-read-all-update/path-parameters.adoc[]
 ==== HTTP Response
 include::{snippets}/chat-read-all-update/http-response.adoc[]
 include::{snippets}/chat-read-all-update/response-fields.adoc[]
+
+
+[[chat-member-get]]
+=== 특정 채팅방 회원 전체 조회 API
+
+==== HTTP Request
+include::{snippets}/chat-member-get/http-request.adoc[]
+include::{snippets}/chat-member-get/request-headers.adoc[]
+include::{snippets}/chat-member-get/path-parameters.adoc[]
+
+
+==== HTTP Response
+include::{snippets}/chat-member-get/http-response.adoc[]
+include::{snippets}/chat-member-get/response-fields.adoc[]
+

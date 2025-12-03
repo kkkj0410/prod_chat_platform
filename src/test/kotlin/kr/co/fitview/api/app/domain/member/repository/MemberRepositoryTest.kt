@@ -2185,6 +2185,83 @@ class MemberRepositoryTest@Autowired constructor(
             .contains(other.id!!, signupRequest2.nickname, signupRequest2.profileImageUrl)
     }
 
+    @DisplayName("해당 채팅방에 있는 회원들을 모두 조회한다.")
+    @Test
+    fun findMemberByPrivateChatRoomId() {
+        // given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest1, me.id!!)
+
+        val other = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(other)
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "updateNick",
+            profileImageUrl = "updateProfile"
+        )
+        oAuth2Service.signup(signupRequest2, other.id!!)
+
+        val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+
+        val chatParticipant1 = ChatParticipant(
+            chatRoom,
+            me
+        )
+        val chatParticipant2 = ChatParticipant(
+            chatRoom,
+            other
+        )
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+
+
+        val other2 = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(other2)
+        val signupRequest3 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "updateNick",
+            profileImageUrl = "updateProfile"
+        )
+        oAuth2Service.signup(signupRequest3, other2.id!!)
+
+        val chatRoom2 = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+
+        val chatParticipant3 = ChatParticipant(
+            chatRoom2,
+            me
+        )
+        val chatParticipant4 = ChatParticipant(
+            chatRoom2,
+            other2
+        )
+        chatParticipantRepository.save(chatParticipant3)
+        chatParticipantRepository.save(chatParticipant4)
+
+        // when
+        val response = memberRepository.findMemberByPrivateChatRoomId(me.id!!, chatRoom.id!!)
+
+        // then
+        assertThat(response!!.me)
+            .extracting("memberId", "nickname", "profileImageUrl")
+            .contains(me.id!!, signupRequest1.nickname, signupRequest1.profileImageUrl)
+
+        assertThat(response.other)
+            .extracting("memberId", "nickname", "profileImageUrl")
+            .contains(other.id!!, signupRequest2.nickname, signupRequest2.profileImageUrl)
+    }
+
 
 
 }
