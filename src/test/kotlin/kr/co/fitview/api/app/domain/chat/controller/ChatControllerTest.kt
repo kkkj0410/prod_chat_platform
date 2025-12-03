@@ -4,6 +4,8 @@ import kr.co.fitview.api.app.ControllerTestSupport
 import kr.co.fitview.api.app.domain.chat.dto.request.ChatRoomCreateRequest
 import kr.co.fitview.api.app.domain.chat.dto.response.*
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
+import kr.co.fitview.api.app.domain.member.dto.response.ChatMemberProfile
+import kr.co.fitview.api.app.domain.member.dto.response.ChatMemberProfileResponse
 import kr.co.fitview.api.app.domain.member.dto.response.MemberChatRoomProfile
 import kr.co.fitview.api.app.domain.workout.dto.response.LastWorkoutRequestMessage
 import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusForResponse
@@ -201,12 +203,6 @@ class ChatControllerTest : ControllerTestSupport(){
         val chatRoomId = 456L
         val now = LocalDateTime.now()
 
-        val otherMember = MemberChatRoomProfile(
-            memberId = 123L,
-            nickname = "nickname",
-            profileImageUrl = "profile"
-        )
-
         val messages: List<LastChatMessage> = listOf(
             ChatMessageContent(
                 chatMessageId = 1L,
@@ -226,12 +222,8 @@ class ChatControllerTest : ControllerTestSupport(){
         )
         val sliceChatMessages: Slice<LastChatMessage> = SliceImpl(messages, PageRequest.of(0, 10), false)
 
-        val response = ChatRoomMessageResponse(
-            otherMember = otherMember,
-            chatMessages = sliceChatMessages
-        )
 
-        given(chatMessageService.findChatMessagesWithOtherMember(any(), any(), any())).willReturn(response)
+        given(chatMessageService.findChatMessages(any(), any(), any())).willReturn(sliceChatMessages)
 
         mockMvc.perform(
             get("/api/v1/chats/{chatRoomId}/messages", chatRoomId)
@@ -242,10 +234,6 @@ class ChatControllerTest : ControllerTestSupport(){
             .andExpect(jsonPath("$.status").exists())
             .andExpect(jsonPath("$.code").value("ok"))
             .andExpect(jsonPath("$.message").value("OK"))
-
-            .andExpect(jsonPath("$.data.otherMember.memberId").value(123L))
-            .andExpect(jsonPath("$.data.otherMember.nickname").value("nickname"))
-            .andExpect(jsonPath("$.data.otherMember.profileImageUrl").value("profile"))
 
             .andExpect(jsonPath("$.data.content").isArray)
             .andExpect(jsonPath("$.data.content.length()").value(2))
@@ -314,5 +302,48 @@ class ChatControllerTest : ControllerTestSupport(){
             .andExpect(jsonPath("$.message").value("ok"))
             .andExpect(jsonPath("$.data").value("ok"))
     }
+
+    @DisplayName("채팅방 회원 조회")
+    @Test
+    fun chatMember() {
+        val chatRoomId = 123L
+
+        given(memberQueryService.findChatMemberFromOrElseThrow(any(), any()))
+            .willReturn(
+                ChatMemberProfileResponse(
+                    me = ChatMemberProfile(
+                        memberId = 1L,
+                        nickname = "meNickname",
+                        profileImageUrl = "meProfileImageUrl"
+                    ),
+                    other = ChatMemberProfile(
+                        memberId = 2L,
+                        nickname = "otherNickname",
+                        profileImageUrl = "otherProfileImageUrl"
+                    )
+                )
+            )
+
+        // when & then
+        mockMvc.perform(
+            get("/api/v1/chats/{chatRoomId}/members", chatRoomId)
+                .header("Authorization", "Bearer jwt-token")
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.status").exists())
+            .andExpect(jsonPath("$.code").value("ok"))
+            .andExpect(jsonPath("$.message").value("ok"))
+            .andExpect(jsonPath("$.data").exists())
+
+            .andExpect(jsonPath("$.data.me.memberId").value(1L))
+            .andExpect(jsonPath("$.data.me.nickname").value("meNickname"))
+            .andExpect(jsonPath("$.data.me.profileImageUrl").value("meProfileImageUrl"))
+
+            .andExpect(jsonPath("$.data.other.memberId").value(2L))
+            .andExpect(jsonPath("$.data.other.nickname").value("otherNickname"))
+            .andExpect(jsonPath("$.data.other.profileImageUrl").value("otherProfileImageUrl"))
+    }
+
 
 }

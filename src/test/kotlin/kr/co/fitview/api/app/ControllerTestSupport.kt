@@ -14,6 +14,7 @@ import kr.co.fitview.api.app.domain.fcm.service.FcmService
 import kr.co.fitview.api.app.domain.image.controller.ImageController
 import kr.co.fitview.api.app.domain.image.service.S3Service
 import kr.co.fitview.api.app.domain.member.controller.MemberController
+import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.domain.member.service.MemberService
 import kr.co.fitview.api.app.domain.notification.service.NotificationStompService
 import kr.co.fitview.api.app.domain.oauth2.controller.OAuth2Controller
@@ -128,5 +129,8 @@ abstract class ControllerTestSupport {
 
     @MockitoBean
     protected lateinit var fcmService: FcmService
+
+    @MockitoBean
+    protected lateinit var memberQueryService: MemberQueryService
 
 }

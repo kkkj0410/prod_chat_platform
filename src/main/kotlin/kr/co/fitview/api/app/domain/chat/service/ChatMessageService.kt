@@ -133,15 +133,6 @@ class ChatMessageService(
         return chatMessageRepository.findRecentChatMessageByMemberIdAndIn(memberId, chatRoomIds)
     }
 
-    fun findChatMessagesWithOtherMember(memberId : Long, chatRoomId : Long, condition : ChatCondition) : ChatRoomMessageResponse{
-        val otherMember = memberQueryService.findOtherMemberChatRoomProfile(memberId, chatRoomId)
-            ?: throw GlobalException(MemberErrorCode.MEMBER_NOT_FOUND)
-
-        val sliceChatMessages = findChatMessages(memberId, chatRoomId, condition)
-
-        return ChatRoomMessageResponse(otherMember, sliceChatMessages)
-    }
-
     fun findChatMessages(memberId: Long, chatRoomId: Long, condition: ChatCondition): Slice<LastChatMessage> {
         validateMemberInChatRoom(memberId, chatRoomId)
 

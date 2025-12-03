@@ -9,10 +9,13 @@ import com.querydsl.jpa.impl.JPAQueryFactory
 import jakarta.persistence.EntityManager
 import kr.co.fitview.api.app.domain.address.entity.QAddress.address
 import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
+import kr.co.fitview.api.app.domain.chat.entity.QChatParticipant
 import kr.co.fitview.api.app.domain.chat.entity.QChatParticipant.chatParticipant
 import kr.co.fitview.api.app.domain.chat.entity.QChatRoom.chatRoom
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatRoomType
+import kr.co.fitview.api.app.domain.image.entity.QImage
 import kr.co.fitview.api.app.domain.image.entity.QImage.image
+import kr.co.fitview.api.app.domain.image.entity.QMemberImage
 import kr.co.fitview.api.app.domain.image.entity.QMemberImage.memberImage
 import kr.co.fitview.api.app.domain.image.entity.enums.MemberImageType
 import kr.co.fitview.api.app.domain.member.condition.MemberLocalCondition
@@ -488,32 +491,78 @@ class MemberRepositoryImpl(
         }
     }
 
-    override fun findOtherMemberChatRoomProfile(memberId: Long, chatRoomId : Long): MemberChatRoomProfile? {
-        return queryFactory
+
+    override fun findMemberByPrivateChatRoomId(memberId : Long, chatRoomId: Long): ChatMemberProfileResponse? {
+
+        val meChatParticipant = QChatParticipant("meChatParticipant")
+        val otherChatParticipant = QChatParticipant("otherChatParticipant")
+
+        val meMember = QMember("meMember")
+        val otherMember = QMember("otherMember")
+
+        val meMemberImage = QMemberImage("meMemberImage")
+        val otherMemberImage = QMemberImage("otherMemberImage")
+
+        val meImage = QImage("meImage")
+        val otherImage = QImage("otherImage")
+
+        val findMembers = queryFactory
             .select(
                 Projections.constructor(
-                    MemberChatRoomProfile::class.java,
-                    member.id,
-                    member.nickname,
-                    image.url,
+                    ChatMemberProfileResponseFlat::class.java,
+                    meMember.id,
+                    meMember.nickname,
+                    meImage.url,
+                    otherMember.id,
+                    otherMember.nickname,
+                    otherImage.url
                 )
             )
             .from(chatRoom)
-            .join(chatRoom.chatParticipants, chatParticipant)
-            .join(chatParticipant.member, member)
-            .join(member.mutableMemberImages, memberImage)
-            .join(memberImage.image, image)
+            .join(meChatParticipant)
+                .on(
+                    meChatParticipant.chatRoom.id.eq(chatRoomId),
+                    meChatParticipant.member.id.eq(memberId)
+                )
+            .join(otherChatParticipant)
+                .on(
+                    otherChatParticipant.chatRoom.id.eq(chatRoomId),
+                    otherChatParticipant.member.id.ne(memberId)
+                )
+            .join(meMember)
+                .on(
+                    meMember.id.eq(meChatParticipant.member.id)
+                )
+            .join(otherMember)
+                .on(
+                    otherMember.id.eq(otherChatParticipant.member.id)
+                )
+            .join(meMemberImage)
+                .on(
+                    meMemberImage.member.id.eq(meMember.id),
+                    meMemberImage.type.eq(MemberImageType.PROFILE)
+                )
+            .join(otherMemberImage)
+                .on(
+                    otherMemberImage.member.id.eq(otherMember.id),
+                    otherMemberImage.type.eq(MemberImageType.PROFILE)
+                )
+            .join(meImage)
+                .on(
+                    meImage.id.eq(meMemberImage.image.id)
+                )
+            .join(otherImage)
+                .on(
+                    otherImage.id.eq(otherMemberImage.image.id)
+                )
             .where(
-                chatRoom.type.eq(ChatRoomType.PRIVATE),
                 chatRoom.id.eq(chatRoomId),
-                member.id.ne(memberId),
-                memberImage.type.eq(MemberImageType.PROFILE),
-                chatRoom.deletedAt.isNull,
-                chatParticipant.deletedAt.isNull,
-                memberImage.deletedAt.isNull,
-                member.deletedAt.isNull,
+                chatRoom.type.eq(ChatRoomType.PRIVATE),
+                chatRoom.deletedAt.isNull
             )
             .fetchOne()
+
+        return findMembers?.toResponse()
     }
 
 }

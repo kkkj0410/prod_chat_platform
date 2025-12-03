@@ -2111,9 +2111,9 @@ class MemberRepositoryTest@Autowired constructor(
     }
 
 
-    @DisplayName("개인 채팅방의 상대 회원 프로필을 조회한다.")
+    @DisplayName("해당 채팅방에 있는 회원들을 모두 조회한다.")
     @Test
-    fun findMemberChatRoomProfile() {
+    fun findMemberByPrivateChatRoomId() {
         // given
         val me = Member(
             email = "email1",
@@ -2175,12 +2175,15 @@ class MemberRepositoryTest@Autowired constructor(
         chatParticipantRepository.save(chatParticipant3)
         chatParticipantRepository.save(chatParticipant4)
 
-
         // when
-        val response = memberRepository.findOtherMemberChatRoomProfile(me.id!!, chatRoom.id!!)
+        val response = memberRepository.findMemberByPrivateChatRoomId(me.id!!, chatRoom.id!!)
 
         // then
-        assertThat(response)
+        assertThat(response!!.me)
+            .extracting("memberId", "nickname", "profileImageUrl")
+            .contains(me.id!!, signupRequest1.nickname, signupRequest1.profileImageUrl)
+
+        assertThat(response.other)
             .extracting("memberId", "nickname", "profileImageUrl")
             .contains(other.id!!, signupRequest2.nickname, signupRequest2.profileImageUrl)
     }
