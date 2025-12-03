@@ -6,5 +6,4 @@ import java.time.LocalDateTime
 sealed interface StompChatMessage {
     val chatMessageId: Long
     val sentAt: LocalDateTime
-    val isMe: Boolean
 }

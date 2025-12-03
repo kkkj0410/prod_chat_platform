@@ -6,6 +6,7 @@ import kr.co.fitview.api.app.domain.chat.dto.response.StompChatWorkoutRequestMes
 import kr.co.fitview.api.app.domain.chat.dto.response.withIsMe
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.domain.notification.constant.StompConstant
+import kr.co.fitview.api.app.domain.notification.dto.StompSendEvent
 import kr.co.fitview.api.app.domain.notification.dto.response.MemberWorkoutPartnerRequestAcceptProfileResponse
 import kr.co.fitview.api.app.domain.notification.dto.response.MemberWorkoutPartnerRequestProfileResponse
 import kr.co.fitview.api.app.domain.workout.dto.response.WorkoutRequestUpdateResponse
@@ -22,82 +23,92 @@ import org.springframework.transaction.event.TransactionalEventListener
 
 @Service
 class NotificationStompService(
-    private val stompPublisher : StompPublisher,
-    private val memberQueryService : MemberQueryService
+    private val stompPublisher: StompPublisher,
+    private val memberQueryService: MemberQueryService
 ) {
 
-    fun sendChatMessage(memberId : Long, response : ChatMessageDetailResponse){
+    fun sendChatMessage(memberId: Long, response: ChatMessageDetailResponse) {
 
-        if(response.chatMessage is StompChatTextMessage){
+        if (response.chatMessage is StompChatTextMessage) {
             stompPublisher.sendToUser(
-                memberId = memberId,
-                destination = StompConstant.SUB_CHAT_MESSAGE,
-                payload = WsResponse(
-                    type = WsMessageType.TEXT.code,
-                    payload = response.withIsMe(true)
+                StompSendEvent(
+                    memberId = memberId,
+                    destination = StompConstant.SUB_CHAT_MESSAGE,
+                    payload = WsResponse(
+                        type = WsMessageType.TEXT.code,
+                        payload = response.withIsMe(true)
+                    )
                 )
             )
 
             stompPublisher.sendToUser(
-                memberId = response.otherMemberId,
-                destination = StompConstant.SUB_CHAT_MESSAGE,
-                payload = WsResponse(
-                    type = WsMessageType.TEXT.code,
-                    payload = response.withIsMe(false)
+                StompSendEvent(
+                    memberId = response.otherMemberId,
+                    destination = StompConstant.SUB_CHAT_MESSAGE,
+                    payload = WsResponse(
+                        type = WsMessageType.TEXT.code,
+                        payload = response.withIsMe(false)
+                    )
                 )
             )
-        }
-
-        else if(response.chatMessage is StompChatWorkoutRequestMessage){
+        } else if (response.chatMessage is StompChatWorkoutRequestMessage) {
             stompPublisher.sendToUser(
-                memberId = memberId,
-                destination = StompConstant.SUB_CHAT_MESSAGE,
-                payload = WsResponse(
-                    type = WsMessageType.WORKOUT_REQUEST.code,
-                    payload = response.withIsMe(true)
+                StompSendEvent(
+                    memberId = memberId,
+                    destination = StompConstant.SUB_CHAT_MESSAGE,
+                    payload = WsResponse(
+                        type = WsMessageType.WORKOUT_REQUEST.code,
+                        payload = response.withIsMe(true)
+                    )
                 )
             )
 
             stompPublisher.sendToUser(
-                memberId = response.otherMemberId,
-                destination = StompConstant.SUB_CHAT_MESSAGE,
-                payload = WsResponse(
-                    type = WsMessageType.WORKOUT_REQUEST.code,
-                    payload = response.withIsMe(false)
+                StompSendEvent(
+                    memberId = response.otherMemberId,
+                    destination = StompConstant.SUB_CHAT_MESSAGE,
+                    payload = WsResponse(
+                        type = WsMessageType.WORKOUT_REQUEST.code,
+                        payload = response.withIsMe(false)
+                    )
                 )
             )
         }
     }
 
-    fun sendWorkoutRequestUpdate(workoutRequests : List<WorkoutRequestUpdateResponse>) {
-        if(workoutRequests.isEmpty()){
+    fun sendWorkoutRequestUpdate(workoutRequests: List<WorkoutRequestUpdateResponse>) {
+        if (workoutRequests.isEmpty()) {
             return
         }
 
-        workoutRequests.forEach{workoutRequest->
+        workoutRequests.forEach { workoutRequest ->
             stompPublisher.sendToUser(
-                memberId = workoutRequest.fromMemberId,
-                destination = StompConstant.SUB_WORKOUT_REQUEST,
-                payload = WsResponse(
-                    type = WsMessageType.WORKOUT_REQUEST_UPDATE.code,
-                    payload = workoutRequest
+                StompSendEvent(
+                    memberId = workoutRequest.fromMemberId,
+                    destination = StompConstant.SUB_WORKOUT_REQUEST,
+                    payload = WsResponse(
+                        type = WsMessageType.WORKOUT_REQUEST_UPDATE.code,
+                        payload = workoutRequest
+                    )
                 )
             )
-
             stompPublisher.sendToUser(
-                memberId = workoutRequest.toMemberId,
-                destination = StompConstant.SUB_WORKOUT_REQUEST,
-                payload = WsResponse(
-                    type = WsMessageType.WORKOUT_REQUEST_UPDATE.code,
-                    payload = workoutRequest
+                StompSendEvent(
+                    memberId = workoutRequest.toMemberId,
+                    destination = StompConstant.SUB_WORKOUT_REQUEST,
+                    payload = WsResponse(
+                        type = WsMessageType.WORKOUT_REQUEST_UPDATE.code,
+                        payload = workoutRequest
+                    )
                 )
             )
         }
     }
 
-    fun sendWorkoutPartnerRequest(workoutPartnerRequest : WorkoutPartnerRequest){
-        val findMemberProfile = memberQueryService.findMemberWorkoutRequestProfileFrom(workoutPartnerRequest.getFromMemberId())
-            ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
+    fun sendWorkoutPartnerRequest(workoutPartnerRequest: WorkoutPartnerRequest) {
+        val findMemberProfile =
+            memberQueryService.findMemberWorkoutRequestProfileFrom(workoutPartnerRequest.getFromMemberId())
+                ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
 
         val response = MemberWorkoutPartnerRequestProfileResponse(
             workoutPartnerRequestId = workoutPartnerRequest.id!!,
@@ -107,19 +118,22 @@ class NotificationStompService(
         )
 
         stompPublisher.sendToUser(
-            memberId = workoutPartnerRequest.getToMemberId(),
-            destination = StompConstant.SUB_WORKOUT_PARTNER,
-            payload = WsResponse(
-                type = WsMessageType.WORKOUT_PARTNER_REQUEST.code,
-                payload = response
+            StompSendEvent(
+                memberId = workoutPartnerRequest.getToMemberId(),
+                destination = StompConstant.SUB_WORKOUT_PARTNER,
+                payload = WsResponse(
+                    type = WsMessageType.WORKOUT_PARTNER_REQUEST.code,
+                    payload = response
+                )
             )
         )
     }
 
-    fun sendWorkoutPartnerAccept(workoutPartnerRequest : WorkoutPartnerRequest){
+    fun sendWorkoutPartnerAccept(workoutPartnerRequest: WorkoutPartnerRequest) {
 
-        val findMemberProfile = memberQueryService.findMemberWorkoutRequestProfileFrom(workoutPartnerRequest.getToMemberId())
-            ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
+        val findMemberProfile =
+            memberQueryService.findMemberWorkoutRequestProfileFrom(workoutPartnerRequest.getToMemberId())
+                ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
 
         val response = MemberWorkoutPartnerRequestAcceptProfileResponse(
             memberId = findMemberProfile.memberId,
@@ -129,33 +143,39 @@ class NotificationStompService(
         )
 
         stompPublisher.sendToUser(
-            memberId = workoutPartnerRequest.getFromMemberId(),
-            destination = StompConstant.SUB_WORKOUT_PARTNER,
-            payload = WsResponse(
-                type = WsMessageType.WORKOUT_PARTNER_ACCEPT.code,
-                payload = response
+            StompSendEvent(
+                memberId = workoutPartnerRequest.getFromMemberId(),
+                destination = StompConstant.SUB_WORKOUT_PARTNER,
+                payload = WsResponse(
+                    type = WsMessageType.WORKOUT_PARTNER_ACCEPT.code,
+                    payload = response
+                )
             )
         )
     }
 
-    fun sendGlobalError(memberId : Long, errorCode: ErrorCode) {
+    fun sendGlobalError(memberId: Long, errorCode: ErrorCode) {
         stompPublisher.sendToUser(
-            memberId = memberId,
-            destination = StompConstant.SUB_ERROR,
-            payload = WsResponse(
-                type = errorCode.code,
-                payload = errorCode.message
+            StompSendEvent(
+                memberId = memberId,
+                destination = StompConstant.SUB_ERROR,
+                payload = WsResponse(
+                    type = errorCode.code,
+                    payload = errorCode.message
+                )
             )
         )
     }
 
     fun sendOtherError(memberId: Long, ex: Throwable) {
         stompPublisher.sendToUser(
-            memberId = memberId,
-            destination = StompConstant.SUB_ERROR,
-            payload = WsResponse(
-                type = ex.javaClass.simpleName,
-                payload = (ex.message ?: "Unknown error")
+            StompSendEvent(
+                memberId = memberId,
+                destination = StompConstant.SUB_ERROR,
+                payload = WsResponse(
+                    type = ex.javaClass.simpleName,
+                    payload = (ex.message ?: "Unknown error")
+                )
             )
         )
     }
