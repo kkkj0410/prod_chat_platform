@@ -1,15 +1,14 @@
 package kr.co.fitview.api.app.domain.notification.service
 
 import kr.co.fitview.api.app.IntegrationTestSupport
-import kr.co.fitview.api.app.domain.chat.dto.response.ChatMessageDetailResponse
-import kr.co.fitview.api.app.domain.chat.dto.response.StompChatTextMessage
-import kr.co.fitview.api.app.domain.chat.dto.response.StompChatWorkoutRequestMessage
-import kr.co.fitview.api.app.domain.chat.dto.response.withIsMe
+import kr.co.fitview.api.app.domain.chat.dto.response.*
+import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageNoticeContent
 import kr.co.fitview.api.app.domain.member.dto.response.MemberChatProfileResponse
 import kr.co.fitview.api.app.domain.member.dto.response.MemberWorkoutPartnerProfileResponse
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.domain.notification.constant.StompConstant
+import kr.co.fitview.api.app.domain.notification.dto.StompSendEvent
 import kr.co.fitview.api.app.domain.notification.dto.response.MemberWorkoutPartnerRequestAcceptProfileResponse
 import kr.co.fitview.api.app.domain.notification.dto.response.MemberWorkoutPartnerRequestProfileResponse
 import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
@@ -68,7 +67,7 @@ class NotificationStompServiceTest @Autowired constructor(
             otherMemberId = otherMemberId
         )
 
-        given(stompPublisher.sendToUser(any(), any(), any())).willAnswer {}
+        given(stompPublisher.sendToUser(any())).willAnswer {}
 
 
         // when
@@ -76,19 +75,23 @@ class NotificationStompServiceTest @Autowired constructor(
 
         // then
         then(stompPublisher).should().sendToUser(
-            memberId,
-            StompConstant.SUB_CHAT_MESSAGE,
-            WsResponse(
-                type = WsMessageType.TEXT.code,
-                payload = response.withIsMe(true)
+            StompSendEvent(
+                memberId = memberId,
+                destination = StompConstant.SUB_CHAT_MESSAGE,
+                payload = WsResponse(
+                    type = WsMessageType.TEXT.code,
+                    payload = response.withIsMe(true)
+                )
             )
         )
         then(stompPublisher).should().sendToUser(
-            otherMemberId,
-            StompConstant.SUB_CHAT_MESSAGE,
-            WsResponse(
-                type = WsMessageType.TEXT.code,
-                payload = response.withIsMe(false)
+            StompSendEvent(
+                memberId = otherMemberId,
+                destination = StompConstant.SUB_CHAT_MESSAGE,
+                payload = WsResponse(
+                    type = WsMessageType.TEXT.code,
+                    payload = response.withIsMe(false)
+                )
             )
         )
     }
@@ -122,7 +125,7 @@ class NotificationStompServiceTest @Autowired constructor(
             otherMemberId = otherMemberId
         )
 
-        given(stompPublisher.sendToUser(any(), any(), any())).willAnswer {}
+        given(stompPublisher.sendToUser(any())).willAnswer {}
 
 
         // when
@@ -130,19 +133,78 @@ class NotificationStompServiceTest @Autowired constructor(
 
         // then
         then(stompPublisher).should().sendToUser(
-            memberId,
-            StompConstant.SUB_CHAT_MESSAGE,
-            WsResponse(
-                type = WsMessageType.WORKOUT_REQUEST.code,
-                payload = response.withIsMe(true)
+            StompSendEvent(
+                memberId = memberId,
+                destination = StompConstant.SUB_CHAT_MESSAGE,
+                payload = WsResponse(
+                    type = WsMessageType.WORKOUT_REQUEST.code,
+                    payload = response.withIsMe(true)
+                )
             )
         )
         then(stompPublisher).should().sendToUser(
-            otherMemberId,
-            StompConstant.SUB_CHAT_MESSAGE,
-            WsResponse(
-                type = WsMessageType.WORKOUT_REQUEST.code,
-                payload = response.withIsMe(false)
+            StompSendEvent(
+                memberId = otherMemberId,
+                destination = StompConstant.SUB_CHAT_MESSAGE,
+                payload = WsResponse(
+                    type = WsMessageType.WORKOUT_REQUEST.code,
+                    payload = response.withIsMe(false)
+                )
+            )
+        )
+    }
+
+    @DisplayName("채팅 안내 문구 메시지를 송신자, 수신자에게 보낸다.")
+    @Test
+    fun sendChatNoticeMessage() {
+        // given
+        val memberId = 123L
+        val otherMemberId = 234L
+
+        val chatMessage = StompChatNoticeMessage(
+            chatMessageId = 1L,
+            sentAt = time.nowLocalDateTime,
+            content = ChatMessageNoticeContent.WORKOUT_REQUEST_COMPLETE
+        )
+
+        val chatProfile = MemberChatProfileResponse(
+            profileImageUrl = "https://example.com/profile.jpg",
+            nickname = "홍길동"
+        )
+
+        val response = ChatMessageDetailResponse.of(
+            chatRoomId = 123L,
+            isCompleteWorkout = false,
+            chatProfile = chatProfile,
+            chatMessage = chatMessage,
+            otherMemberId = otherMemberId
+        )
+
+        given(stompPublisher.sendToUser(any())).willAnswer {}
+
+
+        // when
+        notificationStompService.sendChatMessage(memberId, response)
+
+        // then
+        then(stompPublisher).should().sendToUser(
+            StompSendEvent(
+                memberId = memberId,
+                destination = StompConstant.SUB_CHAT_MESSAGE,
+                payload = WsResponse(
+                    type = WsMessageType.NOTICE.code,
+                    payload = response
+                )
+            )
+        )
+        then(stompPublisher).should().sendToUser(
+            StompSendEvent(
+                memberId = otherMemberId,
+                destination = StompConstant.SUB_CHAT_MESSAGE,
+                payload = WsResponse(
+                    type = WsMessageType.NOTICE.code,
+                    payload = response
+                )
             )
         )
     }
@@ -169,7 +231,7 @@ class NotificationStompServiceTest @Autowired constructor(
             )
         )
 
-        given(stompPublisher.sendToUser(any(), any(), any())).willAnswer {}
+        given(stompPublisher.sendToUser(any())).willAnswer {}
 
         // when
         notificationStompService.sendWorkoutRequestUpdate(workoutRequests)
@@ -177,19 +239,23 @@ class NotificationStompServiceTest @Autowired constructor(
         // then
         workoutRequests.forEach { request ->
             then(stompPublisher).should().sendToUser(
-                request.fromMemberId,
-                StompConstant.SUB_WORKOUT_REQUEST,
-                WsResponse(
-                    type = WsMessageType.WORKOUT_REQUEST_UPDATE.code,
-                    payload = request
+                StompSendEvent(
+                    memberId = request.fromMemberId,
+                    destination = StompConstant.SUB_WORKOUT_REQUEST,
+                    payload = WsResponse(
+                        type = WsMessageType.WORKOUT_REQUEST_UPDATE.code,
+                        payload = request
+                    )
                 )
             )
             then(stompPublisher).should().sendToUser(
-                request.toMemberId,
-                StompConstant.SUB_WORKOUT_REQUEST,
-                WsResponse(
-                    type = WsMessageType.WORKOUT_REQUEST_UPDATE.code,
-                    payload = request
+                StompSendEvent(
+                    memberId = request.toMemberId,
+                    destination = StompConstant.SUB_WORKOUT_REQUEST,
+                    payload = WsResponse(
+                        type = WsMessageType.WORKOUT_REQUEST_UPDATE.code,
+                        payload = request
+                    )
                 )
             )
         }
@@ -216,7 +282,7 @@ class NotificationStompServiceTest @Autowired constructor(
         val signupRequest = TestDataFactory.oAuth2SignupRequest()
         oAuth2Service.signup(signupRequest, fromMember.id!!)
 
-        given(stompPublisher.sendToUser(any(), any(), any())).willAnswer {}
+        given(stompPublisher.sendToUser(any())).willAnswer {}
 
         val workoutPartnerRequest = WorkoutPartnerRequest.of(
             fromMember = fromMember,
@@ -241,11 +307,13 @@ class NotificationStompServiceTest @Autowired constructor(
 
         // then
         then(stompPublisher).should().sendToUser(
-            toMember.id!!,
-            StompConstant.SUB_WORKOUT_PARTNER,
-            WsResponse(
-                type = WsMessageType.WORKOUT_PARTNER_REQUEST.code,
-                payload = response
+            StompSendEvent(
+                memberId = toMember.id!!,
+                destination = StompConstant.SUB_WORKOUT_PARTNER,
+                payload = WsResponse(
+                    type = WsMessageType.WORKOUT_PARTNER_REQUEST.code,
+                    payload = response
+                )
             )
         )
     }
@@ -271,7 +339,7 @@ class NotificationStompServiceTest @Autowired constructor(
         val signupRequest = TestDataFactory.oAuth2SignupRequest()
         oAuth2Service.signup(signupRequest, toMember.id!!)
 
-        given(stompPublisher.sendToUser(any(), any(), any())).willAnswer {}
+        given(stompPublisher.sendToUser(any())).willAnswer {}
 
         val workoutPartnerRequest = WorkoutPartnerRequest.of(
             fromMember = fromMember,
@@ -295,11 +363,13 @@ class NotificationStompServiceTest @Autowired constructor(
 
         // then
         then(stompPublisher).should().sendToUser(
-            fromMember.id!!,
-            StompConstant.SUB_WORKOUT_PARTNER,
-            WsResponse(
-                type = WsMessageType.WORKOUT_PARTNER_ACCEPT.code,
-                payload = response
+            StompSendEvent(
+                memberId = fromMember.id!!,
+                destination = StompConstant.SUB_WORKOUT_PARTNER,
+                payload = WsResponse(
+                    type = WsMessageType.WORKOUT_PARTNER_ACCEPT.code,
+                    payload = response
+                )
             )
         )
     }
@@ -312,7 +382,7 @@ class NotificationStompServiceTest @Autowired constructor(
         val memberId = 123L
         val errorCode = ChatErrorCode.NOT_PARTNER
 
-        given(stompPublisher.sendToUser(any(), any(), any())).willAnswer {}
+        given(stompPublisher.sendToUser(any())).willAnswer {}
 
         // when
         notificationStompService.sendGlobalError(
@@ -322,11 +392,13 @@ class NotificationStompServiceTest @Autowired constructor(
 
         // then
         then(stompPublisher).should().sendToUser(
-            memberId,
-            StompConstant.SUB_ERROR,
-            WsResponse(
-                type = errorCode.code,
-                payload = errorCode.message
+            StompSendEvent(
+                memberId = memberId,
+                destination = StompConstant.SUB_ERROR,
+                payload = WsResponse(
+                    type = errorCode.code,
+                    payload = errorCode.message
+                )
             )
         )
     }
@@ -338,7 +410,7 @@ class NotificationStompServiceTest @Autowired constructor(
         val memberId = 123L
         val ex = RuntimeException("exception")
 
-        given(stompPublisher.sendToUser(any(), any(), any())).willAnswer {}
+        given(stompPublisher.sendToUser(any())).willAnswer {}
 
         // when
         notificationStompService.sendOtherError(
@@ -348,11 +420,13 @@ class NotificationStompServiceTest @Autowired constructor(
 
         // then
         then(stompPublisher).should().sendToUser(
-            memberId,
-            StompConstant.SUB_ERROR,
-            WsResponse(
-                type = ex.javaClass.simpleName,
-                payload = ex.message ?: "Unknown error"
+            StompSendEvent(
+                memberId = memberId,
+                destination = StompConstant.SUB_ERROR,
+                payload = WsResponse(
+                    type = ex.javaClass.simpleName,
+                    payload = ex.message ?: "Unknown error"
+                )
             )
         )
     }

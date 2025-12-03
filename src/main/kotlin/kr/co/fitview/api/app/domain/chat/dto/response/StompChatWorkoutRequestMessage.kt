@@ -6,8 +6,8 @@ import java.time.LocalDateTime
 data class StompChatWorkoutRequestMessage(
     override val chatMessageId: Long,
     override val sentAt: LocalDateTime,
-    override val isMe: Boolean = false,
 
+    val isMe: Boolean = false,
     val workoutRequestId: Long,
     val status: WorkoutRequestStatusForResponse,
     val scheduledAt: LocalDateTime,

@@ -50,5 +50,10 @@ include::api/chat/chat.adoc[]
 
 include::api/fcm/fcm.adoc[]
 
+[[REVIEW-API]]
+== REVIEW API
+
+include::api/review/review.adoc[]
+
 
 

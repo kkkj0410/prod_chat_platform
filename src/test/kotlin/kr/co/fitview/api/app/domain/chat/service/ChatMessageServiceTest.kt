@@ -3,12 +3,14 @@ package kr.co.fitview.api.app.domain.chat.service
 import jakarta.persistence.EntityManager
 import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.chat.condition.ChatCondition
+import kr.co.fitview.api.app.domain.chat.condition.ChatMessageCondition
 import kr.co.fitview.api.app.domain.chat.dto.request.ChatTextMessageServiceRequest
 import kr.co.fitview.api.app.domain.chat.dto.request.ChatWorkoutRequestMessageServiceRequest
 import kr.co.fitview.api.app.domain.chat.entity.ChatMessage
 import kr.co.fitview.api.app.domain.chat.entity.ChatParticipant
 import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
 import kr.co.fitview.api.app.domain.chat.entity.MessageReadStatus
+import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageNoticeContent
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatRoomType
 import kr.co.fitview.api.app.domain.chat.repository.ChatMessageRepository
@@ -19,6 +21,7 @@ import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
 import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusForResponse
+import kr.co.fitview.api.app.domain.workout.entity.QWorkoutRequest.workoutRequest
 import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequest
 import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
 import kr.co.fitview.api.app.domain.workout.repository.WorkoutRequestRepository
@@ -258,7 +261,7 @@ class ChatMessageServiceTest @Autowired constructor(
         chatMessageRepository.save(chatMessage2)
         workoutRequestRepository.save(workoutRequest)
 
-        val condition = ChatCondition(
+        val condition = ChatMessageCondition(
             size = 10,
         )
 
@@ -343,7 +346,7 @@ class ChatMessageServiceTest @Autowired constructor(
         chatMessageRepository.save(chatMessage2)
         workoutRequestRepository.save(workoutRequest)
 
-        val condition = ChatCondition(
+        val condition = ChatMessageCondition(
             size = 10,
         )
 
@@ -357,6 +360,61 @@ class ChatMessageServiceTest @Autowired constructor(
                 assertThat(globalEx.errorCode)
                     .isEqualTo(ChatErrorCode.NOT_MEMBER_OF_CHAT_ROOM)
             })
+    }
+
+    @DisplayName("안내 문구 메시지를 조회한다.")
+    @Test
+    fun findChatMessagesNotice() {
+        //given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val other = Member(
+            email = "email2",
+            password = "password2",
+            role = Role.USER,
+        )
+
+        memberRepository.save(me)
+        memberRepository.save(other)
+
+        val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+
+        val chatParticipant1 = ChatParticipant(
+            chatRoom,
+            me
+        )
+        val chatParticipant2 = ChatParticipant(
+            chatRoom,
+            other
+        )
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+
+
+        val chatMessage1 = ChatMessage.ofNotice(
+            chatRoom = chatRoom,
+            content = ChatMessageNoticeContent.WORKOUT_REQUEST_COMPLETE,
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessage1)
+
+
+        val condition = ChatMessageCondition(
+            size = 10,
+        )
+
+        // when
+        val slice = chatMessageService.findChatMessages(me.id!!, chatRoom.id!!, condition)
+        val response = slice.content
+
+        // then
+        assertThat(response).hasSize(1)
+        assertThat(response[0])
+            .extracting("chatMessageId", "type", "sentAt", "content")
+            .contains(chatMessage1.id, ChatMessageType.NOTICE, chatMessage1.sentAt, ChatMessageNoticeContent.WORKOUT_REQUEST_COMPLETE)
     }
 
 

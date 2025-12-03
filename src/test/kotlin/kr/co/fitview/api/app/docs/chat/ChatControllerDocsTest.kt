@@ -181,16 +181,14 @@ class ChatControllerDocsTest : RestDocsSupport() {
                         fieldWithPath("data").type(JsonFieldType.OBJECT).description("응답 데이터"),
                         fieldWithPath("data.content").type(JsonFieldType.ARRAY).description("채팅방 리스트"),
                         subsectionWithPath("data.content[].lastChatMessage").description("마지막 TEXT 메시지"),
-                        subsectionWithPath("data.content[].lastWorkoutRequest").description("마지막 운동 요청 정보"),
+                        subsectionWithPath("data.content[].lastWorkoutRequest")
+                            .optional()
+                            .description("마지막 운동 요청 정보"),
                         fieldWithPath("data.content[].chatRoomId").description("채팅방 ID"),
                         fieldWithPath("data.content[].profileImageUrl").description("상대 프로필 이미지 URL"),
                         fieldWithPath("data.content[].nickname").description("상대 닉네임"),
                         fieldWithPath("data.content[].isRead").description("읽음 여부"),
 
-                        fieldWithPath("data.content[].lastChatMessage").description("마지막 메시지"),
-                        fieldWithPath("data.content[].lastWorkoutRequest")
-                            .optional()
-                            .description("마지막 운동 요청")
                     ),
 
                     responseFields(
@@ -280,16 +278,13 @@ class ChatControllerDocsTest : RestDocsSupport() {
                         fieldWithPath("data").type(JsonFieldType.OBJECT).description("응답 데이터"),
                         fieldWithPath("data.content").type(JsonFieldType.ARRAY).description("채팅방 리스트"),
                         subsectionWithPath("data.content[].lastChatMessage").description("마지막 WORKOUT_REQUEST 메시지"),
-                        subsectionWithPath("data.content[].lastWorkoutRequest").description("마지막 운동 요청 정보"),
+                        subsectionWithPath("data.content[].lastWorkoutRequest")
+                            .optional()
+                            .description("마지막 운동 요청 정보"),
                         fieldWithPath("data.content[].chatRoomId").description("채팅방 ID"),
                         fieldWithPath("data.content[].profileImageUrl").description("상대 프로필 이미지 URL"),
                         fieldWithPath("data.content[].nickname").description("상대 닉네임"),
                         fieldWithPath("data.content[].isRead").description("읽음 여부"),
-
-                        fieldWithPath("data.content[].lastChatMessage").description("마지막 메시지"),
-                        fieldWithPath("data.content[].lastWorkoutRequest")
-                            .optional()
-                            .description("마지막 운동 요청")
 
 
                     ),

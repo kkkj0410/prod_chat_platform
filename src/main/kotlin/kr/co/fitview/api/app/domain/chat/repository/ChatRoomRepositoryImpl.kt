@@ -9,6 +9,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory
 import kr.co.fitview.api.app.domain.chat.condition.ChatCondition
 import kr.co.fitview.api.app.domain.chat.dto.response.ChatRoomResponseProfile
 import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
+import kr.co.fitview.api.app.domain.chat.entity.QChatMessage.chatMessage
 import kr.co.fitview.api.app.domain.chat.entity.QChatParticipant
 import kr.co.fitview.api.app.domain.chat.entity.QChatParticipant.chatParticipant
 import kr.co.fitview.api.app.domain.chat.entity.QChatRoom.chatRoom
@@ -18,6 +19,7 @@ import kr.co.fitview.api.app.domain.image.entity.QMemberImage.memberImage
 import kr.co.fitview.api.app.domain.image.entity.enums.MemberImageType
 import kr.co.fitview.api.app.domain.member.entity.QMember.member
 import kr.co.fitview.api.app.domain.workout.entity.QWorkoutHistory.workoutHistory
+import kr.co.fitview.api.app.domain.workout.entity.QWorkoutRequest.workoutRequest
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Slice
 import org.springframework.data.domain.SliceImpl
@@ -164,6 +166,19 @@ class ChatRoomRepositoryImpl(
                 chatParticipant.member.id.eq(memberId),
                 chatRoom.deletedAt.isNull,
                 chatRoom.id.eq(chatRoomId)
+            )
+            .fetchOne()
+    }
+
+    override fun findChatRoomByWorkoutRequestId(workoutRequestId: Long): ChatRoom? {
+        return queryFactory
+            .select(chatRoom)
+            .from(chatRoom)
+            .join(chatRoom.chatMessages, chatMessage)
+            .join(chatMessage.workoutRequests, workoutRequest)
+            .where(
+                workoutRequest.id.eq(workoutRequestId),
+                chatRoom.deletedAt.isNull,
             )
             .fetchOne()
     }

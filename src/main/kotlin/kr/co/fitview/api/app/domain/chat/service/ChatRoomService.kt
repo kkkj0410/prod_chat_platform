@@ -58,4 +58,5 @@ class ChatRoomService(
         return chatRoomRepository.findChatRoomByMemberIdAndChatRoomId(memberId, chatRoomId)
     }
 
+
 }

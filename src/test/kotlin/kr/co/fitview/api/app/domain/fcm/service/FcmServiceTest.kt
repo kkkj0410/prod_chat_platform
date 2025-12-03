@@ -1,7 +1,6 @@
 package kr.co.fitview.api.app.domain.fcm.service
 
 import kr.co.fitview.api.app.IntegrationTestSupport
-import kr.co.fitview.api.app.domain.fcm.dto.request.FcmTokenCreateRequest
 import kr.co.fitview.api.app.domain.fcm.dto.request.FcmTokenCreateServiceRequest
 import kr.co.fitview.api.app.domain.fcm.entity.FcmToken
 import kr.co.fitview.api.app.domain.fcm.entity.enums.FcmTokenPlatform
@@ -10,6 +9,7 @@ import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.global.entity.Role
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.tuple
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -53,4 +53,6 @@ class FcmServiceTest @Autowired constructor(
             .extracting("member", "deviceId", "token", "platform")
             .contains(findMember, "deviceId", "token", FcmTokenPlatform.ANDROID)
     }
+
+
 }

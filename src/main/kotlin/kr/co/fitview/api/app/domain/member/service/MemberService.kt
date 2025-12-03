@@ -173,10 +173,6 @@ class MemberService(
         return MemberDetailResponse(otherProfile, findWorkoutPartnerStatus)
     }
 
-    fun findMemberChatProfileFrom(memberId: Long): MemberChatProfileResponse? {
-        return memberRepository.findMemberChatProfileByDeletedAtIsNull(memberId)
-    }
-
     fun findRandomMemberWithinLocal(
         memberId: Long,
         condition: MemberLocalCondition,

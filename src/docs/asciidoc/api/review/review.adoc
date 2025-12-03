@@ -1,0 +1,9 @@
+[[review-tag-get]]
+=== 리뷰 전체 서브 메시지 조회 API
+
+==== HTTP Request
+include::{snippets}/review-tag-get/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/review-tag-get/http-response.adoc[]
+include::{snippets}/review-tag-get/response-fields.adoc[]

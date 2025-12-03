@@ -10,14 +10,14 @@ data class ChatMessageContent(
     override val chatMessageId: Long,
     override val type: ChatMessageType = ChatMessageType.TEXT,
     override val sentAt: LocalDateTime,
-    override val isMe: Boolean = false,
 
+    val isMe: Boolean = false,
     @get:JsonIgnore
     override val isRead: Boolean? = null,
     @get:JsonIgnore
     override val chatRoomId: Long? = null,
     @get:JsonIgnore
-    override val memberId: Long? = null,
+    val memberId: Long? = null,
 
     val content: String
 

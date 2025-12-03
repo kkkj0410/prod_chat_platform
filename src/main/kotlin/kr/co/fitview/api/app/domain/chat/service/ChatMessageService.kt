@@ -1,6 +1,7 @@
 package kr.co.fitview.api.app.domain.chat.service
 
 import kr.co.fitview.api.app.domain.chat.condition.ChatCondition
+import kr.co.fitview.api.app.domain.chat.condition.ChatMessageCondition
 import kr.co.fitview.api.app.domain.chat.dto.ChatMessageAndWorkoutRequest
 import kr.co.fitview.api.app.domain.chat.dto.request.*
 import kr.co.fitview.api.app.domain.chat.dto.response.*
@@ -55,12 +56,6 @@ class ChatMessageService(
             chatMessage = chatMessage,
             chatRoom = chatRoom
         )
-
-//        val response = ChatMessageContent(
-//            chatMessageId = chatMessage.id!!,
-//            sentAt = now,
-//            content = message.content
-//        )
 
         val response = StompChatTextMessage(
             chatMessageId = chatMessage.id!!,
@@ -133,7 +128,7 @@ class ChatMessageService(
         return chatMessageRepository.findRecentChatMessageByMemberIdAndIn(memberId, chatRoomIds)
     }
 
-    fun findChatMessages(memberId: Long, chatRoomId: Long, condition: ChatCondition): Slice<LastChatMessage> {
+    fun findChatMessages(memberId: Long, chatRoomId: Long, condition: ChatMessageCondition): Slice<LastChatMessage> {
         validateMemberInChatRoom(memberId, chatRoomId)
 
         val slice = chatMessageRepository.findChatMessageByCondition(chatRoomId, condition)
@@ -162,6 +157,10 @@ class ChatMessageService(
                     myMemberId = memberId,
                     now = time.nowLocalDateTime
                 )
+
+            ChatMessageType.NOTICE ->
+                ChatNoticeMessage.from(chatAndRequest.chatMessage)
+
 
             else -> throw IllegalArgumentException("Unknown ChatMessageType: ${chatAndRequest.chatMessage.type}")
         }

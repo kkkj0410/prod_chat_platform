@@ -7,8 +7,8 @@ data class StompChatTextMessage(
 
     override val chatMessageId: Long,
     override val sentAt: LocalDateTime,
-    override val isMe: Boolean = false,
 
+    val isMe: Boolean = false,
     val content: String
 
 ) : StompChatMessage

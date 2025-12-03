@@ -11,6 +11,7 @@ import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
 import kr.co.fitview.api.app.domain.chat.entity.QChatMessage.chatMessage
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
 import kr.co.fitview.api.app.domain.chat.repository.ChatParticipantRepository
+import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.domain.member.service.MemberReferenceProvider
 import kr.co.fitview.api.app.domain.member.service.MemberService
 import kr.co.fitview.api.app.domain.notification.service.NotificationStompService
@@ -34,7 +35,7 @@ class ChatService(
     private val workoutPartnerService : WorkoutPartnerService,
     private val chatMessageService : ChatMessageService,
     private val workoutRequestService : WorkoutRequestService,
-    private val memberService : MemberService,
+    private val memberQueryService : MemberQueryService,
     private val workoutHistoryService : WorkoutHistoryService
 ) {
 
@@ -65,7 +66,7 @@ class ChatService(
         val findChatRoom = chatRoomService.findChatRoomFromMemberIdAndChatRoomId(memberId, chatRoomId)
             ?: throw GlobalException(ChatErrorCode.NOT_MEMBER_OF_CHAT_ROOM)
 
-        val findChatProfile = memberService.findMemberChatProfileFrom(memberId)
+        val findChatProfile = memberQueryService.findMemberChatProfileFrom(memberId)
             ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
 
         val savedMessage : StompChatMessage
