@@ -42,10 +42,23 @@ include::{snippets}/chat-room-list-workout-request/response-fields.adoc[]
 include::{snippets}/chat-room-list-workout-request/response-fields-workout-request-message.adoc[]
 include::{snippets}/chat-room-list-workout-request/response-fields-workout-request.adoc[]
 
+[[chat-room-list-notice]]
+=== 채팅방 목록 (NOTICE 유형) API
+
+==== HTTP Request
+include::{snippets}/chat-room-list-notice/http-request.adoc[]
+include::{snippets}/chat-room-list-notice/request-headers.adoc[]
+include::{snippets}/chat-room-list-notice/query-parameters.adoc[]
+
+==== HTTP Response
+include::{snippets}/chat-room-list-notice/http-response.adoc[]
+include::{snippets}/chat-room-list-notice/response-fields.adoc[]
+include::{snippets}/chat-room-list-notice/response-fields-notice-message.adoc[]
+include::{snippets}/chat-room-list-notice/response-fields-workout-request.adoc[]
+
 
 [[chat-message-list-text]]
 === 채팅 메시지 목록 (TEXT 유형) API
--> TEXT, WORKOUT_REQUEST 유형으로 나뉨.
 
 ==== HTTP Request
 include::{snippets}/chat-message-list-text/http-request.adoc[]
@@ -60,7 +73,6 @@ include::{snippets}/chat-message-list-text/response-fields.adoc[]
 
 [[chat-message-list-workout-request]]
 === 채팅 메시지 목록 (WORK_REQUEST 유형) API
--> TEXT, WORKOUT_REQUEST 유형으로 나뉨.
 
 ==== HTTP Request
 include::{snippets}/chat-message-list-workout-request/http-request.adoc[]
@@ -71,6 +83,21 @@ include::{snippets}/chat-message-list-workout-request/query-parameters.adoc[]
 ==== HTTP Response
 include::{snippets}/chat-message-list-workout-request/http-response.adoc[]
 include::{snippets}/chat-message-list-workout-request/response-fields.adoc[]
+
+
+[[chat-message-list-notice]]
+=== 채팅 메시지 목록 (NOTICE 유형) API
+
+==== HTTP Request
+include::{snippets}/chat-message-list-notice/http-request.adoc[]
+include::{snippets}/chat-message-list-notice/request-headers.adoc[]
+include::{snippets}/chat-message-list-notice/query-parameters.adoc[]
+
+
+==== HTTP Response
+include::{snippets}/chat-message-list-notice/http-response.adoc[]
+include::{snippets}/chat-message-list-notice/response-fields.adoc[]
+
 
 
 [[chat-workout-request-last]]
