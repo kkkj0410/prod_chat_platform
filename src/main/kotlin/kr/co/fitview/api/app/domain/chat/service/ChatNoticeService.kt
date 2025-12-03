@@ -46,7 +46,7 @@ class ChatNoticeService(
 
         sendStompMessage(memberId, findChatRoom, savedMessage)
 
-        return chatMessageRepository.save(chatMessage)
+        return savedMessage
     }
 
     private fun sendStompMessage(
