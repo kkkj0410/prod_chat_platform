@@ -38,4 +38,7 @@ class MemberQueryService(
         return memberRepository.findMemberChatProfileByDeletedAtIsNull(memberId)
     }
 
+    fun findMemberReferenceFrom(memberId : Long)  : Member {
+        return memberRepository.getReferenceById(memberId)
+    }
 }

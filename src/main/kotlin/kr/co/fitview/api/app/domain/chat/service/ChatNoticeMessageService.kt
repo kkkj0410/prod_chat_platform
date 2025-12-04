@@ -5,6 +5,8 @@ import kr.co.fitview.api.app.domain.chat.dto.response.StompChatNoticeMessage
 import kr.co.fitview.api.app.domain.chat.entity.ChatMessage
 import kr.co.fitview.api.app.domain.chat.entity.ChatNoticeMessage
 import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
+import kr.co.fitview.api.app.domain.chat.entity.QChatMessage.chatMessage
+import kr.co.fitview.api.app.domain.chat.entity.QChatRoom.chatRoom
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatNoticeMessageType
 import kr.co.fitview.api.app.domain.chat.repository.ChatMessageRepository
 import kr.co.fitview.api.app.domain.chat.repository.ChatNoticeMessageRepository
@@ -29,12 +31,18 @@ class ChatNoticeMessageService(
     private val memberQueryService : MemberQueryService,
     private val chatParticipantService : ChatParticipantService,
     private val chatNoticeMessageRepository : ChatNoticeMessageRepository,
+    private val messageReadStatusService : MessageReadStatusService,
     private val time : Time
 ) {
 
 
     @Transactional
-    fun addChatNoticeFrom(memberId : Long, workoutRequestId: Long, type : ChatNoticeMessageType, workoutHistory : WorkoutHistory? = null) : ChatMessage {
+    fun addChatNoticeFrom(
+        memberId : Long,
+        workoutRequestId: Long,
+        type : ChatNoticeMessageType,
+        workoutHistory : WorkoutHistory? = null
+    ) : ChatMessage {
 
         val findChatRoom = chatRoomQueryService.findChatRoomFrom(workoutRequestId)
             ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
@@ -53,6 +61,12 @@ class ChatNoticeMessageService(
         }
 
         val savedChatNoticeMessage = chatNoticeMessageRepository.save(chatNoticeMessage)
+
+        messageReadStatusService.saveMessageReadStatus(
+            member = memberQueryService.findMemberReferenceFrom(memberId),
+            chatMessage = chatMessage,
+            chatRoom = findChatRoom
+        )
 
         sendStompMessage(memberId, findChatRoom, savedMessage, savedChatNoticeMessage)
 
