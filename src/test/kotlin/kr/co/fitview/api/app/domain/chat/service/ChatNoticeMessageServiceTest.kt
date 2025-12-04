@@ -254,7 +254,8 @@ class ChatNoticeMessageServiceTest @Autowired constructor(
         val chatMessage = StompChatNoticeMessage(
             chatMessageId = savedChatMessage.id!!,
             sentAt = time.nowLocalDateTime,
-            content = ChatNoticeMessageType.WORKOUT_REQUEST_ACCEPT
+            content = ChatNoticeMessageType.WORKOUT_REQUEST_ACCEPT,
+            workoutHistoryId = null
         )
 
         val chatProfile = MemberChatProfileResponse(
