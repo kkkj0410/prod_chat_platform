@@ -68,7 +68,7 @@ class ChatNoticeMessageService(
             chatRoom = findChatRoom
         )
 
-        sendStompMessage(memberId, findChatRoom, savedMessage, savedChatNoticeMessage)
+        sendStompMessage(memberId, findChatRoom, savedMessage, savedChatNoticeMessage, workoutHistory)
 
         return savedMessage
     }
@@ -78,7 +78,8 @@ class ChatNoticeMessageService(
         memberId: Long,
         findChatRoom: ChatRoom,
         chatMessage: ChatMessage,
-        chatNoticeMessage : ChatNoticeMessage
+        chatNoticeMessage : ChatNoticeMessage,
+        workoutHistory : WorkoutHistory?
     ) {
         val findChatProfile = memberQueryService.findMemberChatProfileFrom(memberId)
             ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
@@ -94,7 +95,8 @@ class ChatNoticeMessageService(
         val sendMessage = StompChatNoticeMessage(
             chatMessageId = chatMessage.id!!,
             sentAt = chatMessage.sentAt!!,
-            content = chatNoticeMessage.type!!
+            content = chatNoticeMessage.type!!,
+            workoutHistoryId = workoutHistory?.id
         )
 
         val response = ChatMessageDetailResponse.of(

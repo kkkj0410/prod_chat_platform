@@ -43,4 +43,58 @@ class WorkoutHistoryTest @Autowired constructor(
             .extracting("memberOne", "memberTwo")
             .contains(member1, member2)
     }
+
+    @DisplayName("첫번째 회원의 id 조회")
+    @Test
+    fun getMemberOneId() {
+        // given
+        val member1 = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val member2 = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(member1)
+        memberRepository.save(member2)
+
+        // when
+        val workoutHistory = WorkoutHistory.of(
+            memberOne = member1,
+            memberTwo = member2
+        )
+
+        // then
+        assertThat(workoutHistory.getMemberOneId()).isEqualTo(member1.id!!)
+    }
+
+    @DisplayName("2번째 회원의 id 조회")
+    @Test
+    fun getMemberTwoId() {
+        // given
+        val member1 = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val member2 = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(member1)
+        memberRepository.save(member2)
+
+        // when
+        val workoutHistory = WorkoutHistory.of(
+            memberOne = member1,
+            memberTwo = member2
+        )
+
+        // then
+        assertThat(workoutHistory.getMemberTwoId()).isEqualTo(member2.id!!)
+    }
 }

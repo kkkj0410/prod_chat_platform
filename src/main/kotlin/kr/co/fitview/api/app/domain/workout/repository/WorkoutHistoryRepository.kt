@@ -10,6 +10,7 @@ interface WorkoutHistoryRepository : JpaRepository<WorkoutHistory, Long> {
 
     fun existsByMemberOneIdAndMemberTwoIdAndDeletedAtIsNull(memberOneId: Long, memberTwoId: Long) : Boolean
 
+    fun findByIdAndDeletedAtIsNull(workoutHistoryId : Long) : WorkoutHistory?
 }
 
 fun WorkoutHistoryRepository.findByOrderedMemberOneIdAndMemberTwoIdAndDeletedAtIsNull(memberOneId: Long, memberTwoId: Long): Boolean {

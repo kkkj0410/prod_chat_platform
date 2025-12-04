@@ -61,9 +61,10 @@ import java.time.ZoneOffset
 class ReviewControllerDocsTest : RestDocsSupport() {
 
     private val reviewService: ReviewService = mock(ReviewService::class.java)
+    private val securityUtil: SecurityUtil = mock(SecurityUtil::class.java)
 
     override fun initController(): Any {
-        return ReviewController(reviewService)
+        return ReviewController(reviewService, securityUtil)
     }
 
     @DisplayName("후기 서브 메시지 조회")
@@ -127,6 +128,7 @@ class ReviewControllerDocsTest : RestDocsSupport() {
         // when // then
         mockMvc.perform(
             get("/api/v1/reviews/tags")
+            .header("Authorization", "Bearer jwt-token")
         )
             .andDo(print())
             .andExpect(status().isOk())
@@ -137,6 +139,9 @@ class ReviewControllerDocsTest : RestDocsSupport() {
                     preprocessRequest(prettyPrint()),
                     preprocessResponse(prettyPrint()),
 
+                    requestHeaders(
+                        RestDocsHeaders.authorizationHeader(Role.USER)
+                    ),
 
                     responseFields(
                         fieldWithPath("status").type(JsonFieldType.NUMBER)
