@@ -2,11 +2,12 @@ package kr.co.fitview.api.app.domain.chat.dto.response
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import kr.co.fitview.api.app.domain.chat.entity.ChatMessage
-import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageNoticeContent
+import kr.co.fitview.api.app.domain.chat.entity.ChatNoticeMessage
+import kr.co.fitview.api.app.domain.chat.entity.enums.ChatNoticeMessageType
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
 import java.time.LocalDateTime
 
-data class ChatNoticeMessage(
+data class ChatNoticeMessageResponse(
 
     override val chatMessageId: Long,
     override val type: ChatMessageType = ChatMessageType.NOTICE,
@@ -17,18 +18,20 @@ data class ChatNoticeMessage(
     @get:JsonIgnore
     override val chatRoomId: Long? = null,
 
-    val content: ChatMessageNoticeContent
+    val content: ChatNoticeMessageType,
+    val workoutHistoryId : Long? = null
 
 ) : LastChatMessage{
 
 
     companion object {
-        fun from(chatMessage: ChatMessage): ChatNoticeMessage {
-            return ChatNoticeMessage(
+        fun from(chatMessage: ChatMessage, chatNoticeMessage : ChatNoticeMessage): ChatNoticeMessageResponse {
+            return ChatNoticeMessageResponse(
                 chatMessageId = chatMessage.id!!,
                 type = chatMessage.type!!,
                 sentAt = chatMessage.sentAt!!,
-                content = ChatMessageNoticeContent.valueOf(chatMessage.content!!)
+                content = chatNoticeMessage.type!!,
+                workoutHistoryId = chatNoticeMessage.getWorkoutHistoryId
             )
         }
     }

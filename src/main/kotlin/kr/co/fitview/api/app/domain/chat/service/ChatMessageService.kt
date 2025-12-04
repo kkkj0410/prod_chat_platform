@@ -1,6 +1,5 @@
 package kr.co.fitview.api.app.domain.chat.service
 
-import kr.co.fitview.api.app.domain.chat.condition.ChatCondition
 import kr.co.fitview.api.app.domain.chat.condition.ChatMessageCondition
 import kr.co.fitview.api.app.domain.chat.dto.ChatMessageAndWorkoutRequest
 import kr.co.fitview.api.app.domain.chat.dto.request.*
@@ -9,7 +8,6 @@ import kr.co.fitview.api.app.domain.chat.entity.ChatMessage
 import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
 import kr.co.fitview.api.app.domain.chat.repository.ChatMessageRepository
-import kr.co.fitview.api.app.domain.member.dto.response.MemberChatRoomProfile
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.domain.member.service.MemberReferenceProvider
@@ -18,7 +16,6 @@ import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
 import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestService
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.chat.ChatErrorCode
-import kr.co.fitview.api.app.global.exception.error.member.MemberErrorCode
 import kr.co.fitview.api.app.global.time.Time
 import org.springframework.data.domain.Slice
 import org.springframework.data.domain.SliceImpl
@@ -159,7 +156,7 @@ class ChatMessageService(
                 )
 
             ChatMessageType.NOTICE ->
-                ChatNoticeMessage.from(chatAndRequest.chatMessage)
+                ChatNoticeMessageResponse.from(chatAndRequest.chatMessage, chatAndRequest.chatNoticeMessage!!)
 
 
             else -> throw IllegalArgumentException("Unknown ChatMessageType: ${chatAndRequest.chatMessage.type}")

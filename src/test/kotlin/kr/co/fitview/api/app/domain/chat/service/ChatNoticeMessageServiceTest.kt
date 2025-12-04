@@ -4,34 +4,33 @@ import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.chat.entity.ChatMessage
 import kr.co.fitview.api.app.domain.chat.entity.ChatParticipant
 import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
-import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageNoticeContent
+import kr.co.fitview.api.app.domain.chat.entity.enums.ChatNoticeMessageType
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatRoomType
 import kr.co.fitview.api.app.domain.chat.repository.ChatMessageRepository
+import kr.co.fitview.api.app.domain.chat.repository.ChatNoticeMessageRepository
 import kr.co.fitview.api.app.domain.chat.repository.ChatParticipantRepository
 import kr.co.fitview.api.app.domain.chat.repository.ChatRoomRepository
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
 import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequest
-import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
 import kr.co.fitview.api.app.domain.workout.repository.WorkoutRequestRepository
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.time.Time
 import kr.co.fitview.api.app.global.util.TestDataFactory
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.tuple
-import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
-class ChatNoticeServiceTest @Autowired constructor(
-    private val chatNoticeService: ChatNoticeService,
+class ChatNoticeMessageServiceTest @Autowired constructor(
+    private val chatNoticeMessageService: ChatNoticeMessageService,
     private val memberRepository : MemberRepository,
     private val chatRoomRepository : ChatRoomRepository,
     private val chatParticipantRepository : ChatParticipantRepository,
     private val chatMessageRepository : ChatMessageRepository,
     private val workoutRequestRepository : WorkoutRequestRepository,
+    private val chatNoticeMessageRepository : ChatNoticeMessageRepository,
     private val oAuth2Service : OAuth2Service,
     private val time : Time
 ) : IntegrationTestSupport(){
@@ -90,14 +89,18 @@ class ChatNoticeServiceTest @Autowired constructor(
 
 
         // when
-        val savedChatMessage = chatNoticeService.addChatNoticeFrom(
+        val savedChatMessage = chatNoticeMessageService.addChatNoticeFrom(
             me.id!!,
             workoutRequestId = workoutRequest.id!!,
-            content = ChatMessageNoticeContent.WORKOUT_REQUEST_COMPLETE
+            type = ChatNoticeMessageType.WORKOUT_REQUEST_COMPLETE
         )
 
         // then
         assertThat(savedChatMessage.id).isNotNull()
-        assertThat(savedChatMessage.content).isEqualTo(ChatMessageNoticeContent.WORKOUT_REQUEST_COMPLETE.name)
+
+        val findChatNoticeMessages = chatNoticeMessageRepository.findAll()
+        assertThat(findChatNoticeMessages).hasSize(1)
+        assertThat(findChatNoticeMessages[0].type).isEqualTo(ChatNoticeMessageType.WORKOUT_REQUEST_COMPLETE)
+
     }
 }

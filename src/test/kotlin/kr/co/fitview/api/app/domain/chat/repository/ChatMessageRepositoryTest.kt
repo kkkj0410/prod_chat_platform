@@ -3,10 +3,9 @@ package kr.co.fitview.api.app.domain.chat.repository
 import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.address.dto.request.AddressCreateServiceRequest
 import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
-import kr.co.fitview.api.app.domain.chat.condition.ChatCondition
 import kr.co.fitview.api.app.domain.chat.condition.ChatMessageCondition
 import kr.co.fitview.api.app.domain.chat.entity.*
-import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageNoticeContent
+import kr.co.fitview.api.app.domain.chat.entity.enums.ChatNoticeMessageType
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatRoomType
 import kr.co.fitview.api.app.domain.member.entity.Member
@@ -40,6 +39,7 @@ class ChatMessageRepositoryTest @Autowired constructor(
     val messageReadStatusRepository: MessageReadStatusRepository,
     val oAuth2Service: OAuth2Service,
     val memberRepository: MemberRepository,
+    val chatNoticeMessageRepository : ChatNoticeMessageRepository,
     val time: Time
 ) : IntegrationTestSupport() {
 
@@ -287,14 +287,18 @@ class ChatMessageRepositoryTest @Autowired constructor(
         )
         val message2ByChatRoom1 = ChatMessage.ofNotice(
             chatRoom = chatRoom1,
-            content = ChatMessageNoticeContent.WORKOUT_REQUEST_COMPLETE,
             sentAt = time.nowLocalDateTime
+        )
+        val noticeMessage2ChatRoom1 = ChatNoticeMessage(
+            chatMessage = message2ByChatRoom1,
+            type = ChatNoticeMessageType.WORKOUT_REQUEST_ACCEPT
         )
         chatRoom1.updateLastMessageAt(time.nowLocalDateTime)
 
 
         chatMessageRepository.save(message1ByChatRoom1)
         chatMessageRepository.save(message2ByChatRoom1)
+        chatNoticeMessageRepository.save(noticeMessage2ChatRoom1)
 
 
         val chatRoomIds = listOf(chatRoom1.id!!)
@@ -318,7 +322,7 @@ class ChatMessageRepositoryTest @Autowired constructor(
                 time.nowLocalDateTime,
                 false,
                 chatRoom1.id!!,
-                ChatMessageNoticeContent.WORKOUT_REQUEST_COMPLETE
+                ChatNoticeMessageType.WORKOUT_REQUEST_ACCEPT
             )
     }
 

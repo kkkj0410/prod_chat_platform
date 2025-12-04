@@ -6,7 +6,7 @@ import kr.co.fitview.api.app.docs.RestDocsSupport
 import kr.co.fitview.api.app.domain.chat.controller.ChatController
 import kr.co.fitview.api.app.domain.chat.dto.request.ChatRoomCreateRequest
 import kr.co.fitview.api.app.domain.chat.dto.response.*
-import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageNoticeContent
+import kr.co.fitview.api.app.domain.chat.entity.enums.ChatNoticeMessageType
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
 import kr.co.fitview.api.app.domain.chat.service.ChatMessageService
 import kr.co.fitview.api.app.domain.chat.service.ChatRoomService
@@ -14,7 +14,6 @@ import kr.co.fitview.api.app.domain.chat.service.ChatService
 import kr.co.fitview.api.app.domain.chat.service.MessageReadStatusService
 import kr.co.fitview.api.app.domain.member.dto.response.ChatMemberProfile
 import kr.co.fitview.api.app.domain.member.dto.response.ChatMemberProfileResponse
-import kr.co.fitview.api.app.domain.member.dto.response.MemberChatRoomProfile
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.domain.workout.dto.response.LastWorkoutRequestMessage
 import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusForResponse
@@ -321,13 +320,13 @@ class ChatControllerDocsTest : RestDocsSupport() {
                 profileImageUrl = "https://example.com/profile1.jpg",
                 nickname = "철수",
                 isRead = false,
-                lastChatMessage = ChatNoticeMessage(
+                lastChatMessage = ChatNoticeMessageResponse(
                     chatMessageId = 101L,
                     type = ChatMessageType.NOTICE,
                     sentAt = LocalDateTime.now(),
                     isRead = false,
                     chatRoomId = 1L,
-                    content = ChatMessageNoticeContent.WORKOUT_REQUEST_COMPLETE
+                    content = ChatNoticeMessageType.WORKOUT_REQUEST_COMPLETE
                 ),
                 lastWorkoutRequest = LastWorkoutRequestMessage(
                     workoutRequestId = 123L,
@@ -389,7 +388,10 @@ class ChatControllerDocsTest : RestDocsSupport() {
                         fieldWithPath("chatMessageId").description("메시지 ID"),
                         fieldWithPath("type").description("NOTICE"),
                         fieldWithPath("sentAt").description("보낸 시간"),
-                        fieldWithPath("content").description("텍스트 내용" + ChatMessageNoticeContent.allDescription())
+                        fieldWithPath("content").description("텍스트 내용" + ChatNoticeMessageType.allDescription()),
+                        fieldWithPath("workoutHistoryId")
+                            .optional()
+                            .description("운동 기록 id. WORKOUT_REQUEST_COMPLETE일 경우 null이 아님")
                     ),
 
                     responseFields(
@@ -536,13 +538,13 @@ class ChatControllerDocsTest : RestDocsSupport() {
         val now = LocalDateTime.now()
 
         val chatMessages: List<LastChatMessage> = listOf(
-            ChatNoticeMessage(
+            ChatNoticeMessageResponse(
                 chatMessageId = 101L,
                 type = ChatMessageType.NOTICE,
                 sentAt = LocalDateTime.now(),
                 isRead = false,
                 chatRoomId = 1L,
-                content = ChatMessageNoticeContent.WORKOUT_REQUEST_COMPLETE
+                content = ChatNoticeMessageType.WORKOUT_REQUEST_COMPLETE
             ),
         )
         val sliceChatMessages: Slice<LastChatMessage> = SliceImpl(chatMessages, PageRequest.of(0, 10), false)
@@ -585,7 +587,10 @@ class ChatControllerDocsTest : RestDocsSupport() {
                         fieldWithPath("data.content[].chatMessageId").description("메시지 ID"),
                         fieldWithPath("data.content[].type").description("NOTICE"),
                         fieldWithPath("data.content[].sentAt").description("보낸 시간"),
-                        fieldWithPath("data.content[].content").description("메시지 내용" + ChatMessageNoticeContent.allDescription())
+                        fieldWithPath("data.content[].content").description("메시지 내용" + ChatNoticeMessageType.allDescription()),
+                        fieldWithPath("data.content[].workoutHistoryId")
+                            .optional()
+                            .description("운동 기록 id. WORKOUT_REQUEST_COMPLETE일 경우 null이 아님")
                     ),
                 )
             )

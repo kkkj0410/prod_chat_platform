@@ -3,16 +3,16 @@ package kr.co.fitview.api.app.domain.chat.repository
 import com.querydsl.core.types.dsl.BooleanExpression
 import com.querydsl.jpa.impl.JPAQueryFactory
 import jakarta.persistence.EntityManager
-import kr.co.fitview.api.app.domain.chat.condition.ChatCondition
 import kr.co.fitview.api.app.domain.chat.condition.ChatMessageCondition
 import kr.co.fitview.api.app.domain.chat.dto.ChatMessageAndWorkoutRequest
 import kr.co.fitview.api.app.domain.chat.dto.response.ChatMessageContent
 import kr.co.fitview.api.app.domain.chat.dto.response.ChatMessageWorkoutRequest
-import kr.co.fitview.api.app.domain.chat.dto.response.ChatNoticeMessage
+import kr.co.fitview.api.app.domain.chat.dto.response.ChatNoticeMessageResponse
 import kr.co.fitview.api.app.domain.chat.dto.response.LastChatMessage
 import kr.co.fitview.api.app.domain.chat.entity.QChatMessage.chatMessage
+import kr.co.fitview.api.app.domain.chat.entity.QChatNoticeMessage.chatNoticeMessage
 import kr.co.fitview.api.app.domain.chat.entity.QChatRoom.chatRoom
-import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageNoticeContent
+import kr.co.fitview.api.app.domain.chat.entity.enums.ChatNoticeMessageType
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
 import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusForResponse
 import kr.co.fitview.api.app.domain.workout.entity.QWorkoutRequest.workoutRequest
@@ -62,7 +62,9 @@ class ChatMessageRepositoryImpl(
                     wr.status,               -- 8
                     wr.requested_at,         -- 9
                     wr.scheduled_at,         -- 10
-                    wr.location              -- 11
+                    wr.location,             -- 11
+                    cnm.type,                -- 12
+                    cnm.workout_history_id   -- 13
         FROM
             RankedMessages rm
         LEFT JOIN
@@ -75,6 +77,10 @@ class ChatMessageRepositoryImpl(
             workout_request wr
         ON
             wr.chat_message_id = rm.chat_message_id
+        LEFT JOIN
+            chat_notice_message cnm
+        ON
+            cnm.chat_message_id = rm.chat_message_id
         WHERE 
             rm.rn = 1
         AND
@@ -107,6 +113,9 @@ class ChatMessageRepositoryImpl(
             val requestedAt = (row[9] as? Timestamp)?.toLocalDateTime()
             val scheduledAt = (row[10] as? Timestamp)?.toLocalDateTime()
             val location = row[11] as String?
+
+            val chatMessageNoticeType = row[12] as String?
+            val workoutHistoryId = row[13] as Long?
 
 
             if (type == ChatMessageType.WORKOUT_REQUEST) {
@@ -142,13 +151,14 @@ class ChatMessageRepositoryImpl(
                     memberId = targetMemberId
                 )
             }else{
-                ChatNoticeMessage(
+                ChatNoticeMessageResponse(
                     chatMessageId = chatMessageId,
                     type = type,
                     sentAt = sentAt,
                     isRead = isRead,
                     chatRoomId = chatRoomId,
-                    content = ChatMessageNoticeContent.valueOf(content!!)
+                    content = ChatNoticeMessageType.valueOf(chatMessageNoticeType!!),
+                    workoutHistoryId = workoutHistoryId
                 )
             }
         }
@@ -174,15 +184,17 @@ class ChatMessageRepositoryImpl(
         }
 
         val result = queryFactory
-            .select(chatMessage, workoutRequest)
+            .select(chatMessage, workoutRequest, chatNoticeMessage)
             .from(chatMessage)
             .join(chatRoom)
             .on(
                 chatRoom.id.eq(chatMessage.chatRoom.id),
                 chatRoom.id.eq(chatRoomId)
             )
-            .leftJoin(workoutRequest).fetchJoin()
+            .leftJoin(workoutRequest)
             .on(workoutRequest.chatMessage.id.eq(chatMessage.id))
+            .leftJoin(chatNoticeMessage)
+            .on(chatNoticeMessage.chatMessage.id.eq(chatMessage.id))
             .where(ltLastMessageAt())
             .orderBy(orderSpecifier)
             .limit((condition.size!! + 1).toLong())
@@ -194,7 +206,8 @@ class ChatMessageRepositoryImpl(
         val mappedEntity = content.map { tuple ->
             ChatMessageAndWorkoutRequest(
                 chatMessage = tuple.get(chatMessage)!!,
-                workoutRequest = tuple.get(workoutRequest)
+                workoutRequest = tuple.get(workoutRequest),
+                chatNoticeMessage = tuple.get(chatNoticeMessage)
             )
         }
 
