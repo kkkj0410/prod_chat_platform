@@ -155,4 +155,5 @@ class WorkoutHistoryServiceTest @Autowired constructor(
         // then
         assertThat(existsWorkoutHistory).isEqualTo(true)
     }
+
 }

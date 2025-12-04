@@ -27,6 +27,14 @@ class WorkoutHistory(
     @Column(name = "workout_history_id", nullable = false)
     var id: Long? = null
 
+    fun getMemberOneId() : Long{
+        return this.memberOne!!.id!!
+    }
+
+    fun getMemberTwoId() : Long{
+        return this.memberTwo!!.id!!
+    }
+
     companion object {
         fun of(memberOne: Member, memberTwo: Member): WorkoutHistory {
             require(memberOne.id != null && memberTwo.id != null) {

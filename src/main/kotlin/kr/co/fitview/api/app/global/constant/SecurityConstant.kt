@@ -23,6 +23,7 @@ object SecurityConstant {
         "$API_BASE/workout-partner-requests/**",
         "$API_BASE/chats/**",
         "$API_BASE/fcm-tokens/**",
+        "$API_BASE/reviews/**",
     )
 
     val PERMIT_ALL_URIS: List<String> = listOf(
@@ -30,7 +31,6 @@ object SecurityConstant {
         "$API_BASE/docs/**",
         "$API_BASE/exception/**",
         "$API_BASE/oauth2/login",
-        "$API_BASE/reviews/tags/**",
         "$API_BASE/test/**",
         "$WS_STOMP_URI/**",
 

@@ -7,6 +7,7 @@ data class StompChatNoticeMessage(
     override val chatMessageId: Long,
     override val sentAt: LocalDateTime,
 
+    val workoutHistoryId : Long?,
     val content: ChatNoticeMessageType
 
 ) : StompChatMessage

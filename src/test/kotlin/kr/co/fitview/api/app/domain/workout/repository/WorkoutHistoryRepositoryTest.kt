@@ -127,4 +127,36 @@ class WorkoutHistoryRepositoryTest @Autowired constructor(
         assertThat(existsWorkoutHistory).isEqualTo(true)
 
     }
+
+    @DisplayName("운동 이력 조회")
+    @Test
+    fun findByIdAndDeletedAtIsNull() {
+        // given
+        val member1 = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val member2 = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(member1)
+        memberRepository.save(member2)
+
+        val workoutHistory = WorkoutHistory.of(
+            memberOne = member1,
+            memberTwo = member2
+        )
+        workoutHistoryRepository.save(workoutHistory)
+
+        // when
+        val findWorkoutHistory = workoutHistoryRepository.findByIdAndDeletedAtIsNull(workoutHistory.id!!)
+
+        // then
+        assertThat(findWorkoutHistory)
+            .extracting("memberOne", "memberTwo")
+            .contains(member1, member2)
+    }
 }
