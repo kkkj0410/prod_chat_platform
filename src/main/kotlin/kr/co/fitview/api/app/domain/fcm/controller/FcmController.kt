@@ -1,10 +1,7 @@
 package kr.co.fitview.api.app.domain.fcm.controller
 
 import jakarta.validation.Valid
-import kr.co.fitview.api.app.domain.chat.dto.request.ChatRoomCreateRequest
-import kr.co.fitview.api.app.domain.chat.dto.response.ChatRoomCreateResponse
 import kr.co.fitview.api.app.domain.fcm.dto.request.FcmTokenCreateRequest
-import kr.co.fitview.api.app.domain.fcm.entity.enums.FcmTokenPlatform
 import kr.co.fitview.api.app.domain.fcm.service.FcmService
 import kr.co.fitview.api.app.global.dto.ApiResponse
 import kr.co.fitview.api.app.global.util.SecurityUtil
@@ -29,7 +26,7 @@ class FcmController(
         request : FcmTokenCreateRequest
     ) : ResponseEntity<ApiResponse<*>> {
 
-        fcmService.addFcmToken(securityUtil.getMemberId(), request.toServiceRequest())
+        fcmService.saveFcmToken(securityUtil.getMemberId(), request.toServiceRequest())
 
         return ResponseEntity.ok(ApiResponse.success("ok"))
     }

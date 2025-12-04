@@ -102,4 +102,42 @@ class FcmTokenRepositoryTest @Autowired constructor(
             )
 
     }
+
+    @DisplayName("deviceId로 FCM 토큰을 찾는다.")
+    @Test
+    fun findByDeviceIdAndIsActiveTrueAndDeletedAtIsNull() {
+        // given
+        val member = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(member)
+
+        val fcmToken1 = FcmToken.of(
+            member = member,
+            deviceId = "deviceId1",
+            token = "token1",
+            platform = FcmTokenPlatform.ANDROID
+        )
+        val fcmToken2 = FcmToken.of(
+            member = member,
+            deviceId = "deviceId2",
+            token = "token2",
+            platform = FcmTokenPlatform.IOS
+        )
+        fcmTokenRepository.save(fcmToken1)
+        fcmTokenRepository.save(fcmToken2)
+
+        // when
+        val findFcmTokens = fcmTokenRepository.findByDeviceIdAndIsActiveTrueAndDeletedAtIsNull(fcmToken1.deviceId!!)
+
+        // then
+        assertThat(findFcmTokens)
+            .extracting("member", "deviceId", "token", "platform")
+            .contains(
+                member, "deviceId1", "token1", FcmTokenPlatform.ANDROID
+            )
+
+    }
 }

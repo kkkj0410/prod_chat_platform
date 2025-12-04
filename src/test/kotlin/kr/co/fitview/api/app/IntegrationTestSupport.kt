@@ -1,5 +1,6 @@
 package kr.co.fitview.api.app
 
+import kr.co.fitview.api.app.domain.fcm.service.FcmPublisher
 import kr.co.fitview.api.app.domain.notification.service.StompPublisher
 import kr.co.fitview.api.app.domain.oauth2.service.AppleAuthService
 import kr.co.fitview.api.app.global.config.TestJwtConfig
@@ -29,5 +30,8 @@ abstract class IntegrationTestSupport {
 
     @MockitoBean
     lateinit var redisClient: RedisClient
+
+    @MockitoBean
+    lateinit var fcmPublisher: FcmPublisher
 
 }

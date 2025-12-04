@@ -7,7 +7,6 @@ import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.fcm.entity.enums.FcmTokenPlatform
 import kr.co.fitview.api.app.global.entity.BaseEntity
 import org.hibernate.annotations.ColumnDefault
-import java.time.Instant
 
 @Entity
 @Table(name = "fcm_token")
@@ -60,6 +59,11 @@ class FcmToken(
                 platform = platform
             )
         }
+    }
+
+    fun updateToken(token : String) : FcmToken{
+        this.token = token
+        return this
     }
 
 }

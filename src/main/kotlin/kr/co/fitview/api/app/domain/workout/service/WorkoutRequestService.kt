@@ -5,6 +5,7 @@ import kr.co.fitview.api.app.domain.chat.dto.request.WorkoutRequestUpdateRequest
 import kr.co.fitview.api.app.domain.chat.entity.ChatMessage
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageNoticeContent
 import kr.co.fitview.api.app.domain.chat.service.ChatNoticeService
+import kr.co.fitview.api.app.domain.fcm.service.FcmService
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.workout.dto.response.LastWorkoutRequestMessage
 import kr.co.fitview.api.app.domain.workout.dto.response.WorkoutRequestUpdateResponse
@@ -26,6 +27,7 @@ class WorkoutRequestService(
     private val workoutRequestRepository: WorkoutRequestRepository,
     private val workoutHistoryService : WorkoutHistoryService,
     private val chatNoticeService : ChatNoticeService,
+    private val fcmService : FcmService,
     private val time: Time
 ) {
 
@@ -51,7 +53,9 @@ class WorkoutRequestService(
             requestedAt = time.nowLocalDateTime
         )
 
-        return workoutRequestRepository.save(workoutRequest)
+        val savedWorkoutRequest = workoutRequestRepository.save(workoutRequest)
+
+        return savedWorkoutRequest
     }
 
     @Transactional
