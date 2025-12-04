@@ -6,11 +6,11 @@ import kr.co.fitview.api.app.domain.chat.dto.request.WorkoutRequestUpdateRequest
 import kr.co.fitview.api.app.domain.chat.entity.ChatMessage
 import kr.co.fitview.api.app.domain.chat.entity.ChatParticipant
 import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
-import kr.co.fitview.api.app.domain.chat.entity.QChatMessage.chatMessage
-import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageNoticeContent
+import kr.co.fitview.api.app.domain.chat.entity.enums.ChatNoticeMessageType
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatRoomType
 import kr.co.fitview.api.app.domain.chat.repository.ChatMessageRepository
+import kr.co.fitview.api.app.domain.chat.repository.ChatNoticeMessageRepository
 import kr.co.fitview.api.app.domain.chat.repository.ChatParticipantRepository
 import kr.co.fitview.api.app.domain.chat.repository.ChatRoomRepository
 import kr.co.fitview.api.app.domain.member.entity.Member
@@ -24,7 +24,6 @@ import kr.co.fitview.api.app.domain.workout.repository.WorkoutRequestRepository
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.chat.ChatErrorCode
-import kr.co.fitview.api.app.global.exception.error.member.MemberErrorCode
 import kr.co.fitview.api.app.global.exception.error.workout_request.WorkoutRequestErrorCode
 import kr.co.fitview.api.app.global.time.Time
 import kr.co.fitview.api.app.global.util.TestDataFactory
@@ -44,6 +43,7 @@ class WorkoutRequestServiceTest @Autowired constructor(
     val chatRoomRepository : ChatRoomRepository,
     val chatParticipantRepository : ChatParticipantRepository,
     val chatMessageRepository : ChatMessageRepository,
+    val chatNoticeMessageRepository : ChatNoticeMessageRepository,
     val oAuth2Service : OAuth2Service,
     val time : Time
 ) : IntegrationTestSupport() {
@@ -449,13 +449,6 @@ class WorkoutRequestServiceTest @Autowired constructor(
                 me.id!!,
                 other.id!!
             )
-
-        val findNoticeMessages = chatMessageRepository.findByType(ChatMessageType.NOTICE)
-
-        assertThat(findNoticeMessages).hasSize(1)
-        assertThat(findNoticeMessages[0])
-            .extracting("type", "content")
-            .contains(ChatMessageType.NOTICE, ChatMessageNoticeContent.WORKOUT_REQUEST_ACCEPT.name)
     }
 
     @DisplayName("운동 요청의 상태를 완료로 바꾸면 운동 이력에 기록된다.")
@@ -985,18 +978,16 @@ class WorkoutRequestServiceTest @Autowired constructor(
         )
 
         // when
-        val response = workoutRequestService.modifyWorkoutRequest(other.id!!, request)
+        workoutRequestService.modifyWorkoutRequest(other.id!!, request)
 
         // then
-        val findNoticeMessages = chatMessageRepository.findByType(ChatMessageType.NOTICE)
+        val findNoticeMessages = chatNoticeMessageRepository.findAll()
 
         assertThat(findNoticeMessages).hasSize(1)
-        assertThat(findNoticeMessages[0])
-            .extracting("type", "content")
-            .contains(ChatMessageType.NOTICE, ChatMessageNoticeContent.WORKOUT_REQUEST_ACCEPT.name)
+        assertThat(findNoticeMessages[0].type).isEqualTo(ChatNoticeMessageType.WORKOUT_REQUEST_ACCEPT)
     }
 
-    @DisplayName("운동 요청 수락 시, 완료 안내 문구 생성")
+    @DisplayName("운동 완료 시, 후기 안내 문구 생성")
     @Test
     fun modifyWorkoutRequestNoticeComplete() {
         // given
@@ -1054,15 +1045,14 @@ class WorkoutRequestServiceTest @Autowired constructor(
         )
 
         // when
-        val response = workoutRequestService.modifyWorkoutRequest(other.id!!, request)
+        workoutRequestService.modifyWorkoutRequest(other.id!!, request)
 
         // then
-        val findNoticeMessages = chatMessageRepository.findByType(ChatMessageType.NOTICE)
+        val findNoticeMessages = chatNoticeMessageRepository.findAll()
 
         assertThat(findNoticeMessages).hasSize(1)
-        assertThat(findNoticeMessages[0])
-            .extracting("type", "content")
-            .contains(ChatMessageType.NOTICE, ChatMessageNoticeContent.WORKOUT_REQUEST_COMPLETE.name)
+        assertThat(findNoticeMessages[0].type).isEqualTo(ChatNoticeMessageType.WORKOUT_REQUEST_COMPLETE)
+        assertThat(findNoticeMessages[0].workoutHistory).isNotNull()
     }
 
     @DisplayName("운동 요청 거절 시, 취소 안내 문구 생성")
@@ -1125,12 +1115,10 @@ class WorkoutRequestServiceTest @Autowired constructor(
         workoutRequestService.modifyWorkoutRequest(other.id!!, request)
 
         // then
-        val findNoticeMessages = chatMessageRepository.findByType(ChatMessageType.NOTICE)
+        val findNoticeMessages = chatNoticeMessageRepository.findAll()
 
         assertThat(findNoticeMessages).hasSize(1)
-        assertThat(findNoticeMessages[0])
-            .extracting("type", "content")
-            .contains(ChatMessageType.NOTICE, ChatMessageNoticeContent.WORKOUT_REQUEST_REJECT.name)
+        assertThat(findNoticeMessages[0].type).isEqualTo(ChatNoticeMessageType.WORKOUT_REQUEST_REJECT)
     }
 
     @DisplayName("운동 요청 취소 시, 취소 안내 문구 생성")
@@ -1193,12 +1181,10 @@ class WorkoutRequestServiceTest @Autowired constructor(
         workoutRequestService.modifyWorkoutRequest(me.id!!, request)
 
         // then
-        val findNoticeMessages = chatMessageRepository.findByType(ChatMessageType.NOTICE)
+        val findNoticeMessages = chatNoticeMessageRepository.findAll()
 
         assertThat(findNoticeMessages).hasSize(1)
-        assertThat(findNoticeMessages[0])
-            .extracting("type", "content")
-            .contains(ChatMessageType.NOTICE, ChatMessageNoticeContent.WORKOUT_REQUEST_CANCEL.name)
+        assertThat(findNoticeMessages[0].type).isEqualTo(ChatNoticeMessageType.WORKOUT_REQUEST_CANCEL)
     }
 
 

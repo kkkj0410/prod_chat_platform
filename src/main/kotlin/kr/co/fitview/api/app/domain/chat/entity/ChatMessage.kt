@@ -3,13 +3,12 @@ package kr.co.fitview.api.app.domain.chat.entity
 import jakarta.persistence.*
 import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
-import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageNoticeContent
+import kr.co.fitview.api.app.domain.chat.entity.enums.ChatNoticeMessageType
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequest
 import kr.co.fitview.api.app.global.entity.BaseEntity
 import org.hibernate.annotations.ColumnDefault
-import java.time.Instant
 import java.time.LocalDateTime
 
 @Entity
@@ -80,11 +79,10 @@ class ChatMessage(
             )
         }
 
-        fun ofNotice(chatRoom : ChatRoom, content : ChatMessageNoticeContent, sentAt : LocalDateTime) : ChatMessage{
+        fun ofNotice(chatRoom : ChatRoom, sentAt : LocalDateTime) : ChatMessage{
             return ChatMessage(
                 chatRoom = chatRoom,
                 type = ChatMessageType.NOTICE,
-                content = content.name,
                 sentAt = sentAt
             )
         }

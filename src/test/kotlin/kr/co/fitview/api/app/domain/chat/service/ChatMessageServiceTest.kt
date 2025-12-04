@@ -2,26 +2,18 @@ package kr.co.fitview.api.app.domain.chat.service
 
 import jakarta.persistence.EntityManager
 import kr.co.fitview.api.app.IntegrationTestSupport
-import kr.co.fitview.api.app.domain.chat.condition.ChatCondition
 import kr.co.fitview.api.app.domain.chat.condition.ChatMessageCondition
 import kr.co.fitview.api.app.domain.chat.dto.request.ChatTextMessageServiceRequest
 import kr.co.fitview.api.app.domain.chat.dto.request.ChatWorkoutRequestMessageServiceRequest
-import kr.co.fitview.api.app.domain.chat.entity.ChatMessage
-import kr.co.fitview.api.app.domain.chat.entity.ChatParticipant
-import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
-import kr.co.fitview.api.app.domain.chat.entity.MessageReadStatus
-import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageNoticeContent
+import kr.co.fitview.api.app.domain.chat.entity.*
+import kr.co.fitview.api.app.domain.chat.entity.enums.ChatNoticeMessageType
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatRoomType
-import kr.co.fitview.api.app.domain.chat.repository.ChatMessageRepository
-import kr.co.fitview.api.app.domain.chat.repository.ChatParticipantRepository
-import kr.co.fitview.api.app.domain.chat.repository.ChatRoomRepository
-import kr.co.fitview.api.app.domain.chat.repository.MessageReadStatusRepository
+import kr.co.fitview.api.app.domain.chat.repository.*
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
 import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusForResponse
-import kr.co.fitview.api.app.domain.workout.entity.QWorkoutRequest.workoutRequest
 import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequest
 import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
 import kr.co.fitview.api.app.domain.workout.repository.WorkoutRequestRepository
@@ -45,6 +37,7 @@ class ChatMessageServiceTest @Autowired constructor(
     val messageReadStatusRepository: MessageReadStatusRepository,
     val oAuth2Service: OAuth2Service,
     val memberRepository: MemberRepository,
+    val chatNoticeMessageRepository : ChatNoticeMessageRepository,
     val time: Time,
     val em : EntityManager
 )
@@ -396,10 +389,14 @@ class ChatMessageServiceTest @Autowired constructor(
 
         val chatMessage1 = ChatMessage.ofNotice(
             chatRoom = chatRoom,
-            content = ChatMessageNoticeContent.WORKOUT_REQUEST_COMPLETE,
             sentAt = time.nowLocalDateTime
         )
+        val chatNoticeMessage1 = ChatNoticeMessage(
+            chatMessage = chatMessage1,
+            type = ChatNoticeMessageType.WORKOUT_REQUEST_COMPLETE
+        )
         chatMessageRepository.save(chatMessage1)
+        chatNoticeMessageRepository.save(chatNoticeMessage1)
 
 
         val condition = ChatMessageCondition(
@@ -414,7 +411,7 @@ class ChatMessageServiceTest @Autowired constructor(
         assertThat(response).hasSize(1)
         assertThat(response[0])
             .extracting("chatMessageId", "type", "sentAt", "content")
-            .contains(chatMessage1.id, ChatMessageType.NOTICE, chatMessage1.sentAt, ChatMessageNoticeContent.WORKOUT_REQUEST_COMPLETE)
+            .contains(chatMessage1.id, ChatMessageType.NOTICE, chatMessage1.sentAt, ChatNoticeMessageType.WORKOUT_REQUEST_COMPLETE)
     }
 
 

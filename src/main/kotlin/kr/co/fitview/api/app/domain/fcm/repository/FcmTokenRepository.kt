@@ -6,4 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository
 interface FcmTokenRepository : JpaRepository<FcmToken, Long> {
 
     fun findAllByMemberIdAndIsActiveTrueAndDeletedAtIsNull(memberId: Long): List<FcmToken>
+
+    fun findByDeviceIdAndIsActiveTrueAndDeletedAtIsNull(deviceId: String) : FcmToken?
 }

@@ -3,12 +3,14 @@ package kr.co.fitview.api.app.domain.workout.service
 import kr.co.fitview.api.app.domain.chat.dto.request.ChatWorkoutRequestMessageServiceRequest
 import kr.co.fitview.api.app.domain.chat.dto.request.WorkoutRequestUpdateRequest
 import kr.co.fitview.api.app.domain.chat.entity.ChatMessage
-import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageNoticeContent
-import kr.co.fitview.api.app.domain.chat.service.ChatNoticeService
+import kr.co.fitview.api.app.domain.chat.entity.enums.ChatNoticeMessageType
+import kr.co.fitview.api.app.domain.chat.service.ChatNoticeMessageService
+import kr.co.fitview.api.app.domain.fcm.service.FcmService
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.workout.dto.response.LastWorkoutRequestMessage
 import kr.co.fitview.api.app.domain.workout.dto.response.WorkoutRequestUpdateResponse
 import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusForRequest
+import kr.co.fitview.api.app.domain.workout.entity.WorkoutHistory
 import kr.co.fitview.api.app.domain.workout.repository.WorkoutRequestRepository
 import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequest
 import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
@@ -25,7 +27,8 @@ import org.springframework.transaction.annotation.Transactional
 class WorkoutRequestService(
     private val workoutRequestRepository: WorkoutRequestRepository,
     private val workoutHistoryService : WorkoutHistoryService,
-    private val chatNoticeService : ChatNoticeService,
+    private val chatNoticeMessageService : ChatNoticeMessageService,
+    private val fcmService : FcmService,
     private val time: Time
 ) {
 
@@ -51,7 +54,9 @@ class WorkoutRequestService(
             requestedAt = time.nowLocalDateTime
         )
 
-        return workoutRequestRepository.save(workoutRequest)
+        val savedWorkoutRequest = workoutRequestRepository.save(workoutRequest)
+
+        return savedWorkoutRequest
     }
 
     @Transactional
@@ -79,11 +84,12 @@ class WorkoutRequestService(
 
         findWorkoutRequest.updateStatus(request.status.toWorkoutRequestStatus())
 
+        var workoutHistory : WorkoutHistory? = null
         if(isSuccessComplete(findWorkoutRequest)){
-            workoutHistoryService.addWorkoutHistory(findWorkoutRequest.fromMember!!, findWorkoutRequest.toMember!!)
+            workoutHistory = workoutHistoryService.addWorkoutHistory(findWorkoutRequest.fromMember!!, findWorkoutRequest.toMember!!)
         }
 
-        addChatNoticeMessage(memberId, request)
+        addChatNoticeMessage(memberId, request, workoutHistory)
 
         val response = WorkoutRequestUpdateResponse(
             chatRoomId = findWorkoutRequest.getChatRoomId()!!,
@@ -174,36 +180,37 @@ class WorkoutRequestService(
         findWorkoutRequest: WorkoutRequest
     ) = memberId == findWorkoutRequest.getFromMemberId()
 
-    private fun addChatNoticeMessage(memberId : Long, request: WorkoutRequestUpdateRequest) {
+    private fun addChatNoticeMessage(memberId : Long, request: WorkoutRequestUpdateRequest, workoutHistory : WorkoutHistory?) {
         if (isAccept(request)) {
-            chatNoticeService.addChatNoticeFrom(
+            chatNoticeMessageService.addChatNoticeFrom(
                 memberId,
                 request.workoutRequestId,
-                ChatMessageNoticeContent.WORKOUT_REQUEST_ACCEPT
+                ChatNoticeMessageType.WORKOUT_REQUEST_ACCEPT
             )
         }
 
         if (isComplete(request)) {
-            chatNoticeService.addChatNoticeFrom(
+            chatNoticeMessageService.addChatNoticeFrom(
                 memberId,
                 request.workoutRequestId,
-                ChatMessageNoticeContent.WORKOUT_REQUEST_COMPLETE
+                ChatNoticeMessageType.WORKOUT_REQUEST_COMPLETE,
+                workoutHistory!!
             )
         }
 
         if (isReject(request)) {
-            chatNoticeService.addChatNoticeFrom(
+            chatNoticeMessageService.addChatNoticeFrom(
                 memberId,
                 request.workoutRequestId,
-                ChatMessageNoticeContent.WORKOUT_REQUEST_REJECT
+                ChatNoticeMessageType.WORKOUT_REQUEST_REJECT
             )
         }
 
         if (isCancel(request)) {
-            chatNoticeService.addChatNoticeFrom(
+            chatNoticeMessageService.addChatNoticeFrom(
                 memberId,
                 request.workoutRequestId,
-                ChatMessageNoticeContent.WORKOUT_REQUEST_CANCEL
+                ChatNoticeMessageType.WORKOUT_REQUEST_CANCEL
             )
         }
     }
