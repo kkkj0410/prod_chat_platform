@@ -27,8 +27,13 @@ enum class ReviewErrorCode(
     "003",
     "Review already exists",
     "이미 해당 운동 이력에 대한 리뷰를 작성했기 때문에 더 이상 작성할 수 없다"
-    );
+    ),
 
+    WORKOUT_HISTORY_NOT_FOUND(
+        "004",
+        "Workout history not found",
+        "해당 운동 이력이 없어서 리뷰를 작성할 수 없다"
+    );
     ;
 
     override val prefix: String

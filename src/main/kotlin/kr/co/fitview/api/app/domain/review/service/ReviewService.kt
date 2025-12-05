@@ -37,7 +37,7 @@ class ReviewService(
         val findMember = memberQueryService.findMemberReferenceFrom(memberId)
 
         val findWorkoutHistory = workoutHistoryQueryService.findWorkoutHistoryFrom(request.workoutHistoryId)
-            ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
+            ?: throw GlobalException(ReviewErrorCode.WORKOUT_HISTORY_NOT_FOUND)
 
         val (fromMember, toMember) = determineFromToMember(findMember, findWorkoutHistory)
 

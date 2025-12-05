@@ -19,3 +19,23 @@ include::{snippets}/REVIEW_002/http-request.adoc[]
 include::{snippets}/REVIEW_002/http-response.adoc[]
 include::{snippets}/REVIEW_002/response-fields.adoc[]
 
+[[REVIEW_003]]
+=== REVIEW_003
+
+==== HTTP Request
+include::{snippets}/REVIEW_003/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/REVIEW_003/http-response.adoc[]
+include::{snippets}/REVIEW_003/response-fields.adoc[]
+
+[[REVIEW_004]]
+=== REVIEW_004
+
+==== HTTP Request
+include::{snippets}/REVIEW_004/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/REVIEW_004/http-response.adoc[]
+include::{snippets}/REVIEW_004/response-fields.adoc[]
+

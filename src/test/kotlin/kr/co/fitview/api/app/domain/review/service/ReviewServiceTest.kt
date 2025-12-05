@@ -15,6 +15,7 @@ import kr.co.fitview.api.app.domain.review.entity.ReviewTag
 import kr.co.fitview.api.app.domain.review.entity.enums.ReviewType
 import kr.co.fitview.api.app.domain.review.repository.ReviewCategoryRepository
 import kr.co.fitview.api.app.domain.review.repository.ReviewTagRepository
+import kr.co.fitview.api.app.domain.workout.entity.QWorkoutHistory.workoutHistory
 import kr.co.fitview.api.app.domain.workout.entity.QWorkoutRequest.workoutRequest
 import kr.co.fitview.api.app.domain.workout.entity.WorkoutHistory
 import kr.co.fitview.api.app.domain.workout.repository.WorkoutHistoryRepository
@@ -508,6 +509,71 @@ class ReviewServiceTest @Autowired constructor(
                 val globalEx = ex as GlobalException
                 assertThat(globalEx.errorCode)
                     .isEqualTo(ReviewErrorCode.REVIEW_ALREADY_EXISTS)
+            })
+
+    }
+
+    @DisplayName("리뷰 작성 시, 운동 이력이 없으면 리뷰 작성이 불가하다.")
+    @Test
+    fun saveReviewNotWorkoutHistoryId() {
+        // given
+        val me = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        val other = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(me)
+        memberRepository.save(other)
+
+        val chatRoom = ChatRoom(ChatRoomType.PRIVATE)
+        chatRoomRepository.save(chatRoom)
+
+        val reviewCategory = ReviewCategory(
+            displayText = "displayText",
+            seq = 100
+        )
+        reviewCategoryRepository.save(reviewCategory)
+
+        val reviewTag1 = ReviewTag(
+            reviewCategory = reviewCategory,
+            displayText = "displayText1",
+            seq = 100
+        )
+        val reviewTag2 = ReviewTag(
+            reviewCategory = reviewCategory,
+            displayText = "displayText2",
+            seq = 200
+        )
+        reviewTagRepository.save(reviewTag1)
+        reviewTagRepository.save(reviewTag2)
+
+        val reviewTagIds = listOf(reviewTag1.id!!, reviewTag2.id!!)
+
+        val request = ReviewCreateServiceRequest(
+            workoutHistoryId = 123,
+            type = ReviewType.GOOD,
+            reviewTagIds = reviewTagIds,
+            content = "content"
+        )
+
+
+        // when & then
+        assertThatThrownBy {
+            reviewService.saveReview(
+                memberId = me.id!!,
+                request = request
+            )
+        }
+            .isInstanceOf(GlobalException::class.java)
+            .satisfies(ThrowingConsumer { ex ->
+                val globalEx = ex as GlobalException
+                assertThat(globalEx.errorCode)
+                    .isEqualTo(ReviewErrorCode.WORKOUT_HISTORY_NOT_FOUND)
             })
 
     }
