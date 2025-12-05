@@ -17,4 +17,8 @@ class StompPublisher(
     fun sendToUser(event: StompSendEvent) {
         messageTemplate.convertAndSendToUser(event.memberId.toString(), event.destination, event.payload)
     }
+
+    fun sendToUser(memberId: Long, destination: String, payload: WsResponse<Any>) {
+        messageTemplate.convertAndSendToUser(memberId.toString(), destination, payload)
+    }
 }

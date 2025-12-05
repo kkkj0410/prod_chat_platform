@@ -1,6 +1,9 @@
 package kr.co.fitview.api.app.domain.workout.service
 
 import kr.co.fitview.api.app.IntegrationTestSupport
+import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
+import kr.co.fitview.api.app.domain.chat.entity.enums.ChatRoomType
+import kr.co.fitview.api.app.domain.chat.repository.ChatRoomRepository
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.domain.workout.entity.WorkoutHistory
@@ -14,7 +17,8 @@ import org.springframework.beans.factory.annotation.Autowired
 class WorkoutHistoryServiceTest @Autowired constructor(
     val workoutHistoryRepository : WorkoutHistoryRepository,
     val workoutHistoryService: WorkoutHistoryService,
-    val memberRepository : MemberRepository
+    val memberRepository : MemberRepository,
+    val chatRoomRepository : ChatRoomRepository
 ) : IntegrationTestSupport(){
 
     @DisplayName("성공한 운동 요청 완료를 기록한다.")
@@ -34,8 +38,13 @@ class WorkoutHistoryServiceTest @Autowired constructor(
         memberRepository.save(me)
         memberRepository.save(other)
 
+        val chatRoom = ChatRoom(
+            type = ChatRoomType.PRIVATE
+        )
+        chatRoomRepository.save(chatRoom)
+
         // when
-        val savedWorkoutHistory = workoutHistoryService.addWorkoutHistory(me, other)
+        val savedWorkoutHistory = workoutHistoryService.addWorkoutHistory(chatRoom, me, other)
 
         // then
         assertThat(savedWorkoutHistory.id).isNotNull()
@@ -61,8 +70,13 @@ class WorkoutHistoryServiceTest @Autowired constructor(
         memberRepository.save(member1)
         memberRepository.save(member2)
 
+        val chatRoom = ChatRoom(
+            type = ChatRoomType.PRIVATE
+        )
+        chatRoomRepository.save(chatRoom)
+
         // when
-        val savedWorkoutHistory = workoutHistoryService.addWorkoutHistory(member2, member1)
+        val savedWorkoutHistory = workoutHistoryService.addWorkoutHistory(chatRoom, member2, member1)
 
         // then
         assertThat(savedWorkoutHistory.id).isNotNull()
@@ -88,7 +102,13 @@ class WorkoutHistoryServiceTest @Autowired constructor(
         memberRepository.save(member1)
         memberRepository.save(member2)
 
+        val chatRoom = ChatRoom(
+            type = ChatRoomType.PRIVATE
+        )
+        chatRoomRepository.save(chatRoom)
+
         val workoutHistory = WorkoutHistory.of(
+            chatRoom = chatRoom,
             memberOne = member1,
             memberTwo = member2
         )
@@ -143,7 +163,13 @@ class WorkoutHistoryServiceTest @Autowired constructor(
         memberRepository.save(member1)
         memberRepository.save(member2)
 
+        val chatRoom = ChatRoom(
+            type = ChatRoomType.PRIVATE
+        )
+        chatRoomRepository.save(chatRoom)
+
         val workoutHistory = WorkoutHistory.of(
+            chatRoom = chatRoom,
             memberOne = member1,
             memberTwo = member2
         )

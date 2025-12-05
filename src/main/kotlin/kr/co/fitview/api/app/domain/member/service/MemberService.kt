@@ -238,7 +238,6 @@ class MemberService(
         return randomCustom.shuffled(seed, findMemberByRecommendations) + randomCustom.shuffled(seed, findMemberInSeoul)
     }
 
-
     private fun validateDuplicatedEmail(member: Member) {
         findMemberFromEmail(member.email!!)?.let {
             throw GlobalException(MemberErrorCode.MEMBER_DUPLICATE_EMAIL)

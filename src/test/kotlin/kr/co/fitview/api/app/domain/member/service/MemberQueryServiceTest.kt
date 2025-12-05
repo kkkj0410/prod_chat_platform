@@ -15,8 +15,7 @@ import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.member.MemberErrorCode
 import kr.co.fitview.api.app.global.exception.error.workout_request.WorkoutRequestErrorCode
 import kr.co.fitview.api.app.global.util.TestDataFactory
-import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.assertj.core.api.Assertions.*
 import org.assertj.core.api.ThrowingConsumer
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -167,5 +166,87 @@ class MemberQueryServiceTest @Autowired constructor(
         assertThat(response)
             .extracting("profileImageUrl", "nickname")
             .contains(request.profileImageUrl, request.nickname)
+    }
+
+    @DisplayName("채팅방 회원 프로필 조회")
+    @Test
+    fun findMemberProfileFrom() {
+        // given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest1, me.id!!)
+
+        val other = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(other)
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "updateNick",
+            profileImageUrl = "updateProfile"
+        )
+        oAuth2Service.signup(signupRequest2, other.id!!)
+
+        val other2 = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(other2)
+        val signupRequest3 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "updateNick",
+            profileImageUrl = "updateProfile"
+        )
+        oAuth2Service.signup(signupRequest3, other2.id!!)
+
+
+        val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+
+        val chatParticipant1 = ChatParticipant(
+            chatRoom,
+            me
+        )
+        val chatParticipant2 = ChatParticipant(
+            chatRoom,
+            other
+        )
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+
+        val chatRoom2 = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+
+        val chatParticipant3 = ChatParticipant(
+            chatRoom2,
+            me
+        )
+        val chatParticipant4 = ChatParticipant(
+            chatRoom2,
+            other2
+        )
+        chatParticipantRepository.save(chatParticipant3)
+        chatParticipantRepository.save(chatParticipant4)
+
+        val chatRoomIds = listOf(chatRoom.id!!, chatRoom2.id!!)
+
+        // when
+        val findMembers = memberQueryService.findMemberProfileFrom(chatRoomIds)
+
+        // then
+        assertThat(findMembers).hasSize(4)
+        assertThat(findMembers)
+            .extracting("chatRoomId", "memberId", "nickname", "profileImageUrl")
+            .containsExactlyInAnyOrder(
+                tuple(chatRoom.id!!, me.id!!, signupRequest1.nickname, signupRequest1.profileImageUrl),
+                tuple(chatRoom.id!!, other.id!!, signupRequest2.nickname, signupRequest2.profileImageUrl),
+                tuple(chatRoom2.id!!, me.id!!, signupRequest1.nickname, signupRequest1.profileImageUrl),
+                tuple(chatRoom2.id!!, other2.id!!, signupRequest3.nickname, signupRequest3.profileImageUrl),
+            )
     }
 }

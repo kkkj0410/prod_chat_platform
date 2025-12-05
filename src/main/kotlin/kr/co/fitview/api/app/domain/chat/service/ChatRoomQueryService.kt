@@ -14,4 +14,12 @@ class ChatRoomQueryService(
     fun findChatRoomFrom(workoutRequestId : Long) : ChatRoom?{
         return chatRoomRepository.findChatRoomByWorkoutRequestId(workoutRequestId)
     }
+
+    fun findAllChatRoomReferenceFrom(chatRoomIds: List<Long>): List<ChatRoom> {
+        return chatRoomIds.map { id ->
+            chatRoomRepository.getReferenceById(id)
+        }
+    }
+
+
 }

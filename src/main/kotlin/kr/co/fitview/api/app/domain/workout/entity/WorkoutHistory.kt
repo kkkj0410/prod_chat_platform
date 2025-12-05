@@ -2,6 +2,7 @@ package kr.co.fitview.api.app.domain.workout.entity
 
 import jakarta.persistence.*
 import jakarta.validation.constraints.NotNull
+import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartner
 import kr.co.fitview.api.app.global.entity.BaseEntity
@@ -9,6 +10,10 @@ import kr.co.fitview.api.app.global.entity.BaseEntity
 @Entity
 @Table(name = "workout_history")
 class WorkoutHistory(
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "chat_room_id", nullable = false)
+    var chatRoom: ChatRoom? = null,
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -27,6 +32,7 @@ class WorkoutHistory(
     @Column(name = "workout_history_id", nullable = false)
     var id: Long? = null
 
+
     fun getMemberOneId() : Long{
         return this.memberOne!!.id!!
     }
@@ -36,14 +42,14 @@ class WorkoutHistory(
     }
 
     companion object {
-        fun of(memberOne: Member, memberTwo: Member): WorkoutHistory {
+        fun of(chatRoom : ChatRoom, memberOne: Member, memberTwo: Member): WorkoutHistory {
             require(memberOne.id != null && memberTwo.id != null) {
                 "WorkoutPartner.of() requires both members to have non-null IDs"
             }
             return if (memberOne.id!! < memberTwo.id!!) {
-                WorkoutHistory(memberOne = memberOne, memberTwo = memberTwo)
+                WorkoutHistory(chatRoom = chatRoom, memberOne = memberOne, memberTwo = memberTwo)
             } else {
-                WorkoutHistory(memberOne = memberTwo, memberTwo = memberOne)
+                WorkoutHistory(chatRoom = chatRoom, memberOne = memberTwo, memberTwo = memberOne)
             }
         }
     }

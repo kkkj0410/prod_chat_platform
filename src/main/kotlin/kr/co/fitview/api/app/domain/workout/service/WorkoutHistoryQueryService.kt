@@ -1,5 +1,6 @@
 package kr.co.fitview.api.app.domain.workout.service
 
+import kr.co.fitview.api.app.domain.workout.dto.response.WorkoutHistoryChatRoomResponse
 import kr.co.fitview.api.app.domain.workout.entity.WorkoutHistory
 import kr.co.fitview.api.app.domain.workout.repository.WorkoutHistoryRepository
 import org.springframework.stereotype.Service
@@ -14,6 +15,10 @@ class WorkoutHistoryQueryService(
 
     fun findWorkoutHistoryFrom(workoutHistoryId : Long) : WorkoutHistory?{
         return workoutHistoryRepository.findByIdAndDeletedAtIsNull(workoutHistoryId)
+    }
+
+    fun findAllWorkoutHistoryFrom(chatRoomIds : List<Long>) : List<WorkoutHistoryChatRoomResponse>{
+        return workoutHistoryRepository.findWorkoutHistoryBy(chatRoomIds)
     }
 
 }

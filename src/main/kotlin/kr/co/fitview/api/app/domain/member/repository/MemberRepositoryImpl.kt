@@ -9,6 +9,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory
 import jakarta.persistence.EntityManager
 import kr.co.fitview.api.app.domain.address.entity.QAddress.address
 import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
+import kr.co.fitview.api.app.domain.member.dto.response.OtherMemberProfileResponse
 import kr.co.fitview.api.app.domain.chat.entity.QChatParticipant
 import kr.co.fitview.api.app.domain.chat.entity.QChatParticipant.chatParticipant
 import kr.co.fitview.api.app.domain.chat.entity.QChatRoom.chatRoom
@@ -563,6 +564,30 @@ class MemberRepositoryImpl(
             .fetchOne()
 
         return findMembers?.toResponse()
+    }
+
+    override fun findChatRoomMemberProfile(chatRoomIds : List<Long>) : List<ChatRoomMemberProfile>{
+
+        return queryFactory
+            .select(
+                Projections.constructor(
+                    ChatRoomMemberProfile::class.java,
+                    chatRoom.id,
+                    member.id,
+                    member.nickname,
+                    image.url
+                )
+            )
+            .from(chatRoom)
+            .join(chatRoom.chatParticipants, chatParticipant)
+            .join(chatParticipant.member, member)
+            .join(member.mutableMemberImages, memberImage)
+            .join(memberImage.image, image)
+            .where(
+                chatRoom.id.`in`(chatRoomIds),
+                memberImage.type.eq(MemberImageType.PROFILE),
+            )
+            .fetch()
     }
 
 }

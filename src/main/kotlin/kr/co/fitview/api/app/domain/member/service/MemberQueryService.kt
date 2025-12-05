@@ -1,9 +1,6 @@
 package kr.co.fitview.api.app.domain.member.service
 
-import kr.co.fitview.api.app.domain.member.dto.response.ChatMemberProfileResponse
-import kr.co.fitview.api.app.domain.member.dto.response.MemberChatProfileResponse
-import kr.co.fitview.api.app.domain.member.dto.response.MemberChatRoomProfile
-import kr.co.fitview.api.app.domain.member.dto.response.MemberWorkoutPartnerProfileResponse
+import kr.co.fitview.api.app.domain.member.dto.response.*
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.global.exception.GlobalException
@@ -41,4 +38,9 @@ class MemberQueryService(
     fun findMemberReferenceFrom(memberId : Long)  : Member {
         return memberRepository.getReferenceById(memberId)
     }
+
+    fun findMemberProfileFrom(chatRoomIds : List<Long>) : List<ChatRoomMemberProfile>{
+        return memberRepository.findChatRoomMemberProfile(chatRoomIds)
+    }
+
 }

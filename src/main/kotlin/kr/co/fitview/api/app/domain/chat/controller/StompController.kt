@@ -3,13 +3,9 @@ package kr.co.fitview.api.app.domain.chat.controller
 import jakarta.validation.Valid
 import kr.co.fitview.api.app.domain.chat.dto.request.ChatMessageRequest
 import kr.co.fitview.api.app.domain.chat.dto.request.WorkoutRequestUpdateRequest
-import kr.co.fitview.api.app.domain.chat.dto.response.withIsMe
-import kr.co.fitview.api.app.domain.chat.service.ChatMessageService
 import kr.co.fitview.api.app.domain.chat.service.ChatService
 import kr.co.fitview.api.app.domain.notification.service.NotificationStompService
 import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestService
-import kr.co.fitview.api.app.global.dto.WsMessageType
-import kr.co.fitview.api.app.global.dto.WsResponse
 import org.springframework.messaging.handler.annotation.DestinationVariable
 import org.springframework.messaging.handler.annotation.MessageMapping
 import org.springframework.messaging.handler.annotation.Payload
@@ -80,7 +76,7 @@ class StompController(
         val senderId = principal.name
         val response = chatService.sendMessage(principal.name.toLong(), chatRoomId, message)
 
-        notificationStompService.sendChatMessage(
+        notificationStompService.sendChatNoticeMessage(
             memberId = senderId.toLong(),
             response = response
         )

@@ -4,6 +4,7 @@ import jakarta.persistence.*
 import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
 import kr.co.fitview.api.app.domain.chat.entity.ChatMessage
+import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
 import kr.co.fitview.api.app.global.entity.BaseEntity
@@ -71,6 +72,10 @@ class WorkoutRequest(
 
     fun getChatRoomId(): Long? {
         return chatMessage?.chatRoom?.id
+    }
+
+    fun getChatRoom() : ChatRoom?{
+        return chatMessage?.chatRoom
     }
 
     companion object {

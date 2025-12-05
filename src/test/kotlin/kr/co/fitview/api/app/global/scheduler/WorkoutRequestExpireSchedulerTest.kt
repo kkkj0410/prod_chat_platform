@@ -4,8 +4,10 @@ import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.chat.entity.ChatMessage
 import kr.co.fitview.api.app.domain.chat.entity.ChatParticipant
 import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
+import kr.co.fitview.api.app.domain.chat.entity.enums.ChatNoticeMessageType
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatRoomType
 import kr.co.fitview.api.app.domain.chat.repository.ChatMessageRepository
+import kr.co.fitview.api.app.domain.chat.repository.ChatNoticeMessageRepository
 import kr.co.fitview.api.app.domain.chat.repository.ChatParticipantRepository
 import kr.co.fitview.api.app.domain.chat.repository.ChatRoomRepository
 import kr.co.fitview.api.app.domain.member.entity.Member
@@ -28,6 +30,7 @@ class WorkoutRequestExpireSchedulerTest @Autowired constructor(
     val memberRepository: MemberRepository,
     val chatParticipantRepository: ChatParticipantRepository,
     val chatMessageRepository: ChatMessageRepository,
+    val chatNoticeMessageRepository: ChatNoticeMessageRepository,
     val time: Time
 
 ) : IntegrationTestSupport() {
@@ -122,5 +125,98 @@ class WorkoutRequestExpireSchedulerTest @Autowired constructor(
                 tuple(expireWorkoutRequest1.id!!, WorkoutRequestStatus.EXPIRE),
                 tuple(expireWorkoutRequest2.id!!, WorkoutRequestStatus.EXPIRE),
             )
+    }
+
+    @DisplayName("운동 요청의 만료 상태를 갱신 시, 만료에 대한 안내 문구도 생성한다.")
+    @Test
+    fun modifyAllExpireWorkoutRequestNotice() {
+        // given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val other = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+        memberRepository.save(other)
+
+        val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+
+        val chatParticipant1 = ChatParticipant(
+            chatRoom,
+            me
+        )
+        val chatParticipant2 = ChatParticipant(
+            chatRoom,
+            other
+        )
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+
+        val chatMessage1 = ChatMessage.ofWorkoutRequest(
+            member = me,
+            chatRoom = chatRoom,
+            sentAt = time.nowLocalDateTime
+        )
+        val chatMessage2 = ChatMessage.ofWorkoutRequest(
+            member = me,
+            chatRoom = chatRoom,
+            sentAt = time.nowLocalDateTime.minusHours(25)
+        )
+        val chatMessage3 = ChatMessage.ofWorkoutRequest(
+            member = me,
+            chatRoom = chatRoom,
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessage1)
+        chatMessageRepository.save(chatMessage2)
+        chatMessageRepository.save(chatMessage3)
+
+        val workoutRequest1 = WorkoutRequest.of(
+            chatMessage = chatMessage1,
+            fromMember = me,
+            toMember = other,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime
+        )
+        val expireWorkoutRequest1 = WorkoutRequest.of(
+            chatMessage = chatMessage2,
+            fromMember = me,
+            toMember = other,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime.minusHours(25)
+        )
+        val expireWorkoutRequest2 = WorkoutRequest.of(
+            chatMessage = chatMessage3,
+            fromMember = me,
+            toMember = other,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.minusHours(3),
+            requestedAt = time.nowLocalDateTime
+        )
+        workoutRequestRepository.save(workoutRequest1)
+        workoutRequestRepository.save(expireWorkoutRequest1)
+        workoutRequestRepository.save(expireWorkoutRequest2)
+
+        // when
+        workoutRequestExpireScheduler.modifyAllExpireWorkoutRequest()
+
+        // then
+        val findChatNoticeMessages = chatNoticeMessageRepository.findAll()
+
+        assertThat(findChatNoticeMessages).hasSize(2)
+
+        assertThat(findChatNoticeMessages[0].chatMessage).isNotNull()
+        assertThat(findChatNoticeMessages[0].type).isEqualTo(ChatNoticeMessageType.WORKOUT_REQUEST_EXPIRE)
+
+        assertThat(findChatNoticeMessages[1].chatMessage).isNotNull()
+        assertThat(findChatNoticeMessages[1].type).isEqualTo(ChatNoticeMessageType.WORKOUT_REQUEST_EXPIRE)
+
     }
 }

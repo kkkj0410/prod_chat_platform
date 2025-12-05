@@ -1,10 +1,10 @@
 package kr.co.fitview.api.app.domain.member.repository
 
+import kr.co.fitview.api.app.domain.member.dto.response.OtherMemberProfileResponse
 import kr.co.fitview.api.app.domain.member.condition.MemberLocalCondition
 import kr.co.fitview.api.app.domain.member.dto.BoundingBox
 import kr.co.fitview.api.app.domain.member.dto.response.*
 import kr.co.fitview.api.app.domain.member.entity.Member
-import org.springframework.data.domain.Slice
 
 interface MemberRepositoryCustom {
     fun findMemberWithinLocal(memberId: Long, randomMemberId : Long, boundingBox : BoundingBox, condition: MemberLocalCondition) : List<MemberLocalResponse>
@@ -24,4 +24,6 @@ interface MemberRepositoryCustom {
     fun findMemberByNotMemberIdsWithinRecommendationsAndSeoul(memberId: Long, memberIds : List<Long>, size: Int): List<MemberRecommendationResponse>
 
     fun findMemberByPrivateChatRoomId(memberId : Long, chatRoomId: Long): ChatMemberProfileResponse?
+
+     fun findChatRoomMemberProfile(chatRoomIds : List<Long>) : List<ChatRoomMemberProfile>
 }

@@ -1,5 +1,6 @@
 package kr.co.fitview.api.app.domain.workout.service
 
+import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.workout.entity.WorkoutHistory
 import kr.co.fitview.api.app.domain.workout.repository.WorkoutHistoryRepository
@@ -16,8 +17,9 @@ class WorkoutHistoryService(
 
 
     @Transactional
-    fun addWorkoutHistory(memberOne : Member, memberTwo : Member) : WorkoutHistory{
+    fun addWorkoutHistory(chatRoom : ChatRoom, memberOne : Member, memberTwo : Member) : WorkoutHistory{
         val workoutHistory = WorkoutHistory.of(
+            chatRoom = chatRoom,
             memberOne = memberOne,
             memberTwo = memberTwo
         )

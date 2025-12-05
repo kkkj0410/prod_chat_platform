@@ -2,8 +2,9 @@ package kr.co.fitview.api.app.domain.chat.service
 
 import jakarta.persistence.EntityManager
 import kr.co.fitview.api.app.IntegrationTestSupport
+import kr.co.fitview.api.app.domain.chat.dto.MemberPair
 import kr.co.fitview.api.app.domain.chat.entity.*
-import kr.co.fitview.api.app.domain.chat.entity.QChatRoom.chatRoom
+import kr.co.fitview.api.app.domain.chat.entity.QChatMessage.chatMessage
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatRoomType
 import kr.co.fitview.api.app.domain.chat.repository.ChatMessageRepository
@@ -12,8 +13,6 @@ import kr.co.fitview.api.app.domain.chat.repository.ChatRoomRepository
 import kr.co.fitview.api.app.domain.chat.repository.MessageReadStatusRepository
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
-import kr.co.fitview.api.app.domain.workout.repository.WorkoutRequestRepository
-import kr.co.fitview.api.app.domain.workout_partner.repository.WorkoutPartnerRepository
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.time.Time
 import org.assertj.core.api.Assertions.assertThat
@@ -201,6 +200,76 @@ class MessageReadStatusServiceTest @Autowired constructor(
                 tuple(findMember, true),
                 tuple(findMember, true),
                 tuple(findMember, true),
+            )
+    }
+
+    @DisplayName("안내 메시지를 채팅방에 개시할 시, 읽음 여부를 모두 저장한다.")
+    @Test
+    fun addAllMessageReadStatusFrom() {
+        // given
+        val member1 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(member1)
+        val member2 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(member2)
+        val member3 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(member3)
+
+        val chatRoom1 = ChatRoom(type = ChatRoomType.PRIVATE)
+        val chatRoom2 = ChatRoom(type = ChatRoomType.PRIVATE)
+        val chatRooms = listOf(chatRoom1, chatRoom2)
+        chatRoomRepository.saveAll(chatRooms)
+
+        val chatMessage1 = ChatMessage.ofText(
+            member = member1,
+            chatRoom = chatRoom1,
+            content = "content1",
+            sentAt = time.nowLocalDateTime
+        )
+        val chatMessage2 = ChatMessage.ofText(
+            member = member1,
+            chatRoom = chatRoom2,
+            content = "content1",
+            sentAt = time.nowLocalDateTime
+        )
+        val chatMessages = listOf(chatMessage1, chatMessage2)
+        chatMessageRepository.saveAll(chatMessages)
+
+        val memberPairs = listOf(
+            MemberPair(memberOneId = member1.id!!, memberTwoId = member2.id!!),
+            MemberPair(memberOneId = member1.id!!, memberTwoId = member3.id!!),
+        )
+
+
+        // when
+        messageReadStatusService.addAllMessageReadStatusFrom(
+            chatRooms = chatRooms,
+            chatMessages = chatMessages,
+            memberPairs = memberPairs
+        )
+
+        // then
+        val findMessageReadStatuses = messageReadStatusRepository.findAll()
+        assertThat(findMessageReadStatuses).hasSize(4)
+
+        assertThat(findMessageReadStatuses)
+            .extracting("chatRoom", "member", "chatMessage", "isRead")
+            .containsExactlyInAnyOrder(
+                tuple(chatRoom1, member1, chatMessage1, false),
+                tuple(chatRoom1, member2, chatMessage1, false),
+                tuple(chatRoom2, member1, chatMessage2, false),
+                tuple(chatRoom2, member3, chatMessage2, false),
             )
     }
 }

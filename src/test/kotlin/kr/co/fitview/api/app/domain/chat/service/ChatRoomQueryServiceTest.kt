@@ -1,5 +1,6 @@
 package kr.co.fitview.api.app.domain.chat.service
 
+import jakarta.persistence.EntityManager
 import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.chat.entity.ChatMessage
 import kr.co.fitview.api.app.domain.chat.entity.ChatParticipant
@@ -18,6 +19,7 @@ import kr.co.fitview.api.app.domain.workout.repository.WorkoutRequestRepository
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.time.Time
 import org.assertj.core.api.Assertions.assertThat
+import org.hibernate.proxy.HibernateProxy
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -30,7 +32,8 @@ class ChatRoomQueryServiceTest @Autowired constructor(
     private val chatMessageRepository: ChatMessageRepository,
     private val workoutRequestRepository: WorkoutRequestRepository,
     private val memberRepository: MemberRepository,
-    private val time: Time
+    private val time: Time,
+    private val em : EntityManager
 ) : IntegrationTestSupport(){
 
     @DisplayName("운동 요청이 있는 채팅방을 조회한다.")
@@ -89,6 +92,33 @@ class ChatRoomQueryServiceTest @Autowired constructor(
 
         // then
         assertThat(findChatRoom).isEqualTo(chatRoom1)
+    }
+
+    @DisplayName("채팅방을 프록시로 전체 조회한다.")
+    @Test
+    fun findAllChatRoomReferenceFrom() {
+        // given
+        val chatRoom1 = ChatRoom(ChatRoomType.PRIVATE)
+        val chatRoom2 = ChatRoom(ChatRoomType.PRIVATE)
+        chatRoomRepository.save(chatRoom1)
+        chatRoomRepository.save(chatRoom2)
+
+        val chatRoomIds = listOf(chatRoom1.id!!, chatRoom2.id!!)
+
+        em.flush()
+        em.clear()
+
+        // when
+        val chatRoomProxy = chatRoomQueryService.findAllChatRoomReferenceFrom(chatRoomIds)
+
+        // then
+        assertThat(chatRoomProxy).hasSize(2)
+        assertThat(chatRoomProxy[0]).isInstanceOf(HibernateProxy::class.java)
+        assertThat(chatRoomProxy[1]).isInstanceOf(HibernateProxy::class.java)
+
+        assertThat(chatRoomProxy[0].id).isNotNull()
+        assertThat(chatRoomProxy[1].id).isNotNull()
+
     }
 
 }
