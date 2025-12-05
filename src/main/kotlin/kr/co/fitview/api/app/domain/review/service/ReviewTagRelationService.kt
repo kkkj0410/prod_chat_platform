@@ -14,6 +14,7 @@ class ReviewTagRelationService(
 ) {
 
 
+    @Transactional
     fun addAllReviewTagRelationFrom(review : Review, reviewTagIds : List<Long>) : List<ReviewTagRelation>{
         val reviewTags = reviewTagQueryService.findAllReviewTagReferenceFrom(reviewTagIds)
 
