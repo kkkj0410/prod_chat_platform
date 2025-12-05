@@ -79,3 +79,8 @@ include::exception/chat/chatException.adoc[]
 == <WORKOUT_REQUEST>
 
 include::exception/workout_request/workoutRequestException.adoc[]
+
+[[REVIEW]]
+== <REVIEW>
+
+include::exception/review/reviewException.adoc[]

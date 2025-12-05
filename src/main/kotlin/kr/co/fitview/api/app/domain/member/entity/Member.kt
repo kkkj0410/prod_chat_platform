@@ -114,5 +114,9 @@ class Member(
         return this
     }
 
+    fun updateScore(delta: Double): Member {
+        this.score = ((this.score ?: 0.0) + delta).coerceIn(0.0, 100.0)
+        return this
+    }
 
 }

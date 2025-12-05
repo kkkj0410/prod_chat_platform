@@ -23,8 +23,10 @@ import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutStyle
 import kr.co.fitview.api.app.domain.member.entity.enums.WorkoutTimeName
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.domain.review.controller.ReviewController
+import kr.co.fitview.api.app.domain.review.dto.request.ReviewCreateRequest
 import kr.co.fitview.api.app.domain.review.dto.response.ReviewCategoryResponse
 import kr.co.fitview.api.app.domain.review.dto.response.ReviewTagResponse
+import kr.co.fitview.api.app.domain.review.entity.enums.ReviewType
 import kr.co.fitview.api.app.domain.review.service.ReviewService
 import kr.co.fitview.api.app.domain.workout.dto.response.LastWorkoutRequestMessage
 import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusForResponse
@@ -52,6 +54,7 @@ import org.springframework.restdocs.request.RequestDocumentation.queryParameters
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -128,7 +131,7 @@ class ReviewControllerDocsTest : RestDocsSupport() {
         // when // then
         mockMvc.perform(
             get("/api/v1/reviews/tags")
-            .header("Authorization", "Bearer jwt-token")
+                .header("Authorization", "Bearer jwt-token")
         )
             .andDo(print())
             .andExpect(status().isOk())
@@ -171,6 +174,65 @@ class ReviewControllerDocsTest : RestDocsSupport() {
             )
     }
 
+    @DisplayName("회원 리뷰 저장 API")
+    @Test
+    fun reviewAdd() {
+        // given
+        val request = ReviewCreateRequest(
+            workoutHistoryId = 123,
+            type = ReviewType.GOOD,
+            reviewTagIds = listOf(1, 2, 3),
+            content = "content"
+        )
+
+        // when // then
+        mockMvc.perform(
+            post("/api/v1/reviews")
+                .header("Authorization", "Bearer jwt-token")
+                .content(objectMapper.writeValueAsString(request))
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andDo(print())
+            .andExpect(status().isOk())
+
+            .andDo(
+                document(
+                    "review-add",
+                    preprocessRequest(prettyPrint()),
+                    preprocessResponse(prettyPrint()),
+
+                    requestHeaders(
+                        RestDocsHeaders.authorizationHeader(Role.USER)
+                    ),
+
+                    requestFields(
+                        fieldWithPath("workoutHistoryId").type(JsonFieldType.NUMBER)
+                            .description("운동 이력 id"),
+                        fieldWithPath("type").type(JsonFieldType.STRING)
+                            .description("후기 평점" + ReviewType.allDescription()),
+                        fieldWithPath("reviewTagIds").type(JsonFieldType.ARRAY)
+                            .optional()
+                            .description("후기 서브 메시지 id 모음 - 빈 배열 에러. 후기 평점이 부정이면 해당 배열은 null 이어야 한다. 반대로 긍정이면 해당 배열은 필수다."),
+                        fieldWithPath("content").type(JsonFieldType.STRING)
+                            .optional()
+                            .description("리뷰글"),
+
+                    ),
+
+                    responseFields(
+                        fieldWithPath("status").type(JsonFieldType.NUMBER)
+                            .description("상태"),
+                        fieldWithPath("code").type(JsonFieldType.STRING)
+                            .description("코드"),
+                        fieldWithPath("message").type(JsonFieldType.STRING)
+                            .description("에러 메시지"),
+                        fieldWithPath("data").type(JsonFieldType.STRING)
+                            .description("응답 데이터"),
+
+                        )
+                )
+            )
+    }
 
 
 }

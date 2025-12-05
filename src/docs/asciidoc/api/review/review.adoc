@@ -7,3 +7,15 @@ include::{snippets}/review-tag-get/http-request.adoc[]
 ==== HTTP Response
 include::{snippets}/review-tag-get/http-response.adoc[]
 include::{snippets}/review-tag-get/response-fields.adoc[]
+
+[[review-add]]
+=== 리뷰 저장 API
+
+==== HTTP Request
+include::{snippets}/review-add/http-request.adoc[]
+include::{snippets}/review-add/request-fields.adoc[]
+include::{snippets}/review-add/request-headers.adoc[]
+
+==== HTTP Response
+include::{snippets}/review-add/http-response.adoc[]
+include::{snippets}/review-add/response-fields.adoc[]

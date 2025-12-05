@@ -4,6 +4,7 @@ import jakarta.persistence.*
 import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
 import kr.co.fitview.api.app.domain.member.entity.Member
+import kr.co.fitview.api.app.domain.review.entity.enums.ReviewType
 import kr.co.fitview.api.app.domain.workout.entity.WorkoutHistory
 import kr.co.fitview.api.app.global.entity.BaseEntity
 import org.hibernate.annotations.ColumnDefault
@@ -37,7 +38,8 @@ class Review(
     @Size(max = 20)
     @NotNull
     @Column(name = "type", nullable = false, length = 20)
-    var type: String? = null,
+    @Enumerated(EnumType.STRING)
+    var type: ReviewType? = null,
 
     @NotNull
     @Column(name = "score", nullable = false, precision = 4, scale = 1)

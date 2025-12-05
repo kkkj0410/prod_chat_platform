@@ -16,6 +16,7 @@ import kr.co.fitview.api.app.global.exception.error.member.MemberErrorCode
 import kr.co.fitview.api.app.global.exception.error.network.NetworkErrorCode
 import kr.co.fitview.api.app.global.exception.error.oauth2.OAuth2ErrorCode
 import kr.co.fitview.api.app.global.exception.error.request.RequestErrorCode
+import kr.co.fitview.api.app.global.exception.error.review.ReviewErrorCode
 import kr.co.fitview.api.app.global.exception.error.security.SecurityErrorCode
 import kr.co.fitview.api.app.global.exception.error.term.TermErrorCode
 import kr.co.fitview.api.app.global.exception.error.workout_partner.WorkoutPartnerErrorCode
@@ -105,7 +106,8 @@ class GlobalExceptionHandlerDocsTest  : RestDocsSupport() {
                     WorkoutPartnerErrorCode.entries +
                     GlobalErrorCode.entries +
                     ChatErrorCode.entries +
-                    WorkoutRequestErrorCode.entries
+                    WorkoutRequestErrorCode.entries +
+                    ReviewErrorCode.entries
         }
     }
 

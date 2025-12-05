@@ -1,8 +1,10 @@
 package kr.co.fitview.api.app.domain.review.controller
 
 import kr.co.fitview.api.app.ControllerTestSupport
+import kr.co.fitview.api.app.domain.review.dto.request.ReviewCreateRequest
 import kr.co.fitview.api.app.domain.review.dto.response.ReviewCategoryResponse
 import kr.co.fitview.api.app.domain.review.dto.response.ReviewTagResponse
+import kr.co.fitview.api.app.domain.review.entity.enums.ReviewType
 import kr.co.fitview.api.app.global.exception.error.request.RequestErrorCode
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
@@ -12,6 +14,7 @@ import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
@@ -79,7 +82,7 @@ class ReviewControllerTest : ControllerTestSupport(){
         mockMvc.perform(
             get("/api/v1/reviews/tags")
         )
-            .andDo(MockMvcResultHandlers.print())
+            .andDo(print())
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.status").exists())
             .andExpect(jsonPath("$.code").value("ok"))
@@ -99,5 +102,105 @@ class ReviewControllerTest : ControllerTestSupport(){
 
             .andExpect(jsonPath("$.data[3].tags[4].reviewTagId").value(405L))
             .andExpect(jsonPath("$.data[3].tags[4].reviewTagDisplayText").value("반복 중심이에요"))
+    }
+
+    @DisplayName("회원 리뷰를 저장한다.")
+    @Test
+    fun reviewAdd() {
+        // given
+        val request = ReviewCreateRequest(
+            workoutHistoryId = 123,
+            type = ReviewType.GOOD,
+            reviewTagIds = listOf(1,2,3),
+            content = "content"
+        )
+
+        // when // then
+        mockMvc.perform(
+            post("/api/v1/reviews")
+                .content(objectMapper.writeValueAsString(request))
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").exists())
+            .andExpect(jsonPath("$.code").value("ok"))
+            .andExpect(jsonPath("$.message").value("ok"))
+            .andExpect(jsonPath("$.data").value("ok"))
+    }
+
+    @DisplayName("회원 리뷰를 저장 시, 운동 이력 id는 필수다")
+    @Test
+    fun reviewAddRequiredWorkoutHistoryId() {
+        // given
+        val request = ReviewCreateRequest(
+            workoutHistoryId = null,
+            type = ReviewType.GOOD,
+            reviewTagIds = listOf(1,2,3),
+            content = "content"
+        )
+
+        // when // then
+        mockMvc.perform(
+            post("/api/v1/reviews")
+                .content(objectMapper.writeValueAsString(request))
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andDo(print())
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value(RequestErrorCode.REQ_FIELD_NOT_VALID.code))
+            .andExpect(jsonPath("$.status").value("400"))
+            .andExpect(jsonPath("$.message").value("workoutHistoryId is required"))
+            .andExpect(jsonPath("$.data").isEmpty())
+    }
+
+    @DisplayName("회원 리뷰를 저장 시, 후기 타입은 필수다")
+    @Test
+    fun reviewAddRequiredType() {
+        // given
+        val request = ReviewCreateRequest(
+            workoutHistoryId = 123,
+            type = null,
+            reviewTagIds = listOf(1,2,3),
+            content = "content"
+        )
+
+        // when // then
+        mockMvc.perform(
+            post("/api/v1/reviews")
+                .content(objectMapper.writeValueAsString(request))
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andDo(print())
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value(RequestErrorCode.REQ_FIELD_NOT_VALID.code))
+            .andExpect(jsonPath("$.status").value("400"))
+            .andExpect(jsonPath("$.message").value("type is required"))
+            .andExpect(jsonPath("$.data").isEmpty())
+    }
+
+    @DisplayName("회원 리뷰를 저장 시, 후기 서브 메시지 배열은 빈 배열은 안된다.")
+    @Test
+    fun reviewAddNotEmptyReviewTagIds() {
+        // given
+        val request = ReviewCreateRequest(
+            workoutHistoryId = 123,
+            type = ReviewType.GOOD,
+            reviewTagIds = listOf(),
+            content = "content"
+        )
+
+        // when // then
+        mockMvc.perform(
+            post("/api/v1/reviews")
+                .content(objectMapper.writeValueAsString(request))
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andDo(print())
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value(RequestErrorCode.REQ_FIELD_NOT_VALID.code))
+            .andExpect(jsonPath("$.status").value("400"))
+            .andExpect(jsonPath("$.message").value("reviewTagIds cannot be empty"))
+            .andExpect(jsonPath("$.data").isEmpty())
     }
 }

@@ -1,0 +1,21 @@
+[[REVIEW_001]]
+=== REVIEW_001
+
+==== HTTP Request
+include::{snippets}/REVIEW_001/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/REVIEW_001/http-response.adoc[]
+include::{snippets}/REVIEW_001/response-fields.adoc[]
+
+
+[[REVIEW_002]]
+=== REVIEW_002
+
+==== HTTP Request
+include::{snippets}/REVIEW_002/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/REVIEW_002/http-response.adoc[]
+include::{snippets}/REVIEW_002/response-fields.adoc[]
+
