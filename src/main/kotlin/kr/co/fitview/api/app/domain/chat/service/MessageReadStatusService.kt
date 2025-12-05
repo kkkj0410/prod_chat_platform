@@ -1,11 +1,12 @@
 package kr.co.fitview.api.app.domain.chat.service
 
+import kr.co.fitview.api.app.domain.chat.dto.MemberPair
 import kr.co.fitview.api.app.domain.chat.entity.ChatMessage
 import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
 import kr.co.fitview.api.app.domain.chat.entity.MessageReadStatus
-import kr.co.fitview.api.app.domain.chat.entity.QMessageReadStatus.messageReadStatus
 import kr.co.fitview.api.app.domain.chat.repository.MessageReadStatusRepository
 import kr.co.fitview.api.app.domain.member.entity.Member
+import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.domain.member.service.MemberReferenceProvider
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -15,7 +16,8 @@ import org.springframework.transaction.annotation.Transactional
 class MessageReadStatusService(
     private val messageReadStatusRepository : MessageReadStatusRepository,
     private val chatParticipantService : ChatParticipantService,
-    private val memberReferenceProvider: MemberReferenceProvider
+    private val memberReferenceProvider: MemberReferenceProvider,
+    private val memberQueryService : MemberQueryService
 ) {
 
     @Transactional
@@ -33,6 +35,38 @@ class MessageReadStatusService(
     @Transactional
     fun modifyMessageReadStatusFrom(memberId: Long, chatRoomId: Long) {
         messageReadStatusRepository.updateAllMessageReadStatusBy(memberId, chatRoomId)
+    }
+
+    @Transactional
+    fun addAllMessageReadStatusFrom(
+        chatRooms: List<ChatRoom>,
+        chatMessages: List<ChatMessage>,
+        memberPairs: List<MemberPair>
+    ) {
+        val statuses = mutableListOf<MessageReadStatus>()
+
+        chatMessages.forEachIndexed { idx, chatMessage ->
+            val chatRoom = chatRooms[idx]
+            val req = memberPairs[idx]
+
+            val memberOne = memberQueryService.findMemberReferenceFrom(req.memberOneId)
+            val memberTwo = memberQueryService.findMemberReferenceFrom(req.memberTwoId)
+
+            statuses += MessageReadStatus(
+                chatRoom = chatRoom,
+                chatMessage = chatMessage,
+                member = memberOne,
+                isRead = false
+            )
+            statuses += MessageReadStatus(
+                chatRoom = chatRoom,
+                chatMessage = chatMessage,
+                member = memberTwo,
+                isRead = false
+            )
+        }
+
+        messageReadStatusRepository.saveAll(statuses)
     }
 
     private fun createMessageReadStatuses(

@@ -6,8 +6,9 @@ import kr.co.fitview.api.app.domain.notification.constant.StompConstant
 import kr.co.fitview.api.app.domain.notification.dto.StompSendEvent
 import kr.co.fitview.api.app.domain.notification.dto.response.MemberWorkoutPartnerRequestAcceptProfileResponse
 import kr.co.fitview.api.app.domain.notification.dto.response.MemberWorkoutPartnerRequestProfileResponse
+import kr.co.fitview.api.app.domain.notification.dto.response.StompChatNoticeMessageResponse
+import kr.co.fitview.api.app.domain.notification.dto.response.StompEventChatNoticeMessage
 import kr.co.fitview.api.app.domain.workout.dto.response.WorkoutRequestUpdateResponse
-import kr.co.fitview.api.app.domain.workout.entity.QWorkoutRequest.workoutRequest
 import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartnerRequest
 import kr.co.fitview.api.app.global.dto.WsMessageType
 import kr.co.fitview.api.app.global.dto.WsResponse
@@ -15,8 +16,6 @@ import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.ErrorCode
 import kr.co.fitview.api.app.global.exception.error.global.GlobalErrorCode
 import org.springframework.stereotype.Service
-import org.springframework.transaction.event.TransactionPhase
-import org.springframework.transaction.event.TransactionalEventListener
 
 @Service
 class NotificationStompService(
@@ -24,7 +23,7 @@ class NotificationStompService(
     private val memberQueryService: MemberQueryService
 ) {
 
-    fun sendChatMessage(memberId: Long, response: ChatMessageDetailResponse) {
+    fun sendChatNoticeMessage(memberId: Long, response: ChatMessageDetailResponse) {
 
         if (response.chatMessage is StompChatTextMessage) {
             stompPublisher.sendToUser(
@@ -94,6 +93,18 @@ class NotificationStompService(
             )
         }
     }
+
+    fun sendChatNoticeMessage(event: StompChatNoticeMessageResponse) {
+        stompPublisher.sendToUser(
+            memberId = event.memberId,
+            destination = StompConstant.SUB_CHAT_MESSAGE,
+            payload = WsResponse(
+                type = WsMessageType.NOTICE.code,
+                payload = event.message
+            )
+        )
+    }
+
 
     fun sendWorkoutRequestUpdate(workoutRequests: List<WorkoutRequestUpdateResponse>) {
         if (workoutRequests.isEmpty()) {
@@ -198,6 +209,7 @@ class NotificationStompService(
             )
         )
     }
+
 
 
 }

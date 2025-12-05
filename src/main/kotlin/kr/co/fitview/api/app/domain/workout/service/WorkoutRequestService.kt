@@ -1,5 +1,6 @@
 package kr.co.fitview.api.app.domain.workout.service
 
+import kr.co.fitview.api.app.domain.chat.dto.ExpireWorkoutRequest
 import kr.co.fitview.api.app.domain.chat.dto.request.ChatWorkoutRequestMessageServiceRequest
 import kr.co.fitview.api.app.domain.chat.dto.request.WorkoutRequestUpdateRequest
 import kr.co.fitview.api.app.domain.chat.entity.ChatMessage
@@ -86,7 +87,7 @@ class WorkoutRequestService(
 
         var workoutHistory : WorkoutHistory? = null
         if(isSuccessComplete(findWorkoutRequest)){
-            workoutHistory = workoutHistoryService.addWorkoutHistory(findWorkoutRequest.fromMember!!, findWorkoutRequest.toMember!!)
+            workoutHistory = workoutHistoryService.addWorkoutHistory(findWorkoutRequest.getChatRoom()!!, findWorkoutRequest.fromMember!!, findWorkoutRequest.toMember!!)
         }
 
         addChatNoticeMessage(memberId, request, workoutHistory)

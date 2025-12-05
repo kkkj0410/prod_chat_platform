@@ -1,6 +1,8 @@
 package kr.co.fitview.api.app.domain.workout.entity
 
 import kr.co.fitview.api.app.IntegrationTestSupport
+import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
+import kr.co.fitview.api.app.domain.chat.entity.enums.ChatRoomType
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.domain.workout.repository.WorkoutHistoryRepository
@@ -32,8 +34,13 @@ class WorkoutHistoryTest @Autowired constructor(
         memberRepository.save(member1)
         memberRepository.save(member2)
 
+        val chatRoom = ChatRoom(
+            type = ChatRoomType.PRIVATE
+        )
+
         // when
         val workoutHistory = WorkoutHistory.of(
+            chatRoom = chatRoom,
             memberOne = member2,
             memberTwo = member1
         )
@@ -61,8 +68,13 @@ class WorkoutHistoryTest @Autowired constructor(
         memberRepository.save(member1)
         memberRepository.save(member2)
 
+        val chatRoom = ChatRoom(
+            type = ChatRoomType.PRIVATE
+        )
+
         // when
         val workoutHistory = WorkoutHistory.of(
+            chatRoom = chatRoom,
             memberOne = member1,
             memberTwo = member2
         )
@@ -88,8 +100,13 @@ class WorkoutHistoryTest @Autowired constructor(
         memberRepository.save(member1)
         memberRepository.save(member2)
 
+        val chatRoom = ChatRoom(
+            type = ChatRoomType.PRIVATE
+        )
+
         // when
         val workoutHistory = WorkoutHistory.of(
+            chatRoom = chatRoom,
             memberOne = member1,
             memberTwo = member2
         )

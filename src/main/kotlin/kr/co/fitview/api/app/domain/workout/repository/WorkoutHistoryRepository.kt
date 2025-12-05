@@ -6,7 +6,7 @@ import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartner
 import kr.co.fitview.api.app.domain.workout_partner.repository.WorkoutPartnerRepository
 import org.springframework.data.jpa.repository.JpaRepository
 
-interface WorkoutHistoryRepository : JpaRepository<WorkoutHistory, Long> {
+interface WorkoutHistoryRepository : JpaRepository<WorkoutHistory, Long>, WorkoutHistoryRepositoryCustom {
 
     fun existsByMemberOneIdAndMemberTwoIdAndDeletedAtIsNull(memberOneId: Long, memberTwoId: Long) : Boolean
 
