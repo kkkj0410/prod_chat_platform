@@ -30,6 +30,11 @@ class MessageReadStatusService(
         return messageReadStatusRepository.saveAll(messageReadStatuses)
     }
 
+    @Transactional
+    fun modifyMessageReadStatusFrom(memberId: Long, chatRoomId: Long) {
+        messageReadStatusRepository.updateAllMessageReadStatusBy(memberId, chatRoomId)
+    }
+
     private fun createMessageReadStatuses(
         meMember: Member,
         otherMember: Member,
@@ -53,7 +58,4 @@ class MessageReadStatusService(
         return listOf(meMessageReadStatus, otherMessageReadStatus)
     }
 
-    fun modifyMessageReadStatusFrom(memberId: Long, chatRoomId: Long) {
-        messageReadStatusRepository.updateAllMessageReadStatusBy(memberId, chatRoomId)
-    }
 }
