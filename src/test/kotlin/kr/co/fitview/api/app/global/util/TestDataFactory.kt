@@ -7,6 +7,8 @@ import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutGoal
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutStyle
 import kr.co.fitview.api.app.domain.member.entity.enums.WorkoutTimeName
 import kr.co.fitview.api.app.domain.oauth2.dto.request.OAuth2SignupServiceRequest
+import kr.co.fitview.api.app.domain.review.entity.ReviewCategory
+import kr.co.fitview.api.app.domain.review.entity.ReviewTag
 import kr.co.fitview.api.app.global.entity.Gender
 import java.time.LocalDate
 
@@ -53,4 +55,6 @@ object TestDataFactory {
             address = address
         )
     }
+
+
 }

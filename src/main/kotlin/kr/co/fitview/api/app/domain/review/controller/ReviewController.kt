@@ -1,12 +1,8 @@
 package kr.co.fitview.api.app.domain.review.controller
 
 import jakarta.validation.Valid
-import kr.co.fitview.api.app.domain.image.dto.request.S3UploadUrlRequest
-import kr.co.fitview.api.app.domain.image.dto.response.S3UploadUrlResponse
-import kr.co.fitview.api.app.domain.image.service.S3Service
 import kr.co.fitview.api.app.domain.review.dto.request.ReviewCreateRequest
 import kr.co.fitview.api.app.domain.review.dto.response.ReviewCategoryResponse
-import kr.co.fitview.api.app.domain.review.dto.response.ReviewTagResponse
 import kr.co.fitview.api.app.domain.review.service.ReviewService
 import kr.co.fitview.api.app.global.dto.ApiResponse
 import kr.co.fitview.api.app.global.util.SecurityUtil
@@ -39,7 +35,7 @@ class ReviewController(
 
     ): ResponseEntity<ApiResponse<*>>
     {
-        reviewService.addReview(securityUtil.getMemberId(), request.toServiceRequest())
+        reviewService.saveReview(securityUtil.getMemberId(), request.toServiceRequest())
 
         return ResponseEntity.ok(ApiResponse.success("ok"))
     }
