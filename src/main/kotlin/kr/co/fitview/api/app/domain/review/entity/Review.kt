@@ -41,8 +41,8 @@ class Review(
     var type: ReviewType? = null,
 
     @NotNull
-    @Column(name = "score", nullable = false, precision = 4, scale = 1)
-    var score: BigDecimal? = null,
+    @Column(name = "score", nullable = false)
+    var score: Double? = null,
 
     @Size(max = 1000)
     @Column(name = "content", length = 1000)

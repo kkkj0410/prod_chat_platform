@@ -195,7 +195,7 @@ class WorkoutHistoryQueryServiceTest @Autowired constructor(
             workoutHistory = workoutHistory,
             isPrivate = false,
             type = ReviewType.GOOD,
-            score = BigDecimal(2),
+            score = 2.0,
             content = "content"
         )
 

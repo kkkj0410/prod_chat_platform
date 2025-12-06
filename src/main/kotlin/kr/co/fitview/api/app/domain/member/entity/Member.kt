@@ -13,6 +13,7 @@ import kr.co.fitview.api.app.global.entity.Gender
 import kr.co.fitview.api.app.global.entity.OAuth2Provider
 import kr.co.fitview.api.app.global.entity.Role
 import org.hibernate.annotations.ColumnDefault
+import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
 
