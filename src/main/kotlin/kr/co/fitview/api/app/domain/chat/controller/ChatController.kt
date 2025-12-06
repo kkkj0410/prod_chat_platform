@@ -5,14 +5,12 @@ import kr.co.fitview.api.app.domain.chat.condition.ChatCondition
 import kr.co.fitview.api.app.domain.chat.condition.ChatMessageCondition
 import kr.co.fitview.api.app.domain.chat.dto.request.ChatRoomCreateRequest
 import kr.co.fitview.api.app.domain.chat.dto.response.*
-import kr.co.fitview.api.app.domain.chat.service.ChatMessageService
-import kr.co.fitview.api.app.domain.chat.service.ChatRoomService
-import kr.co.fitview.api.app.domain.chat.service.ChatService
-import kr.co.fitview.api.app.domain.chat.service.MessageReadStatusService
+import kr.co.fitview.api.app.domain.chat.service.*
 import kr.co.fitview.api.app.domain.member.dto.response.ChatMemberProfileResponse
 import kr.co.fitview.api.app.domain.member.dto.response.MemberChatRoomProfile
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.domain.workout.dto.response.LastWorkoutRequestMessage
+import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestQueryService
 import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestService
 import kr.co.fitview.api.app.global.dto.ApiResponse
 import kr.co.fitview.api.app.global.dto.SuccessCursorAtPagedResponse
@@ -26,9 +24,9 @@ import org.springframework.web.bind.annotation.*
 class ChatController(
     private val chatService : ChatService,
     private val chatRoomService : ChatRoomService,
-    private val chatMessageService : ChatMessageService,
+    private val chatMessageQueryService: ChatMessageQueryService,
     private val securityUtil : SecurityUtil,
-    private val workoutRequestService : WorkoutRequestService,
+    private val workoutRequestQueryService : WorkoutRequestQueryService,
     private val messageReadStatusService : MessageReadStatusService,
     private val memberQueryService : MemberQueryService
 ) {
@@ -66,7 +64,7 @@ class ChatController(
         condition : ChatMessageCondition
     ) : ResponseEntity<ApiResponse<SuccessCursorAtPagedResponse<LastChatMessage>>> {
 
-        val response = chatMessageService.findChatMessages(securityUtil.getMemberId(), chatRoomId, condition)
+        val response = chatMessageQueryService.findChatMessages(securityUtil.getMemberId(), chatRoomId, condition)
 
         return ResponseEntity.ok(ApiResponse.successWithCursorAtPagination(
             slice = response,
@@ -90,7 +88,7 @@ class ChatController(
         chatRoomId : Long,
     ) : ResponseEntity<ApiResponse<LastWorkoutRequestMessage?>> {
 
-        val response = workoutRequestService.findRecentWorkoutRequestFrom(listOf(chatRoomId))
+        val response = workoutRequestQueryService.findRecentWorkoutRequestFrom(listOf(chatRoomId))
 
         val lastWorkoutRequest = response.firstOrNull()
 

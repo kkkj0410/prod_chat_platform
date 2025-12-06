@@ -6,9 +6,9 @@ import kr.co.fitview.api.app.domain.chat.dto.request.ChatWorkoutRequestMessageRe
 import kr.co.fitview.api.app.domain.chat.dto.request.ChatRoomCreateServiceRequest
 import kr.co.fitview.api.app.domain.chat.dto.response.*
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
+import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestQueryService
 import kr.co.fitview.api.app.domain.workout_history.service.WorkoutHistoryService
-import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestService
-import kr.co.fitview.api.app.domain.workout_partner.service.WorkoutPartnerService
+import kr.co.fitview.api.app.domain.workout_partner.service.WorkoutPartnerQueryService
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.chat.ChatErrorCode
 import kr.co.fitview.api.app.global.exception.error.global.GlobalErrorCode
@@ -20,10 +20,11 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional(readOnly = true)
 class ChatService(
     private val chatRoomService : ChatRoomService,
+    private val chatParticipantQueryService : ChatParticipantQueryService,
     private val chatParticipantService : ChatParticipantService,
-    private val workoutPartnerService : WorkoutPartnerService,
+    private val workoutPartnerQueryService : WorkoutPartnerQueryService,
     private val chatMessageService : ChatMessageService,
-    private val workoutRequestService : WorkoutRequestService,
+    private val workoutRequestQueryService : WorkoutRequestQueryService,
     private val memberQueryService : MemberQueryService,
     private val workoutHistoryService : WorkoutHistoryService
 ) {
@@ -50,7 +51,7 @@ class ChatService(
     @Transactional
     fun sendMessage(memberId: Long, chatRoomId: Long, message : ChatMessageRequest) : ChatMessageDetailResponse {
 
-        workoutRequestService.findRecentWorkoutRequestFrom(listOf(chatRoomId))
+        workoutRequestQueryService.findRecentWorkoutRequestFrom(listOf(chatRoomId))
 
         val findChatRoom = chatRoomService.findChatRoomFromMemberIdAndChatRoomId(memberId, chatRoomId)
             ?: throw GlobalException(ChatErrorCode.NOT_MEMBER_OF_CHAT_ROOM)
@@ -77,7 +78,7 @@ class ChatService(
             }
         }
 
-        val findOtherChatParticipant = chatParticipantService.findOtherParticipantFromMemberIdAndChatRoomId(
+        val findOtherChatParticipant = chatParticipantQueryService.findOtherParticipantFromMemberIdAndChatRoomId(
             memberId = memberId,
             chatRoomId = chatRoomId
         )
@@ -100,7 +101,7 @@ class ChatService(
     private fun isNotWorkoutPartner(
         memberId: Long,
         request: ChatRoomCreateServiceRequest
-    ) = !workoutPartnerService.isWorkoutPartnerFrom(memberId, request.toMemberId)
+    ) = !workoutPartnerQueryService.isWorkoutPartnerFrom(memberId, request.toMemberId)
 
 
     private fun isNotNull(value : Any?) = value != null

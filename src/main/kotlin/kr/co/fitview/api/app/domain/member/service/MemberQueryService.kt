@@ -4,7 +4,6 @@ import kr.co.fitview.api.app.domain.address.constant.AddressConstant
 import kr.co.fitview.api.app.domain.address.entity.Address
 import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
 import kr.co.fitview.api.app.domain.address.service.AddressService
-import kr.co.fitview.api.app.domain.image.service.ImageService
 import kr.co.fitview.api.app.domain.member.condition.MemberLocalCondition
 import kr.co.fitview.api.app.domain.member.dto.BoundingBox
 import kr.co.fitview.api.app.domain.member.dto.response.*
@@ -12,14 +11,12 @@ import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.entity.WorkoutTime
 import kr.co.fitview.api.app.domain.member.entity.enums.WorkoutTimeName
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
-import kr.co.fitview.api.app.domain.member.repository.WorkoutTimeRepository
-import kr.co.fitview.api.app.domain.workout_partner.service.WorkoutPartnerService
+import kr.co.fitview.api.app.domain.workout_partner.service.WorkoutPartnerQueryService
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.global.GlobalErrorCode
 import kr.co.fitview.api.app.global.exception.error.member.MemberErrorCode
 import kr.co.fitview.api.app.global.random.RandomCustom
 import kr.co.fitview.api.app.global.redis.service.RedisService
-import kr.co.fitview.api.app.global.time.Time
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
@@ -32,7 +29,7 @@ import kotlin.math.cos
 @Transactional(readOnly = true)
 class MemberQueryService(
     private val memberRepository : MemberRepository,
-    private val workoutPartnerService : WorkoutPartnerService,
+    private val workoutPartnerQueryService : WorkoutPartnerQueryService,
     private val addressService : AddressService,
     private val redisService : RedisService,
     private val randomCustom : RandomCustom
@@ -96,7 +93,7 @@ class MemberQueryService(
         val findProfile = findMemberProfile(toMemberId)
         val otherProfile = OtherMemberProfileResponse.fromMemberProfile(findProfile)
 
-        val findWorkoutPartnerStatus : WorkoutPartnerStatusResponse = workoutPartnerService.findWorkoutPartnerStatus(fromMemberId, toMemberId)
+        val findWorkoutPartnerStatus : WorkoutPartnerStatusResponse = workoutPartnerQueryService.findWorkoutPartnerStatus(fromMemberId, toMemberId)
         return MemberDetailResponse(otherProfile, findWorkoutPartnerStatus)
     }
 

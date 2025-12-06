@@ -8,6 +8,7 @@ import kr.co.fitview.api.app.domain.workout_partner.dto.request.WorkoutPartnerUp
 import kr.co.fitview.api.app.domain.workout_partner.dto.response.WorkoutPartnerRequestResponse
 import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartnerRequest
 import kr.co.fitview.api.app.domain.workout_partner.entity.enums.WorkoutPartnerRequestStatus
+import kr.co.fitview.api.app.domain.workout_partner.service.WorkoutPartnerRequestQueryService
 import kr.co.fitview.api.app.domain.workout_partner.service.WorkoutPartnerRequestService
 import kr.co.fitview.api.app.global.dto.ApiResponse
 import kr.co.fitview.api.app.global.dto.SuccessCursorPagedResponse
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/api/v1")
 class WorkoutPartnerController(
     private val workoutPartnerRequestService : WorkoutPartnerRequestService,
+    private val workoutPartnerRequestQueryService : WorkoutPartnerRequestQueryService,
     private val securityUtil : SecurityUtil,
     private val notificationStompService : NotificationStompService
 ) {
@@ -68,7 +70,7 @@ class WorkoutPartnerController(
         condition : WorkoutPartnerRequestCondition,
         ) : ResponseEntity<ApiResponse<SuccessCursorPagedResponse<WorkoutPartnerRequestResponse>>> {
 
-        val response = workoutPartnerRequestService.findWorkoutPartnerFrom(securityUtil.getMemberId(), condition)
+        val response = workoutPartnerRequestQueryService.findWorkoutPartnerFrom(securityUtil.getMemberId(), condition)
 
         return ResponseEntity.ok(
             ApiResponse.successWithCursorPagination(

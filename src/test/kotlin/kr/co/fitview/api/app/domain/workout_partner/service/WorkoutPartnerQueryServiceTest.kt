@@ -9,7 +9,6 @@ import kr.co.fitview.api.app.domain.chat.repository.ChatRoomRepository
 import kr.co.fitview.api.app.domain.member.dto.response.enums.ProfileWorkoutPartnerStatus
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
-import kr.co.fitview.api.app.domain.workout_partner.entity.QWorkoutPartnerRequest.workoutPartnerRequest
 import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartner
 import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartnerRequest
 import kr.co.fitview.api.app.domain.workout_partner.entity.enums.WorkoutPartnerRequestContent
@@ -22,8 +21,8 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
-class WorkoutPartnerServiceTest @Autowired constructor(
-    val workoutPartnerService : WorkoutPartnerService,
+class WorkoutPartnerQueryServiceTest @Autowired constructor(
+    val workoutPartnerQueryService : WorkoutPartnerQueryService,
     val workoutPartnerRequestRepository : WorkoutPartnerRequestRepository,
     val workoutPartnerRepository : WorkoutPartnerRepository,
     val memberRepository : MemberRepository,
@@ -56,7 +55,7 @@ class WorkoutPartnerServiceTest @Autowired constructor(
         workoutPartnerRepository.save(workoutPartner)
 
         // when
-        val response = workoutPartnerService.findWorkoutPartnerStatus(me.id!!, otherMember.id!!)
+        val response = workoutPartnerQueryService.findWorkoutPartnerStatus(me.id!!, otherMember.id!!)
 
         // then
         assertThat(response)
@@ -101,7 +100,7 @@ class WorkoutPartnerServiceTest @Autowired constructor(
         chatParticipantRepository.save(chatParticipant2)
 
         // when
-        val response = workoutPartnerService.findWorkoutPartnerStatus(me.id!!, otherMember.id!!)
+        val response = workoutPartnerQueryService.findWorkoutPartnerStatus(me.id!!, otherMember.id!!)
 
         // then
         assertThat(response)
@@ -135,7 +134,7 @@ class WorkoutPartnerServiceTest @Autowired constructor(
         workoutPartnerRequestRepository.save(workoutPartnerRequest)
 
         // when
-        val response = workoutPartnerService.findWorkoutPartnerStatus(me.id!!, otherMember.id!!)
+        val response = workoutPartnerQueryService.findWorkoutPartnerStatus(me.id!!, otherMember.id!!)
 
         // then
         assertThat(response)
@@ -169,7 +168,7 @@ class WorkoutPartnerServiceTest @Autowired constructor(
         workoutPartnerRequestRepository.save(workoutPartnerRequest)
 
         // when
-        val response = workoutPartnerService.findWorkoutPartnerStatus(me.id!!, otherMember.id!!)
+        val response = workoutPartnerQueryService.findWorkoutPartnerStatus(me.id!!, otherMember.id!!)
 
         // then
         assertThat(response)
@@ -210,7 +209,7 @@ class WorkoutPartnerServiceTest @Autowired constructor(
         workoutPartnerRequestRepository.save(workoutPartnerRequest2)
 
         // when
-        val response = workoutPartnerService.findWorkoutPartnerStatus(me.id!!, otherMember.id!!)
+        val response = workoutPartnerQueryService.findWorkoutPartnerStatus(me.id!!, otherMember.id!!)
 
         // then
         assertThat(response)
@@ -237,7 +236,7 @@ class WorkoutPartnerServiceTest @Autowired constructor(
 
 
         // when
-        val response = workoutPartnerService.findWorkoutPartnerStatus(me.id!!, otherMember.id!!)
+        val response = workoutPartnerQueryService.findWorkoutPartnerStatus(me.id!!, otherMember.id!!)
 
         // then
         assertThat(response)
@@ -271,7 +270,7 @@ class WorkoutPartnerServiceTest @Autowired constructor(
         workoutPartnerRequestRepository.save(workoutPartnerRequest)
 
         // when
-        val response = workoutPartnerService.findWorkoutPartnerStatus(me.id!!, otherMember.id!!)
+        val response = workoutPartnerQueryService.findWorkoutPartnerStatus(me.id!!, otherMember.id!!)
 
         // then
         assertThat(response)
@@ -305,7 +304,7 @@ class WorkoutPartnerServiceTest @Autowired constructor(
         workoutPartnerRequestRepository.save(workoutPartnerRequest)
 
         // when
-        val response = workoutPartnerService.findWorkoutPartnerStatus(me.id!!, otherMember.id!!)
+        val response = workoutPartnerQueryService.findWorkoutPartnerStatus(me.id!!, otherMember.id!!)
 
         // then
         assertThat(response)
@@ -337,7 +336,7 @@ class WorkoutPartnerServiceTest @Autowired constructor(
         workoutPartnerRepository.save(workoutPartner)
 
         // when
-        val response = workoutPartnerService.isWorkoutPartnerFrom(me.id!!, otherMember.id!!)
+        val response = workoutPartnerQueryService.isWorkoutPartnerFrom(me.id!!, otherMember.id!!)
 
         // then
         assertThat(response).isTrue()
@@ -361,7 +360,7 @@ class WorkoutPartnerServiceTest @Autowired constructor(
         memberRepository.save(otherMember)
 
         // when
-        val response = workoutPartnerService.isWorkoutPartnerFrom(me.id!!, otherMember.id!!)
+        val response = workoutPartnerQueryService.isWorkoutPartnerFrom(me.id!!, otherMember.id!!)
 
         // then
         assertThat(response).isFalse()

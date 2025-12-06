@@ -2,6 +2,8 @@ package kr.co.fitview.api.app.domain.workout_partner.service
 
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.domain.notification.service.NotificationStompService
+import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequest
+import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
 import kr.co.fitview.api.app.domain.workout_partner.condition.WorkoutPartnerRequestCondition
 import kr.co.fitview.api.app.domain.workout_partner.dto.request.WorkoutPartnerCreateServiceRequest
 import kr.co.fitview.api.app.domain.workout_partner.dto.request.WorkoutPartnerUpdateServiceRequest
@@ -14,6 +16,7 @@ import kr.co.fitview.api.app.domain.workout_partner.repository.WorkoutPartnerRep
 import kr.co.fitview.api.app.domain.workout_partner.repository.WorkoutPartnerRequestRepository
 import kr.co.fitview.api.app.domain.workout_partner.repository.findByOrderedMemberOneIdAndMemberTwoIdAndDeletedAtIsNull
 import kr.co.fitview.api.app.global.exception.GlobalException
+import kr.co.fitview.api.app.global.exception.error.chat.ChatErrorCode
 import kr.co.fitview.api.app.global.exception.error.global.GlobalErrorCode
 import kr.co.fitview.api.app.global.exception.error.workout_partner.WorkoutPartnerErrorCode
 import kr.co.fitview.api.app.global.time.Time
@@ -83,32 +86,6 @@ class WorkoutPartnerRequestService(
         workoutPartnerRepository.save(workoutPartner)
     }
 
-    fun findRecentRequestWithin24Hours(fromMemberId : Long, toMemberId : Long) : WorkoutPartnerRequest?{
-        val findWorkoutPartnerRequest = workoutPartnerRequestRepository.findTop1ByFromMemberIdAndToMemberIdAndDeletedAtIsNullOrderByRequestedAtDesc(fromMemberId, toMemberId)
-
-        if(isNotNull(findWorkoutPartnerRequest) && isNotExpire24Hour(findWorkoutPartnerRequest!!)){
-            return findWorkoutPartnerRequest
-        }
-
-        return null
-    }
-
-    fun findWorkoutPartnerFrom(memberId: Long, condition: WorkoutPartnerRequestCondition) : Slice<WorkoutPartnerRequestResponse> {
-        return workoutPartnerRequestRepository.findWorkoutPartnerByConditionAndDeletedAtIsNull(memberId, condition)
-    }
-
-
-    private fun validateAddWorkoutPartnerRequest(workoutPartnerRequest: WorkoutPartnerRequest?) {
-        if (isNotNull(workoutPartnerRequest)) {
-            if (workoutPartnerRequest!!.status == WorkoutPartnerRequestStatus.ACCEPT) {
-                throw GlobalException(WorkoutPartnerErrorCode.ALREADY_PARTNER_ACCEPTED)
-            }
-
-            if (isNotExpire24Hour(workoutPartnerRequest) && isPending(workoutPartnerRequest)) {
-                throw GlobalException(WorkoutPartnerErrorCode.PARTNER_REQUEST_COOLDOWN)
-            }
-        }
-    }
 
     private fun validateUpdateWorkoutPartnerRequest(workoutPartnerRequest: WorkoutPartnerRequest) {
         if (isNotPending(workoutPartnerRequest) || isExpire24Hour(workoutPartnerRequest))
@@ -120,8 +97,6 @@ class WorkoutPartnerRequestService(
     fun isExpire24Hour(workoutPartnerRequest: WorkoutPartnerRequest) =
         workoutPartnerRequest.requestedAt!!.isBefore(time.nowLocalDateTime.minusHours(24))
 
-    fun isNotExpire24Hour(workoutPartnerRequest: WorkoutPartnerRequest) =
-        workoutPartnerRequest.requestedAt!!.isAfter(time.nowLocalDateTime.minusHours(24))
 
     private fun isNotPending(workoutPartnerRequest: WorkoutPartnerRequest) =
         workoutPartnerRequest.status != WorkoutPartnerRequestStatus.PENDING
@@ -145,6 +120,20 @@ class WorkoutPartnerRequestService(
             ?.let { throw GlobalException(WorkoutPartnerErrorCode.ALREADY_PARTNER_ACCEPTED) }
     }
 
+    private fun validateAddWorkoutPartnerRequest(workoutPartnerRequest: WorkoutPartnerRequest?) {
+        if (isNotNull(workoutPartnerRequest)) {
+            if (workoutPartnerRequest!!.status == WorkoutPartnerRequestStatus.ACCEPT) {
+                throw GlobalException(WorkoutPartnerErrorCode.ALREADY_PARTNER_ACCEPTED)
+            }
+
+            if (isNotExpire24Hour(workoutPartnerRequest) && isPending(workoutPartnerRequest)) {
+                throw GlobalException(WorkoutPartnerErrorCode.PARTNER_REQUEST_COOLDOWN)
+            }
+        }
+    }
+
+    fun isNotExpire24Hour(workoutPartnerRequest: WorkoutPartnerRequest) =
+        workoutPartnerRequest.requestedAt!!.isAfter(time.nowLocalDateTime.minusHours(24))
 
 
 }

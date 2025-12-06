@@ -8,15 +8,13 @@ import kr.co.fitview.api.app.domain.chat.dto.request.ChatRoomCreateRequest
 import kr.co.fitview.api.app.domain.chat.dto.response.*
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatNoticeMessageType
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
-import kr.co.fitview.api.app.domain.chat.service.ChatMessageService
-import kr.co.fitview.api.app.domain.chat.service.ChatRoomService
-import kr.co.fitview.api.app.domain.chat.service.ChatService
-import kr.co.fitview.api.app.domain.chat.service.MessageReadStatusService
+import kr.co.fitview.api.app.domain.chat.service.*
 import kr.co.fitview.api.app.domain.member.dto.response.ChatMemberProfile
 import kr.co.fitview.api.app.domain.member.dto.response.ChatMemberProfileResponse
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.domain.workout.dto.response.LastWorkoutRequestMessage
 import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusForResponse
+import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestQueryService
 import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestService
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.enums.Direction
@@ -49,14 +47,14 @@ class ChatControllerDocsTest : RestDocsSupport() {
 
     private val chatService: ChatService = mock(ChatService::class.java)
     private val chatRoomService: ChatRoomService = mock(ChatRoomService::class.java)
-    private val chatMessageService: ChatMessageService = mock(ChatMessageService::class.java)
-    private val workoutRequestService: WorkoutRequestService = mock(WorkoutRequestService::class.java)
+    private val chatMessageQueryService: ChatMessageQueryService = mock(ChatMessageQueryService::class.java)
+    private val workoutRequestQueryService: WorkoutRequestQueryService = mock(WorkoutRequestQueryService::class.java)
     private val securityUtil: SecurityUtil = mock(SecurityUtil::class.java)
     private val messageReadStatusService: MessageReadStatusService = mock(MessageReadStatusService::class.java)
     private val memberQueryService: MemberQueryService = mock(MemberQueryService::class.java)
 
     override fun initController(): Any {
-        return ChatController(chatService, chatRoomService, chatMessageService, securityUtil, workoutRequestService, messageReadStatusService, memberQueryService)
+        return ChatController(chatService, chatRoomService, chatMessageQueryService, securityUtil, workoutRequestQueryService, messageReadStatusService, memberQueryService)
     }
 
     @DisplayName("채팅방을 생성한다.")
@@ -420,7 +418,7 @@ class ChatControllerDocsTest : RestDocsSupport() {
         val sliceChatMessages: Slice<LastChatMessage> = SliceImpl(chatMessages, PageRequest.of(0, 10), false)
 
 
-        given(chatMessageService.findChatMessages(any(), any(), any())).willReturn(sliceChatMessages)
+        given(chatMessageQueryService.findChatMessages(any(), any(), any())).willReturn(sliceChatMessages)
 
         mockMvc.perform(
             get("/api/v1/chats/{chatRoomId}/messages", chatRoomId)
@@ -483,7 +481,7 @@ class ChatControllerDocsTest : RestDocsSupport() {
         )
         val sliceChatMessages: Slice<LastChatMessage> = SliceImpl(chatMessages, PageRequest.of(0, 10), false)
 
-        given(chatMessageService.findChatMessages(any(), any(), any())).willReturn(sliceChatMessages)
+        given(chatMessageQueryService.findChatMessages(any(), any(), any())).willReturn(sliceChatMessages)
 
         mockMvc.perform(
             get("/api/v1/chats/{chatRoomId}/messages", chatRoomId)
@@ -550,7 +548,7 @@ class ChatControllerDocsTest : RestDocsSupport() {
         val sliceChatMessages: Slice<LastChatMessage> = SliceImpl(chatMessages, PageRequest.of(0, 10), false)
 
 
-        given(chatMessageService.findChatMessages(any(), any(), any())).willReturn(sliceChatMessages)
+        given(chatMessageQueryService.findChatMessages(any(), any(), any())).willReturn(sliceChatMessages)
 
         mockMvc.perform(
             get("/api/v1/chats/{chatRoomId}/messages", chatRoomId)
@@ -601,7 +599,7 @@ class ChatControllerDocsTest : RestDocsSupport() {
     fun workoutRequestLastDocs() {
         val chatRoomId = 123L
 
-        given(workoutRequestService.findRecentWorkoutRequestFrom(listOf(chatRoomId)))
+        given(workoutRequestQueryService.findRecentWorkoutRequestFrom(listOf(chatRoomId)))
             .willReturn(listOf(
                 LastWorkoutRequestMessage(
                     workoutRequestId = 12L,

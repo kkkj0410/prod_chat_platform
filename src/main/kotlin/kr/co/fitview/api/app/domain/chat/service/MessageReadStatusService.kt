@@ -14,14 +14,14 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional(readOnly = true)
 class MessageReadStatusService(
     private val messageReadStatusRepository : MessageReadStatusRepository,
-    private val chatParticipantService : ChatParticipantService,
+    private val chatParticipantQueryService : ChatParticipantQueryService,
     private val memberQueryService : MemberQueryService
 ) {
 
     @Transactional
     fun saveMessageReadStatus(member : Member, chatMessage : ChatMessage, chatRoom : ChatRoom) : List<MessageReadStatus>{
 
-        val findOtherChatParticipant = chatParticipantService.findOtherParticipantFromMemberIdAndChatRoomId(member.id!!, chatRoom.id!!)
+        val findOtherChatParticipant = chatParticipantQueryService.findOtherParticipantFromMemberIdAndChatRoomId(member.id!!, chatRoom.id!!)
 
         val otherMember = memberQueryService.findMemberReferenceFrom(findOtherChatParticipant!!.getMemberId())
 

@@ -29,7 +29,6 @@ class WorkoutRequestService(
     private val workoutRequestRepository: WorkoutRequestRepository,
     private val workoutHistoryService : WorkoutHistoryService,
     private val chatNoticeMessageService : ChatNoticeMessageService,
-    private val fcmService : FcmService,
     private val time: Time
 ) {
 
@@ -103,13 +102,6 @@ class WorkoutRequestService(
         return response
     }
 
-    fun findRecentWorkoutRequestFrom(chatRoomIds: List<Long>): List<LastWorkoutRequestMessage> {
-        return workoutRequestRepository.findRecentWorkoutRequest(chatRoomIds)
-    }
-
-    fun findRecentWorkoutRequestFrom(chatRoomId: Long): WorkoutRequest? {
-        return workoutRequestRepository.findRecentWorkoutRequestEntity(chatRoomId)
-    }
 
     private fun validateWorkoutRequestUpdate(
         request: WorkoutRequestUpdateRequest,

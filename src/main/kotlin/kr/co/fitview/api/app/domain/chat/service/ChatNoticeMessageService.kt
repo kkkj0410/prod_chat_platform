@@ -32,7 +32,7 @@ class ChatNoticeMessageService(
     private val workoutHistoryService : WorkoutHistoryService,
     private val workoutHistoryQueryService : WorkoutHistoryQueryService,
     private val memberQueryService : MemberQueryService,
-    private val chatParticipantService : ChatParticipantService,
+    private val chatParticipantQueryService : ChatParticipantQueryService,
     private val chatNoticeMessageRepository : ChatNoticeMessageRepository,
     private val messageReadStatusService : MessageReadStatusService,
     private val publisher: ApplicationEventPublisher,
@@ -161,7 +161,7 @@ class ChatNoticeMessageService(
     }
 
     private fun findOtherMemberId(memberId: Long, findChatRoom: ChatRoom): Long {
-        val findOtherChatParticipant = chatParticipantService.findOtherParticipantFromMemberIdAndChatRoomId(
+        val findOtherChatParticipant = chatParticipantQueryService.findOtherParticipantFromMemberIdAndChatRoomId(
             memberId = memberId,
             chatRoomId = findChatRoom.id!!
         )

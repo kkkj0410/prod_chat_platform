@@ -42,6 +42,7 @@ import java.time.LocalDate
 
 class WorkoutPartnerRequestServiceTest @Autowired constructor(
     val workoutPartnerRequestService: WorkoutPartnerRequestService,
+    val workoutPartnerRequestQueryService: WorkoutPartnerRequestQueryService,
     val workoutPartnerRepository : WorkoutPartnerRepository,
     val workoutPartnerRequestRepository : WorkoutPartnerRequestRepository,
     val memberService : MemberService,
@@ -646,7 +647,7 @@ class WorkoutPartnerRequestServiceTest @Autowired constructor(
         workoutPartnerRequestRepository.save(workoutPartnerRequest)
 
         // when
-        val findWorkoutPartnerRequest = workoutPartnerRequestService.findRecentRequestWithin24Hours(fromMember.id!!, toMember.id!!)
+        val findWorkoutPartnerRequest = workoutPartnerRequestQueryService.findRecentRequestWithin24Hours(fromMember.id!!, toMember.id!!)
 
         // then
         assertThat(findWorkoutPartnerRequest)
@@ -680,7 +681,7 @@ class WorkoutPartnerRequestServiceTest @Autowired constructor(
         workoutPartnerRequestRepository.save(workoutPartnerRequest)
 
         // when
-        val findWorkoutPartnerRequest = workoutPartnerRequestService.findRecentRequestWithin24Hours(fromMember.id!!, toMember.id!!)
+        val findWorkoutPartnerRequest = workoutPartnerRequestQueryService.findRecentRequestWithin24Hours(fromMember.id!!, toMember.id!!)
 
         // then
         assertThat(findWorkoutPartnerRequest).isNull()
@@ -775,7 +776,7 @@ class WorkoutPartnerRequestServiceTest @Autowired constructor(
         )
 
         // when
-        val slice = workoutPartnerRequestService.findWorkoutPartnerFrom(me.id!!, condition)
+        val slice = workoutPartnerRequestQueryService.findWorkoutPartnerFrom(me.id!!, condition)
 
         // then
         assertThat(slice.content).hasSize(2)

@@ -24,6 +24,7 @@ import kr.co.fitview.api.app.domain.workout_partner.entity.QWorkoutPartner.worko
 import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartnerRequest
 import kr.co.fitview.api.app.domain.workout_partner.entity.enums.WorkoutPartnerRequestContent
 import kr.co.fitview.api.app.domain.workout_partner.entity.enums.WorkoutPartnerRequestStatus
+import kr.co.fitview.api.app.domain.workout_partner.service.WorkoutPartnerRequestQueryService
 import kr.co.fitview.api.app.domain.workout_partner.service.WorkoutPartnerRequestService
 import kr.co.fitview.api.app.global.entity.Gender
 import kr.co.fitview.api.app.global.entity.Role
@@ -52,11 +53,13 @@ class WorkoutPartnerControllerDocsTest : RestDocsSupport() {
 
     private val workoutPartnerRequestService: WorkoutPartnerRequestService =
         mock(WorkoutPartnerRequestService::class.java)
+    private val workoutPartnerRequestQueryService: WorkoutPartnerRequestQueryService =
+        mock(WorkoutPartnerRequestQueryService::class.java)
     private val securityUtil: SecurityUtil = mock(SecurityUtil::class.java)
     private val notificationStompService: NotificationStompService = mock(NotificationStompService::class.java)
 
     override fun initController(): Any {
-        return WorkoutPartnerController(workoutPartnerRequestService, securityUtil, notificationStompService)
+        return WorkoutPartnerController(workoutPartnerRequestService, workoutPartnerRequestQueryService, securityUtil, notificationStompService)
     }
 
     @DisplayName("핏버디 요청 API")
@@ -229,7 +232,7 @@ class WorkoutPartnerControllerDocsTest : RestDocsSupport() {
         val slice: Slice<WorkoutPartnerRequestResponse> = SliceImpl(responseList)
 
         // given
-        given(workoutPartnerRequestService.findWorkoutPartnerFrom(any(), any()))
+        given(workoutPartnerRequestQueryService.findWorkoutPartnerFrom(any(), any()))
             .willReturn(
                 slice
             )

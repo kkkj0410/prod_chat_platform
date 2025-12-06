@@ -1,7 +1,6 @@
 package kr.co.fitview.api.app.domain.workout_partner.service
 
 import kr.co.fitview.api.app.domain.chat.service.ChatRoomService
-import kr.co.fitview.api.app.domain.chat.service.ChatService
 import kr.co.fitview.api.app.domain.member.dto.response.WorkoutPartnerStatusResponse
 import kr.co.fitview.api.app.domain.member.dto.response.enums.ProfileWorkoutPartnerStatus
 import kr.co.fitview.api.app.domain.workout_partner.repository.WorkoutPartnerRepository
@@ -12,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional
 
 @Service
 @Transactional(readOnly = true)
-class WorkoutPartnerService(
+class WorkoutPartnerQueryService(
     val workoutPartnerRepository : WorkoutPartnerRepository,
     val workoutPartnerRequestQueryService : WorkoutPartnerRequestQueryService,
     val chatRoomService : ChatRoomService

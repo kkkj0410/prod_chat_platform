@@ -291,7 +291,7 @@ class WorkoutPartnerControllerTest : ControllerTestSupport(){
         val slice: Slice<WorkoutPartnerRequestResponse> = SliceImpl(responseList)
 
         // given
-        given(workoutPartnerRequestService.findWorkoutPartnerFrom(any(), any()))
+        given(workoutPartnerRequestQueryService.findWorkoutPartnerFrom(any(), any()))
             .willReturn(
                 slice
             )

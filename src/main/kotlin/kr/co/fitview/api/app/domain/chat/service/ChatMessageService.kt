@@ -26,10 +26,9 @@ import java.time.LocalDateTime
 @Transactional(readOnly = true)
 class ChatMessageService(
     private val chatMessageRepository: ChatMessageRepository,
-    private val chatParticipantService: ChatParticipantService,
+    private val chatParticipantQueryService: ChatParticipantQueryService,
     private val workoutRequestService: WorkoutRequestService,
     private val messageReadStatusService : MessageReadStatusService,
-    private val chatRoomQueryService : ChatRoomQueryService,
     private val memberQueryService : MemberQueryService,
     private val time: Time
 ) {
@@ -76,7 +75,7 @@ class ChatMessageService(
         chatRoom.updateLastMessageAt(now)
         chatMessageRepository.save(chatMessage)
 
-        val findOtherChatParticipant = chatParticipantService.findOtherParticipantFromMemberIdAndChatRoomId(fromMember.id!!, chatRoom.id!!)
+        val findOtherChatParticipant = chatParticipantQueryService.findOtherParticipantFromMemberIdAndChatRoomId(fromMember.id!!, chatRoom.id!!)
 
         val toMember = memberQueryService.findMemberReferenceFrom(findOtherChatParticipant!!.getMemberId())
 
@@ -117,48 +116,6 @@ class ChatMessageService(
     ) {
         if (scheduledAt.isBefore(now)) {
             throw GlobalException(ChatErrorCode.WORKOUT_REQUEST_TIME_PAST)
-        }
-    }
-
-    fun findLastChatMessages(memberId: Long, chatRoomIds: List<Long>): List<LastChatMessage> {
-        return chatMessageRepository.findRecentChatMessageByMemberIdAndIn(memberId, chatRoomIds)
-    }
-
-    fun findChatMessages(memberId: Long, chatRoomId: Long, condition: ChatMessageCondition): Slice<LastChatMessage> {
-        validateMemberInChatRoom(memberId, chatRoomId)
-
-        val slice = chatMessageRepository.findChatMessageByCondition(chatRoomId, condition)
-        val content = slice.content
-
-        val responses =
-            content.map { chatMessageAndWorkoutRequest -> mapChatMessage(chatMessageAndWorkoutRequest, memberId) }
-
-        return SliceImpl(responses, slice.pageable, slice.hasNext())
-    }
-
-    private fun validateMemberInChatRoom(memberId: Long, chatRoomId: Long) {
-        chatParticipantService.findChatRoomFromMemberIdAndChatRoomId(memberId, chatRoomId)
-            ?: throw GlobalException(ChatErrorCode.NOT_MEMBER_OF_CHAT_ROOM)
-    }
-
-    private fun mapChatMessage(chatAndRequest: ChatMessageAndWorkoutRequest, memberId: Long): LastChatMessage {
-        return when (chatAndRequest.chatMessage.type) {
-            ChatMessageType.TEXT ->
-                ChatMessageContent.from(chatAndRequest.chatMessage, memberId)
-
-            ChatMessageType.WORKOUT_REQUEST ->
-                ChatMessageWorkoutRequest.from(
-                    chatMessage = chatAndRequest.chatMessage,
-                    workoutRequest = chatAndRequest.workoutRequest!!,
-                    myMemberId = memberId,
-                    now = time.nowLocalDateTime
-                )
-
-            ChatMessageType.NOTICE ->
-                ChatNoticeMessageResponse.from(chatAndRequest.chatMessage, chatAndRequest.chatNoticeMessage!!)
-
-
-            else -> throw IllegalArgumentException("Unknown ChatMessageType: ${chatAndRequest.chatMessage.type}")
         }
     }
 
