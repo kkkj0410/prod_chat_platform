@@ -1,14 +1,12 @@
 package kr.co.fitview.api.app.domain.notification.service
 
 import kr.co.fitview.api.app.IntegrationTestSupport
-import kr.co.fitview.api.app.domain.chat.dto.response.*
 import kr.co.fitview.api.app.domain.chat.entity.ChatMessage
 import kr.co.fitview.api.app.domain.chat.entity.ChatParticipant
 import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatNoticeMessageType
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatRoomType
 import kr.co.fitview.api.app.domain.chat.repository.*
-import kr.co.fitview.api.app.domain.member.dto.response.MemberChatProfileResponse
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.domain.notification.constant.StompConstant
@@ -16,7 +14,6 @@ import kr.co.fitview.api.app.domain.notification.dto.StompSendEvent
 import kr.co.fitview.api.app.domain.notification.dto.response.*
 import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
 import kr.co.fitview.api.app.domain.workout.dto.response.WorkoutRequestUpdateResponse
-import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusForResponse
 import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequest
 import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
 import kr.co.fitview.api.app.domain.workout_history.repository.WorkoutHistoryRepository
@@ -47,178 +44,118 @@ class NotificationStompServiceTest @Autowired constructor(
     private val chatParticipantRepository : ChatParticipantRepository,
     private val chatMessageRepository : ChatMessageRepository,
     private val workoutRequestRepository : WorkoutRequestRepository,
-    private val workoutHistoryRepository: WorkoutHistoryRepository
 ) : IntegrationTestSupport() {
 
-    @DisplayName("채팅 메시지를 송신자, 수신자에게 보낸다.")
+    @DisplayName("채팅 텍스트 메시지를 보낸다.")
     @Test
     fun sendChatTextMessage() {
         // given
-        val memberId = 123L
-        val otherMemberId = 234L
-
-        val chatMessage = StompChatTextMessage(
-            chatMessageId = 1L,
-            sentAt = time.nowLocalDateTime,
-            content = "하드코딩 메시지 예시입니다."
-        )
-
-        val chatProfile = MemberChatProfileResponse(
-            profileImageUrl = "https://example.com/profile.jpg",
-            nickname = "홍길동"
-        )
-
-        val response = ChatMessageDetailResponse.of(
-            chatRoomId = 123L,
-            isCompleteWorkout = false,
-            chatProfile = chatProfile,
-            chatMessage = chatMessage,
-            otherMemberId = otherMemberId
-        )
-
-        given(stompPublisher.sendToUser(any())).willAnswer {}
-
-
-        // when
-        notificationStompService.sendChatMessage(memberId, response)
-
-        // then
-        then(stompPublisher).should().sendToUser(
-            StompSendEvent(
-                memberId = memberId,
-                destination = StompConstant.SUB_CHAT_MESSAGE,
-                payload = WsResponse(
-                    type = WsMessageType.TEXT.code,
-                    payload = response.withIsMe(true)
+        val sendMessage = StompEventTextMessageDepth1(
+            memberId = 12L,
+            message = StompEventTextMessageDepth2(
+                chatRoomId = 123L,
+                isCompleteWorkout = false,
+                profileImageUrl = "profileImageUrl",
+                nickname = "nickname",
+                chatMessage = StompEventTextMessageDepth3(
+                    chatMessageId = 1234L,
+                    content = "content",
+                    sentAt = time.nowLocalDateTime,
+                    isMe = false
                 )
             )
         )
+
+        given(stompPublisher.sendToUser(any(), any(), any())).willAnswer {}
+
+        // when
+        notificationStompService.sendChatTextMessage(sendMessage)
+
+        // then
         then(stompPublisher).should().sendToUser(
-            StompSendEvent(
-                memberId = otherMemberId,
-                destination = StompConstant.SUB_CHAT_MESSAGE,
-                payload = WsResponse(
-                    type = WsMessageType.TEXT.code,
-                    payload = response.withIsMe(false)
-                )
+            memberId = 12L,
+            destination = StompConstant.SUB_CHAT_MESSAGE,
+            payload = WsResponse(
+                type = WsMessageType.TEXT.code,
+                payload = sendMessage.message
             )
         )
     }
 
-    @DisplayName("채팅 운동 요청 메시지를 송신자, 수신자에게 보낸다.")
+    @DisplayName("채팅 운동 요청 메시지를 보낸다.")
     @Test
     fun sendChatWorkoutRequestMessage() {
         // given
-        val memberId = 123L
-        val otherMemberId = 234L
-
-        val workoutMessage = StompChatWorkoutRequestMessage(
-            chatMessageId = 2L,
-            sentAt = time.nowLocalDateTime,
-            workoutRequestId = 987L,
-            status = WorkoutRequestStatusForResponse.PENDING,
-            scheduledAt = time.nowLocalDateTime.plusDays(1),
-            location = "location",
-        )
-
-        val chatProfile = MemberChatProfileResponse(
-            profileImageUrl = "https://example.com/profile.jpg",
-            nickname = "홍길동"
-        )
-
-        val response = ChatMessageDetailResponse.of(
-            chatRoomId = 123L,
-            isCompleteWorkout = false,
-            chatProfile = chatProfile,
-            chatMessage = workoutMessage,
-            otherMemberId = otherMemberId
-        )
-
-        given(stompPublisher.sendToUser(any())).willAnswer {}
-
-
-        // when
-        notificationStompService.sendChatMessage(memberId, response)
-
-        // then
-        then(stompPublisher).should().sendToUser(
-            StompSendEvent(
-                memberId = memberId,
-                destination = StompConstant.SUB_CHAT_MESSAGE,
-                payload = WsResponse(
-                    type = WsMessageType.WORKOUT_REQUEST.code,
-                    payload = response.withIsMe(true)
+        val sendMessage = StompEventWorkoutRequestMessageDepth1(
+            memberId = 12L,
+            message = StompEventWorkoutRequestMessageDepth2(
+                chatRoomId = 123L,
+                isCompleteWorkout = false,
+                profileImageUrl = "profileImageUrl",
+                nickname = "nickname",
+                chatMessage = StompEventWorkoutRequestMessageDepth3(
+                    chatMessageId = 1234L,
+                    sentAt = time.nowLocalDateTime,
+                    isMe = false,
+                    workoutRequestId = 23L,
+                    status = WorkoutRequestStatus.EXPIRE,
+                    scheduledAt = time.nowLocalDateTime.plusDays(3),
+                    location = "location"
                 )
             )
         )
+
+        given(stompPublisher.sendToUser(any(), any(), any())).willAnswer {}
+
+        // when
+        notificationStompService.sendChatWorkoutRequestMessage(sendMessage)
+
+        // then
         then(stompPublisher).should().sendToUser(
-            StompSendEvent(
-                memberId = otherMemberId,
-                destination = StompConstant.SUB_CHAT_MESSAGE,
-                payload = WsResponse(
-                    type = WsMessageType.WORKOUT_REQUEST.code,
-                    payload = response.withIsMe(false)
-                )
+            memberId = 12L,
+            destination = StompConstant.SUB_CHAT_MESSAGE,
+            payload = WsResponse(
+                type = WsMessageType.WORKOUT_REQUEST.code,
+                payload = sendMessage.message
             )
         )
     }
 
-    @DisplayName("채팅 안내 문구 메시지를 송신자, 수신자에게 보낸다.")
+    @DisplayName("채팅 안내 문구 메시지를 보낸다.")
     @Test
     fun sendChatNoticeMessage() {
         // given
-        val memberId = 123L
-        val otherMemberId = 234L
-
-        val chatMessage = StompChatNoticeMessage(
-            chatMessageId = 1L,
-            sentAt = time.nowLocalDateTime,
-            content = ChatNoticeMessageType.WORKOUT_REQUEST_COMPLETE,
-            workoutHistoryId = 123
+        val sendMessage = StompEventChatNoticeMessageDepth1(
+            memberId = 12L,
+            message = StompEventChatNoticeMessageDepth2(
+                chatRoomId = 123L,
+                isCompleteWorkout = false,
+                profileImageUrl = "profileImageUrl",
+                nickname = "nickname",
+                chatMessage = StompEventChatNoticeMessageDepth3(
+                    chatMessageId = 1234L,
+                    sentAt = time.nowLocalDateTime,
+                    workoutHistoryId = 123L,
+                    content = ChatNoticeMessageType.WORKOUT_REQUEST_COMPLETE
+                )
+            )
         )
 
-        val chatProfile = MemberChatProfileResponse(
-            profileImageUrl = "https://example.com/profile.jpg",
-            nickname = "홍길동"
-        )
-
-        val response = ChatMessageDetailResponse.of(
-            chatRoomId = 123L,
-            isCompleteWorkout = false,
-            chatProfile = chatProfile,
-            chatMessage = chatMessage,
-            otherMemberId = otherMemberId
-        )
-
-        given(stompPublisher.sendToUser(any())).willAnswer {}
-
+        given(stompPublisher.sendToUser(any(), any(), any())).willAnswer {}
 
         // when
-        notificationStompService.sendChatMessage(memberId, response)
+        notificationStompService.sendChatNoticeMessage(sendMessage)
 
         // then
         then(stompPublisher).should().sendToUser(
-            StompSendEvent(
-                memberId = memberId,
-                destination = StompConstant.SUB_CHAT_MESSAGE,
-                payload = WsResponse(
-                    type = WsMessageType.NOTICE.code,
-                    payload = response
-                )
-            )
-        )
-        then(stompPublisher).should().sendToUser(
-            StompSendEvent(
-                memberId = otherMemberId,
-                destination = StompConstant.SUB_CHAT_MESSAGE,
-                payload = WsResponse(
-                    type = WsMessageType.NOTICE.code,
-                    payload = response
-                )
+            memberId = 12L,
+            destination = StompConstant.SUB_CHAT_MESSAGE,
+            payload = WsResponse(
+                type = WsMessageType.NOTICE.code,
+                payload = sendMessage.message
             )
         )
     }
-
 
     @DisplayName("운동 요청의 상태 변화를 현재 접속한 회원들에게 알린다.")
     @Test
@@ -499,14 +436,14 @@ class NotificationStompServiceTest @Autowired constructor(
         workoutRequestRepository.save(workoutRequest)
 
 
-        val stomp1 = StompChatNoticeMessageResponse(
+        val stomp1 = StompEventChatNoticeMessageDepth1(
             memberId = me.id!!,
-            message = StompEventChatNoticeMessage(
+            message = StompEventChatNoticeMessageDepth2(
                 chatRoomId = chatRoom.id!!,
                 isCompleteWorkout = false,
                 profileImageUrl = signupRequest2.profileImageUrl,
                 nickname = signupRequest2.nickname,
-                chatMessage = StompNoticeMessage(
+                chatMessage = StompEventChatNoticeMessageDepth3(
                     chatMessageId = chatMessage1.id!!,
                     sentAt = chatMessage1.sentAt!!,
                     workoutHistoryId = null,
@@ -515,14 +452,14 @@ class NotificationStompServiceTest @Autowired constructor(
             )
         )
 
-        val stomp2 = StompChatNoticeMessageResponse(
+        val stomp2 = StompEventChatNoticeMessageDepth1(
             memberId = other.id!!,
-            message = StompEventChatNoticeMessage(
+            message = StompEventChatNoticeMessageDepth2(
                 chatRoomId = chatRoom.id!!,
                 isCompleteWorkout = false,
                 profileImageUrl = signupRequest.profileImageUrl,
                 nickname = signupRequest.nickname,
-                chatMessage = StompNoticeMessage(
+                chatMessage = StompEventChatNoticeMessageDepth3(
                     chatMessageId = chatMessage1.id!!,
                     sentAt = chatMessage1.sentAt!!,
                     workoutHistoryId = null,

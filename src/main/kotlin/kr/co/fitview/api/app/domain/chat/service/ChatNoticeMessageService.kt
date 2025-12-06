@@ -10,9 +10,9 @@ import kr.co.fitview.api.app.domain.chat.repository.ChatMessageRepository
 import kr.co.fitview.api.app.domain.chat.repository.ChatNoticeMessageRepository
 import kr.co.fitview.api.app.domain.member.dto.response.ChatRoomMemberProfile
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
-import kr.co.fitview.api.app.domain.notification.dto.response.StompChatNoticeMessageResponse
-import kr.co.fitview.api.app.domain.notification.dto.response.StompEventChatNoticeMessage
-import kr.co.fitview.api.app.domain.notification.dto.response.StompNoticeMessage
+import kr.co.fitview.api.app.domain.notification.dto.response.StompEventChatNoticeMessageDepth1
+import kr.co.fitview.api.app.domain.notification.dto.response.StompEventChatNoticeMessageDepth2
+import kr.co.fitview.api.app.domain.notification.dto.response.StompEventChatNoticeMessageDepth3
 import kr.co.fitview.api.app.domain.workout_history.entity.WorkoutHistory
 import kr.co.fitview.api.app.domain.workout_history.service.WorkoutHistoryQueryService
 import kr.co.fitview.api.app.domain.workout_history.service.WorkoutHistoryService
@@ -147,7 +147,7 @@ class ChatNoticeMessageService(
         memberTwoId: Long
     ): Pair<ChatRoomMemberProfile, ChatRoomMemberProfile> {
 
-        val profiles = memberQueryService.findMemberProfileFrom(chatRoom.id!!)
+        val profiles = memberQueryService.findAllMemberProfileFrom(chatRoom.id!!)
         if (profiles.size != 2) {
             throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
         }
@@ -194,7 +194,7 @@ class ChatNoticeMessageService(
         chatMessages: List<ChatMessage>,
         expireWorkoutRequest: List<ExpireWorkoutRequest>
     ) {
-        val chatRoomMemberMap = memberQueryService.findMemberProfileFrom(chatRoomIds)
+        val chatRoomMemberMap = memberQueryService.findAllMemberProfileFrom(chatRoomIds)
             .groupBy{it.chatRoomId}
 
         val workoutHistoryMap = workoutHistoryQueryService.findAllWorkoutHistoryFrom(chatRoomIds)
@@ -239,14 +239,14 @@ class ChatNoticeMessageService(
         otherMemberProfile: ChatRoomMemberProfile?,
         chatMessage: ChatMessage,
         type : ChatNoticeMessageType
-    ) = StompChatNoticeMessageResponse(
+    ) = StompEventChatNoticeMessageDepth1(
         memberId = receiveMemberId,
-        message = StompEventChatNoticeMessage(
+        message = StompEventChatNoticeMessageDepth2(
             chatRoomId = chatRoomId,
             isCompleteWorkout = isCompleteWorkout,
             profileImageUrl = otherMemberProfile?.profileImageUrl ?: "",
             nickname = otherMemberProfile?.nickname ?: "",
-            chatMessage = StompNoticeMessage(
+            chatMessage = StompEventChatNoticeMessageDepth3(
                 chatMessageId = chatMessage.id!!,
                 sentAt = chatMessage.sentAt!!,
                 workoutHistoryId = null,

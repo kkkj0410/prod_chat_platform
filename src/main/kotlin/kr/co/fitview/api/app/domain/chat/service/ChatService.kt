@@ -12,7 +12,6 @@ import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestService
 import kr.co.fitview.api.app.domain.workout_partner.service.WorkoutPartnerQueryService
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.chat.ChatErrorCode
-import kr.co.fitview.api.app.global.exception.error.global.GlobalErrorCode
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -20,24 +19,23 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 @Transactional(readOnly = true)
 class ChatService(
-    private val chatRoomService : ChatRoomService,
-    private val chatParticipantService : ChatParticipantService,
-    private val workoutPartnerQueryService : WorkoutPartnerQueryService,
-    private val chatMessageService : ChatMessageService,
-    private val workoutRequestQueryService : WorkoutRequestQueryService,
-    private val memberQueryService : MemberQueryService,
-    private val workoutRequestService : WorkoutRequestService
+    private val chatRoomService: ChatRoomService,
+    private val chatParticipantService: ChatParticipantService,
+    private val workoutPartnerQueryService: WorkoutPartnerQueryService,
+    private val chatMessageService: ChatMessageService,
+    private val memberQueryService: MemberQueryService,
+    private val workoutRequestService: WorkoutRequestService
 ) {
 
     @Transactional
     fun saveChatRoom(memberId: Long, request: ChatRoomCreateServiceRequest): ChatRoomCreateResponse {
-        if(isNotWorkoutPartner(memberId, request)){
+        if (isNotWorkoutPartner(memberId, request)) {
             throw GlobalException(ChatErrorCode.NOT_PARTNER)
         }
 
         val findChatRoom = chatRoomService.findPrivateChatRoomFrom(memberId, request.toMemberId)
 
-        if(isNotNull(findChatRoom)){
+        if (isNotNull(findChatRoom)) {
             return ChatRoomCreateResponse(findChatRoom!!.id!!)
         }
 
@@ -49,19 +47,14 @@ class ChatService(
     }
 
     @Transactional
-    fun sendMessage(memberId: Long, chatRoomId: Long, message : ChatMessageRequest) : ChatMessage {
-
-        workoutRequestQueryService.findRecentWorkoutRequestFrom(listOf(chatRoomId))
+    fun sendMessage(memberId: Long, chatRoomId: Long, message: ChatMessageRequest): ChatMessage {
 
         val findChatRoom = chatRoomService.findChatRoomFromMemberIdAndChatRoomId(memberId, chatRoomId)
             ?: throw GlobalException(ChatErrorCode.NOT_MEMBER_OF_CHAT_ROOM)
 
-        val findChatProfile = memberQueryService.findMemberChatProfileFrom(memberId)
-            ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
-
         when (message) {
             is ChatTextMessageRequest -> {
-                return chatMessageService.addChatTextMessage(
+                return chatMessageService.saveChatTextMessage(
                     member = memberQueryService.findMemberReferenceFrom(memberId),
                     chatRoom = findChatRoom,
                     message = message.toServiceRequest()
@@ -69,33 +62,13 @@ class ChatService(
             }
 
             is ChatWorkoutRequestMessageRequest -> {
-                 return workoutRequestService.saveChatWorkoutRequestMessage(
+                return workoutRequestService.saveChatWorkoutRequestMessage(
                     fromMember = memberQueryService.findMemberReferenceFrom(memberId),
                     chatRoom = findChatRoom,
                     message = message.toServiceRequest()
                 )
             }
         }
-
-
-
-//        val findOtherChatParticipant = chatParticipantQueryService.findOtherParticipantFromMemberIdAndChatRoomId(
-//            memberId = memberId,
-//            chatRoomId = chatRoomId
-//        )
-//        val otherMemberId = findOtherChatParticipant!!.getMemberId()
-//
-//        val isCompleteWorkout = workoutHistoryService.existsWorkoutHistoryFrom(memberId, otherMemberId)
-//
-//        val response = ChatMessageDetailResponse.of(
-//            chatRoomId = chatRoomId,
-//            isCompleteWorkout = isCompleteWorkout,
-//            chatProfile = findChatProfile,
-//            chatMessage = savedMessage,
-//            otherMemberId = otherMemberId
-//        )
-//
-//        return response
     }
 
 
@@ -105,7 +78,7 @@ class ChatService(
     ) = !workoutPartnerQueryService.isWorkoutPartnerFrom(memberId, request.toMemberId)
 
 
-    private fun isNotNull(value : Any?) = value != null
+    private fun isNotNull(value: Any?) = value != null
 
 
 }

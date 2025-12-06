@@ -59,13 +59,18 @@ class MemberQueryService(
         return memberRepository.getReferenceById(memberId)
     }
 
-    fun findMemberProfileFrom(chatRoomIds : List<Long>) : List<ChatRoomMemberProfile>{
+    fun findAllMemberProfileFrom(chatRoomIds : List<Long>) : List<ChatRoomMemberProfile>{
         return memberRepository.findAllChatRoomMemberProfile(chatRoomIds)
     }
 
-    fun findMemberProfileFrom(chatRoomId : Long) : List<ChatRoomMemberProfile>{
+    fun findAllMemberProfileFrom(chatRoomId : Long) : List<ChatRoomMemberProfile>{
         return memberRepository.findAllChatRoomMemberProfile(chatRoomId)
     }
+
+    fun findMemberProfileFrom(memberId : Long, chatRoomId : Long) : ChatRoomMemberProfile? {
+        return memberRepository.findChatRoomMemberProfile(memberId, chatRoomId)
+    }
+
 
     fun findMemberFromEmail(email : String) : Member?{
         return memberRepository.findByEmailAndDeletedAtIsNull(email)

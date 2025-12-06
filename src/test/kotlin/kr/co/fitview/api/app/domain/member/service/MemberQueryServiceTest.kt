@@ -8,11 +8,9 @@ import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
 import kr.co.fitview.api.app.domain.address.repository.AddressRepository
 import kr.co.fitview.api.app.domain.chat.entity.ChatParticipant
 import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
-import kr.co.fitview.api.app.domain.chat.entity.QChatRoom.chatRoom
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatRoomType
 import kr.co.fitview.api.app.domain.chat.repository.ChatParticipantRepository
 import kr.co.fitview.api.app.domain.chat.repository.ChatRoomRepository
-import kr.co.fitview.api.app.domain.image.repository.MemberImageRepository
 import kr.co.fitview.api.app.domain.member.condition.MemberLocalCondition
 import kr.co.fitview.api.app.domain.member.dto.request.Age
 import kr.co.fitview.api.app.domain.member.dto.response.enums.ProfileWorkoutPartnerStatus
@@ -22,7 +20,6 @@ import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutGoal
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutStyle
 import kr.co.fitview.api.app.domain.member.entity.enums.WorkoutTimeName
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
-import kr.co.fitview.api.app.domain.member.repository.WorkoutTimeRepository
 import kr.co.fitview.api.app.domain.oauth2.dto.request.OAuth2SignupServiceRequest
 import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
 import kr.co.fitview.api.app.global.entity.Gender
@@ -31,7 +28,6 @@ import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.global.GlobalErrorCode
 import kr.co.fitview.api.app.global.exception.error.member.MemberErrorCode
-import kr.co.fitview.api.app.global.exception.error.workout_request.WorkoutRequestErrorCode
 import kr.co.fitview.api.app.global.random.RandomCustom
 import kr.co.fitview.api.app.global.util.TestDataFactory
 import org.assertj.core.api.Assertions.*
@@ -196,7 +192,7 @@ class MemberQueryServiceTest @Autowired constructor(
 
     @DisplayName("채팅방 회원 프로필 조회")
     @Test
-    fun findMemberProfileFrom() {
+    fun findAllMemberProfileFrom() {
         // given
         val me = Member(
             email = "email1",
@@ -262,7 +258,7 @@ class MemberQueryServiceTest @Autowired constructor(
         val chatRoomIds = listOf(chatRoom.id!!, chatRoom2.id!!)
 
         // when
-        val findMembers = memberQueryService.findMemberProfileFrom(chatRoomIds)
+        val findMembers = memberQueryService.findAllMemberProfileFrom(chatRoomIds)
 
         // then
         assertThat(findMembers).hasSize(4)
@@ -278,7 +274,7 @@ class MemberQueryServiceTest @Autowired constructor(
 
     @DisplayName("특정 채팅방 회원 프로필 조회")
     @Test
-    fun findMemberProfileFromByChatRoomId() {
+    fun findAllMemberProfileFromByChatRoomId() {
         // given
         val me = Member(
             email = "email1",
@@ -316,7 +312,7 @@ class MemberQueryServiceTest @Autowired constructor(
         chatParticipantRepository.save(chatParticipant2)
 
         // when
-        val findMembers = memberQueryService.findMemberProfileFrom(chatRoom.id!!)
+        val findMembers = memberQueryService.findAllMemberProfileFrom(chatRoom.id!!)
 
         // then
         assertThat(findMembers).hasSize(2)

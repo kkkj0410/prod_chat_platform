@@ -14,6 +14,8 @@ import kr.co.fitview.api.app.domain.chat.repository.ChatParticipantRepository
 import kr.co.fitview.api.app.domain.chat.repository.ChatRoomRepository
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
+import kr.co.fitview.api.app.domain.notification.dto.response.StompEventTextMessageDepth1
+import kr.co.fitview.api.app.domain.notification.dto.response.StompEventWorkoutRequestMessageDepth1
 import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
 import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusForResponse
 import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequest
@@ -191,7 +193,7 @@ class ChatServiceTest @Autowired constructor(
         )
 
         // when
-        val response = chatService.sendMessage(
+        chatService.sendMessage(
             memberId = me.id!!,
             chatRoomId = savedChatRoom.id!!,
             message = request
@@ -199,24 +201,6 @@ class ChatServiceTest @Autowired constructor(
 
         // then
         val findChatMessage = chatMessageRepository.findAll()[0]
-
-        assertThat(response)
-            .extracting(
-                "chatRoomId",
-                "profileImageUrl",
-                "nickname",
-                "chatMessage.chatMessageId",
-                "chatMessage.sentAt",
-                "chatMessage.content",
-            )
-            .contains(
-                savedChatRoom.id!!,
-                signupRequest.profileImageUrl,
-                signupRequest.nickname,
-                findChatMessage.id!!,
-                time.nowLocalDateTime,
-                request.content
-            )
 
         assertThat(findChatMessage)
             .extracting("member", "chatRoom", "type", "content", "sentAt")
@@ -273,31 +257,6 @@ class ChatServiceTest @Autowired constructor(
         val findChatMessage = chatMessageRepository.findAll()[0]
         val findWorkoutRequest = workoutRequestRepository.findAll()[0]
 
-        assertThat(response)
-            .extracting(
-                "chatRoomId",
-                "profileImageUrl",
-                "nickname",
-                "chatMessage.chatMessageId",
-                "chatMessage.sentAt",
-                "chatMessage.workoutRequestId",
-                "chatMessage.status",
-                "chatMessage.scheduledAt",
-                "chatMessage.location"
-            )
-            .contains(
-                savedChatRoom.id!!,
-                signupRequest.profileImageUrl,
-                signupRequest.nickname,
-                findChatMessage.id!!,
-                time.nowLocalDateTime,
-                findWorkoutRequest.id!!,
-                WorkoutRequestStatusForResponse.PENDING,
-                request.scheduledAt,
-                request.location
-            )
-
-
         assertThat(findChatMessage)
             .extracting("member", "chatRoom", "type", "content", "sentAt")
             .contains(me, savedChatRoom, ChatMessageType.WORKOUT_REQUEST, null, time.nowLocalDateTime)
@@ -312,6 +271,55 @@ class ChatServiceTest @Autowired constructor(
                 request.scheduledAt,
                 time.nowLocalDateTime
             )
+    }
+
+    @DisplayName("채팅방에 메시지를 보내면 실시간 알람이 발생한다.")
+    @Test
+    fun sendMessageStomp() {
+        // given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val other = Member(
+            email = "email2",
+            password = "password2",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+        memberRepository.save(other)
+
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest, me.id!!)
+
+        val savedChatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+
+        val chatParticipant1 = ChatParticipant(
+            savedChatRoom,
+            me
+        )
+        val chatParticipant2 = ChatParticipant(
+            savedChatRoom,
+            other
+        )
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+
+        val request = ChatTextMessageRequest(
+            content = "hello"
+        )
+
+        // when
+        chatService.sendMessage(
+            memberId = me.id!!,
+            chatRoomId = savedChatRoom.id!!,
+            message = request
+        )
+
+        // then
+        val count = events.stream(StompEventTextMessageDepth1::class.java).count()
+        assertThat(count).isEqualTo(2)
     }
 
     @DisplayName("해당 회원이 지정 채팅방에 있는 것이 조회되지 않으면 메시지를 보내지 않는다.")

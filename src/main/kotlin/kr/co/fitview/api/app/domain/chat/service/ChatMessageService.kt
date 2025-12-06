@@ -1,18 +1,21 @@
 package kr.co.fitview.api.app.domain.chat.service
 
 import kr.co.fitview.api.app.domain.chat.dto.request.*
-import kr.co.fitview.api.app.domain.chat.dto.response.*
 import kr.co.fitview.api.app.domain.chat.entity.ChatMessage
 import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
 import kr.co.fitview.api.app.domain.chat.repository.ChatMessageRepository
+import kr.co.fitview.api.app.domain.member.dto.response.ChatRoomMemberProfile
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
-import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusForResponse
-import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
-import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestService
+import kr.co.fitview.api.app.domain.notification.dto.response.*
+import kr.co.fitview.api.app.domain.workout.entity.QWorkoutRequest.workoutRequest
+import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequest
+import kr.co.fitview.api.app.domain.workout_history.service.WorkoutHistoryQueryService
+import kr.co.fitview.api.app.domain.workout_history.service.WorkoutHistoryService
 import kr.co.fitview.api.app.global.exception.GlobalException
-import kr.co.fitview.api.app.global.exception.error.chat.ChatErrorCode
+import kr.co.fitview.api.app.global.exception.error.global.GlobalErrorCode
 import kr.co.fitview.api.app.global.time.Time
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
@@ -22,11 +25,14 @@ import java.time.LocalDateTime
 class ChatMessageService(
     private val chatMessageRepository: ChatMessageRepository,
     private val messageReadStatusService : MessageReadStatusService,
+    private val workoutHistoryQueryService : WorkoutHistoryQueryService,
+    private val memberQueryService : MemberQueryService,
+    private val publisher: ApplicationEventPublisher,
     private val time: Time
 ) {
 
     @Transactional
-    fun addChatTextMessage(member: Member, chatRoom: ChatRoom, message: ChatTextMessageServiceRequest) : ChatMessage {
+    fun saveChatTextMessage(member: Member, chatRoom: ChatRoom, message: ChatTextMessageServiceRequest) : ChatMessage {
         val now = time.nowLocalDateTime
 
         chatRoom.updateLastMessageAt(now)
@@ -39,8 +45,11 @@ class ChatMessageService(
             chatRoom = chatRoom
         )
 
+        sendStompWorkoutRequestMessage(member, chatRoom, savedChatMessage)
+
         return savedChatMessage
     }
+
 
     @Transactional
     fun addWorkoutRequestMessage(fromMember: Member, chatRoom: ChatRoom, now: LocalDateTime) : ChatMessage {
@@ -69,5 +78,49 @@ class ChatMessageService(
         return chatMessage
     }
 
+
+    private fun sendStompWorkoutRequestMessage(
+        fromMember: Member,
+        chatRoom: ChatRoom,
+        chatMessage: ChatMessage,
+    ) {
+        val toMember = memberQueryService.findOtherMemberFrom(fromMember.id!!, chatRoom.id!!)
+            ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
+
+        val isCompleteWorkout = workoutHistoryQueryService.existsWorkoutHistoryFrom(chatRoom.id!!)
+        val meProfile = memberQueryService.findMemberProfileFrom(fromMember.id!!, chatRoom.id!!)
+            ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
+
+        val meStompMessage = createStompTextMessage(fromMember.id!!, chatRoom, isCompleteWorkout, meProfile, chatMessage, true)
+        val otherStompMessage = createStompTextMessage(toMember.id!!, chatRoom, isCompleteWorkout, meProfile, chatMessage, false)
+
+        publisher.publishEvent(meStompMessage)
+        publisher.publishEvent(otherStompMessage)
+    }
+
+    private fun createStompTextMessage(
+        memberId: Long,
+        chatRoom: ChatRoom,
+        isCompleteWorkout: Boolean,
+        meProfile: ChatRoomMemberProfile,
+        chatMessage: ChatMessage,
+        isMe : Boolean
+    ) : StompEventTextMessageDepth1{
+        return StompEventTextMessageDepth1(
+            memberId = memberId,
+            message = StompEventTextMessageDepth2(
+                chatRoomId = chatRoom.id!!,
+                isCompleteWorkout = isCompleteWorkout,
+                profileImageUrl = meProfile.profileImageUrl,
+                nickname = meProfile.nickname,
+                chatMessage = StompEventTextMessageDepth3(
+                    chatMessageId = chatMessage.id!!,
+                    content = chatMessage.content!!,
+                    sentAt = chatMessage.sentAt!!,
+                    isMe = isMe
+                )
+            )
+        )
+    }
 
 }

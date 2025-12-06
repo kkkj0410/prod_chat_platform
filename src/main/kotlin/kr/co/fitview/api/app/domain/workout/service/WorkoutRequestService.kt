@@ -8,14 +8,19 @@ import kr.co.fitview.api.app.domain.chat.entity.enums.ChatNoticeMessageType
 import kr.co.fitview.api.app.domain.chat.service.ChatMessageService
 import kr.co.fitview.api.app.domain.chat.service.ChatNoticeMessageService
 import kr.co.fitview.api.app.domain.chat.service.MessageReadStatusService
+import kr.co.fitview.api.app.domain.member.dto.response.ChatRoomMemberProfile
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
+import kr.co.fitview.api.app.domain.notification.dto.response.StompEventWorkoutRequestMessageDepth1
+import kr.co.fitview.api.app.domain.notification.dto.response.StompEventWorkoutRequestMessageDepth2
+import kr.co.fitview.api.app.domain.notification.dto.response.StompEventWorkoutRequestMessageDepth3
 import kr.co.fitview.api.app.domain.workout.dto.response.WorkoutRequestUpdateResponse
 import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusForRequest
 import kr.co.fitview.api.app.domain.workout_history.entity.WorkoutHistory
 import kr.co.fitview.api.app.domain.workout.repository.WorkoutRequestRepository
 import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequest
 import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
+import kr.co.fitview.api.app.domain.workout_history.service.WorkoutHistoryQueryService
 import kr.co.fitview.api.app.domain.workout_history.service.WorkoutHistoryService
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.chat.ChatErrorCode
@@ -31,6 +36,7 @@ import java.time.LocalDateTime
 @Transactional(readOnly = true)
 class WorkoutRequestService(
     private val workoutRequestRepository: WorkoutRequestRepository,
+    private val workoutHistoryQueryService : WorkoutHistoryQueryService,
     private val workoutHistoryService : WorkoutHistoryService,
     private val chatNoticeMessageService : ChatNoticeMessageService,
     private val chatMessageService : ChatMessageService,
@@ -70,56 +76,38 @@ class WorkoutRequestService(
             chatRoom = chatRoom
         )
 
-
-
+        sendStompWorkoutRequestMessage(fromMember, toMember, chatRoom, savedChatMessage, workoutRequest)
 
         return savedChatMessage
+    }
 
-//        val response = StompChatWorkoutRequestMessage(
-//            chatMessageId = savedChatMessage.id!!,
-//            sentAt = now,
-//            workoutRequestId = savedWorkoutRequest.id!!,
-//            status = WorkoutRequestStatusForResponse.from(
-//                dbStatus = WorkoutRequestStatus.PENDING,
-//                requestedAt = now,
-//                scheduledAt = message.scheduledAt,
-//                now = now
-//            ),
-//            scheduledAt = message.scheduledAt,
+
+//    @Transactional
+//    fun addWorkoutRequest(
+//        chatRoomId: Long,
+//        chatMessage: ChatMessage,
+//        fromMember: Member,
+//        toMember: Member,
+//        message: ChatWorkoutRequestMessageServiceRequest
+//    ): WorkoutRequest {
+//        // FE 테스트를 위해 validate 꺼둠. FE 검토 끝나면 다시 켜기(25.12.1)
+////        val findWorkoutRequest = findRecentWorkoutRequestFrom(chatRoomId)
+////
+////        validateExistsWorkoutRequest(findWorkoutRequest)
+//
+//        val workoutRequest = WorkoutRequest.of(
+//            chatMessage = chatMessage,
+//            fromMember = fromMember,
+//            toMember = toMember,
 //            location = message.location,
+//            scheduledAt = message.scheduledAt,
+//            requestedAt = time.nowLocalDateTime
 //        )
 //
-//        return response
-    }
-
-
-
-    @Transactional
-    fun addWorkoutRequest(
-        chatRoomId: Long,
-        chatMessage: ChatMessage,
-        fromMember: Member,
-        toMember: Member,
-        message: ChatWorkoutRequestMessageServiceRequest
-    ): WorkoutRequest {
-        // FE 테스트를 위해 validate 꺼둠. FE 검토 끝나면 다시 켜기(25.12.1)
-//        val findWorkoutRequest = findRecentWorkoutRequestFrom(chatRoomId)
+//        val savedWorkoutRequest = workoutRequestRepository.save(workoutRequest)
 //
-//        validateExistsWorkoutRequest(findWorkoutRequest)
-
-        val workoutRequest = WorkoutRequest.of(
-            chatMessage = chatMessage,
-            fromMember = fromMember,
-            toMember = toMember,
-            location = message.location,
-            scheduledAt = message.scheduledAt,
-            requestedAt = time.nowLocalDateTime
-        )
-
-        val savedWorkoutRequest = workoutRequestRepository.save(workoutRequest)
-
-        return savedWorkoutRequest
-    }
+//        return savedWorkoutRequest
+//    }
 
     @Transactional
     fun modifyAllWorkoutRequestExpire(): List<WorkoutRequestUpdateResponse> {
@@ -164,13 +152,76 @@ class WorkoutRequestService(
         return response
     }
 
+    private fun sendStompWorkoutRequestMessage(
+        fromMember: Member,
+        toMember: Member,
+        chatRoom: ChatRoom,
+        chatMessage: ChatMessage,
+        workoutRequest: WorkoutRequest,
+    ) {
+        val isCompleteWorkout = workoutHistoryQueryService.existsWorkoutHistoryFrom(chatRoom.id!!)
+        val meProfile = memberQueryService.findMemberProfileFrom(fromMember.id!!, chatRoom.id!!)
+            ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
+
+        val meStompMessage = createStompWorkoutRequestMessage(
+            fromMember,
+            chatRoom,
+            isCompleteWorkout,
+            meProfile,
+            chatMessage,
+            workoutRequest,
+            true
+        )
+        val otherStompMessage = createStompWorkoutRequestMessage(
+            toMember,
+            chatRoom,
+            isCompleteWorkout,
+            meProfile,
+            chatMessage,
+            workoutRequest,
+            false
+        )
+        publisher.publishEvent(meStompMessage)
+        publisher.publishEvent(otherStompMessage)
+    }
+
+    private fun createStompWorkoutRequestMessage(
+        member: Member,
+        chatRoom: ChatRoom,
+        isCompleteWorkout: Boolean,
+        profile: ChatRoomMemberProfile,
+        savedChatMessage: ChatMessage,
+        workoutRequest: WorkoutRequest,
+        isMe : Boolean
+    ) : StompEventWorkoutRequestMessageDepth1{
+        return StompEventWorkoutRequestMessageDepth1(
+            memberId = member.id!!,
+            message = StompEventWorkoutRequestMessageDepth2(
+                chatRoomId = chatRoom.id!!,
+                isCompleteWorkout = isCompleteWorkout,
+                profileImageUrl = profile.profileImageUrl,
+                nickname = profile.nickname,
+                chatMessage = StompEventWorkoutRequestMessageDepth3(
+                    chatMessageId = savedChatMessage.id!!,
+                    workoutRequestId = workoutRequest.id!!,
+                    status = workoutRequest.status!!,
+                    scheduledAt = workoutRequest.scheduledAt!!,
+                    location = workoutRequest.location!!,
+                    sentAt = workoutRequest.requestedAt!!,
+                    isMe = isMe
+                )
+            )
+        )
+    }
+
     private fun validateAddWorkoutRequest(
         chatRoom: ChatRoom,
         message: ChatWorkoutRequestMessageServiceRequest,
         now: LocalDateTime
     ) {
-        validateExistsWorkoutRequest(chatRoom.id!!)
-//        validateScheduledAtNotPast(message.scheduledAt, now)
+        // 12.1 - FE 테스트를 위해 validate 주석처리. 나중에 다시 활성화 필요
+//        validateExistsWorkoutRequest(chatRoom.id!!)
+        validateScheduledAtNotPast(message.scheduledAt, now)
     }
 
     private fun validateExistsWorkoutRequest(chatRoomId : Long) {
@@ -248,6 +299,7 @@ class WorkoutRequestService(
             throw GlobalException(WorkoutRequestErrorCode.FROM_MEMBER_CANNOT_ACCEPT)
         }
     }
+
 
     private fun isFromMember(
         memberId: Long,

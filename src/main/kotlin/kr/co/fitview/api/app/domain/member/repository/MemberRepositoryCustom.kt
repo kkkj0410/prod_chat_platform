@@ -28,5 +28,7 @@ interface MemberRepositoryCustom {
 
     fun findAllChatRoomMemberProfile(chatRoomId: Long): List<ChatRoomMemberProfile>
 
+    fun findChatRoomMemberProfile(memberId: Long, chatRoomId: Long): ChatRoomMemberProfile?
+
     fun findOtherMemberBy(memberId: Long, chatRoomId: Long): Member?
 }
