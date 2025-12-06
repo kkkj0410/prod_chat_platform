@@ -56,4 +56,9 @@ include::api/fcm/fcm.adoc[]
 include::api/review/review.adoc[]
 
 
+[[WORKOUT_HISTORY]]
+== WORKOUT_HISTORY API
+
+include::api/workout_history/workoutHistory.adoc[]
+
 
