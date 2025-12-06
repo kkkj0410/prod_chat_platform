@@ -5,11 +5,10 @@ import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.review.entity.enums.ReviewType
-import kr.co.fitview.api.app.domain.workout.entity.WorkoutHistory
+import kr.co.fitview.api.app.domain.workout_history.entity.WorkoutHistory
 import kr.co.fitview.api.app.global.entity.BaseEntity
 import org.hibernate.annotations.ColumnDefault
 import java.math.BigDecimal
-import java.time.Instant
 
 @Entity
 @Table(name = "review")

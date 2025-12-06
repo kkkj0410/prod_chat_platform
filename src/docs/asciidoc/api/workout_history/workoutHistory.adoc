@@ -1,0 +1,11 @@
+[[workout-history-review-status]]
+=== 운동 이력의 리뷰 상태 조회 API
+
+==== HTTP Request
+include::{snippets}/workout-history-review-status/http-request.adoc[]
+include::{snippets}/workout-history-review-status/request-headers.adoc[]
+include::{snippets}/workout-history-review-status/path-parameters.adoc[]
+
+==== HTTP Response
+include::{snippets}/workout-history-review-status/http-response.adoc[]
+include::{snippets}/workout-history-review-status/response-fields.adoc[]

@@ -1,4 +1,4 @@
-package kr.co.fitview.api.app.domain.workout.service
+package kr.co.fitview.api.app.domain.workout_history.service
 
 import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
@@ -6,9 +6,10 @@ import kr.co.fitview.api.app.domain.chat.entity.enums.ChatRoomType
 import kr.co.fitview.api.app.domain.chat.repository.ChatRoomRepository
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
-import kr.co.fitview.api.app.domain.workout.entity.WorkoutHistory
-import kr.co.fitview.api.app.domain.workout.repository.WorkoutHistoryRepository
+import kr.co.fitview.api.app.domain.workout_history.entity.WorkoutHistory
+import kr.co.fitview.api.app.domain.workout_history.repository.WorkoutHistoryRepository
 import kr.co.fitview.api.app.global.entity.Role
+import kr.co.fitview.api.app.global.time.Time
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -18,7 +19,8 @@ class WorkoutHistoryServiceTest @Autowired constructor(
     val workoutHistoryRepository : WorkoutHistoryRepository,
     val workoutHistoryService: WorkoutHistoryService,
     val memberRepository : MemberRepository,
-    val chatRoomRepository : ChatRoomRepository
+    val chatRoomRepository : ChatRoomRepository,
+    val time : Time
 ) : IntegrationTestSupport(){
 
     @DisplayName("성공한 운동 요청 완료를 기록한다.")
@@ -110,7 +112,8 @@ class WorkoutHistoryServiceTest @Autowired constructor(
         val workoutHistory = WorkoutHistory.of(
             chatRoom = chatRoom,
             memberOne = member1,
-            memberTwo = member2
+            memberTwo = member2,
+            completedAt = time.nowLocalDateTime
         )
         workoutHistoryRepository.save(workoutHistory)
 
@@ -171,7 +174,8 @@ class WorkoutHistoryServiceTest @Autowired constructor(
         val workoutHistory = WorkoutHistory.of(
             chatRoom = chatRoom,
             memberOne = member1,
-            memberTwo = member2
+            memberTwo = member2,
+            completedAt = time.nowLocalDateTime
         )
         workoutHistoryRepository.save(workoutHistory)
 

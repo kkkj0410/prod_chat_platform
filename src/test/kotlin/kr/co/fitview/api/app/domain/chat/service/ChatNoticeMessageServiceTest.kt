@@ -17,12 +17,10 @@ import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.domain.notification.constant.StompConstant
 import kr.co.fitview.api.app.domain.notification.dto.StompSendEvent
 import kr.co.fitview.api.app.domain.notification.dto.response.StompChatNoticeMessageResponse
-import kr.co.fitview.api.app.domain.notification.dto.response.StompEventChatNoticeMessage
-import kr.co.fitview.api.app.domain.notification.dto.response.StompNoticeMessage
 import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
-import kr.co.fitview.api.app.domain.workout.entity.WorkoutHistory
+import kr.co.fitview.api.app.domain.workout_history.entity.WorkoutHistory
 import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequest
-import kr.co.fitview.api.app.domain.workout.repository.WorkoutHistoryRepository
+import kr.co.fitview.api.app.domain.workout_history.repository.WorkoutHistoryRepository
 import kr.co.fitview.api.app.domain.workout.repository.WorkoutRequestRepository
 import kr.co.fitview.api.app.global.dto.WsMessageType
 import kr.co.fitview.api.app.global.dto.WsResponse
@@ -35,7 +33,6 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.then
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.test.context.event.ApplicationEvents
 
 class ChatNoticeMessageServiceTest @Autowired constructor(
     private val chatNoticeMessageService: ChatNoticeMessageService,
@@ -595,7 +592,8 @@ class ChatNoticeMessageServiceTest @Autowired constructor(
         val workoutHistory = WorkoutHistory(
             chatRoom = chatRoom2,
             memberOne = me,
-            memberTwo = other2
+            memberTwo = other2,
+            completedAt = time.nowLocalDateTime
         )
         workoutHistoryRepository.save(workoutHistory)
 

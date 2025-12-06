@@ -8,11 +8,10 @@ import kr.co.fitview.api.app.domain.review.dto.response.ReviewCategoryResponse
 import kr.co.fitview.api.app.domain.review.entity.Review
 import kr.co.fitview.api.app.domain.review.repository.ReviewRepository
 import kr.co.fitview.api.app.domain.review.repository.ReviewTagRepository
-import kr.co.fitview.api.app.domain.workout.entity.WorkoutHistory
-import kr.co.fitview.api.app.domain.workout.service.WorkoutHistoryQueryService
+import kr.co.fitview.api.app.domain.workout_history.entity.WorkoutHistory
+import kr.co.fitview.api.app.domain.workout_history.service.WorkoutHistoryQueryService
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.global.GlobalErrorCode
-import kr.co.fitview.api.app.global.exception.error.member.MemberErrorCode
 import kr.co.fitview.api.app.global.exception.error.review.ReviewErrorCode
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -37,7 +36,7 @@ class ReviewService(
         val findMember = memberQueryService.findMemberReferenceFrom(memberId)
 
         val findWorkoutHistory = workoutHistoryQueryService.findWorkoutHistoryFrom(request.workoutHistoryId)
-            ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
+            ?: throw GlobalException(ReviewErrorCode.WORKOUT_HISTORY_NOT_FOUND)
 
         val (fromMember, toMember) = determineFromToMember(findMember, findWorkoutHistory)
 
