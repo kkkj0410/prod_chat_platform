@@ -242,7 +242,7 @@ class ChatNoticeMessageServiceTest @Autowired constructor(
 
 
         // when
-        val savedChatMessage = chatNoticeMessageService.addChatNoticeFrom(
+        chatNoticeMessageService.addChatNoticeFrom(
             me.id!!,
             workoutRequestId = workoutRequest.id!!,
             type = ChatNoticeMessageType.WORKOUT_REQUEST_ACCEPT
@@ -250,46 +250,8 @@ class ChatNoticeMessageServiceTest @Autowired constructor(
 
 
         // then
-        val chatMessage = StompChatNoticeMessage(
-            chatMessageId = savedChatMessage.id!!,
-            sentAt = time.nowLocalDateTime,
-            content = ChatNoticeMessageType.WORKOUT_REQUEST_ACCEPT,
-            workoutHistoryId = null
-        )
-
-        val chatProfile = MemberChatProfileResponse(
-            profileImageUrl = signupRequest.profileImageUrl,
-            nickname = signupRequest.nickname
-        )
-
-        val response = ChatMessageDetailResponse.of(
-            chatRoomId = chatRoom.id!!,
-            isCompleteWorkout = false,
-            chatProfile = chatProfile,
-            chatMessage = chatMessage,
-            otherMemberId = other.id!!
-        )
-
-        then(stompPublisher).should().sendToUser(
-            StompSendEvent(
-                memberId = me.id!!,
-                destination = StompConstant.SUB_CHAT_MESSAGE,
-                payload = WsResponse(
-                    type = WsMessageType.NOTICE.code,
-                    payload = response
-                )
-            )
-        )
-        then(stompPublisher).should().sendToUser(
-            StompSendEvent(
-                memberId = other.id!!,
-                destination = StompConstant.SUB_CHAT_MESSAGE,
-                payload = WsResponse(
-                    type = WsMessageType.NOTICE.code,
-                    payload = response
-                )
-            )
-        )
+        val count = events.stream(StompChatNoticeMessageResponse::class.java).count()
+        assertThat(count).isEqualTo(2)
     }
 
     @DisplayName("운동 요청 만료 안내 문구를 생성한다.")

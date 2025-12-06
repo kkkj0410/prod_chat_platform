@@ -47,6 +47,7 @@ class NotificationStompService(
                     )
                 )
             )
+
         } else if (response.chatMessage is StompChatWorkoutRequestMessage) {
             stompPublisher.sendToUser(
                 StompSendEvent(

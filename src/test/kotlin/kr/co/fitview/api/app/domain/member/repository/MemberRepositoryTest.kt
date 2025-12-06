@@ -2190,7 +2190,7 @@ class MemberRepositoryTest@Autowired constructor(
 
     @DisplayName("채팅방 회원 프로필 조회")
     @Test
-    fun findChatRoomMemberProfile() {
+    fun findAllChatRoomMemberProfile() {
         // given
         val me = Member(
             email = "email1",
@@ -2256,7 +2256,7 @@ class MemberRepositoryTest@Autowired constructor(
         val chatRoomIds = listOf(chatRoom.id!!, chatRoom2.id!!)
 
         // when
-        val findMembers = memberRepository.findChatRoomMemberProfile(chatRoomIds)
+        val findMembers = memberRepository.findAllChatRoomMemberProfile(chatRoomIds)
 
         // then
         assertThat(findMembers).hasSize(4)
@@ -2270,5 +2270,56 @@ class MemberRepositoryTest@Autowired constructor(
             )
     }
 
+    @DisplayName("특정 채팅방 회원 프로필 조회")
+    @Test
+    fun findAllChatRoomMemberProfileByChatRoomId() {
+        // given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest1, me.id!!)
+
+        val other = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(other)
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "updateNick",
+            profileImageUrl = "updateProfile"
+        )
+        oAuth2Service.signup(signupRequest2, other.id!!)
+
+
+        val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+
+        val chatParticipant1 = ChatParticipant(
+            chatRoom,
+            me
+        )
+        val chatParticipant2 = ChatParticipant(
+            chatRoom,
+            other
+        )
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+
+        // when
+        val findMembers = memberRepository.findAllChatRoomMemberProfile(chatRoom.id!!)
+
+        // then
+        assertThat(findMembers).hasSize(2)
+        assertThat(findMembers)
+            .extracting("chatRoomId", "memberId", "nickname", "profileImageUrl")
+            .containsExactlyInAnyOrder(
+                tuple(chatRoom.id!!, me.id!!, signupRequest1.nickname, signupRequest1.profileImageUrl),
+                tuple(chatRoom.id!!, other.id!!, signupRequest2.nickname, signupRequest2.profileImageUrl),
+            )
+    }
 
 }

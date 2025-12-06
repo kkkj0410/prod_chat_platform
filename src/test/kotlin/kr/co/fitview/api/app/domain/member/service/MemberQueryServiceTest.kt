@@ -249,4 +249,56 @@ class MemberQueryServiceTest @Autowired constructor(
                 tuple(chatRoom2.id!!, other2.id!!, signupRequest3.nickname, signupRequest3.profileImageUrl),
             )
     }
+
+    @DisplayName("특정 채팅방 회원 프로필 조회")
+    @Test
+    fun findMemberProfileFromByChatRoomId() {
+        // given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest1, me.id!!)
+
+        val other = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(other)
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "updateNick",
+            profileImageUrl = "updateProfile"
+        )
+        oAuth2Service.signup(signupRequest2, other.id!!)
+
+
+        val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+
+        val chatParticipant1 = ChatParticipant(
+            chatRoom,
+            me
+        )
+        val chatParticipant2 = ChatParticipant(
+            chatRoom,
+            other
+        )
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+
+        // when
+        val findMembers = memberQueryService.findMemberProfileFrom(chatRoom.id!!)
+
+        // then
+        assertThat(findMembers).hasSize(2)
+        assertThat(findMembers)
+            .extracting("chatRoomId", "memberId", "nickname", "profileImageUrl")
+            .containsExactlyInAnyOrder(
+                tuple(chatRoom.id!!, me.id!!, signupRequest1.nickname, signupRequest1.profileImageUrl),
+                tuple(chatRoom.id!!, other.id!!, signupRequest2.nickname, signupRequest2.profileImageUrl),
+            )
+    }
 }

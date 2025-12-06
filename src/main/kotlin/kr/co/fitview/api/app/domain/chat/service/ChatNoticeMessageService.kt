@@ -2,8 +2,6 @@ package kr.co.fitview.api.app.domain.chat.service
 
 import kr.co.fitview.api.app.domain.chat.dto.ExpireWorkoutRequest
 import kr.co.fitview.api.app.domain.chat.dto.MemberPair
-import kr.co.fitview.api.app.domain.chat.dto.response.ChatMessageDetailResponse
-import kr.co.fitview.api.app.domain.chat.dto.response.StompChatNoticeMessage
 import kr.co.fitview.api.app.domain.chat.entity.ChatMessage
 import kr.co.fitview.api.app.domain.chat.entity.ChatNoticeMessage
 import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
@@ -15,7 +13,6 @@ import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.domain.notification.dto.response.StompChatNoticeMessageResponse
 import kr.co.fitview.api.app.domain.notification.dto.response.StompEventChatNoticeMessage
 import kr.co.fitview.api.app.domain.notification.dto.response.StompNoticeMessage
-import kr.co.fitview.api.app.domain.notification.service.NotificationStompService
 import kr.co.fitview.api.app.domain.workout_history.entity.WorkoutHistory
 import kr.co.fitview.api.app.domain.workout_history.service.WorkoutHistoryQueryService
 import kr.co.fitview.api.app.domain.workout_history.service.WorkoutHistoryService
@@ -32,7 +29,6 @@ import org.springframework.transaction.annotation.Transactional
 class ChatNoticeMessageService(
     private val chatRoomQueryService : ChatRoomQueryService,
     private val chatMessageRepository : ChatMessageRepository,
-    private val notificationStompService : NotificationStompService,
     private val workoutHistoryService : WorkoutHistoryService,
     private val workoutHistoryQueryService : WorkoutHistoryQueryService,
     private val memberQueryService : MemberQueryService,
@@ -55,31 +51,21 @@ class ChatNoticeMessageService(
         val findChatRoom = chatRoomQueryService.findChatRoomFrom(workoutRequestId)
             ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
 
-        val chatMessage = ChatMessage.ofNotice(
-            chatRoom = findChatRoom,
-            sentAt = time.nowLocalDateTime
-        )
-        val savedMessage = chatMessageRepository.save(chatMessage)
+        val savedChatMessage = saveChatMessage(findChatRoom)
 
-        val chatNoticeMessage =
-        if (isNotNull(workoutHistory)) {
-            ChatNoticeMessage.ofWorkoutHistory(chatMessage, workoutHistory!!)
-        } else {
-            ChatNoticeMessage(chatMessage = chatMessage, type = type)
-        }
-
-        val savedChatNoticeMessage = chatNoticeMessageRepository.save(chatNoticeMessage)
+        saveChatNoticeMessage(workoutHistory, savedChatMessage, type)
 
         messageReadStatusService.saveMessageReadStatus(
             member = memberQueryService.findMemberReferenceFrom(memberId),
-            chatMessage = chatMessage,
+            chatMessage = savedChatMessage,
             chatRoom = findChatRoom
         )
 
-        sendStompMessage(memberId, findChatRoom, savedMessage, savedChatNoticeMessage, workoutHistory)
+        sendModifyWorkoutRequestStompMessage(memberId, findChatRoom, savedChatMessage, type)
 
-        return savedMessage
+        return savedChatMessage
     }
+
 
     @Transactional
     fun addAllExpireChatNoticeFrom(expireWorkoutRequest: List<ExpireWorkoutRequest>) {
@@ -96,8 +82,91 @@ class ChatNoticeMessageService(
             memberPairs = memberPairs
         )
 
-        sendStompExpireMessage(chatRoomIds, chatMessages, expireWorkoutRequest)
+        sendExpireWorkoutRequestStompMessage(chatRoomIds, chatMessages, expireWorkoutRequest)
+    }
 
+    private fun saveChatMessage(findChatRoom: ChatRoom): ChatMessage {
+        val chatMessage = ChatMessage.ofNotice(
+            chatRoom = findChatRoom,
+            sentAt = time.nowLocalDateTime
+        )
+        return chatMessageRepository.save(chatMessage)
+    }
+
+    private fun saveChatNoticeMessage(
+        workoutHistory: WorkoutHistory?,
+        savedChatMessage: ChatMessage,
+        type: ChatNoticeMessageType
+    ): ChatNoticeMessage {
+        val chatNoticeMessage =
+            if (isNotNull(workoutHistory)) {
+                ChatNoticeMessage.ofWorkoutHistory(savedChatMessage, workoutHistory!!)
+            } else {
+                ChatNoticeMessage(chatMessage = savedChatMessage, type = type)
+            }
+
+        val savedChatNoticeMessage = chatNoticeMessageRepository.save(chatNoticeMessage)
+        return savedChatNoticeMessage
+    }
+
+    private fun sendModifyWorkoutRequestStompMessage(
+        memberId: Long,
+        chatRoom: ChatRoom,
+        chatMessage: ChatMessage,
+        type : ChatNoticeMessageType
+    ) {
+        val otherMemberId = findOtherMemberId(memberId, chatRoom)
+
+        val (findMeMemberProfile, findOtherMemberProfile) = findChatProfiles(chatRoom, memberId, otherMemberId)
+
+        val isCompleteWorkout = workoutHistoryService.existsWorkoutHistoryFrom(memberId, otherMemberId)
+
+        val meStompMessage = createStompMessage(
+            receiveMemberId = memberId,
+            chatRoomId = chatRoom.id!!,
+            isCompleteWorkout = isCompleteWorkout,
+            otherMemberProfile = findOtherMemberProfile,
+            chatMessage = chatMessage,
+            type = type,
+        )
+        val otherStompMessage = createStompMessage(
+            receiveMemberId = otherMemberId,
+            chatRoomId = chatRoom.id!!,
+            isCompleteWorkout = isCompleteWorkout,
+            otherMemberProfile = findMeMemberProfile,
+            chatMessage = chatMessage,
+            type = type,
+        )
+        publisher.publishEvent(meStompMessage)
+        publisher.publishEvent(otherStompMessage)
+    }
+
+    private fun findChatProfiles(
+        chatRoom: ChatRoom,
+        memberOneId: Long,
+        memberTwoId: Long
+    ): Pair<ChatRoomMemberProfile, ChatRoomMemberProfile> {
+
+        val profiles = memberQueryService.findMemberProfileFrom(chatRoom.id!!)
+        if (profiles.size != 2) {
+            throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
+        }
+        val findOneMemberProfile = profiles.firstOrNull { it.memberId == memberOneId }
+            ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
+
+        val findTwoMemberProfile = profiles.firstOrNull { it.memberId == memberTwoId }
+            ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
+
+        return Pair(findOneMemberProfile, findTwoMemberProfile)
+    }
+
+    private fun findOtherMemberId(memberId: Long, findChatRoom: ChatRoom): Long {
+        val findOtherChatParticipant = chatParticipantService.findOtherParticipantFromMemberIdAndChatRoomId(
+            memberId = memberId,
+            chatRoomId = findChatRoom.id!!
+        )
+        val otherMemberId = findOtherChatParticipant!!.getMemberId()
+        return otherMemberId
     }
 
     private fun saveAllExpireChatNoticeMessage(findChatRooms: List<ChatRoom>): List<ChatMessage> {
@@ -120,7 +189,7 @@ class ChatNoticeMessageService(
     }
 
 
-    private fun sendStompExpireMessage(
+    private fun sendExpireWorkoutRequestStompMessage(
         chatRoomIds: List<Long>,
         chatMessages: List<ChatMessage>,
         expireWorkoutRequest: List<ExpireWorkoutRequest>
@@ -139,85 +208,53 @@ class ChatNoticeMessageService(
             val chatRoomId = chatRoomIds[idx]
             val isCompleteWorkout = workoutHistoryMap[chatRoomId]?.isNotEmpty() ?: false
 
-            val stompMessage1 = createStompExpireMessage(
+            val stompMessage1 = createStompMessage(
                 memberOneId,
                 chatRoomIds[idx],
                 isCompleteWorkout,
                 chatRoomMemberMap[chatRoomId]
                     ?.firstOrNull { it.memberId != memberOneId },
-                chatMessage
+                chatMessage,
+                ChatNoticeMessageType.WORKOUT_REQUEST_EXPIRE
             )
             publisher.publishEvent(stompMessage1)
 
-            val stompMessage2 = createStompExpireMessage(
+            val stompMessage2 = createStompMessage(
                 memberTwoId,
                 chatRoomIds[idx],
                 isCompleteWorkout,
                 chatRoomMemberMap[chatRoomId]
                     ?.firstOrNull { it.memberId != memberTwoId },
-                chatMessage
+                chatMessage,
+                ChatNoticeMessageType.WORKOUT_REQUEST_EXPIRE
             )
             publisher.publishEvent(stompMessage2)
         }
     }
 
-    private fun createStompExpireMessage(
-        memberOneId: Long,
+    private fun createStompMessage(
+        receiveMemberId: Long,
         chatRoomId: Long,
         isCompleteWorkout: Boolean,
-        otherMember: ChatRoomMemberProfile?,
-        chatMessage: ChatMessage
+        otherMemberProfile: ChatRoomMemberProfile?,
+        chatMessage: ChatMessage,
+        type : ChatNoticeMessageType
     ) = StompChatNoticeMessageResponse(
-        memberId = memberOneId,
+        memberId = receiveMemberId,
         message = StompEventChatNoticeMessage(
             chatRoomId = chatRoomId,
             isCompleteWorkout = isCompleteWorkout,
-            profileImageUrl = otherMember?.profileImageUrl ?: "",
-            nickname = otherMember?.nickname ?: "",
+            profileImageUrl = otherMemberProfile?.profileImageUrl ?: "",
+            nickname = otherMemberProfile?.nickname ?: "",
             chatMessage = StompNoticeMessage(
                 chatMessageId = chatMessage.id!!,
                 sentAt = chatMessage.sentAt!!,
                 workoutHistoryId = null,
-                content = ChatNoticeMessageType.WORKOUT_REQUEST_EXPIRE
+                content = type
             )
         )
     )
 
-    private fun sendStompMessage(
-        memberId: Long,
-        findChatRoom: ChatRoom,
-        chatMessage: ChatMessage,
-        chatNoticeMessage : ChatNoticeMessage,
-        workoutHistory : WorkoutHistory?
-    ) {
-        val findChatProfile = memberQueryService.findMemberChatProfileFrom(memberId)
-            ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
-
-        val findOtherChatParticipant = chatParticipantService.findOtherParticipantFromMemberIdAndChatRoomId(
-            memberId = memberId,
-            chatRoomId = findChatRoom.id!!
-        )
-        val otherMemberId = findOtherChatParticipant!!.getMemberId()
-
-        val isCompleteWorkout = workoutHistoryService.existsWorkoutHistoryFrom(memberId, otherMemberId)
-
-        val sendMessage = StompChatNoticeMessage(
-            chatMessageId = chatMessage.id!!,
-            sentAt = chatMessage.sentAt!!,
-            content = chatNoticeMessage.type!!,
-            workoutHistoryId = workoutHistory?.id
-        )
-
-        val response = ChatMessageDetailResponse.of(
-            chatRoomId = findChatRoom.id!!,
-            isCompleteWorkout = isCompleteWorkout,
-            chatProfile = findChatProfile,
-            chatMessage = sendMessage,
-            otherMemberId = otherMemberId
-        )
-
-        notificationStompService.sendChatNoticeMessage(memberId, response)
-    }
 
     fun isNotNull(value : Any?) = value != null
 

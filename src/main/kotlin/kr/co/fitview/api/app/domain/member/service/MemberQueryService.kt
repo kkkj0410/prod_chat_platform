@@ -40,7 +40,11 @@ class MemberQueryService(
     }
 
     fun findMemberProfileFrom(chatRoomIds : List<Long>) : List<ChatRoomMemberProfile>{
-        return memberRepository.findChatRoomMemberProfile(chatRoomIds)
+        return memberRepository.findAllChatRoomMemberProfile(chatRoomIds)
+    }
+
+    fun findMemberProfileFrom(chatRoomId : Long) : List<ChatRoomMemberProfile>{
+        return memberRepository.findAllChatRoomMemberProfile(chatRoomId)
     }
 
 }
