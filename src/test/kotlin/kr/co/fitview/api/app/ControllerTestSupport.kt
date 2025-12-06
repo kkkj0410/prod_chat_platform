@@ -21,10 +21,12 @@ import kr.co.fitview.api.app.domain.oauth2.controller.OAuth2Controller
 import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
 import kr.co.fitview.api.app.domain.review.controller.ReviewController
 import kr.co.fitview.api.app.domain.review.service.ReviewService
+import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestQueryService
 import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestService
 import kr.co.fitview.api.app.domain.workout_history.controller.WorkoutHistoryController
 import kr.co.fitview.api.app.domain.workout_history.service.WorkoutHistoryQueryService
 import kr.co.fitview.api.app.domain.workout_partner.controller.WorkoutPartnerController
+import kr.co.fitview.api.app.domain.workout_partner.service.WorkoutPartnerRequestQueryService
 import kr.co.fitview.api.app.domain.workout_partner.service.WorkoutPartnerRequestService
 import kr.co.fitview.api.app.global.config.JacksonConfig
 import kr.co.fitview.api.app.global.config.SecurityConfig
@@ -104,6 +106,9 @@ abstract class ControllerTestSupport {
     protected lateinit var workoutPartnerRequestService: WorkoutPartnerRequestService
 
     @MockitoBean
+    protected lateinit var workoutPartnerRequestQueryService: WorkoutPartnerRequestQueryService
+
+    @MockitoBean
     protected lateinit var testAuthService: TestAuthService
 
     @MockitoBean
@@ -125,7 +130,13 @@ abstract class ControllerTestSupport {
     protected lateinit var chatMessageService: ChatMessageService
 
     @MockitoBean
+    protected lateinit var chatMessageQueryService: ChatMessageQueryService
+
+    @MockitoBean
     protected lateinit var workoutRequestService: WorkoutRequestService
+
+    @MockitoBean
+    protected lateinit var workoutRequestQueryService: WorkoutRequestQueryService
 
     @MockitoBean
     protected lateinit var messageReadStatusService: MessageReadStatusService

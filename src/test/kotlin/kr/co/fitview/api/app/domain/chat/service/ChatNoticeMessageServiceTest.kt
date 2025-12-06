@@ -2,8 +2,6 @@ package kr.co.fitview.api.app.domain.chat.service
 
 import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.chat.dto.ExpireWorkoutRequest
-import kr.co.fitview.api.app.domain.chat.dto.response.ChatMessageDetailResponse
-import kr.co.fitview.api.app.domain.chat.dto.response.StompChatNoticeMessage
 import kr.co.fitview.api.app.domain.chat.entity.ChatMessage
 import kr.co.fitview.api.app.domain.chat.entity.ChatParticipant
 import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
@@ -11,19 +9,14 @@ import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatNoticeMessageType
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatRoomType
 import kr.co.fitview.api.app.domain.chat.repository.*
-import kr.co.fitview.api.app.domain.member.dto.response.MemberChatProfileResponse
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
-import kr.co.fitview.api.app.domain.notification.constant.StompConstant
-import kr.co.fitview.api.app.domain.notification.dto.StompSendEvent
-import kr.co.fitview.api.app.domain.notification.dto.response.StompChatNoticeMessageResponse
+import kr.co.fitview.api.app.domain.notification.dto.response.StompEventChatNoticeMessageDepth1
 import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
 import kr.co.fitview.api.app.domain.workout_history.entity.WorkoutHistory
 import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequest
 import kr.co.fitview.api.app.domain.workout_history.repository.WorkoutHistoryRepository
 import kr.co.fitview.api.app.domain.workout.repository.WorkoutRequestRepository
-import kr.co.fitview.api.app.global.dto.WsMessageType
-import kr.co.fitview.api.app.global.dto.WsResponse
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.time.Time
 import kr.co.fitview.api.app.global.util.TestDataFactory
@@ -31,7 +24,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.tuple
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.then
 import org.springframework.beans.factory.annotation.Autowired
 
 class ChatNoticeMessageServiceTest @Autowired constructor(
@@ -242,7 +234,7 @@ class ChatNoticeMessageServiceTest @Autowired constructor(
 
 
         // when
-        val savedChatMessage = chatNoticeMessageService.addChatNoticeFrom(
+        chatNoticeMessageService.addChatNoticeFrom(
             me.id!!,
             workoutRequestId = workoutRequest.id!!,
             type = ChatNoticeMessageType.WORKOUT_REQUEST_ACCEPT
@@ -250,46 +242,8 @@ class ChatNoticeMessageServiceTest @Autowired constructor(
 
 
         // then
-        val chatMessage = StompChatNoticeMessage(
-            chatMessageId = savedChatMessage.id!!,
-            sentAt = time.nowLocalDateTime,
-            content = ChatNoticeMessageType.WORKOUT_REQUEST_ACCEPT,
-            workoutHistoryId = null
-        )
-
-        val chatProfile = MemberChatProfileResponse(
-            profileImageUrl = signupRequest.profileImageUrl,
-            nickname = signupRequest.nickname
-        )
-
-        val response = ChatMessageDetailResponse.of(
-            chatRoomId = chatRoom.id!!,
-            isCompleteWorkout = false,
-            chatProfile = chatProfile,
-            chatMessage = chatMessage,
-            otherMemberId = other.id!!
-        )
-
-        then(stompPublisher).should().sendToUser(
-            StompSendEvent(
-                memberId = me.id!!,
-                destination = StompConstant.SUB_CHAT_MESSAGE,
-                payload = WsResponse(
-                    type = WsMessageType.NOTICE.code,
-                    payload = response
-                )
-            )
-        )
-        then(stompPublisher).should().sendToUser(
-            StompSendEvent(
-                memberId = other.id!!,
-                destination = StompConstant.SUB_CHAT_MESSAGE,
-                payload = WsResponse(
-                    type = WsMessageType.NOTICE.code,
-                    payload = response
-                )
-            )
-        )
+        val count = events.stream(StompEventChatNoticeMessageDepth1::class.java).count()
+        assertThat(count).isEqualTo(2)
     }
 
     @DisplayName("운동 요청 만료 안내 문구를 생성한다.")
@@ -614,7 +568,7 @@ class ChatNoticeMessageServiceTest @Autowired constructor(
         chatNoticeMessageService.addAllExpireChatNoticeFrom(request)
 
         // then
-        val count = events.stream(StompChatNoticeMessageResponse::class.java).count()
+        val count = events.stream(StompEventChatNoticeMessageDepth1::class.java).count()
         assertThat(count).isEqualTo(4)
     }
 }

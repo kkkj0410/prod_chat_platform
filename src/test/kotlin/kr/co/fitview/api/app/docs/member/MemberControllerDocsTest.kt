@@ -16,6 +16,7 @@ import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutExperience
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutGoal
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutStyle
 import kr.co.fitview.api.app.domain.member.entity.enums.WorkoutTimeName
+import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.domain.member.service.MemberService
 import kr.co.fitview.api.app.global.entity.Gender
 import kr.co.fitview.api.app.global.entity.Role
@@ -52,18 +53,19 @@ import java.time.LocalDate
 class MemberControllerDocsTest : RestDocsSupport() {
 
     private val memberService: MemberService = mock(MemberService::class.java)
+    private val memberQueryService : MemberQueryService = mock(MemberQueryService::class.java)
     private val addressService: AddressService = mock(AddressService::class.java)
     private val securityUtil: SecurityUtil = mock(SecurityUtil::class.java)
 
     override fun initController(): Any {
-        return MemberController(memberService, addressService, securityUtil)
+        return MemberController(memberService, memberQueryService, addressService, securityUtil)
     }
 
     @DisplayName("사용자 본인 조회 API")
     @Test
     fun memberMe() {
         // given
-        given(memberService.findMemberProfile(any()))
+        given(memberQueryService.findMemberProfile(any()))
             .willReturn(
                 MemberProfileResponse(
                     memberId = 456L,
@@ -333,7 +335,7 @@ class MemberControllerDocsTest : RestDocsSupport() {
     @DisplayName("추천 핏버디 API")
     @Test
     fun memberRecommendationList() {
-        given(memberService.findRandomMemberWithinRecommendation(any(), any(), any()))
+        given(memberQueryService.findRandomMemberWithinRecommendation(any(), any(), any()))
             .willReturn(
                 listOf(
                     MemberRecommendationResponse(
@@ -445,7 +447,7 @@ class MemberControllerDocsTest : RestDocsSupport() {
             10L
         )
 
-        given(memberService.findRandomMemberWithinLocal(any(), any(), any()))
+        given(memberQueryService.findRandomMemberWithinLocal(any(), any(), any()))
             .willReturn(mockPage)
 
         // when & then
@@ -539,7 +541,7 @@ class MemberControllerDocsTest : RestDocsSupport() {
     @Test
     fun memberDetails() {
         // when
-        given(memberService.findMemberDetail(any(), any()))
+        given(memberQueryService.findMemberDetail(any(), any()))
             .willReturn(
                 MemberDetailResponse(
                     profile = OtherMemberProfileResponse(

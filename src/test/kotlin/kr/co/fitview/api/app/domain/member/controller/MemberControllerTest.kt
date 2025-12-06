@@ -127,7 +127,7 @@ class MemberControllerTest : ControllerTestSupport() {
     @DisplayName("회원 id로 상대 회원의 프로필을 조회한다.")
     @Test
     fun memberDetails() {
-        given(memberService.findMemberDetail(any(), any()))
+        given(memberQueryService.findMemberDetail(any(), any()))
             .willReturn(
                 MemberDetailResponse(
                     profile = OtherMemberProfileResponse(
@@ -253,7 +253,7 @@ class MemberControllerTest : ControllerTestSupport() {
     @DisplayName("추천 핏버디(운동 경력/스타일/목적이 2개 이상 일치) 회원을 조회한다. ")
     @Test
     fun memberRecommendationList() {
-        given(memberService.findRandomMemberWithinRecommendation(any(), any(), any()))
+        given(memberQueryService.findRandomMemberWithinRecommendation(any(), any(), any()))
             .willReturn(
                 listOf(
                     MemberRecommendationResponse(
@@ -342,7 +342,7 @@ class MemberControllerTest : ControllerTestSupport() {
             10L
         )
 
-        given(memberService.findRandomMemberWithinLocal(any(), any(), any()))
+        given(memberQueryService.findRandomMemberWithinLocal(any(), any(), any()))
             .willReturn(mockPage)
 
         // when // then

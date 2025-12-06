@@ -7,7 +7,6 @@ import kr.co.fitview.api.app.domain.chat.entity.MessageReadStatus
 import kr.co.fitview.api.app.domain.chat.repository.MessageReadStatusRepository
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
-import kr.co.fitview.api.app.domain.member.service.MemberReferenceProvider
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -15,17 +14,16 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional(readOnly = true)
 class MessageReadStatusService(
     private val messageReadStatusRepository : MessageReadStatusRepository,
-    private val chatParticipantService : ChatParticipantService,
-    private val memberReferenceProvider: MemberReferenceProvider,
+    private val chatParticipantQueryService : ChatParticipantQueryService,
     private val memberQueryService : MemberQueryService
 ) {
 
     @Transactional
     fun saveMessageReadStatus(member : Member, chatMessage : ChatMessage, chatRoom : ChatRoom) : List<MessageReadStatus>{
 
-        val findOtherChatParticipant = chatParticipantService.findOtherParticipantFromMemberIdAndChatRoomId(member.id!!, chatRoom.id!!)
+        val findOtherChatParticipant = chatParticipantQueryService.findOtherParticipantFromMemberIdAndChatRoomId(member.id!!, chatRoom.id!!)
 
-        val otherMember = memberReferenceProvider.findMemberReferenceFrom(findOtherChatParticipant!!.getMemberId())
+        val otherMember = memberQueryService.findMemberReferenceFrom(findOtherChatParticipant!!.getMemberId())
 
         val messageReadStatuses = createMessageReadStatuses(member, otherMember, chatRoom, chatMessage)
 

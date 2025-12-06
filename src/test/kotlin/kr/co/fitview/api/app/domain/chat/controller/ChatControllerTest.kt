@@ -223,7 +223,7 @@ class ChatControllerTest : ControllerTestSupport(){
         val sliceChatMessages: Slice<LastChatMessage> = SliceImpl(messages, PageRequest.of(0, 10), false)
 
 
-        given(chatMessageService.findChatMessages(any(), any(), any())).willReturn(sliceChatMessages)
+        given(chatMessageQueryService.findChatMessages(any(), any(), any())).willReturn(sliceChatMessages)
 
         mockMvc.perform(
             get("/api/v1/chats/{chatRoomId}/messages", chatRoomId)
@@ -265,7 +265,7 @@ class ChatControllerTest : ControllerTestSupport(){
             status = WorkoutRequestStatusForResponse.PENDING,
             chatRoomId = chatRoomId
         )
-        given(workoutRequestService.findRecentWorkoutRequestFrom(listOf(chatRoomId)))
+        given(workoutRequestQueryService.findRecentWorkoutRequestFrom(listOf(chatRoomId)))
             .willReturn(listOf(lastWorkoutRequest))
 
         // when & then

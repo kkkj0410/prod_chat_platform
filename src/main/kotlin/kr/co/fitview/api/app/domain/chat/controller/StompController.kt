@@ -76,10 +76,10 @@ class StompController(
         val senderId = principal.name
         val response = chatService.sendMessage(principal.name.toLong(), chatRoomId, message)
 
-        notificationStompService.sendChatNoticeMessage(
-            memberId = senderId.toLong(),
-            response = response
-        )
+//        notificationStompService.sendChatMessage(
+//            memberId = senderId.toLong(),
+//            response = response
+//        )
     }
 
     @MessageMapping("/workout-requests")

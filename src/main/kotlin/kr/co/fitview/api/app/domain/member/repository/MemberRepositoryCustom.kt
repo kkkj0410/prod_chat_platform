@@ -1,6 +1,5 @@
 package kr.co.fitview.api.app.domain.member.repository
 
-import kr.co.fitview.api.app.domain.member.dto.response.OtherMemberProfileResponse
 import kr.co.fitview.api.app.domain.member.condition.MemberLocalCondition
 import kr.co.fitview.api.app.domain.member.dto.BoundingBox
 import kr.co.fitview.api.app.domain.member.dto.response.*
@@ -25,5 +24,11 @@ interface MemberRepositoryCustom {
 
     fun findMemberByPrivateChatRoomId(memberId : Long, chatRoomId: Long): ChatMemberProfileResponse?
 
-     fun findChatRoomMemberProfile(chatRoomIds : List<Long>) : List<ChatRoomMemberProfile>
+     fun findAllChatRoomMemberProfile(chatRoomIds : List<Long>) : List<ChatRoomMemberProfile>
+
+    fun findAllChatRoomMemberProfile(chatRoomId: Long): List<ChatRoomMemberProfile>
+
+    fun findChatRoomMemberProfile(memberId: Long, chatRoomId: Long): ChatRoomMemberProfile?
+
+    fun findOtherMemberBy(memberId: Long, chatRoomId: Long): Member?
 }

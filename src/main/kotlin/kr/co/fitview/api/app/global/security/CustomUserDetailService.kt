@@ -1,6 +1,7 @@
 package kr.co.fitview.api.app.global.security
 
 import kr.co.fitview.api.app.domain.member.entity.Member
+import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.domain.member.service.MemberService
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.member.MemberErrorCode
@@ -11,7 +12,7 @@ import org.springframework.stereotype.Service
 
 @Service
 class CustomUserDetailService(
-    val memberService : MemberService
+    val memberQueryService : MemberQueryService
 ) : UserDetailsService{
 
     override fun loadUserByUsername(memberId: String): UserDetails {
@@ -21,7 +22,7 @@ class CustomUserDetailService(
     }
 
     private fun findMemberElseThrow(memberId : Long): Member {
-        return (memberService.findMemberFromId(memberId)
+        return (memberQueryService.findMemberFromId(memberId)
             ?: throw GlobalException(MemberErrorCode.MEMBER_NOT_FOUND))
     }
 }

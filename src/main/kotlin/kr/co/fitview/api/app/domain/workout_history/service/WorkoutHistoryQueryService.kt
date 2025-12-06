@@ -46,6 +46,10 @@ class WorkoutHistoryQueryService(
         return WorkoutHistoryReviewStatusResponse(WorkoutHistoryReviewStatus.WRITABLE)
     }
 
+    fun existsWorkoutHistoryFrom(chatRoomId : Long) : Boolean{
+        return workoutHistoryRepository.existsByChatRoomIdAndDeletedAtIsNull(chatRoomId)
+    }
+
     private fun isExpired(findWorkoutHistory: WorkoutHistory) =
         findWorkoutHistory.completedAt!!.isBefore(time.nowLocalDateTime.minusDays(3))
 

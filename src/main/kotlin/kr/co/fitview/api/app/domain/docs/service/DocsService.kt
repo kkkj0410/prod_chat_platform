@@ -2,6 +2,7 @@ package kr.co.fitview.api.app.domain.docs.service
 
 import kr.co.fitview.api.app.domain.docs.dto.request.DocsLoginServiceRequest
 import kr.co.fitview.api.app.domain.member.entity.Member
+import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.domain.member.service.MemberService
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.auth.AuthErrorCode
@@ -15,7 +16,7 @@ import org.springframework.stereotype.Service
 @Service
 class DocsService(
     val jwtTokenProvider: JwtTokenProvider,
-    val memberService : MemberService,
+    val memberQueryService : MemberQueryService,
     val passwordEncoder : PasswordEncoder
 ) {
 
@@ -36,7 +37,7 @@ class DocsService(
     }
 
     private fun findMemberElseThrow(email : String): Member {
-        return (memberService.findMemberFromEmail(email)
+        return (memberQueryService.findMemberFromEmail(email)
             ?: throw GlobalException(MemberErrorCode.MEMBER_NOT_FOUND))
     }
 

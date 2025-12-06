@@ -1,13 +1,9 @@
 package kr.co.fitview.api.app.domain.notification.service
 
-import kr.co.fitview.api.app.domain.chat.dto.response.*
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.domain.notification.constant.StompConstant
 import kr.co.fitview.api.app.domain.notification.dto.StompSendEvent
-import kr.co.fitview.api.app.domain.notification.dto.response.MemberWorkoutPartnerRequestAcceptProfileResponse
-import kr.co.fitview.api.app.domain.notification.dto.response.MemberWorkoutPartnerRequestProfileResponse
-import kr.co.fitview.api.app.domain.notification.dto.response.StompChatNoticeMessageResponse
-import kr.co.fitview.api.app.domain.notification.dto.response.StompEventChatNoticeMessage
+import kr.co.fitview.api.app.domain.notification.dto.response.*
 import kr.co.fitview.api.app.domain.workout.dto.response.WorkoutRequestUpdateResponse
 import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartnerRequest
 import kr.co.fitview.api.app.global.dto.WsMessageType
@@ -23,78 +19,101 @@ class NotificationStompService(
     private val memberQueryService: MemberQueryService
 ) {
 
-    fun sendChatNoticeMessage(memberId: Long, response: ChatMessageDetailResponse) {
+//    fun sendChatMessage(memberId: Long, response: ChatMessageDetailResponse) {
+//
+//        if (response.chatMessage is StompChatTextMessage) {
+//            stompPublisher.sendToUser(
+//                StompSendEvent(
+//                    memberId = memberId,
+//                    destination = StompConstant.SUB_CHAT_MESSAGE,
+//                    payload = WsResponse(
+//                        type = WsMessageType.TEXT.code,
+//                        payload = response.withIsMe(true)
+//                    )
+//                )
+//            )
+//
+//            stompPublisher.sendToUser(
+//                StompSendEvent(
+//                    memberId = response.otherMemberId,
+//                    destination = StompConstant.SUB_CHAT_MESSAGE,
+//                    payload = WsResponse(
+//                        type = WsMessageType.TEXT.code,
+//                        payload = response.withIsMe(false)
+//                    )
+//                )
+//            )
+//
+//        } else if (response.chatMessage is StompChatWorkoutRequestMessage) {
+//            stompPublisher.sendToUser(
+//                StompSendEvent(
+//                    memberId = memberId,
+//                    destination = StompConstant.SUB_CHAT_MESSAGE,
+//                    payload = WsResponse(
+//                        type = WsMessageType.WORKOUT_REQUEST.code,
+//                        payload = response.withIsMe(true)
+//                    )
+//                )
+//            )
+//
+//            stompPublisher.sendToUser(
+//                StompSendEvent(
+//                    memberId = response.otherMemberId,
+//                    destination = StompConstant.SUB_CHAT_MESSAGE,
+//                    payload = WsResponse(
+//                        type = WsMessageType.WORKOUT_REQUEST.code,
+//                        payload = response.withIsMe(false)
+//                    )
+//                )
+//            )
+//        }else if (response.chatMessage is StompChatNoticeMessage) {
+//            stompPublisher.sendToUser(
+//                StompSendEvent(
+//                    memberId = memberId,
+//                    destination = StompConstant.SUB_CHAT_MESSAGE,
+//                    payload = WsResponse(
+//                        type = WsMessageType.NOTICE.code,
+//                        payload = response
+//                    )
+//                )
+//            )
+//
+//            stompPublisher.sendToUser(
+//                StompSendEvent(
+//                    memberId = response.otherMemberId,
+//                    destination = StompConstant.SUB_CHAT_MESSAGE,
+//                    payload = WsResponse(
+//                        type = WsMessageType.NOTICE.code,
+//                        payload = response
+//                    )
+//                )
+//            )
+//        }
+//    }
 
-        if (response.chatMessage is StompChatTextMessage) {
-            stompPublisher.sendToUser(
-                StompSendEvent(
-                    memberId = memberId,
-                    destination = StompConstant.SUB_CHAT_MESSAGE,
-                    payload = WsResponse(
-                        type = WsMessageType.TEXT.code,
-                        payload = response.withIsMe(true)
-                    )
-                )
+    fun sendChatTextMessage(event: StompEventTextMessageDepth1) {
+        stompPublisher.sendToUser(
+            memberId = event.memberId,
+            destination = StompConstant.SUB_CHAT_MESSAGE,
+            payload = WsResponse(
+                type = WsMessageType.TEXT.code,
+                payload = event.message
             )
-
-            stompPublisher.sendToUser(
-                StompSendEvent(
-                    memberId = response.otherMemberId,
-                    destination = StompConstant.SUB_CHAT_MESSAGE,
-                    payload = WsResponse(
-                        type = WsMessageType.TEXT.code,
-                        payload = response.withIsMe(false)
-                    )
-                )
-            )
-        } else if (response.chatMessage is StompChatWorkoutRequestMessage) {
-            stompPublisher.sendToUser(
-                StompSendEvent(
-                    memberId = memberId,
-                    destination = StompConstant.SUB_CHAT_MESSAGE,
-                    payload = WsResponse(
-                        type = WsMessageType.WORKOUT_REQUEST.code,
-                        payload = response.withIsMe(true)
-                    )
-                )
-            )
-
-            stompPublisher.sendToUser(
-                StompSendEvent(
-                    memberId = response.otherMemberId,
-                    destination = StompConstant.SUB_CHAT_MESSAGE,
-                    payload = WsResponse(
-                        type = WsMessageType.WORKOUT_REQUEST.code,
-                        payload = response.withIsMe(false)
-                    )
-                )
-            )
-        }else if (response.chatMessage is StompChatNoticeMessage) {
-            stompPublisher.sendToUser(
-                StompSendEvent(
-                    memberId = memberId,
-                    destination = StompConstant.SUB_CHAT_MESSAGE,
-                    payload = WsResponse(
-                        type = WsMessageType.NOTICE.code,
-                        payload = response
-                    )
-                )
-            )
-
-            stompPublisher.sendToUser(
-                StompSendEvent(
-                    memberId = response.otherMemberId,
-                    destination = StompConstant.SUB_CHAT_MESSAGE,
-                    payload = WsResponse(
-                        type = WsMessageType.NOTICE.code,
-                        payload = response
-                    )
-                )
-            )
-        }
+        )
     }
 
-    fun sendChatNoticeMessage(event: StompChatNoticeMessageResponse) {
+    fun sendChatWorkoutRequestMessage(event: StompEventWorkoutRequestMessageDepth1) {
+        stompPublisher.sendToUser(
+            memberId = event.memberId,
+            destination = StompConstant.SUB_CHAT_MESSAGE,
+            payload = WsResponse(
+                type = WsMessageType.WORKOUT_REQUEST.code,
+                payload = event.message
+            )
+        )
+    }
+
+    fun sendChatNoticeMessage(event: StompEventChatNoticeMessageDepth1) {
         stompPublisher.sendToUser(
             memberId = event.memberId,
             destination = StompConstant.SUB_CHAT_MESSAGE,
@@ -104,6 +123,7 @@ class NotificationStompService(
             )
         )
     }
+
 
 
     fun sendWorkoutRequestUpdate(workoutRequests: List<WorkoutRequestUpdateResponse>) {

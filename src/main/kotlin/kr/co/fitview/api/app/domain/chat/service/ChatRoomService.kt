@@ -6,6 +6,7 @@ import kr.co.fitview.api.app.domain.chat.entity.ChatParticipant
 import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatRoomType
 import kr.co.fitview.api.app.domain.chat.repository.ChatRoomRepository
+import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestQueryService
 import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestService
 import org.springframework.data.domain.Slice
 import org.springframework.data.domain.SliceImpl
@@ -17,8 +18,8 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional(readOnly = true)
 class ChatRoomService(
     private val chatRoomRepository : ChatRoomRepository,
-    private val chatMessageService : ChatMessageService,
-    private val workoutRequestService : WorkoutRequestService
+    private val chatMessageQueryService : ChatMessageQueryService,
+    private val workoutRequestQueryService : WorkoutRequestQueryService
 ) {
 
     @Transactional
@@ -45,9 +46,9 @@ class ChatRoomService(
             return SliceImpl(emptyList(), slice.pageable, false)
         }
 
-        val chatMessages = chatMessageService.findLastChatMessages(memberId, chatRoomIds)
+        val chatMessages = chatMessageQueryService.findLastChatMessages(memberId, chatRoomIds)
 
-        val recentWorkoutRequests = workoutRequestService.findRecentWorkoutRequestFrom(chatRoomIds)
+        val recentWorkoutRequests = workoutRequestQueryService.findRecentWorkoutRequestFrom(chatRoomIds)
 
         val chatRoomResponses = ChatRoomResponse.from(profiles, chatMessages, recentWorkoutRequests)
 

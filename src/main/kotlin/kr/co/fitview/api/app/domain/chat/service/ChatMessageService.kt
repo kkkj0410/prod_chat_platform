@@ -1,24 +1,21 @@
 package kr.co.fitview.api.app.domain.chat.service
 
-import kr.co.fitview.api.app.domain.chat.condition.ChatMessageCondition
-import kr.co.fitview.api.app.domain.chat.dto.ChatMessageAndWorkoutRequest
 import kr.co.fitview.api.app.domain.chat.dto.request.*
-import kr.co.fitview.api.app.domain.chat.dto.response.*
 import kr.co.fitview.api.app.domain.chat.entity.ChatMessage
 import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
-import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
 import kr.co.fitview.api.app.domain.chat.repository.ChatMessageRepository
+import kr.co.fitview.api.app.domain.member.dto.response.ChatRoomMemberProfile
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
-import kr.co.fitview.api.app.domain.member.service.MemberReferenceProvider
-import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusForResponse
-import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
-import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestService
+import kr.co.fitview.api.app.domain.notification.dto.response.*
+import kr.co.fitview.api.app.domain.workout.entity.QWorkoutRequest.workoutRequest
+import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequest
+import kr.co.fitview.api.app.domain.workout_history.service.WorkoutHistoryQueryService
+import kr.co.fitview.api.app.domain.workout_history.service.WorkoutHistoryService
 import kr.co.fitview.api.app.global.exception.GlobalException
-import kr.co.fitview.api.app.global.exception.error.chat.ChatErrorCode
+import kr.co.fitview.api.app.global.exception.error.global.GlobalErrorCode
 import kr.co.fitview.api.app.global.time.Time
-import org.springframework.data.domain.Slice
-import org.springframework.data.domain.SliceImpl
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
@@ -27,142 +24,103 @@ import java.time.LocalDateTime
 @Transactional(readOnly = true)
 class ChatMessageService(
     private val chatMessageRepository: ChatMessageRepository,
-    private val chatParticipantService: ChatParticipantService,
-    private val workoutRequestService: WorkoutRequestService,
-    private val memberReferenceProvider : MemberReferenceProvider,
     private val messageReadStatusService : MessageReadStatusService,
-    private val chatRoomQueryService : ChatRoomQueryService,
+    private val workoutHistoryQueryService : WorkoutHistoryQueryService,
     private val memberQueryService : MemberQueryService,
+    private val publisher: ApplicationEventPublisher,
     private val time: Time
 ) {
 
     @Transactional
-    fun addChatTextMessage(member: Member, chatRoom: ChatRoom, message: ChatTextMessageServiceRequest) : StompChatTextMessage {
+    fun saveChatTextMessage(member: Member, chatRoom: ChatRoom, message: ChatTextMessageServiceRequest) : ChatMessage {
         val now = time.nowLocalDateTime
+
+        chatRoom.updateLastMessageAt(now)
+
+        val savedChatMessage = saveChatMessage(member, chatRoom, message, now)
+
+        messageReadStatusService.saveMessageReadStatus(
+            member = member,
+            chatMessage = savedChatMessage,
+            chatRoom = chatRoom
+        )
+
+        sendStompWorkoutRequestMessage(member, chatRoom, savedChatMessage)
+
+        return savedChatMessage
+    }
+
+
+    @Transactional
+    fun addWorkoutRequestMessage(fromMember: Member, chatRoom: ChatRoom, now: LocalDateTime) : ChatMessage {
+        val chatMessage = ChatMessage.ofWorkoutRequest(
+            member = fromMember,
+            chatRoom = chatRoom,
+            sentAt = now
+        )
+        return chatMessageRepository.save(chatMessage)
+    }
+
+
+    private fun saveChatMessage(
+        member: Member,
+        chatRoom: ChatRoom,
+        message: ChatTextMessageServiceRequest,
+        now: LocalDateTime
+    ): ChatMessage {
         val chatMessage = ChatMessage.ofText(
             member = member,
             chatRoom = chatRoom,
             content = message.content,
             sentAt = now
         )
-        chatRoom.updateLastMessageAt(now)
-
         chatMessageRepository.save(chatMessage)
-
-        messageReadStatusService.saveMessageReadStatus(
-            member = member,
-            chatMessage = chatMessage,
-            chatRoom = chatRoom
-        )
-
-        val response = StompChatTextMessage(
-            chatMessageId = chatMessage.id!!,
-            sentAt = now,
-            content = message.content
-        )
-
-        return response
+        return chatMessage
     }
 
-    @Transactional
-    fun addChatWorkoutRequestMessage(fromMember: Member, chatRoom: ChatRoom, message: ChatWorkoutRequestMessageServiceRequest) : StompChatWorkoutRequestMessage {
-        val now = time.nowLocalDateTime
 
-        validateScheduledAtNotPast(message.scheduledAt, now)
-
-        val chatMessage = ChatMessage.ofWorkoutRequest(
-            member = fromMember,
-            chatRoom = chatRoom,
-            sentAt = now
-        )
-        chatRoom.updateLastMessageAt(now)
-        chatMessageRepository.save(chatMessage)
-
-        val findOtherChatParticipant = chatParticipantService.findOtherParticipantFromMemberIdAndChatRoomId(fromMember.id!!, chatRoom.id!!)
-
-        val toMember = memberReferenceProvider.findMemberReferenceFrom(findOtherChatParticipant!!.getMemberId())
-
-        val savedWorkoutRequest = workoutRequestService.addWorkoutRequest(
-            chatRoomId = chatRoom.id!!,
-            chatMessage = chatMessage,
-            fromMember = fromMember,
-            toMember = toMember,
-            message = message
-        )
-
-        messageReadStatusService.saveMessageReadStatus(
-            member = fromMember,
-            chatMessage = chatMessage,
-            chatRoom = chatRoom
-        )
-
-        val response = StompChatWorkoutRequestMessage(
-            chatMessageId = chatMessage.id!!,
-            sentAt = now,
-            workoutRequestId = savedWorkoutRequest.id!!,
-            status = WorkoutRequestStatusForResponse.from(
-                dbStatus = WorkoutRequestStatus.PENDING,
-                requestedAt = now,
-                scheduledAt = message.scheduledAt,
-                now = now
-            ),
-            scheduledAt = message.scheduledAt,
-            location = message.location,
-        )
-
-        return response
-    }
-
-    private fun validateScheduledAtNotPast(
-        scheduledAt: LocalDateTime,
-        now: LocalDateTime
+    private fun sendStompWorkoutRequestMessage(
+        fromMember: Member,
+        chatRoom: ChatRoom,
+        chatMessage: ChatMessage,
     ) {
-        if (scheduledAt.isBefore(now)) {
-            throw GlobalException(ChatErrorCode.WORKOUT_REQUEST_TIME_PAST)
-        }
+        val toMember = memberQueryService.findOtherMemberFrom(fromMember.id!!, chatRoom.id!!)
+            ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
+
+        val isCompleteWorkout = workoutHistoryQueryService.existsWorkoutHistoryFrom(chatRoom.id!!)
+        val meProfile = memberQueryService.findMemberProfileFrom(fromMember.id!!, chatRoom.id!!)
+            ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
+
+        val meStompMessage = createStompTextMessage(fromMember.id!!, chatRoom, isCompleteWorkout, meProfile, chatMessage, true)
+        val otherStompMessage = createStompTextMessage(toMember.id!!, chatRoom, isCompleteWorkout, meProfile, chatMessage, false)
+
+        publisher.publishEvent(meStompMessage)
+        publisher.publishEvent(otherStompMessage)
     }
 
-    fun findLastChatMessages(memberId: Long, chatRoomIds: List<Long>): List<LastChatMessage> {
-        return chatMessageRepository.findRecentChatMessageByMemberIdAndIn(memberId, chatRoomIds)
-    }
-
-    fun findChatMessages(memberId: Long, chatRoomId: Long, condition: ChatMessageCondition): Slice<LastChatMessage> {
-        validateMemberInChatRoom(memberId, chatRoomId)
-
-        val slice = chatMessageRepository.findChatMessageByCondition(chatRoomId, condition)
-        val content = slice.content
-
-        val responses =
-            content.map { chatMessageAndWorkoutRequest -> mapChatMessage(chatMessageAndWorkoutRequest, memberId) }
-
-        return SliceImpl(responses, slice.pageable, slice.hasNext())
-    }
-
-    private fun validateMemberInChatRoom(memberId: Long, chatRoomId: Long) {
-        chatParticipantService.findChatRoomFromMemberIdAndChatRoomId(memberId, chatRoomId)
-            ?: throw GlobalException(ChatErrorCode.NOT_MEMBER_OF_CHAT_ROOM)
-    }
-
-    private fun mapChatMessage(chatAndRequest: ChatMessageAndWorkoutRequest, memberId: Long): LastChatMessage {
-        return when (chatAndRequest.chatMessage.type) {
-            ChatMessageType.TEXT ->
-                ChatMessageContent.from(chatAndRequest.chatMessage, memberId)
-
-            ChatMessageType.WORKOUT_REQUEST ->
-                ChatMessageWorkoutRequest.from(
-                    chatMessage = chatAndRequest.chatMessage,
-                    workoutRequest = chatAndRequest.workoutRequest!!,
-                    myMemberId = memberId,
-                    now = time.nowLocalDateTime
+    private fun createStompTextMessage(
+        memberId: Long,
+        chatRoom: ChatRoom,
+        isCompleteWorkout: Boolean,
+        meProfile: ChatRoomMemberProfile,
+        chatMessage: ChatMessage,
+        isMe : Boolean
+    ) : StompEventTextMessageDepth1{
+        return StompEventTextMessageDepth1(
+            memberId = memberId,
+            message = StompEventTextMessageDepth2(
+                chatRoomId = chatRoom.id!!,
+                isCompleteWorkout = isCompleteWorkout,
+                profileImageUrl = meProfile.profileImageUrl,
+                nickname = meProfile.nickname,
+                chatMessage = StompEventTextMessageDepth3(
+                    chatMessageId = chatMessage.id!!,
+                    content = chatMessage.content!!,
+                    sentAt = chatMessage.sentAt!!,
+                    isMe = isMe
                 )
-
-            ChatMessageType.NOTICE ->
-                ChatNoticeMessageResponse.from(chatAndRequest.chatMessage, chatAndRequest.chatNoticeMessage!!)
-
-
-            else -> throw IllegalArgumentException("Unknown ChatMessageType: ${chatAndRequest.chatMessage.type}")
-        }
+            )
+        )
     }
-
 
 }

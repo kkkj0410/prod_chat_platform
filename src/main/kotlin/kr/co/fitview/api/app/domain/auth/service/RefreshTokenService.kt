@@ -4,6 +4,7 @@ import kr.co.fitview.api.app.domain.auth.entity.RefreshToken
 import kr.co.fitview.api.app.domain.auth.entity.RefreshTokenStatus
 import kr.co.fitview.api.app.domain.auth.repository.RefreshTokenRepository
 import kr.co.fitview.api.app.domain.member.entity.Member
+import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.domain.member.service.MemberService
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.jwt.JwtErrorCode
@@ -18,12 +19,12 @@ import org.springframework.transaction.annotation.Transactional
 class RefreshTokenService(
     val refreshTokenRepository : RefreshTokenRepository,
     val jwtTokenProvider : JwtTokenProvider,
-    val memberService : MemberService
+    val memberQueryService : MemberQueryService
 ) {
 
     @Transactional
     fun issueRefreshToken(memberId : Long) : String{
-        val findMember = memberService.findMemberOrElseThrow(memberId)
+        val findMember = memberQueryService.findMemberOrElseThrow(memberId)
 
         val refreshToken = jwtTokenProvider.createRefreshToken(findMember.id!!)
 

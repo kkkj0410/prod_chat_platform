@@ -1,10 +1,9 @@
 package kr.co.fitview.api.app.domain.notification.dto.response
 
-
-data class StompEventChatNoticeMessage(
+data class StompEventTextMessageDepth2(
     val chatRoomId: Long,
     val isCompleteWorkout : Boolean,
     val profileImageUrl: String,
     val nickname: String,
-    val chatMessage: StompNoticeMessage,
+    val chatMessage: StompEventTextMessageDepth3,
 )

@@ -1,7 +1,6 @@
 package kr.co.fitview.api.app.domain.workout_partner.service
 
 import kr.co.fitview.api.app.domain.chat.service.ChatRoomService
-import kr.co.fitview.api.app.domain.chat.service.ChatService
 import kr.co.fitview.api.app.domain.member.dto.response.WorkoutPartnerStatusResponse
 import kr.co.fitview.api.app.domain.member.dto.response.enums.ProfileWorkoutPartnerStatus
 import kr.co.fitview.api.app.domain.workout_partner.repository.WorkoutPartnerRepository
@@ -12,9 +11,9 @@ import org.springframework.transaction.annotation.Transactional
 
 @Service
 @Transactional(readOnly = true)
-class WorkoutPartnerService(
+class WorkoutPartnerQueryService(
     val workoutPartnerRepository : WorkoutPartnerRepository,
-    val workoutPartnerRequestService : WorkoutPartnerRequestService,
+    val workoutPartnerRequestQueryService : WorkoutPartnerRequestQueryService,
     val chatRoomService : ChatRoomService
 ) {
 
@@ -58,7 +57,7 @@ class WorkoutPartnerService(
     }
 
     private fun getReceiveRequestStatusResponse(fromMemberId: Long, toMemberId: Long): WorkoutPartnerStatusResponse? {
-        val findReceiveRequest = workoutPartnerRequestService.findRecentRequestWithin24Hours(toMemberId, fromMemberId)
+        val findReceiveRequest = workoutPartnerRequestQueryService.findRecentRequestWithin24Hours(toMemberId, fromMemberId)
 
         if (isNotNull(findReceiveRequest)) {
             return WorkoutPartnerStatusResponse(
@@ -71,7 +70,7 @@ class WorkoutPartnerService(
     }
 
     private fun getSendRequestStatusResponse(fromMemberId: Long, toMemberId: Long): WorkoutPartnerStatusResponse? {
-        val findSendRequest = workoutPartnerRequestService.findRecentRequestWithin24Hours(fromMemberId, toMemberId)
+        val findSendRequest = workoutPartnerRequestQueryService.findRecentRequestWithin24Hours(fromMemberId, toMemberId)
 
         if (isNotNull(findSendRequest)) {
             return WorkoutPartnerStatusResponse(
