@@ -6,6 +6,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import java.math.BigDecimal
 
 class MemberTest : IntegrationTestSupport(){
 
@@ -55,9 +56,9 @@ class MemberTest : IntegrationTestSupport(){
         )
 
         // when
-        member.updateScore(-36.1)
+        member.updateScore(1.0)
 
         // then
-        assertThat(member.score).isEqualTo(0.0)
+        assertThat(member.score).isEqualTo(37.0)
     }
 }

@@ -162,7 +162,7 @@ class ReviewServiceTest @Autowired constructor(
         // then
         assertThat(savedReview)
             .extracting("fromMember", "toMember", "workoutHistory", "isPrivate", "type", "score", "content")
-            .contains(me, other, workoutHistory, false, ReviewType.GOOD, BigDecimal(1), "content")
+            .contains(me, other, workoutHistory, false, ReviewType.GOOD, 1.0, "content")
     }
 
     @DisplayName("악평 리뷰를 저장한다.")
@@ -227,7 +227,7 @@ class ReviewServiceTest @Autowired constructor(
         // then
         assertThat(savedReview)
             .extracting("fromMember", "toMember", "workoutHistory", "isPrivate", "type", "score", "content")
-            .contains(me, other, workoutHistory, true, ReviewType.BAD, BigDecimal(-2), "content")
+            .contains(me, other, workoutHistory, true, ReviewType.BAD, -2.0, "content")
     }
 
     @DisplayName("긍정 리뷰를 저장하는데 서브 메시지가 없으면 리뷰를 저장하지 않는다.")
