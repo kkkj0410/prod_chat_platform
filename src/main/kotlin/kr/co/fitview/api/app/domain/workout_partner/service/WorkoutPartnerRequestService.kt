@@ -1,6 +1,6 @@
 package kr.co.fitview.api.app.domain.workout_partner.service
 
-import kr.co.fitview.api.app.domain.member.service.MemberReferenceProvider
+import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.domain.notification.service.NotificationStompService
 import kr.co.fitview.api.app.domain.workout_partner.condition.WorkoutPartnerRequestCondition
 import kr.co.fitview.api.app.domain.workout_partner.dto.request.WorkoutPartnerCreateServiceRequest
@@ -27,7 +27,7 @@ import org.springframework.transaction.annotation.Transactional
 class WorkoutPartnerRequestService(
     private val workoutPartnerRepository: WorkoutPartnerRepository,
     private val workoutPartnerRequestRepository : WorkoutPartnerRequestRepository,
-    private val memberReferenceProvider : MemberReferenceProvider,
+    private val memberQueryService : MemberQueryService,
     private val notificationStompService: NotificationStompService,
     private val time : Time
 ) {
@@ -44,8 +44,8 @@ class WorkoutPartnerRequestService(
 //        validateAddWorkoutPartnerRequest(findWorkoutPartner)
 
         val workoutPartnerRequest = WorkoutPartnerRequest.of(
-            fromMember = memberReferenceProvider.findMemberReferenceFrom(memberId),
-            toMember = memberReferenceProvider.findMemberReferenceFrom(request.memberId),
+            fromMember = memberQueryService.findMemberReferenceFrom(memberId),
+            toMember = memberQueryService.findMemberReferenceFrom(request.memberId),
             now = time.nowLocalDateTime,
             content = request.workoutPartnerRequestContentIndex
         )

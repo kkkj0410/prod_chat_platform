@@ -6,7 +6,6 @@ import kr.co.fitview.api.app.domain.chat.dto.request.ChatWorkoutRequestMessageRe
 import kr.co.fitview.api.app.domain.chat.dto.request.ChatRoomCreateServiceRequest
 import kr.co.fitview.api.app.domain.chat.dto.response.*
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
-import kr.co.fitview.api.app.domain.member.service.MemberReferenceProvider
 import kr.co.fitview.api.app.domain.workout_history.service.WorkoutHistoryService
 import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestService
 import kr.co.fitview.api.app.domain.workout_partner.service.WorkoutPartnerService
@@ -22,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional
 class ChatService(
     private val chatRoomService : ChatRoomService,
     private val chatParticipantService : ChatParticipantService,
-    private val memberReferenceProvider : MemberReferenceProvider,
     private val workoutPartnerService : WorkoutPartnerService,
     private val chatMessageService : ChatMessageService,
     private val workoutRequestService : WorkoutRequestService,
@@ -64,7 +62,7 @@ class ChatService(
         when (message) {
             is ChatTextMessageRequest -> {
                 savedMessage = chatMessageService.addChatTextMessage(
-                    member = memberReferenceProvider.findMemberReferenceFrom(memberId),
+                    member = memberQueryService.findMemberReferenceFrom(memberId),
                     chatRoom = findChatRoom,
                     message = message.toServiceRequest()
                 )
@@ -72,7 +70,7 @@ class ChatService(
 
             is ChatWorkoutRequestMessageRequest -> {
                 savedMessage = chatMessageService.addChatWorkoutRequestMessage(
-                    fromMember = memberReferenceProvider.findMemberReferenceFrom(memberId),
+                    fromMember = memberQueryService.findMemberReferenceFrom(memberId),
                     chatRoom = findChatRoom,
                     message = message.toServiceRequest()
                 )

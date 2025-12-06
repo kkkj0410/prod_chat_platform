@@ -570,31 +570,6 @@ class MemberServiceTest @Autowired constructor(
             })
     }
 
-    @DisplayName("회원을 프록시로 가져온다.")
-    @Test
-    fun findMemberReferenceFrom() {
-        // given
-        val member = Member(
-            email = "email",
-            password = "password",
-            role = Role.USER,
-        )
-        val savedMember = memberRepository.save(member)
-
-        em.flush()
-        em.clear()
-
-        // when
-        val memberProxy = memberRepository.getReferenceById(savedMember.id!!)
-
-        // then
-        assertThat(memberProxy).isInstanceOf(HibernateProxy::class.java)
-        assertThat(memberProxy::class.simpleName!!).contains("Member")
-        assertThat(memberProxy)
-            .extracting("email", "password", "role")
-            .contains(member.email, member.password, member.role)
-    }
-
     @DisplayName("없는 회원을 프록시로 가져오면 필드 조회에 실패한다.")
     @Test
     fun findMemberReferenceFromWithoutMember() {

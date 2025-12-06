@@ -1,5 +1,6 @@
 package kr.co.fitview.api.app.domain.member.service
 
+import jakarta.persistence.EntityManager
 import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.chat.entity.ChatParticipant
 import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
@@ -17,6 +18,7 @@ import kr.co.fitview.api.app.global.exception.error.workout_request.WorkoutReque
 import kr.co.fitview.api.app.global.util.TestDataFactory
 import org.assertj.core.api.Assertions.*
 import org.assertj.core.api.ThrowingConsumer
+import org.hibernate.proxy.HibernateProxy
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -26,7 +28,8 @@ class MemberQueryServiceTest @Autowired constructor(
     val memberRepository : MemberRepository,
     val oAuth2Service : OAuth2Service,
     val chatRoomRepository : ChatRoomRepository,
-    val chatParticipantRepository : ChatParticipantRepository
+    val chatParticipantRepository : ChatParticipantRepository,
+    val em : EntityManager
 ) : IntegrationTestSupport(){
 
     @DisplayName("운동 파트너 요청에서 요청자의 프로필을 조회한다.")
@@ -300,5 +303,30 @@ class MemberQueryServiceTest @Autowired constructor(
                 tuple(chatRoom.id!!, me.id!!, signupRequest1.nickname, signupRequest1.profileImageUrl),
                 tuple(chatRoom.id!!, other.id!!, signupRequest2.nickname, signupRequest2.profileImageUrl),
             )
+    }
+
+    @DisplayName("회원을 프록시로 조회한다.")
+    @Test
+    fun findMemberReferenceFrom() {
+        // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        val savedMember = memberRepository.save(member)
+
+        em.flush()
+        em.clear()
+
+        // when
+        val memberProxy = memberQueryService.findMemberReferenceFrom(savedMember.id!!)
+
+        // then
+        assertThat(memberProxy).isInstanceOf(HibernateProxy::class.java)
+        assertThat(memberProxy::class.simpleName!!).contains("Member")
+        assertThat(memberProxy)
+            .extracting("email", "password", "role")
+            .contains(member.email, member.password, member.role)
     }
 }

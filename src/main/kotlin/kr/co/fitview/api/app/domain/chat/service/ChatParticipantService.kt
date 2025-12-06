@@ -3,7 +3,7 @@ package kr.co.fitview.api.app.domain.chat.service
 import kr.co.fitview.api.app.domain.chat.entity.ChatParticipant
 import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
 import kr.co.fitview.api.app.domain.chat.repository.ChatParticipantRepository
-import kr.co.fitview.api.app.domain.member.service.MemberReferenceProvider
+import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional(readOnly = true)
 class ChatParticipantService(
     private val chatParticipantRepository : ChatParticipantRepository,
-    private val memberReferenceProvider: MemberReferenceProvider
+    private val memberQueryService: MemberQueryService
 ) {
     @Transactional
     fun saveChatParticipants(chatRoom : ChatRoom, fromMemberId : Long, toMemberId : Long){
@@ -42,6 +42,6 @@ class ChatParticipantService(
         fromMemberId: Long
     ) = ChatParticipant(
         chatRoom = chatRoom,
-        member = memberReferenceProvider.findMemberReferenceFrom(fromMemberId)
+        member = memberQueryService.findMemberReferenceFrom(fromMemberId)
     )
 }

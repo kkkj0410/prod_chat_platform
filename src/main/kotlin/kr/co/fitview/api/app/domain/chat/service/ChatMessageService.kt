@@ -10,7 +10,6 @@ import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
 import kr.co.fitview.api.app.domain.chat.repository.ChatMessageRepository
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
-import kr.co.fitview.api.app.domain.member.service.MemberReferenceProvider
 import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusForResponse
 import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
 import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestService
@@ -29,7 +28,6 @@ class ChatMessageService(
     private val chatMessageRepository: ChatMessageRepository,
     private val chatParticipantService: ChatParticipantService,
     private val workoutRequestService: WorkoutRequestService,
-    private val memberReferenceProvider : MemberReferenceProvider,
     private val messageReadStatusService : MessageReadStatusService,
     private val chatRoomQueryService : ChatRoomQueryService,
     private val memberQueryService : MemberQueryService,
@@ -80,7 +78,7 @@ class ChatMessageService(
 
         val findOtherChatParticipant = chatParticipantService.findOtherParticipantFromMemberIdAndChatRoomId(fromMember.id!!, chatRoom.id!!)
 
-        val toMember = memberReferenceProvider.findMemberReferenceFrom(findOtherChatParticipant!!.getMemberId())
+        val toMember = memberQueryService.findMemberReferenceFrom(findOtherChatParticipant!!.getMemberId())
 
         val savedWorkoutRequest = workoutRequestService.addWorkoutRequest(
             chatRoomId = chatRoom.id!!,
