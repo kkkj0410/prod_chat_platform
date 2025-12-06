@@ -1,10 +1,9 @@
-package kr.co.fitview.api.app.domain.workout.entity
+package kr.co.fitview.api.app.domain.workout_history.entity
 
 import jakarta.persistence.*
 import jakarta.validation.constraints.NotNull
 import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
 import kr.co.fitview.api.app.domain.member.entity.Member
-import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartner
 import kr.co.fitview.api.app.global.entity.BaseEntity
 
 @Entity

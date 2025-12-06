@@ -1,8 +1,8 @@
-package kr.co.fitview.api.app.domain.workout.service
+package kr.co.fitview.api.app.domain.workout_history.service
 
-import kr.co.fitview.api.app.domain.workout.dto.response.WorkoutHistoryChatRoomResponse
-import kr.co.fitview.api.app.domain.workout.entity.WorkoutHistory
-import kr.co.fitview.api.app.domain.workout.repository.WorkoutHistoryRepository
+import kr.co.fitview.api.app.domain.workout_history.dto.response.WorkoutHistoryChatRoomResponse
+import kr.co.fitview.api.app.domain.workout_history.entity.WorkoutHistory
+import kr.co.fitview.api.app.domain.workout_history.repository.WorkoutHistoryRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 

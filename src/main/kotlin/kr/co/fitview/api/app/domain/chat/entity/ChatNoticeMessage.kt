@@ -4,7 +4,7 @@ import jakarta.persistence.*
 import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatNoticeMessageType
-import kr.co.fitview.api.app.domain.workout.entity.WorkoutHistory
+import kr.co.fitview.api.app.domain.workout_history.entity.WorkoutHistory
 import kr.co.fitview.api.app.global.entity.BaseEntity
 
 @Entity

@@ -16,9 +16,9 @@ import kr.co.fitview.api.app.domain.notification.dto.response.StompChatNoticeMes
 import kr.co.fitview.api.app.domain.notification.dto.response.StompEventChatNoticeMessage
 import kr.co.fitview.api.app.domain.notification.dto.response.StompNoticeMessage
 import kr.co.fitview.api.app.domain.notification.service.NotificationStompService
-import kr.co.fitview.api.app.domain.workout.entity.WorkoutHistory
-import kr.co.fitview.api.app.domain.workout.service.WorkoutHistoryQueryService
-import kr.co.fitview.api.app.domain.workout.service.WorkoutHistoryService
+import kr.co.fitview.api.app.domain.workout_history.entity.WorkoutHistory
+import kr.co.fitview.api.app.domain.workout_history.service.WorkoutHistoryQueryService
+import kr.co.fitview.api.app.domain.workout_history.service.WorkoutHistoryService
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.global.GlobalErrorCode
 import kr.co.fitview.api.app.global.time.Time

@@ -1,8 +1,5 @@
 package kr.co.fitview.api.app.domain.review.service
 
-import jakarta.persistence.*
-import jakarta.validation.constraints.NotNull
-import jakarta.validation.constraints.Size
 import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatRoomType
@@ -15,18 +12,13 @@ import kr.co.fitview.api.app.domain.review.entity.ReviewTag
 import kr.co.fitview.api.app.domain.review.entity.enums.ReviewType
 import kr.co.fitview.api.app.domain.review.repository.ReviewCategoryRepository
 import kr.co.fitview.api.app.domain.review.repository.ReviewTagRepository
-import kr.co.fitview.api.app.domain.workout.entity.QWorkoutHistory.workoutHistory
-import kr.co.fitview.api.app.domain.workout.entity.QWorkoutRequest.workoutRequest
-import kr.co.fitview.api.app.domain.workout.entity.WorkoutHistory
-import kr.co.fitview.api.app.domain.workout.repository.WorkoutHistoryRepository
+import kr.co.fitview.api.app.domain.workout_history.entity.WorkoutHistory
+import kr.co.fitview.api.app.domain.workout_history.repository.WorkoutHistoryRepository
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.exception.GlobalException
-import kr.co.fitview.api.app.global.exception.error.oauth2.OAuth2ErrorCode
 import kr.co.fitview.api.app.global.exception.error.review.ReviewErrorCode
 import org.assertj.core.api.Assertions.*
 import org.assertj.core.api.ThrowingConsumer
-import org.hibernate.annotations.ColumnDefault
-import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired

@@ -6,7 +6,6 @@ import kr.co.fitview.api.app.domain.chat.entity.enums.ChatRoomType
 import kr.co.fitview.api.app.domain.chat.repository.ChatRoomRepository
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
-import kr.co.fitview.api.app.domain.review.entity.QReview.review
 import kr.co.fitview.api.app.domain.review.entity.Review
 import kr.co.fitview.api.app.domain.review.entity.ReviewCategory
 import kr.co.fitview.api.app.domain.review.entity.ReviewTag
@@ -15,8 +14,8 @@ import kr.co.fitview.api.app.domain.review.repository.ReviewCategoryRepository
 import kr.co.fitview.api.app.domain.review.repository.ReviewRepository
 import kr.co.fitview.api.app.domain.review.repository.ReviewTagRelationRepository
 import kr.co.fitview.api.app.domain.review.repository.ReviewTagRepository
-import kr.co.fitview.api.app.domain.workout.entity.WorkoutHistory
-import kr.co.fitview.api.app.domain.workout.repository.WorkoutHistoryRepository
+import kr.co.fitview.api.app.domain.workout_history.entity.WorkoutHistory
+import kr.co.fitview.api.app.domain.workout_history.repository.WorkoutHistoryRepository
 import kr.co.fitview.api.app.global.entity.Role
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName

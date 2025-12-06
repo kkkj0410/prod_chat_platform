@@ -5,23 +5,14 @@ import kr.co.fitview.api.app.domain.chat.dto.request.ChatTextMessageRequest
 import kr.co.fitview.api.app.domain.chat.dto.request.ChatWorkoutRequestMessageRequest
 import kr.co.fitview.api.app.domain.chat.dto.request.ChatRoomCreateServiceRequest
 import kr.co.fitview.api.app.domain.chat.dto.response.*
-import kr.co.fitview.api.app.domain.chat.entity.ChatMessage
-import kr.co.fitview.api.app.domain.chat.entity.ChatParticipant
-import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
-import kr.co.fitview.api.app.domain.chat.entity.QChatMessage.chatMessage
-import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
-import kr.co.fitview.api.app.domain.chat.repository.ChatParticipantRepository
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.domain.member.service.MemberReferenceProvider
-import kr.co.fitview.api.app.domain.member.service.MemberService
-import kr.co.fitview.api.app.domain.notification.service.NotificationStompService
-import kr.co.fitview.api.app.domain.workout.service.WorkoutHistoryService
+import kr.co.fitview.api.app.domain.workout_history.service.WorkoutHistoryService
 import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestService
 import kr.co.fitview.api.app.domain.workout_partner.service.WorkoutPartnerService
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.chat.ChatErrorCode
 import kr.co.fitview.api.app.global.exception.error.global.GlobalErrorCode
-import kr.co.fitview.api.app.global.time.Time
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
