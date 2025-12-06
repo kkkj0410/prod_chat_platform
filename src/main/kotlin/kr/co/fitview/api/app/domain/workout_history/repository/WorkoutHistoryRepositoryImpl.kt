@@ -4,7 +4,7 @@ import com.querydsl.core.types.Projections
 import com.querydsl.jpa.impl.JPAQueryFactory
 import kr.co.fitview.api.app.domain.chat.entity.QChatRoom.chatRoom
 import kr.co.fitview.api.app.domain.workout_history.dto.response.WorkoutHistoryChatRoomResponse
-import kr.co.fitview.api.app.domain.workout.entity.QWorkoutHistory.workoutHistory
+import kr.co.fitview.api.app.domain.workout_history.entity.QWorkoutHistory.workoutHistory
 
 class WorkoutHistoryRepositoryImpl(
     private val queryFactory : JPAQueryFactory

@@ -17,6 +17,7 @@ import kr.co.fitview.api.app.domain.workout_history.repository.WorkoutHistoryRep
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.review.ReviewErrorCode
+import kr.co.fitview.api.app.global.time.Time
 import org.assertj.core.api.Assertions.*
 import org.assertj.core.api.ThrowingConsumer
 import org.junit.jupiter.api.DisplayName
@@ -30,7 +31,8 @@ class ReviewServiceTest @Autowired constructor(
     private val reviewService : ReviewService,
     private val memberRepository : MemberRepository,
     private val chatRoomRepository : ChatRoomRepository,
-    private val workoutHistoryRepository : WorkoutHistoryRepository
+    private val workoutHistoryRepository : WorkoutHistoryRepository,
+    private val time : Time
 ) : IntegrationTestSupport(){
 
 
@@ -118,7 +120,8 @@ class ReviewServiceTest @Autowired constructor(
         val workoutHistory = WorkoutHistory(
             chatRoom = chatRoom,
             memberOne = me,
-            memberTwo = other
+            memberTwo = other,
+            completedAt = time.nowLocalDateTime
         )
         workoutHistoryRepository.save(workoutHistory)
 
@@ -185,7 +188,8 @@ class ReviewServiceTest @Autowired constructor(
         val workoutHistory = WorkoutHistory(
             chatRoom = chatRoom,
             memberOne = me,
-            memberTwo = other
+            memberTwo = other,
+            completedAt = time.nowLocalDateTime
         )
         workoutHistoryRepository.save(workoutHistory)
 
@@ -249,7 +253,8 @@ class ReviewServiceTest @Autowired constructor(
         val workoutHistory = WorkoutHistory(
             chatRoom = chatRoom,
             memberOne = me,
-            memberTwo = other
+            memberTwo = other,
+            completedAt = time.nowLocalDateTime
         )
         workoutHistoryRepository.save(workoutHistory)
 
@@ -317,7 +322,8 @@ class ReviewServiceTest @Autowired constructor(
         val workoutHistory = WorkoutHistory(
             chatRoom = chatRoom,
             memberOne = me,
-            memberTwo = other
+            memberTwo = other,
+            completedAt = time.nowLocalDateTime
         )
         workoutHistoryRepository.save(workoutHistory)
 
@@ -387,7 +393,8 @@ class ReviewServiceTest @Autowired constructor(
         val workoutHistory = WorkoutHistory(
             chatRoom = chatRoom,
             memberOne = me,
-            memberTwo = other
+            memberTwo = other,
+            completedAt = time.nowLocalDateTime
         )
         workoutHistoryRepository.save(workoutHistory)
 
@@ -452,7 +459,8 @@ class ReviewServiceTest @Autowired constructor(
         val workoutHistory = WorkoutHistory(
             chatRoom = chatRoom,
             memberOne = me,
-            memberTwo = other
+            memberTwo = other,
+            completedAt = time.nowLocalDateTime
         )
         workoutHistoryRepository.save(workoutHistory)
 

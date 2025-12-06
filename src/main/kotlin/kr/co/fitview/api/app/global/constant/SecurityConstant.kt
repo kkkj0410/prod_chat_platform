@@ -21,6 +21,7 @@ object SecurityConstant {
         "$API_BASE/addresses/**",
         "$API_BASE/workout-partners/**",
         "$API_BASE/workout-partner-requests/**",
+        "$API_BASE/workout-histories/**",
         "$API_BASE/chats/**",
         "$API_BASE/fcm-tokens/**",
         "$API_BASE/reviews/**",

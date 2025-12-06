@@ -8,6 +8,7 @@ import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.domain.workout_history.entity.WorkoutHistory
 import kr.co.fitview.api.app.global.entity.Role
+import kr.co.fitview.api.app.global.time.Time
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.tuple
 import org.junit.jupiter.api.DisplayName
@@ -17,7 +18,8 @@ import org.springframework.beans.factory.annotation.Autowired
 class WorkoutHistoryRepositoryTest @Autowired constructor(
     val workoutHistoryRepository: WorkoutHistoryRepository,
     val memberRepository : MemberRepository,
-    val chatRoomRepository : ChatRoomRepository
+    val chatRoomRepository : ChatRoomRepository,
+    val time : Time
 ) : IntegrationTestSupport(){
 
     @DisplayName("회원 간의 운동 이력 여부가 있다.")
@@ -44,7 +46,8 @@ class WorkoutHistoryRepositoryTest @Autowired constructor(
         val workoutHistory = WorkoutHistory.of(
             chatRoom = chatRoom,
             memberOne = member1,
-            memberTwo = member2
+            memberTwo = member2,
+            completedAt = time.nowLocalDateTime
         )
         workoutHistoryRepository.save(workoutHistory)
 
@@ -103,7 +106,8 @@ class WorkoutHistoryRepositoryTest @Autowired constructor(
         val workoutHistory = WorkoutHistory.of(
             chatRoom = chatRoom,
             memberOne = member1,
-            memberTwo = member2
+            memberTwo = member2,
+            completedAt = time.nowLocalDateTime
         )
         workoutHistoryRepository.save(workoutHistory)
 
@@ -138,7 +142,8 @@ class WorkoutHistoryRepositoryTest @Autowired constructor(
         val workoutHistory = WorkoutHistory.of(
             chatRoom = chatRoom,
             memberOne = member1,
-            memberTwo = member2
+            memberTwo = member2,
+            completedAt = time.nowLocalDateTime
         )
         workoutHistoryRepository.save(workoutHistory)
 
@@ -175,7 +180,8 @@ class WorkoutHistoryRepositoryTest @Autowired constructor(
         val workoutHistory = WorkoutHistory.of(
             chatRoom = chatRoom,
             memberOne = member1,
-            memberTwo = member2
+            memberTwo = member2,
+            completedAt = time.nowLocalDateTime
         )
         workoutHistoryRepository.save(workoutHistory)
 
@@ -223,7 +229,8 @@ class WorkoutHistoryRepositoryTest @Autowired constructor(
         val workoutHistory = WorkoutHistory.of(
             chatRoom = chatRoom,
             memberOne = member1,
-            memberTwo = member2
+            memberTwo = member2,
+            completedAt = time.nowLocalDateTime
         )
         workoutHistoryRepository.save(workoutHistory)
 

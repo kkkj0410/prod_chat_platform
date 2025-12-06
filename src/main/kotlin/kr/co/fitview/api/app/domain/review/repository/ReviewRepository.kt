@@ -4,4 +4,6 @@ import kr.co.fitview.api.app.domain.review.entity.Review
 import org.springframework.data.jpa.repository.JpaRepository
 
 interface ReviewRepository : JpaRepository<Review, Long>, ReviewRepositoryCustom {
+
+    fun findByFromMemberIdAndWorkoutHistoryIdAndDeletedAtIsNull(memberId: Long, workoutHistoryId: Long): Review?
 }

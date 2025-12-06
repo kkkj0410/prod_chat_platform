@@ -455,7 +455,8 @@ class ChatRoomRepositoryTest @Autowired constructor(
          val workoutHistory = WorkoutHistory.of(
             chatRoom = chatRoom2,
             memberOne = me,
-            memberTwo = other2
+            memberTwo = other2,
+            completedAt = time.nowLocalDateTime
         )
         workoutHistoryRepository.save(workoutHistory)
 
@@ -562,7 +563,8 @@ class ChatRoomRepositoryTest @Autowired constructor(
         val workoutHistory1 = WorkoutHistory.of(
             chatRoom = chatRoom2,
             memberOne = me,
-            memberTwo = other2
+            memberTwo = other2,
+            completedAt = time.nowLocalDateTime
         )
         workoutHistoryRepository.save(workoutHistory1)
 
@@ -589,7 +591,8 @@ class ChatRoomRepositoryTest @Autowired constructor(
         val workoutHistory2 = WorkoutHistory.of(
             chatRoom = chatRoom2,
             memberOne = me,
-            memberTwo = other2
+            memberTwo = other2,
+            completedAt = time.nowLocalDateTime
         )
         workoutHistoryRepository.save(workoutHistory2)
 

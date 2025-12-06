@@ -18,8 +18,8 @@ import kr.co.fitview.api.app.domain.image.entity.QImage.image
 import kr.co.fitview.api.app.domain.image.entity.QMemberImage.memberImage
 import kr.co.fitview.api.app.domain.image.entity.enums.MemberImageType
 import kr.co.fitview.api.app.domain.member.entity.QMember.member
-import kr.co.fitview.api.app.domain.workout.entity.QWorkoutHistory.workoutHistory
 import kr.co.fitview.api.app.domain.workout.entity.QWorkoutRequest.workoutRequest
+import kr.co.fitview.api.app.domain.workout_history.entity.QWorkoutHistory.workoutHistory
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Slice
 import org.springframework.data.domain.SliceImpl

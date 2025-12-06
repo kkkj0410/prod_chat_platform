@@ -4,7 +4,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory
 import kr.co.fitview.api.app.domain.member.entity.QMember
 import kr.co.fitview.api.app.domain.review.entity.QReview.review
 import kr.co.fitview.api.app.domain.review.entity.Review
-import kr.co.fitview.api.app.domain.workout.entity.QWorkoutHistory.workoutHistory
+import kr.co.fitview.api.app.domain.workout_history.entity.QWorkoutHistory.workoutHistory
 
 class ReviewRepositoryImpl(
     private val queryFactory : JPAQueryFactory
