@@ -613,4 +613,22 @@ class MemberRepositoryImpl(
             .fetch()
     }
 
+    override fun findOtherMemberBy(memberId: Long, chatRoomId: Long): Member? {
+        return queryFactory
+            .select(member)
+            .from(chatParticipant)
+            .join(chatRoom)
+            .on(
+                chatParticipant.chatRoom.id.eq(chatRoom.id),
+            )
+            .join(chatParticipant.member, member)
+            .where(
+                chatParticipant.member.id.ne(memberId),
+                chatRoom.deletedAt.isNull,
+                chatRoom.id.eq(chatRoomId),
+                chatRoom.type.eq(ChatRoomType.PRIVATE)
+            )
+            .fetchOne()
+    }
+
 }

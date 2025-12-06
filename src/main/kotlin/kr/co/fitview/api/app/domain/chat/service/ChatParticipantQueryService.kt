@@ -21,4 +21,5 @@ class ChatParticipantQueryService(
     fun findOtherParticipantFromMemberIdAndChatRoomId(memberId : Long, chatRoomId : Long) : ChatParticipant? {
         return chatParticipantRepository.findOtherChatParticipantByMemberIdAndChatRoomId(memberId, chatRoomId)
     }
+
 }

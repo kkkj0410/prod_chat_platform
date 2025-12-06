@@ -80,7 +80,7 @@ class NotificationStompServiceTest @Autowired constructor(
 
 
         // when
-        notificationStompService.sendChatNoticeMessage(memberId, response)
+        notificationStompService.sendChatMessage(memberId, response)
 
         // then
         then(stompPublisher).should().sendToUser(
@@ -138,7 +138,7 @@ class NotificationStompServiceTest @Autowired constructor(
 
 
         // when
-        notificationStompService.sendChatNoticeMessage(memberId, response)
+        notificationStompService.sendChatMessage(memberId, response)
 
         // then
         then(stompPublisher).should().sendToUser(
@@ -194,7 +194,7 @@ class NotificationStompServiceTest @Autowired constructor(
 
 
         // when
-        notificationStompService.sendChatNoticeMessage(memberId, response)
+        notificationStompService.sendChatMessage(memberId, response)
 
         // then
         then(stompPublisher).should().sendToUser(

@@ -3,11 +3,13 @@ package kr.co.fitview.api.app.domain.workout.service
 import kr.co.fitview.api.app.domain.chat.dto.request.ChatWorkoutRequestMessageServiceRequest
 import kr.co.fitview.api.app.domain.chat.dto.request.WorkoutRequestUpdateRequest
 import kr.co.fitview.api.app.domain.chat.entity.ChatMessage
+import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatNoticeMessageType
+import kr.co.fitview.api.app.domain.chat.service.ChatMessageService
 import kr.co.fitview.api.app.domain.chat.service.ChatNoticeMessageService
-import kr.co.fitview.api.app.domain.fcm.service.FcmService
+import kr.co.fitview.api.app.domain.chat.service.MessageReadStatusService
 import kr.co.fitview.api.app.domain.member.entity.Member
-import kr.co.fitview.api.app.domain.workout.dto.response.LastWorkoutRequestMessage
+import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.domain.workout.dto.response.WorkoutRequestUpdateResponse
 import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusForRequest
 import kr.co.fitview.api.app.domain.workout_history.entity.WorkoutHistory
@@ -20,8 +22,10 @@ import kr.co.fitview.api.app.global.exception.error.chat.ChatErrorCode
 import kr.co.fitview.api.app.global.exception.error.global.GlobalErrorCode
 import kr.co.fitview.api.app.global.exception.error.workout_request.WorkoutRequestErrorCode
 import kr.co.fitview.api.app.global.time.Time
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
 
 @Service
 @Transactional(readOnly = true)
@@ -29,8 +33,66 @@ class WorkoutRequestService(
     private val workoutRequestRepository: WorkoutRequestRepository,
     private val workoutHistoryService : WorkoutHistoryService,
     private val chatNoticeMessageService : ChatNoticeMessageService,
+    private val chatMessageService : ChatMessageService,
+    private val memberQueryService : MemberQueryService,
+    private val messageReadStatusService : MessageReadStatusService,
+    private val workoutRequestQueryService: WorkoutRequestQueryService,
+    private val publisher: ApplicationEventPublisher,
     private val time: Time
 ) {
+
+    @Transactional
+    fun saveChatWorkoutRequestMessage(fromMember: Member, chatRoom: ChatRoom, message: ChatWorkoutRequestMessageServiceRequest) : ChatMessage {
+        val now = time.nowLocalDateTime
+
+        validateAddWorkoutRequest(chatRoom, message, now)
+
+        chatRoom.updateLastMessageAt(now)
+
+        val savedChatMessage = chatMessageService.addWorkoutRequestMessage(fromMember, chatRoom, now)
+
+        val toMember = memberQueryService.findOtherMemberFrom(fromMember.id!!, chatRoom.id!!)
+            ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
+
+        val workoutRequest = WorkoutRequest.of(
+            chatMessage = savedChatMessage,
+            fromMember = fromMember,
+            toMember = toMember,
+            location = message.location,
+            scheduledAt = message.scheduledAt,
+            requestedAt = now
+        )
+        workoutRequestRepository.save(workoutRequest)
+
+        messageReadStatusService.saveMessageReadStatus(
+            member = fromMember,
+            chatMessage = savedChatMessage,
+            chatRoom = chatRoom
+        )
+
+
+
+
+        return savedChatMessage
+
+//        val response = StompChatWorkoutRequestMessage(
+//            chatMessageId = savedChatMessage.id!!,
+//            sentAt = now,
+//            workoutRequestId = savedWorkoutRequest.id!!,
+//            status = WorkoutRequestStatusForResponse.from(
+//                dbStatus = WorkoutRequestStatus.PENDING,
+//                requestedAt = now,
+//                scheduledAt = message.scheduledAt,
+//                now = now
+//            ),
+//            scheduledAt = message.scheduledAt,
+//            location = message.location,
+//        )
+//
+//        return response
+    }
+
+
 
     @Transactional
     fun addWorkoutRequest(
@@ -102,6 +164,31 @@ class WorkoutRequestService(
         return response
     }
 
+    private fun validateAddWorkoutRequest(
+        chatRoom: ChatRoom,
+        message: ChatWorkoutRequestMessageServiceRequest,
+        now: LocalDateTime
+    ) {
+        validateExistsWorkoutRequest(chatRoom.id!!)
+//        validateScheduledAtNotPast(message.scheduledAt, now)
+    }
+
+    private fun validateExistsWorkoutRequest(chatRoomId : Long) {
+        val findWorkoutRequest = workoutRequestQueryService.findRecentWorkoutRequestFrom(chatRoomId)
+
+        if (isNotNull(findWorkoutRequest) && isNotFinishStatus(findWorkoutRequest!!)) {
+            throw GlobalException(ChatErrorCode.EXISTING_WORKOUT_REQUEST)
+        }
+    }
+
+    private fun validateScheduledAtNotPast(
+        scheduledAt: LocalDateTime,
+        now: LocalDateTime
+    ) {
+        if (scheduledAt.isBefore(now)) {
+            throw GlobalException(ChatErrorCode.WORKOUT_REQUEST_TIME_PAST)
+        }
+    }
 
     private fun validateWorkoutRequestUpdate(
         request: WorkoutRequestUpdateRequest,
@@ -137,12 +224,6 @@ class WorkoutRequestService(
         }
     }
 
-
-    private fun validateExistsWorkoutRequest(findWorkoutRequest: WorkoutRequest?) {
-        if (isNotNull(findWorkoutRequest) && isNotFinishStatus(findWorkoutRequest!!)) {
-            throw GlobalException(ChatErrorCode.EXISTING_WORKOUT_REQUEST)
-        }
-    }
 
     private fun isNotFinishStatus(workoutRequest: WorkoutRequest): Boolean =
         workoutRequest.status !in finishStatus

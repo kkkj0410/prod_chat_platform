@@ -67,8 +67,6 @@ class MemberQueryService(
         return memberRepository.findAllChatRoomMemberProfile(chatRoomId)
     }
 
-    //------------
-
     fun findMemberFromEmail(email : String) : Member?{
         return memberRepository.findByEmailAndDeletedAtIsNull(email)
     }
@@ -160,6 +158,10 @@ class MemberQueryService(
         )
 
         return randomCustom.shuffled(seed, findMemberByRecommendations) + randomCustom.shuffled(seed, findMemberInSeoul)
+    }
+
+    fun findOtherMemberFrom(memberId : Long, chatRoomId : Long) : Member? {
+        return memberRepository.findOtherMemberBy(memberId, chatRoomId)
     }
 
     private fun validateDuplicatedEmail(member: Member) {

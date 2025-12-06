@@ -5,9 +5,10 @@ import kr.co.fitview.api.app.domain.chat.dto.request.ChatTextMessageRequest
 import kr.co.fitview.api.app.domain.chat.dto.request.ChatWorkoutRequestMessageRequest
 import kr.co.fitview.api.app.domain.chat.dto.request.ChatRoomCreateServiceRequest
 import kr.co.fitview.api.app.domain.chat.dto.response.*
+import kr.co.fitview.api.app.domain.chat.entity.ChatMessage
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestQueryService
-import kr.co.fitview.api.app.domain.workout_history.service.WorkoutHistoryService
+import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestService
 import kr.co.fitview.api.app.domain.workout_partner.service.WorkoutPartnerQueryService
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.chat.ChatErrorCode
@@ -20,13 +21,12 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional(readOnly = true)
 class ChatService(
     private val chatRoomService : ChatRoomService,
-    private val chatParticipantQueryService : ChatParticipantQueryService,
     private val chatParticipantService : ChatParticipantService,
     private val workoutPartnerQueryService : WorkoutPartnerQueryService,
     private val chatMessageService : ChatMessageService,
     private val workoutRequestQueryService : WorkoutRequestQueryService,
     private val memberQueryService : MemberQueryService,
-    private val workoutHistoryService : WorkoutHistoryService
+    private val workoutRequestService : WorkoutRequestService
 ) {
 
     @Transactional
@@ -49,7 +49,7 @@ class ChatService(
     }
 
     @Transactional
-    fun sendMessage(memberId: Long, chatRoomId: Long, message : ChatMessageRequest) : ChatMessageDetailResponse {
+    fun sendMessage(memberId: Long, chatRoomId: Long, message : ChatMessageRequest) : ChatMessage {
 
         workoutRequestQueryService.findRecentWorkoutRequestFrom(listOf(chatRoomId))
 
@@ -59,10 +59,9 @@ class ChatService(
         val findChatProfile = memberQueryService.findMemberChatProfileFrom(memberId)
             ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
 
-        val savedMessage : StompChatMessage
         when (message) {
             is ChatTextMessageRequest -> {
-                savedMessage = chatMessageService.addChatTextMessage(
+                return chatMessageService.addChatTextMessage(
                     member = memberQueryService.findMemberReferenceFrom(memberId),
                     chatRoom = findChatRoom,
                     message = message.toServiceRequest()
@@ -70,7 +69,7 @@ class ChatService(
             }
 
             is ChatWorkoutRequestMessageRequest -> {
-                savedMessage = chatMessageService.addChatWorkoutRequestMessage(
+                 return workoutRequestService.saveChatWorkoutRequestMessage(
                     fromMember = memberQueryService.findMemberReferenceFrom(memberId),
                     chatRoom = findChatRoom,
                     message = message.toServiceRequest()
@@ -78,23 +77,25 @@ class ChatService(
             }
         }
 
-        val findOtherChatParticipant = chatParticipantQueryService.findOtherParticipantFromMemberIdAndChatRoomId(
-            memberId = memberId,
-            chatRoomId = chatRoomId
-        )
-        val otherMemberId = findOtherChatParticipant!!.getMemberId()
 
-        val isCompleteWorkout = workoutHistoryService.existsWorkoutHistoryFrom(memberId, otherMemberId)
 
-        val response = ChatMessageDetailResponse.of(
-            chatRoomId = chatRoomId,
-            isCompleteWorkout = isCompleteWorkout,
-            chatProfile = findChatProfile,
-            chatMessage = savedMessage,
-            otherMemberId = otherMemberId
-        )
-
-        return response
+//        val findOtherChatParticipant = chatParticipantQueryService.findOtherParticipantFromMemberIdAndChatRoomId(
+//            memberId = memberId,
+//            chatRoomId = chatRoomId
+//        )
+//        val otherMemberId = findOtherChatParticipant!!.getMemberId()
+//
+//        val isCompleteWorkout = workoutHistoryService.existsWorkoutHistoryFrom(memberId, otherMemberId)
+//
+//        val response = ChatMessageDetailResponse.of(
+//            chatRoomId = chatRoomId,
+//            isCompleteWorkout = isCompleteWorkout,
+//            chatProfile = findChatProfile,
+//            chatMessage = savedMessage,
+//            otherMemberId = otherMemberId
+//        )
+//
+//        return response
     }
 
 
