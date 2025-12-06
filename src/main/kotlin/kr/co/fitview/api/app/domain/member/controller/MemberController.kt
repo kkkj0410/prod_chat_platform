@@ -6,6 +6,7 @@ import kr.co.fitview.api.app.domain.member.condition.MemberLocalCondition
 import kr.co.fitview.api.app.domain.address.dto.response.AddressResponse
 import kr.co.fitview.api.app.domain.member.dto.request.MemberUpdateRequest
 import kr.co.fitview.api.app.domain.member.dto.response.*
+import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.domain.member.service.MemberService
 import kr.co.fitview.api.app.global.dto.ApiResponse
 import kr.co.fitview.api.app.global.dto.SuccessPagedResponse
@@ -18,13 +19,14 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/api/v1/members")
 class MemberController(
     val memberService : MemberService,
+    val memberQueryService : MemberQueryService,
     val addressService : AddressService,
     val securityUtil : SecurityUtil
 ) {
 
     @GetMapping("/me")
     fun memberMe() : ResponseEntity<ApiResponse<MemberProfileResponse>> {
-        val response = memberService.findMemberProfile(securityUtil.getMemberId())
+        val response = memberQueryService.findMemberProfile(securityUtil.getMemberId())
 
         return ResponseEntity.ok(ApiResponse.success(response))
     }
@@ -61,7 +63,7 @@ class MemberController(
         @RequestParam(name = "size", defaultValue = "10") size: Int
     ) : ResponseEntity<ApiResponse<List<MemberRecommendationResponse>>> {
 
-        val response = memberService.findRandomMemberWithinRecommendation(securityUtil.getMemberId(), size)
+        val response = memberQueryService.findRandomMemberWithinRecommendation(securityUtil.getMemberId(), size)
 
         return ResponseEntity.ok(ApiResponse.success(response))
     }
@@ -77,7 +79,7 @@ class MemberController(
 
         ) : ResponseEntity<ApiResponse<SuccessPagedResponse<MemberLocalResponse>>> {
 
-        val response = memberService.findRandomMemberWithinLocal(securityUtil.getMemberId(), condition, seed)
+        val response = memberQueryService.findRandomMemberWithinLocal(securityUtil.getMemberId(), condition, seed)
 
         return ResponseEntity.ok(ApiResponse.successWithPagination(response))
     }
@@ -87,7 +89,7 @@ class MemberController(
         @PathVariable
         memberId : Long
     ): ResponseEntity<ApiResponse<MemberDetailResponse>> {
-        val response = memberService.findMemberDetail(securityUtil.getMemberId(), memberId)
+        val response = memberQueryService.findMemberDetail(securityUtil.getMemberId(), memberId)
         return ResponseEntity.ok(ApiResponse.success(response))
     }
 

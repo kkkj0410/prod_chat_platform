@@ -2,6 +2,7 @@ package kr.co.fitview.api.app.domain.oauth2.service
 
 import kr.co.fitview.api.app.domain.auth.service.RefreshTokenService
 import kr.co.fitview.api.app.domain.member.entity.Member
+import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.domain.member.service.MemberService
 import kr.co.fitview.api.app.domain.oauth2.config.AppleConfig
 import kr.co.fitview.api.app.domain.oauth2.dto.request.AppleLoginServiceRequest
@@ -28,9 +29,9 @@ class AppleService(
     val appleJwtProvider : AppleJwtProvider,
     val appleAuthService: AppleAuthService,
     val networkService: NetworkService,
+    val memberQueryService : MemberQueryService,
     val memberService : MemberService,
     val jwtTokenProvider : JwtTokenProvider,
-    val refreshTokenService : RefreshTokenService,
     val idGenerator: IdGenerator,
     val time : Time
 ) {
@@ -45,7 +46,7 @@ class AppleService(
 
         val appleProfile = appleAuthService.extractAppleProfileWithValidate(appleJwtToken)
 
-        var findMember = memberService.findMemberFromProviderId(appleProfile.appleId)
+        var findMember = memberQueryService.findMemberFromProviderId(appleProfile.appleId)
 
         if(isNull(findMember)){
             validateEmail(appleProfile.email)

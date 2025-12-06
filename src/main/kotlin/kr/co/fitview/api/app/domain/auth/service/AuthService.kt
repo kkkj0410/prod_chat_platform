@@ -7,6 +7,7 @@ import kr.co.fitview.api.app.domain.auth.dto.response.AccessTokenRefreshResponse
 import kr.co.fitview.api.app.domain.member.dto.request.MemberCreateServiceRequest
 import kr.co.fitview.api.app.domain.member.dto.request.MemberLoginServiceRequest
 import kr.co.fitview.api.app.domain.member.entity.Member
+import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.domain.member.service.MemberService
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.exception.GlobalException
@@ -22,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional(readOnly = true)
 class AuthService(
     val memberService : MemberService,
+    val memberQueryService : MemberQueryService,
     val passwordEncoder : PasswordEncoder,
     val jwtTokenProvider : JwtTokenProvider,
     val refreshTokenService: RefreshTokenService
@@ -59,7 +61,7 @@ class AuthService(
         refreshTokenService.validateRefreshTokenFrom(request.refreshToken)
 
         val memberId = jwtTokenProvider.extractMemberIdFrom(request.refreshToken)
-        val findMember = memberService.findMemberOrElseThrow(memberId)
+        val findMember = memberQueryService.findMemberOrElseThrow(memberId)
 
         val accessToken = jwtTokenProvider.createAccessToken(findMember.id!!, findMember.role!!)
 
@@ -84,7 +86,7 @@ class AuthService(
     }
 
     private fun findMemberElseThrow(request: MemberLoginServiceRequest): Member {
-        return (memberService.findMemberFromEmail(request.email)
+        return (memberQueryService.findMemberFromEmail(request.email)
             ?: throw GlobalException(MemberErrorCode.MEMBER_NOT_FOUND))
     }
 

@@ -14,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional(readOnly = true)
 class WorkoutPartnerService(
     val workoutPartnerRepository : WorkoutPartnerRepository,
-    val workoutPartnerRequestService : WorkoutPartnerRequestService,
+    val workoutPartnerRequestQueryService : WorkoutPartnerRequestQueryService,
     val chatRoomService : ChatRoomService
 ) {
 
@@ -58,7 +58,7 @@ class WorkoutPartnerService(
     }
 
     private fun getReceiveRequestStatusResponse(fromMemberId: Long, toMemberId: Long): WorkoutPartnerStatusResponse? {
-        val findReceiveRequest = workoutPartnerRequestService.findRecentRequestWithin24Hours(toMemberId, fromMemberId)
+        val findReceiveRequest = workoutPartnerRequestQueryService.findRecentRequestWithin24Hours(toMemberId, fromMemberId)
 
         if (isNotNull(findReceiveRequest)) {
             return WorkoutPartnerStatusResponse(
@@ -71,7 +71,7 @@ class WorkoutPartnerService(
     }
 
     private fun getSendRequestStatusResponse(fromMemberId: Long, toMemberId: Long): WorkoutPartnerStatusResponse? {
-        val findSendRequest = workoutPartnerRequestService.findRecentRequestWithin24Hours(fromMemberId, toMemberId)
+        val findSendRequest = workoutPartnerRequestQueryService.findRecentRequestWithin24Hours(fromMemberId, toMemberId)
 
         if (isNotNull(findSendRequest)) {
             return WorkoutPartnerStatusResponse(

@@ -35,12 +35,8 @@ import kotlin.random.Random
 class MemberService(
     private val memberRepository : MemberRepository,
     private val workoutTimeRepository: WorkoutTimeRepository,
-    private val workoutPartnerService : WorkoutPartnerService,
-    private val addressService : AddressService,
     private val imageService : ImageService,
-    private val redisService : RedisService,
     private val time : Time,
-    private val randomCustom : RandomCustom
 ) {
 
     @Transactional
@@ -141,115 +137,22 @@ class MemberService(
         return findMember
     }
 
-    fun findMemberFromEmail(email : String) : Member?{
-        return memberRepository.findByEmailAndDeletedAtIsNull(email)
-    }
-
-    fun findMemberFromProviderId(providerId : String) : Member?{
-        return memberRepository.findByProviderIdAndDeletedAtIsNull(providerId)
-    }
-
-    fun findMemberFromId(memberId : Long) : Member?{
+    private fun findMemberOrElseThrow(memberId: Long) : Member {
         return memberRepository.findByIdAndDeletedAtIsNull(memberId)
-    }
-
-    fun findMemberOrElseThrow(memberId: Long) : Member {
-        return findMemberFromId(memberId)
             ?: throw GlobalException(MemberErrorCode.MEMBER_NOT_FOUND)
     }
 
-    fun findMemberProfile(memberId: Long) : MemberProfileResponse{
-        val response = memberRepository.findMemberProfileByDeletedAtIsNull(memberId)
-            ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
-
-        return response
-    }
-
-    fun findMemberDetail(fromMemberId : Long, toMemberId : Long) : MemberDetailResponse{
-        val findProfile = findMemberProfile(toMemberId)
-        val otherProfile = OtherMemberProfileResponse.fromMemberProfile(findProfile)
-
-        val findWorkoutPartnerStatus : WorkoutPartnerStatusResponse = workoutPartnerService.findWorkoutPartnerStatus(fromMemberId, toMemberId)
-        return MemberDetailResponse(otherProfile, findWorkoutPartnerStatus)
-    }
-
-    fun findRandomMemberWithinLocal(
-        memberId: Long,
-        condition: MemberLocalCondition,
-        seed: Long
-    ): Page<MemberLocalResponse> {
-
-        val randomMemberId: Long = createRandomMemberId(memberId, seed)
-
-        val findAddress = addressService.findAddressEntityFrom(memberId)
-        val boundingBox = createBoundingBox(findAddress!!)
-
-        val findMembers = memberRepository.findMemberWithinLocal(memberId, randomMemberId, boundingBox, condition)
-        val shuffledMembers = randomCustom.shuffled(seed, findMembers).toMutableList()
-
-        if(findMembers.size < 100){
-            val remainSize = 100 - findMembers.size
-
-            val findMemberIds = findMembers.map{it.memberId}
-
-            val findSeoulMembers = memberRepository.findMemberWithinSeoulByNotMemberIds(
-                meMemberId = memberId,
-                size = remainSize,
-                memberIds = findMemberIds
-            )
-
-            val shuffledSeoulMembers = randomCustom.shuffled(seed, findSeoulMembers)
-
-            shuffledMembers.addAll(shuffledSeoulMembers)
-        }
-
-        return createProfilePage(condition, shuffledMembers)
-    }
-
-
-    fun findRandomMemberWithinRecommendation(
-        memberId: Long,
-        size : Int,
-        seed: Long = System.currentTimeMillis()
-    ) : List<MemberRecommendationResponse>{
-
-        val findMeMember = findMemberOrElseThrow(memberId)
-
-        val findMemberMaxId = memberRepository.findMemberMaxId()
-            ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
-
-        val randomMemberId = randomCustom.nextLong(seed, 1, findMemberMaxId + 1)
-
-        val findMemberByRecommendations = memberRepository.findMemberWithinRecommendation(findMeMember, randomMemberId, size)
-
-        if(findMemberByRecommendations.size == size){
-            return randomCustom.shuffled(seed, findMemberByRecommendations)
-        }
-
-        val remain = size - findMemberByRecommendations.size
-        val memberIds = findMemberByRecommendations.map{it.memberId}
-
-        val findMemberInSeoul = memberRepository.findMemberByNotMemberIdsWithinRecommendationsAndSeoul(
-            memberId = memberId,
-            memberIds = memberIds,
-            size = remain
-        )
-
-        return randomCustom.shuffled(seed, findMemberByRecommendations) + randomCustom.shuffled(seed, findMemberInSeoul)
-    }
-
     private fun validateDuplicatedEmail(member: Member) {
-        findMemberFromEmail(member.email!!)?.let {
+        memberRepository.findByEmailAndDeletedAtIsNull(member.email!!)?.let {
             throw GlobalException(MemberErrorCode.MEMBER_DUPLICATE_EMAIL)
         }
     }
 
     private fun validateDuplicatedProviderId(member: Member) {
-        findMemberFromProviderId(member.providerId!!)?.let {
+        memberRepository.findByProviderIdAndDeletedAtIsNull(member.providerId!!)?.let {
             throw GlobalException(MemberErrorCode.MEMBER_DUPLICATE_PROVIDER)
         }
     }
-
 
     private fun createNewWorkoutTimes(
         workoutTimeNames: List<WorkoutTimeName>,
@@ -257,69 +160,6 @@ class MemberService(
     ) = workoutTimeNames
         .map { WorkoutTime(member = member, name = it) }
 
-    private fun createBoundingBox(address: Address) : BoundingBox {
-        var lat = address.lat
-        var lng = address.lng
-
-        if(address.siDo != AddressSiDo.SEOUL){
-            lat = AddressConstant.DEFAULT_LAT
-            lng = AddressConstant.DEFAULT_LNG
-        }
-
-        val latDeg = address.radiusKm?.div(111)
-        val latRad = Math.toRadians(address.lat!!)
-        val lngDeg = address.radiusKm?.div(111 * cos(latRad))
-
-        val minLat = lat?.minus(latDeg!!)
-        val maxLat = lat?.plus(latDeg!!)
-
-        val minLng = lng?.minus(lngDeg!!)
-        val maxLng = lng?.plus(lngDeg!!)
-
-        return BoundingBox(
-            minLat = minLat!!,
-            maxLat = maxLat!!,
-            minLng = minLng!!,
-            maxLng = maxLng!!
-        )
-    }
-
-    private fun createProfilePage(
-        condition: MemberLocalCondition,
-        shuffledMembers: List<MemberLocalResponse>
-    ): PageImpl<MemberLocalResponse> {
-
-        val page = (condition.page).coerceAtLeast(1)
-        val size = condition.size
-
-        val fromIndex = (page - 1) * size
-        val toIndex = (fromIndex + size).coerceAtMost(shuffledMembers.size)
-
-        val pageContent = if (fromIndex >= shuffledMembers.size) emptyList()
-        else shuffledMembers.subList(fromIndex, toIndex)
-
-        return PageImpl(pageContent, PageRequest.of(page - 1, size), shuffledMembers.size.toLong())
-    }
-
-    private fun createRandomMemberId(memberId: Long, seed: Long): Long {
-        val cacheRandomMemberId = redisService.getMemberLocalKey(memberId, seed)
-        if (isNotNull(cacheRandomMemberId)) {
-            return cacheRandomMemberId!!
-        }
-
-        val findMemberMaxId = memberRepository.findMemberMaxId()
-            ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
-
-        val randomMemberId = randomCustom.nextLong(seed, 1, findMemberMaxId + 1)
-
-        redisService.setMemberLocalKey(
-            memberId = memberId,
-            randomMemberId = randomMemberId,
-            seed = seed
-        )
-
-        return randomMemberId
-    }
 
     private fun isNotNull(value : Any?) = value != null
 }

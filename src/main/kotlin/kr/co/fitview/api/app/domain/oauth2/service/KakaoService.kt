@@ -2,6 +2,7 @@ package kr.co.fitview.api.app.domain.oauth2.service
 
 import kr.co.fitview.api.app.domain.auth.service.RefreshTokenService
 import kr.co.fitview.api.app.domain.member.entity.Member
+import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.domain.member.service.MemberService
 import kr.co.fitview.api.app.domain.oauth2.dto.request.KakaoLoginServiceRequest
 import kr.co.fitview.api.app.domain.oauth2.dto.response.KakaoProfile
@@ -21,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional
 class KakaoService(
     val networkService: NetworkService,
     val memberService : MemberService,
+    val memberQueryService: MemberQueryService,
     val idGenerator: IdGenerator,
     val jwtTokenProvider: JwtTokenProvider,
 ) {
@@ -31,7 +33,7 @@ class KakaoService(
 
         val kakaoProfile = getKakaoProfile(request)
 
-        var findMember = memberService.findMemberFromProviderId(kakaoProfile.id)
+        var findMember = memberQueryService.findMemberFromProviderId(kakaoProfile.id)
 
         if(isNull(findMember)){
             findMember = kakaoSignup(kakaoProfile)

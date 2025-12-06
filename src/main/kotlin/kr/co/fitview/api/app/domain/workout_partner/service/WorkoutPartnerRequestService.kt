@@ -28,7 +28,6 @@ class WorkoutPartnerRequestService(
     private val workoutPartnerRepository: WorkoutPartnerRepository,
     private val workoutPartnerRequestRepository : WorkoutPartnerRequestRepository,
     private val memberQueryService : MemberQueryService,
-    private val notificationStompService: NotificationStompService,
     private val time : Time
 ) {
 

@@ -4,6 +4,7 @@ import kr.co.fitview.api.app.domain.address.service.AddressService
 import kr.co.fitview.api.app.domain.auth.service.RefreshTokenService
 import kr.co.fitview.api.app.domain.image.service.ImageService
 import kr.co.fitview.api.app.domain.member.entity.Member
+import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.domain.member.service.MemberService
 import kr.co.fitview.api.app.domain.oauth2.dto.request.OAuth2LoginServiceRequest
 import kr.co.fitview.api.app.domain.oauth2.dto.request.OAuth2SignupServiceRequest
@@ -28,6 +29,7 @@ class OAuth2Service(
     private val refreshTokenService : RefreshTokenService,
     private val termService: TermService,
     private val imageService: ImageService,
+    private val memberQueryService : MemberQueryService,
     private val memberService: MemberService,
     private val addressService: AddressService
 ) {
@@ -66,7 +68,7 @@ class OAuth2Service(
 
         validateIntro(request.intro)
 
-        val findMember = memberService.findMemberOrElseThrow(memberId)
+        val findMember = memberQueryService.findMemberOrElseThrow(memberId)
 
         validateIsSignup(findMember.isSignup!!)
 

@@ -1,6 +1,7 @@
 package kr.co.fitview.api.app.domain.oauth2.service
 
 import kr.co.fitview.api.app.domain.member.entity.Member
+import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.domain.member.service.MemberService
 import kr.co.fitview.api.app.domain.oauth2.config.GoogleConfig
 import kr.co.fitview.api.app.domain.oauth2.dto.request.GoogleLoginServiceRequest
@@ -20,7 +21,8 @@ import org.springframework.util.MultiValueMap
 @Transactional(readOnly = true)
 class GoogleService(
     private val networkService : NetworkService,
-    private val memberService: MemberService,
+    private val memberQueryService : MemberQueryService,
+    private val memberService : MemberService,
     private val googleConfig: GoogleConfig,
     private val idGenerator: IdGenerator
 ) {
@@ -32,7 +34,7 @@ class GoogleService(
 
         val googleProfile = getGoogleProfile(googleAccessToken)
 
-        var findMember = memberService.findMemberFromProviderId(googleProfile.googleId)
+        var findMember = memberQueryService.findMemberFromProviderId(googleProfile.googleId)
 
         if (isNull(findMember)) {
             findMember = googleSignup(googleProfile)
