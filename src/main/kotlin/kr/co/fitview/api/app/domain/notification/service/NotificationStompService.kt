@@ -124,6 +124,17 @@ class NotificationStompService(
         )
     }
 
+    fun sendUpdateWorkoutRequest(event: StompEventUpdateWorkoutRequestMessageDepth1) {
+        stompPublisher.sendToUser(
+            memberId = event.memberId,
+            destination = StompConstant.SUB_WORKOUT_REQUEST,
+            payload = WsResponse(
+                type = WsMessageType.WORKOUT_REQUEST_UPDATE.code,
+                payload = event.message
+            )
+        )
+    }
+
 
 
     fun sendWorkoutRequestUpdate(workoutRequests: List<WorkoutRequestUpdateResponse>) {

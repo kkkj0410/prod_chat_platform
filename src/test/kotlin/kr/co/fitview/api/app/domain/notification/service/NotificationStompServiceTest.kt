@@ -157,6 +157,35 @@ class NotificationStompServiceTest @Autowired constructor(
         )
     }
 
+    @DisplayName("채팅 운동 요청 업데이트 실시간 알람을 보낸다.")
+    @Test
+    fun sendUpdateWorkoutRequest() {
+        // given
+        val sendMessage = StompEventUpdateWorkoutRequestMessageDepth1(
+            memberId = 123L,
+            message = StompEventUpdateWorkoutRequestMessageDepth2(
+                chatRoomId = 1234L,
+                workoutRequestId = 12345L,
+                status = WorkoutRequestStatus.EXPIRE
+            )
+        )
+
+        given(stompPublisher.sendToUser(any(), any(), any())).willAnswer {}
+
+        // when
+        notificationStompService.sendUpdateWorkoutRequest(sendMessage)
+
+        // then
+        then(stompPublisher).should().sendToUser(
+            memberId = 123L,
+            destination = StompConstant.SUB_WORKOUT_REQUEST,
+            payload = WsResponse(
+                type = WsMessageType.WORKOUT_REQUEST_UPDATE.code,
+                payload = sendMessage.message
+            )
+        )
+    }
+
     @DisplayName("운동 요청의 상태 변화를 현재 접속한 회원들에게 알린다.")
     @Test
     fun sendWorkoutRequestUpdate() {

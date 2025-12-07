@@ -1,8 +1,6 @@
 package kr.co.fitview.api.app.domain.notification.service
 
-import kr.co.fitview.api.app.domain.notification.dto.response.StompEventChatNoticeMessageDepth1
-import kr.co.fitview.api.app.domain.notification.dto.response.StompEventTextMessageDepth1
-import kr.co.fitview.api.app.domain.notification.dto.response.StompEventWorkoutRequestMessageDepth1
+import kr.co.fitview.api.app.domain.notification.dto.response.*
 import org.springframework.stereotype.Component
 import org.springframework.transaction.event.TransactionPhase
 import org.springframework.transaction.event.TransactionalEventListener
@@ -27,5 +25,12 @@ class NotificationStompEventListener(
     fun sendChatNoticeMessage(event : StompEventChatNoticeMessageDepth1){
         notificationStompService.sendChatNoticeMessage(event)
     }
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    fun sendUpdateWorkoutRequest(event : StompEventUpdateWorkoutRequestMessageDepth1){
+        notificationStompService.sendUpdateWorkoutRequest(event)
+    }
+
+
 
 }
