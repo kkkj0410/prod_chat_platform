@@ -31,6 +31,15 @@ class NotificationStompEventListener(
         notificationStompService.sendUpdateWorkoutRequest(event)
     }
 
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    fun sendWorkoutPartnerRequest(event : StompEventWorkoutPartnerRequestDepth1){
+        notificationStompService.sendWorkoutPartnerRequest(event)
+    }
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    fun sendAcceptWorkoutPartner(event : StompEventAcceptWorkoutPartnerDepth1){
+        notificationStompService.sendAcceptWorkoutPartner(event)
+    }
 
 
 }

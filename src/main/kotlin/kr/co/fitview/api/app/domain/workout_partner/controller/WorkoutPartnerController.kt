@@ -33,11 +33,11 @@ class WorkoutPartnerController(
         request : WorkoutPartnerCreateRequest
     ) : ResponseEntity<ApiResponse<*>> {
 
-        val savedWorkoutPartnerRequest =  workoutPartnerRequestService.addWorkoutPartnerRequest(securityUtil.getMemberId(), request.toServiceRequest())
+        workoutPartnerRequestService.addWorkoutPartnerRequest(securityUtil.getMemberId(), request.toServiceRequest())
 
-        notificationStompService.sendWorkoutPartnerRequest(
-            workoutPartnerRequest = savedWorkoutPartnerRequest
-        )
+//        notificationStompService.sendWorkoutPartnerRequest(
+//            workoutPartnerRequest = savedWorkoutPartnerRequest
+//        )
 
         return ResponseEntity.ok(ApiResponse.success("ok"))
     }
@@ -52,13 +52,13 @@ class WorkoutPartnerController(
         request : WorkoutPartnerUpdateRequest
     ) : ResponseEntity<ApiResponse<*>> {
 
-        val workoutPartnerRequest = workoutPartnerRequestService.updateWorkoutPartnerRequest(securityUtil.getMemberId(), workoutPartnerRequestId, request.toServiceRequest())
+        workoutPartnerRequestService.updateWorkoutPartnerRequest(securityUtil.getMemberId(), workoutPartnerRequestId, request.toServiceRequest())
 
-        if(isAccept(workoutPartnerRequest)){
-            notificationStompService.sendWorkoutPartnerAccept(
-                workoutPartnerRequest = workoutPartnerRequest
-            )
-        }
+//        if(isAccept(workoutPartnerRequest)){
+//            notificationStompService.sendWorkoutPartnerAccept(
+//                workoutPartnerRequest = workoutPartnerRequest
+//            )
+//        }
 
         return ResponseEntity.ok(ApiResponse.success("ok"))
     }

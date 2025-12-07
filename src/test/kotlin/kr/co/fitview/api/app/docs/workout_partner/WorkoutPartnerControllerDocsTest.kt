@@ -140,9 +140,6 @@ class WorkoutPartnerControllerDocsTest : RestDocsSupport() {
                 )
             )
 
-        given(notificationStompService.sendWorkoutPartnerAccept(any()))
-            .willAnswer {  }
-
 
         // when & then
         mockMvc.perform(

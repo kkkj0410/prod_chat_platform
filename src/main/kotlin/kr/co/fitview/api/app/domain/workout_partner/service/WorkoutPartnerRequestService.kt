@@ -1,14 +1,13 @@
 package kr.co.fitview.api.app.domain.workout_partner.service
 
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
-import kr.co.fitview.api.app.domain.notification.service.NotificationStompService
-import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequest
-import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
-import kr.co.fitview.api.app.domain.workout_partner.condition.WorkoutPartnerRequestCondition
+import kr.co.fitview.api.app.domain.notification.dto.response.StompEventAcceptWorkoutPartnerDepth1
+import kr.co.fitview.api.app.domain.notification.dto.response.StompEventAcceptWorkoutPartnerDepth2
+import kr.co.fitview.api.app.domain.notification.dto.response.StompEventWorkoutPartnerRequestDepth1
+import kr.co.fitview.api.app.domain.notification.dto.response.StompEventWorkoutPartnerRequestDepth2
 import kr.co.fitview.api.app.domain.workout_partner.dto.request.WorkoutPartnerCreateServiceRequest
 import kr.co.fitview.api.app.domain.workout_partner.dto.request.WorkoutPartnerUpdateServiceRequest
 import kr.co.fitview.api.app.domain.workout_partner.dto.request.enums.WorkoutPartnerRequestUpdateStatus
-import kr.co.fitview.api.app.domain.workout_partner.dto.response.WorkoutPartnerRequestResponse
 import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartner
 import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartnerRequest
 import kr.co.fitview.api.app.domain.workout_partner.entity.enums.WorkoutPartnerRequestStatus
@@ -16,11 +15,10 @@ import kr.co.fitview.api.app.domain.workout_partner.repository.WorkoutPartnerRep
 import kr.co.fitview.api.app.domain.workout_partner.repository.WorkoutPartnerRequestRepository
 import kr.co.fitview.api.app.domain.workout_partner.repository.findByOrderedMemberOneIdAndMemberTwoIdAndDeletedAtIsNull
 import kr.co.fitview.api.app.global.exception.GlobalException
-import kr.co.fitview.api.app.global.exception.error.chat.ChatErrorCode
 import kr.co.fitview.api.app.global.exception.error.global.GlobalErrorCode
 import kr.co.fitview.api.app.global.exception.error.workout_partner.WorkoutPartnerErrorCode
 import kr.co.fitview.api.app.global.time.Time
-import org.springframework.data.domain.Slice
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -31,6 +29,7 @@ class WorkoutPartnerRequestService(
     private val workoutPartnerRepository: WorkoutPartnerRepository,
     private val workoutPartnerRequestRepository : WorkoutPartnerRequestRepository,
     private val memberQueryService : MemberQueryService,
+    private val publisher: ApplicationEventPublisher,
     private val time : Time
 ) {
 
@@ -39,10 +38,11 @@ class WorkoutPartnerRequestService(
     fun addWorkoutPartnerRequest(memberId : Long, request: WorkoutPartnerCreateServiceRequest): WorkoutPartnerRequest {
         validateAlreadyWorkoutPartner(memberId, request.memberId)
 
-        val findWorkoutPartner = workoutPartnerRequestRepository.findTop1ByFromMemberIdAndToMemberIdAndDeletedAtIsNullOrderByRequestedAtDesc(memberId, request.memberId)
 
         // FE 편의상 validate 취소
         // 정식상으로 다시 validate 활성화 필요
+//        val findWorkoutPartner = workoutPartnerRequestRepository.findTop1ByFromMemberIdAndToMemberIdAndDeletedAtIsNullOrderByRequestedAtDesc(memberId, request.memberId)
+
 //        validateAddWorkoutPartnerRequest(findWorkoutPartner)
 
         val workoutPartnerRequest = WorkoutPartnerRequest.of(
@@ -52,10 +52,11 @@ class WorkoutPartnerRequestService(
             content = request.workoutPartnerRequestContentIndex
         )
 
-        val savedWorkoutPartner = workoutPartnerRequestRepository.save(workoutPartnerRequest)
+        val savedWorkoutPartnerRequest = workoutPartnerRequestRepository.save(workoutPartnerRequest)
 
+        sendStompWorkoutPartnerRequest(savedWorkoutPartnerRequest)
 
-        return savedWorkoutPartner
+        return savedWorkoutPartnerRequest
     }
 
     @Transactional
@@ -68,14 +69,18 @@ class WorkoutPartnerRequestService(
         validateAlreadyWorkoutPartner(findWorkoutPartnerRequest.getFromMemberId(), findWorkoutPartnerRequest.getToMemberId())
 
         if(isWorkoutPartnerAccept(request)){
+
             findWorkoutPartnerRequest.accept()
 
             addWorkoutPartner(findWorkoutPartnerRequest)
+
+            sendStompAcceptWorkoutPartnerRequest(findWorkoutPartnerRequest)
 
             return findWorkoutPartnerRequest
         }
 
         findWorkoutPartnerRequest.reject()
+
         return findWorkoutPartnerRequest
     }
 
@@ -86,6 +91,43 @@ class WorkoutPartnerRequestService(
         workoutPartnerRepository.save(workoutPartner)
     }
 
+    private fun sendStompWorkoutPartnerRequest(
+        workoutPartnerRequest: WorkoutPartnerRequest
+    ) {
+        val findMemberProfile =
+            memberQueryService.findMemberWorkoutRequestProfileFrom(workoutPartnerRequest.getFromMemberId())
+                ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
+
+        val stomp = StompEventWorkoutPartnerRequestDepth1(
+            memberId = workoutPartnerRequest.getToMemberId(),
+            message = StompEventWorkoutPartnerRequestDepth2(
+                workoutPartnerRequestId = workoutPartnerRequest.id!!,
+                memberId = findMemberProfile.memberId,
+                profileImageUrl = findMemberProfile.profileImageUrl,
+                nickname = findMemberProfile.nickname
+            )
+        )
+        publisher.publishEvent(stomp)
+    }
+
+    private fun sendStompAcceptWorkoutPartnerRequest(
+        workoutPartnerRequest: WorkoutPartnerRequest,
+    ) {
+        val findMemberProfile =
+            memberQueryService.findMemberWorkoutRequestProfileFrom(workoutPartnerRequest.getToMemberId())
+                ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
+
+        val stomp = StompEventAcceptWorkoutPartnerDepth1(
+            memberId = workoutPartnerRequest.getFromMemberId(),
+            message = StompEventAcceptWorkoutPartnerDepth2(
+                memberId = findMemberProfile.memberId,
+                profileImageUrl = findMemberProfile.profileImageUrl,
+                nickname = findMemberProfile.nickname,
+                workoutPartnerRequestContentIndex = workoutPartnerRequest.content!!.index
+            )
+        )
+        publisher.publishEvent(stomp)
+    }
 
     private fun validateUpdateWorkoutPartnerRequest(workoutPartnerRequest: WorkoutPartnerRequest) {
         if (isNotPending(workoutPartnerRequest) || isExpire24Hour(workoutPartnerRequest))

@@ -18,6 +18,7 @@ import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequest
 import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
 import kr.co.fitview.api.app.domain.workout_history.repository.WorkoutHistoryRepository
 import kr.co.fitview.api.app.domain.workout.repository.WorkoutRequestRepository
+import kr.co.fitview.api.app.domain.workout_partner.entity.QWorkoutPartnerRequest.workoutPartnerRequest
 import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartnerRequest
 import kr.co.fitview.api.app.domain.workout_partner.entity.enums.WorkoutPartnerRequestContent
 import kr.co.fitview.api.app.domain.workout_partner.repository.WorkoutPartnerRequestRepository
@@ -186,169 +187,231 @@ class NotificationStompServiceTest @Autowired constructor(
         )
     }
 
-    @DisplayName("운동 요청의 상태 변화를 현재 접속한 회원들에게 알린다.")
-    @Test
-    fun sendWorkoutRequestUpdate() {
-        // given
-        val workoutRequests = listOf(
-            WorkoutRequestUpdateResponse(
-                chatRoomId = 1L,
-                workoutRequestId = 101L,
-                status = WorkoutRequestStatus.EXPIRE,
-                fromMemberId = 10L,
-                toMemberId = 20L
-            ),
-            WorkoutRequestUpdateResponse(
-                chatRoomId = 2L,
-                workoutRequestId = 102L,
-                status = WorkoutRequestStatus.EXPIRE,
-                fromMemberId = 11L,
-                toMemberId = 21L
-            )
-        )
 
-        given(stompPublisher.sendToUser(any())).willAnswer {}
-
-        // when
-        notificationStompService.sendWorkoutRequestUpdate(workoutRequests)
-
-        // then
-        workoutRequests.forEach { request ->
-            then(stompPublisher).should().sendToUser(
-                StompSendEvent(
-                    memberId = request.fromMemberId,
-                    destination = StompConstant.SUB_WORKOUT_REQUEST,
-                    payload = WsResponse(
-                        type = WsMessageType.WORKOUT_REQUEST_UPDATE.code,
-                        payload = request
-                    )
-                )
-            )
-            then(stompPublisher).should().sendToUser(
-                StompSendEvent(
-                    memberId = request.toMemberId,
-                    destination = StompConstant.SUB_WORKOUT_REQUEST,
-                    payload = WsResponse(
-                        type = WsMessageType.WORKOUT_REQUEST_UPDATE.code,
-                        payload = request
-                    )
-                )
-            )
-        }
-    }
-
-    @DisplayName("운동 파트너 요청을 수신자에게 전달한다.")
+    @DisplayName("채팅 파트너 요청을 상대방에게 실시간 알람으로 보낸다.")
     @Test
     fun sendWorkoutPartnerRequest() {
         // given
-        val fromMember = Member(
-            email = "email1",
-            password = "password1",
-            role = Role.USER,
+        val sendMessage = StompEventWorkoutPartnerRequestDepth1(
+            memberId = 123L,
+            message = StompEventWorkoutPartnerRequestDepth2(
+                workoutPartnerRequestId = 1234L,
+                memberId = 12345L,
+                profileImageUrl = "profileImageUrl",
+                nickname = "nickname"
+            )
         )
 
-        val toMember = Member(
-            email = "email2",
-            password = "password2",
-            role = Role.USER,
-        )
-        memberRepository.save(fromMember)
-        memberRepository.save(toMember)
-
-        val signupRequest = TestDataFactory.oAuth2SignupRequest()
-        oAuth2Service.signup(signupRequest, fromMember.id!!)
-
-        given(stompPublisher.sendToUser(any())).willAnswer {}
-
-        val workoutPartnerRequest = WorkoutPartnerRequest.of(
-            fromMember = fromMember,
-            toMember = toMember,
-            now = time.nowLocalDateTime,
-            content = WorkoutPartnerRequestContent.BURN
-        )
-        workoutPartnerRequestRepository.save(workoutPartnerRequest)
-
-        val response = MemberWorkoutPartnerRequestProfileResponse(
-            memberId = fromMember.id!!,
-            profileImageUrl = signupRequest.profileImageUrl,
-            nickname = signupRequest.nickname,
-            workoutPartnerRequestId = workoutPartnerRequest.id!!
-        )
-
+        given(stompPublisher.sendToUser(any(), any(), any())).willAnswer {}
 
         // when
-        notificationStompService.sendWorkoutPartnerRequest(
-            workoutPartnerRequest = workoutPartnerRequest
-        )
+        notificationStompService.sendWorkoutPartnerRequest(sendMessage)
 
         // then
         then(stompPublisher).should().sendToUser(
-            StompSendEvent(
-                memberId = toMember.id!!,
-                destination = StompConstant.SUB_WORKOUT_PARTNER,
-                payload = WsResponse(
-                    type = WsMessageType.WORKOUT_PARTNER_REQUEST.code,
-                    payload = response
-                )
+            memberId = 123L,
+            destination = StompConstant.SUB_WORKOUT_PARTNER,
+            payload = WsResponse(
+                type = WsMessageType.WORKOUT_PARTNER_REQUEST.code,
+                payload = sendMessage.message
             )
         )
     }
 
-    @DisplayName("운동 파트너 승인을 처음 요청자에게 전달한다.")
+    @DisplayName("채팅 파트너 요청 수락 시, 요청을 보낸자에게 실시간 알람을 보낸다.")
     @Test
-    fun sendWorkoutPartnerAccept() {
+    fun sendAcceptWorkoutPartner() {
         // given
-        val fromMember = Member(
-            email = "email1",
-            password = "password1",
-            role = Role.USER,
+        val sendMessage = StompEventAcceptWorkoutPartnerDepth1(
+            memberId = 123L,
+            message = StompEventAcceptWorkoutPartnerDepth2(
+                memberId = 234L,
+                profileImageUrl = "profileImageUrl",
+                nickname = "nickname",
+                workoutPartnerRequestContentIndex = 123
+            )
         )
 
-        val toMember = Member(
-            email = "email2",
-            password = "password2",
-            role = Role.USER,
-        )
-        memberRepository.save(fromMember)
-        memberRepository.save(toMember)
-
-        val signupRequest = TestDataFactory.oAuth2SignupRequest()
-        oAuth2Service.signup(signupRequest, toMember.id!!)
-
-        given(stompPublisher.sendToUser(any())).willAnswer {}
-
-        val workoutPartnerRequest = WorkoutPartnerRequest.of(
-            fromMember = fromMember,
-            toMember = toMember,
-            now = time.nowLocalDateTime,
-            content = WorkoutPartnerRequestContent.BURN
-        )
-        workoutPartnerRequestRepository.save(workoutPartnerRequest)
-
-        val response = MemberWorkoutPartnerRequestAcceptProfileResponse(
-            memberId = toMember.id!!,
-            profileImageUrl = signupRequest.profileImageUrl,
-            nickname = signupRequest.nickname,
-            workoutPartnerRequestContentIndex = workoutPartnerRequest.content!!.index
-        )
+        given(stompPublisher.sendToUser(any(), any(), any())).willAnswer {}
 
         // when
-        notificationStompService.sendWorkoutPartnerAccept(
-            workoutPartnerRequest = workoutPartnerRequest
-        )
+        notificationStompService.sendAcceptWorkoutPartner(sendMessage)
 
         // then
         then(stompPublisher).should().sendToUser(
-            StompSendEvent(
-                memberId = fromMember.id!!,
-                destination = StompConstant.SUB_WORKOUT_PARTNER,
-                payload = WsResponse(
-                    type = WsMessageType.WORKOUT_PARTNER_ACCEPT.code,
-                    payload = response
-                )
+            memberId = 123L,
+            destination = StompConstant.SUB_WORKOUT_PARTNER,
+            payload = WsResponse(
+                type = WsMessageType.WORKOUT_PARTNER_ACCEPT.code,
+                payload = sendMessage.message
             )
         )
     }
+
+
+//    @DisplayName("운동 요청의 상태 변화를 현재 접속한 회원들에게 알린다.")
+//    @Test
+//    fun sendWorkoutRequestUpdate() {
+//        // given
+//        val workoutRequests = listOf(
+//            WorkoutRequestUpdateResponse(
+//                chatRoomId = 1L,
+//                workoutRequestId = 101L,
+//                status = WorkoutRequestStatus.EXPIRE,
+//                fromMemberId = 10L,
+//                toMemberId = 20L
+//            ),
+//            WorkoutRequestUpdateResponse(
+//                chatRoomId = 2L,
+//                workoutRequestId = 102L,
+//                status = WorkoutRequestStatus.EXPIRE,
+//                fromMemberId = 11L,
+//                toMemberId = 21L
+//            )
+//        )
+//
+//        given(stompPublisher.sendToUser(any())).willAnswer {}
+//
+//        // when
+//        notificationStompService.sendWorkoutRequestUpdate(workoutRequests)
+//
+//        // then
+//        workoutRequests.forEach { request ->
+//            then(stompPublisher).should().sendToUser(
+//                StompSendEvent(
+//                    memberId = request.fromMemberId,
+//                    destination = StompConstant.SUB_WORKOUT_REQUEST,
+//                    payload = WsResponse(
+//                        type = WsMessageType.WORKOUT_REQUEST_UPDATE.code,
+//                        payload = request
+//                    )
+//                )
+//            )
+//            then(stompPublisher).should().sendToUser(
+//                StompSendEvent(
+//                    memberId = request.toMemberId,
+//                    destination = StompConstant.SUB_WORKOUT_REQUEST,
+//                    payload = WsResponse(
+//                        type = WsMessageType.WORKOUT_REQUEST_UPDATE.code,
+//                        payload = request
+//                    )
+//                )
+//            )
+//        }
+//    }
+
+//    @DisplayName("운동 파트너 요청을 수신자에게 전달한다.")
+//    @Test
+//    fun sendWorkoutPartnerRequest() {
+//        // given
+//        val fromMember = Member(
+//            email = "email1",
+//            password = "password1",
+//            role = Role.USER,
+//        )
+//
+//        val toMember = Member(
+//            email = "email2",
+//            password = "password2",
+//            role = Role.USER,
+//        )
+//        memberRepository.save(fromMember)
+//        memberRepository.save(toMember)
+//
+//        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+//        oAuth2Service.signup(signupRequest, fromMember.id!!)
+//
+//        given(stompPublisher.sendToUser(any())).willAnswer {}
+//
+//        val workoutPartnerRequest = WorkoutPartnerRequest.of(
+//            fromMember = fromMember,
+//            toMember = toMember,
+//            now = time.nowLocalDateTime,
+//            content = WorkoutPartnerRequestContent.BURN
+//        )
+//        workoutPartnerRequestRepository.save(workoutPartnerRequest)
+//
+//        val response = MemberWorkoutPartnerRequestProfileResponse(
+//            memberId = fromMember.id!!,
+//            profileImageUrl = signupRequest.profileImageUrl,
+//            nickname = signupRequest.nickname,
+//            workoutPartnerRequestId = workoutPartnerRequest.id!!
+//        )
+//
+//
+//        // when
+//        notificationStompService.sendWorkoutPartnerRequest(
+//            workoutPartnerRequest = workoutPartnerRequest
+//        )
+//
+//        // then
+//        then(stompPublisher).should().sendToUser(
+//            StompSendEvent(
+//                memberId = toMember.id!!,
+//                destination = StompConstant.SUB_WORKOUT_PARTNER,
+//                payload = WsResponse(
+//                    type = WsMessageType.WORKOUT_PARTNER_REQUEST.code,
+//                    payload = response
+//                )
+//            )
+//        )
+//    }
+//
+//    @DisplayName("운동 파트너 승인을 처음 요청자에게 전달한다.")
+//    @Test
+//    fun sendWorkoutPartnerAccept() {
+//        // given
+//        val fromMember = Member(
+//            email = "email1",
+//            password = "password1",
+//            role = Role.USER,
+//        )
+//
+//        val toMember = Member(
+//            email = "email2",
+//            password = "password2",
+//            role = Role.USER,
+//        )
+//        memberRepository.save(fromMember)
+//        memberRepository.save(toMember)
+//
+//        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+//        oAuth2Service.signup(signupRequest, toMember.id!!)
+//
+//        given(stompPublisher.sendToUser(any())).willAnswer {}
+//
+//        val workoutPartnerRequest = WorkoutPartnerRequest.of(
+//            fromMember = fromMember,
+//            toMember = toMember,
+//            now = time.nowLocalDateTime,
+//            content = WorkoutPartnerRequestContent.BURN
+//        )
+//        workoutPartnerRequestRepository.save(workoutPartnerRequest)
+//
+//        val response = MemberWorkoutPartnerRequestAcceptProfileResponse(
+//            memberId = toMember.id!!,
+//            profileImageUrl = signupRequest.profileImageUrl,
+//            nickname = signupRequest.nickname,
+//            workoutPartnerRequestContentIndex = workoutPartnerRequest.content!!.index
+//        )
+//
+//        // when
+//        notificationStompService.sendWorkoutPartnerAccept(
+//            workoutPartnerRequest = workoutPartnerRequest
+//        )
+//
+//        // then
+//        then(stompPublisher).should().sendToUser(
+//            StompSendEvent(
+//                memberId = fromMember.id!!,
+//                destination = StompConstant.SUB_WORKOUT_PARTNER,
+//                payload = WsResponse(
+//                    type = WsMessageType.WORKOUT_PARTNER_ACCEPT.code,
+//                    payload = response
+//                )
+//            )
+//        )
+//    }
 
 
     @DisplayName("사용자 정의 예외를 실시간으로 회원에게 전달한다.")

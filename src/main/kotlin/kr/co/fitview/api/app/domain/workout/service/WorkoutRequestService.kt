@@ -114,16 +114,7 @@ class WorkoutRequestService(
 
         addChatNoticeMessage(memberId, request, workoutHistory)
 
-//        val response = WorkoutRequestUpdateResponse(
-//            chatRoomId = findWorkoutRequest.getChatRoomId()!!,
-//            workoutRequestId = findWorkoutRequest.id!!,
-//            status = findWorkoutRequest.status!!,
-//            fromMemberId = findWorkoutRequest.getFromMemberId(),
-//            toMemberId = findWorkoutRequest.getToMemberId()
-//        )
-
         sendStompUpdateWorkoutRequest(findWorkoutRequest)
-
 
         return findWorkoutRequest
     }

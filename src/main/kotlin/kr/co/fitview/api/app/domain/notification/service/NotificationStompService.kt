@@ -135,85 +135,56 @@ class NotificationStompService(
         )
     }
 
-
-
-    fun sendWorkoutRequestUpdate(workoutRequests: List<WorkoutRequestUpdateResponse>) {
-        if (workoutRequests.isEmpty()) {
-            return
-        }
-
-        workoutRequests.forEach { workoutRequest ->
-            stompPublisher.sendToUser(
-                StompSendEvent(
-                    memberId = workoutRequest.fromMemberId,
-                    destination = StompConstant.SUB_WORKOUT_REQUEST,
-                    payload = WsResponse(
-                        type = WsMessageType.WORKOUT_REQUEST_UPDATE.code,
-                        payload = workoutRequest
-                    )
-                )
-            )
-            stompPublisher.sendToUser(
-                StompSendEvent(
-                    memberId = workoutRequest.toMemberId,
-                    destination = StompConstant.SUB_WORKOUT_REQUEST,
-                    payload = WsResponse(
-                        type = WsMessageType.WORKOUT_REQUEST_UPDATE.code,
-                        payload = workoutRequest
-                    )
-                )
-            )
-        }
-    }
-
-    fun sendWorkoutPartnerRequest(workoutPartnerRequest: WorkoutPartnerRequest) {
-        val findMemberProfile =
-            memberQueryService.findMemberWorkoutRequestProfileFrom(workoutPartnerRequest.getFromMemberId())
-                ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
-
-        val response = MemberWorkoutPartnerRequestProfileResponse(
-            workoutPartnerRequestId = workoutPartnerRequest.id!!,
-            memberId = findMemberProfile.memberId,
-            profileImageUrl = findMemberProfile.profileImageUrl,
-            nickname = findMemberProfile.nickname
-        )
-
+    fun sendWorkoutPartnerRequest(event: StompEventWorkoutPartnerRequestDepth1) {
         stompPublisher.sendToUser(
-            StompSendEvent(
-                memberId = workoutPartnerRequest.getToMemberId(),
-                destination = StompConstant.SUB_WORKOUT_PARTNER,
-                payload = WsResponse(
-                    type = WsMessageType.WORKOUT_PARTNER_REQUEST.code,
-                    payload = response
-                )
+            memberId = event.memberId,
+            destination = StompConstant.SUB_WORKOUT_PARTNER,
+            payload = WsResponse(
+                type = WsMessageType.WORKOUT_PARTNER_REQUEST.code,
+                payload = event.message
             )
         )
     }
 
-    fun sendWorkoutPartnerAccept(workoutPartnerRequest: WorkoutPartnerRequest) {
 
-        val findMemberProfile =
-            memberQueryService.findMemberWorkoutRequestProfileFrom(workoutPartnerRequest.getToMemberId())
-                ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
-
-        val response = MemberWorkoutPartnerRequestAcceptProfileResponse(
-            memberId = findMemberProfile.memberId,
-            profileImageUrl = findMemberProfile.profileImageUrl,
-            nickname = findMemberProfile.nickname,
-            workoutPartnerRequestContentIndex = workoutPartnerRequest.content!!.index
-        )
-
+    fun sendAcceptWorkoutPartner(event: StompEventAcceptWorkoutPartnerDepth1) {
         stompPublisher.sendToUser(
-            StompSendEvent(
-                memberId = workoutPartnerRequest.getFromMemberId(),
-                destination = StompConstant.SUB_WORKOUT_PARTNER,
-                payload = WsResponse(
-                    type = WsMessageType.WORKOUT_PARTNER_ACCEPT.code,
-                    payload = response
-                )
+            memberId = event.memberId,
+            destination = StompConstant.SUB_WORKOUT_PARTNER,
+            payload = WsResponse(
+                type = WsMessageType.WORKOUT_PARTNER_ACCEPT.code,
+                payload = event.message
             )
         )
     }
+
+
+    //--------
+
+//    fun sendWorkoutPartnerAccept(workoutPartnerRequest: WorkoutPartnerRequest) {
+//
+//        val findMemberProfile =
+//            memberQueryService.findMemberWorkoutRequestProfileFrom(workoutPartnerRequest.getToMemberId())
+//                ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
+//
+//        val response = MemberWorkoutPartnerRequestAcceptProfileResponse(
+//            memberId = findMemberProfile.memberId,
+//            profileImageUrl = findMemberProfile.profileImageUrl,
+//            nickname = findMemberProfile.nickname,
+//            workoutPartnerRequestContentIndex = workoutPartnerRequest.content!!.index
+//        )
+//
+//        stompPublisher.sendToUser(
+//            StompSendEvent(
+//                memberId = workoutPartnerRequest.getFromMemberId(),
+//                destination = StompConstant.SUB_WORKOUT_PARTNER,
+//                payload = WsResponse(
+//                    type = WsMessageType.WORKOUT_PARTNER_ACCEPT.code,
+//                    payload = response
+//                )
+//            )
+//        )
+//    }
 
     fun sendGlobalError(memberId: Long, errorCode: ErrorCode) {
         stompPublisher.sendToUser(
