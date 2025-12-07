@@ -16,80 +16,7 @@ import org.springframework.stereotype.Service
 @Service
 class NotificationStompService(
     private val stompPublisher: StompPublisher,
-    private val memberQueryService: MemberQueryService
 ) {
-
-//    fun sendChatMessage(memberId: Long, response: ChatMessageDetailResponse) {
-//
-//        if (response.chatMessage is StompChatTextMessage) {
-//            stompPublisher.sendToUser(
-//                StompSendEvent(
-//                    memberId = memberId,
-//                    destination = StompConstant.SUB_CHAT_MESSAGE,
-//                    payload = WsResponse(
-//                        type = WsMessageType.TEXT.code,
-//                        payload = response.withIsMe(true)
-//                    )
-//                )
-//            )
-//
-//            stompPublisher.sendToUser(
-//                StompSendEvent(
-//                    memberId = response.otherMemberId,
-//                    destination = StompConstant.SUB_CHAT_MESSAGE,
-//                    payload = WsResponse(
-//                        type = WsMessageType.TEXT.code,
-//                        payload = response.withIsMe(false)
-//                    )
-//                )
-//            )
-//
-//        } else if (response.chatMessage is StompChatWorkoutRequestMessage) {
-//            stompPublisher.sendToUser(
-//                StompSendEvent(
-//                    memberId = memberId,
-//                    destination = StompConstant.SUB_CHAT_MESSAGE,
-//                    payload = WsResponse(
-//                        type = WsMessageType.WORKOUT_REQUEST.code,
-//                        payload = response.withIsMe(true)
-//                    )
-//                )
-//            )
-//
-//            stompPublisher.sendToUser(
-//                StompSendEvent(
-//                    memberId = response.otherMemberId,
-//                    destination = StompConstant.SUB_CHAT_MESSAGE,
-//                    payload = WsResponse(
-//                        type = WsMessageType.WORKOUT_REQUEST.code,
-//                        payload = response.withIsMe(false)
-//                    )
-//                )
-//            )
-//        }else if (response.chatMessage is StompChatNoticeMessage) {
-//            stompPublisher.sendToUser(
-//                StompSendEvent(
-//                    memberId = memberId,
-//                    destination = StompConstant.SUB_CHAT_MESSAGE,
-//                    payload = WsResponse(
-//                        type = WsMessageType.NOTICE.code,
-//                        payload = response
-//                    )
-//                )
-//            )
-//
-//            stompPublisher.sendToUser(
-//                StompSendEvent(
-//                    memberId = response.otherMemberId,
-//                    destination = StompConstant.SUB_CHAT_MESSAGE,
-//                    payload = WsResponse(
-//                        type = WsMessageType.NOTICE.code,
-//                        payload = response
-//                    )
-//                )
-//            )
-//        }
-//    }
 
     fun sendChatTextMessage(event: StompEventTextMessageDepth1) {
         stompPublisher.sendToUser(
@@ -159,59 +86,28 @@ class NotificationStompService(
     }
 
 
-    //--------
-
-//    fun sendWorkoutPartnerAccept(workoutPartnerRequest: WorkoutPartnerRequest) {
-//
-//        val findMemberProfile =
-//            memberQueryService.findMemberWorkoutRequestProfileFrom(workoutPartnerRequest.getToMemberId())
-//                ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
-//
-//        val response = MemberWorkoutPartnerRequestAcceptProfileResponse(
-//            memberId = findMemberProfile.memberId,
-//            profileImageUrl = findMemberProfile.profileImageUrl,
-//            nickname = findMemberProfile.nickname,
-//            workoutPartnerRequestContentIndex = workoutPartnerRequest.content!!.index
-//        )
-//
-//        stompPublisher.sendToUser(
-//            StompSendEvent(
-//                memberId = workoutPartnerRequest.getFromMemberId(),
-//                destination = StompConstant.SUB_WORKOUT_PARTNER,
-//                payload = WsResponse(
-//                    type = WsMessageType.WORKOUT_PARTNER_ACCEPT.code,
-//                    payload = response
-//                )
-//            )
-//        )
-//    }
-
     fun sendGlobalError(memberId: Long, errorCode: ErrorCode) {
         stompPublisher.sendToUser(
-            StompSendEvent(
-                memberId = memberId,
-                destination = StompConstant.SUB_ERROR,
-                payload = WsResponse(
-                    type = errorCode.code,
-                    payload = errorCode.message
-                )
+            memberId = memberId,
+            destination = StompConstant.SUB_ERROR,
+            payload = WsResponse(
+                type = errorCode.code,
+                payload = errorCode.message
             )
         )
+
     }
 
     fun sendOtherError(memberId: Long, ex: Throwable) {
         stompPublisher.sendToUser(
-            StompSendEvent(
-                memberId = memberId,
-                destination = StompConstant.SUB_ERROR,
-                payload = WsResponse(
-                    type = ex.javaClass.simpleName,
-                    payload = (ex.message ?: "Unknown error")
-                )
+            memberId = memberId,
+            destination = StompConstant.SUB_ERROR,
+            payload = WsResponse(
+                type = ex.javaClass.simpleName,
+                payload = (ex.message ?: "Unknown error")
             )
         )
     }
-
 
 
 }

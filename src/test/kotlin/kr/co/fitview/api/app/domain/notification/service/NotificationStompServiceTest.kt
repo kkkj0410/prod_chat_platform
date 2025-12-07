@@ -421,7 +421,7 @@ class NotificationStompServiceTest @Autowired constructor(
         val memberId = 123L
         val errorCode = ChatErrorCode.NOT_PARTNER
 
-        given(stompPublisher.sendToUser(any())).willAnswer {}
+        given(stompPublisher.sendToUser(any(), any(), any())).willAnswer {}
 
         // when
         notificationStompService.sendGlobalError(
@@ -431,13 +431,11 @@ class NotificationStompServiceTest @Autowired constructor(
 
         // then
         then(stompPublisher).should().sendToUser(
-            StompSendEvent(
-                memberId = memberId,
-                destination = StompConstant.SUB_ERROR,
-                payload = WsResponse(
-                    type = errorCode.code,
-                    payload = errorCode.message
-                )
+            memberId = memberId,
+            destination = StompConstant.SUB_ERROR,
+            payload = WsResponse(
+                type = errorCode.code,
+                payload = errorCode.message
             )
         )
     }
@@ -449,7 +447,7 @@ class NotificationStompServiceTest @Autowired constructor(
         val memberId = 123L
         val ex = RuntimeException("exception")
 
-        given(stompPublisher.sendToUser(any())).willAnswer {}
+        given(stompPublisher.sendToUser(any(), any(), any())).willAnswer {}
 
         // when
         notificationStompService.sendOtherError(
@@ -459,13 +457,11 @@ class NotificationStompServiceTest @Autowired constructor(
 
         // then
         then(stompPublisher).should().sendToUser(
-            StompSendEvent(
-                memberId = memberId,
-                destination = StompConstant.SUB_ERROR,
-                payload = WsResponse(
-                    type = ex.javaClass.simpleName,
-                    payload = ex.message ?: "Unknown error"
-                )
+            memberId = memberId,
+            destination = StompConstant.SUB_ERROR,
+            payload = WsResponse(
+                type = ex.javaClass.simpleName,
+                payload = ex.message ?: "Unknown error"
             )
         )
     }
