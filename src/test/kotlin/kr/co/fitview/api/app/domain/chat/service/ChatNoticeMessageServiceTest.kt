@@ -106,7 +106,69 @@ class ChatNoticeMessageServiceTest @Autowired constructor(
         val findChatNoticeMessages = chatNoticeMessageRepository.findAll()
         assertThat(findChatNoticeMessages).hasSize(1)
         assertThat(findChatNoticeMessages[0].type).isEqualTo(ChatNoticeMessageType.WORKOUT_REQUEST_COMPLETE)
+    }
 
+    @DisplayName("안내 문구 유형의 채팅 메시지를 저장 시, 채팅방 최근 문자 시간을 갱신한다.")
+    @Test
+    fun addChatNoticeFromLastMessageAt() {
+        // given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val other = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+        memberRepository.save(other)
+
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest, me.id!!)
+        oAuth2Service.signup(signupRequest, other.id!!)
+
+        val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+
+        val chatParticipant1 = ChatParticipant(
+            chatRoom,
+            me
+        )
+        val chatParticipant2 = ChatParticipant(
+            chatRoom,
+            other
+        )
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+
+        val chatMessage1 = ChatMessage.ofWorkoutRequest(
+            member = me,
+            chatRoom = chatRoom,
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessage1)
+
+        val workoutRequest = WorkoutRequest.of(
+            chatMessage = chatMessage1,
+            fromMember = me,
+            toMember = other,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime
+        )
+        workoutRequestRepository.save(workoutRequest)
+
+
+        // when
+        chatNoticeMessageService.addChatNoticeFrom(
+            me.id!!,
+            workoutRequestId = workoutRequest.id!!,
+            type = ChatNoticeMessageType.WORKOUT_REQUEST_COMPLETE
+        )
+
+        // then
+        assertThat(chatRoom.lastMessageAt).isEqualTo(time.nowLocalDateTime)
     }
 
     @DisplayName("안내 문구 유형의 채팅 메시지를 저장 시, 읽음 여부도 저장한다..")
@@ -570,5 +632,102 @@ class ChatNoticeMessageServiceTest @Autowired constructor(
         // then
         val count = events.stream(StompEventChatNoticeMessageDepth1::class.java).count()
         assertThat(count).isEqualTo(4)
+    }
+
+    @DisplayName("운동 요청 만료 안내 문구를 생성 시, 채팅방의 최근 시간이 새로 갱신된다..")
+    @Test
+    fun addAllExpireChatNoticeFromLastMessageAt() {
+        // given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val other = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val other2 = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+        memberRepository.save(other)
+        memberRepository.save(other2)
+
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest, me.id!!)
+        oAuth2Service.signup(signupRequest, other.id!!)
+        oAuth2Service.signup(signupRequest, other2.id!!)
+
+        val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+        val chatRoom2 = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+
+        val chatParticipant1 = ChatParticipant(
+            chatRoom,
+            me
+        )
+        val chatParticipant2 = ChatParticipant(
+            chatRoom,
+            other
+        )
+        val chatParticipant3 = ChatParticipant(
+            chatRoom2,
+            me
+        )
+        val chatParticipant4 = ChatParticipant(
+            chatRoom2,
+            other2
+        )
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+        chatParticipantRepository.save(chatParticipant3)
+        chatParticipantRepository.save(chatParticipant4)
+
+        val chatMessage1 = ChatMessage.ofWorkoutRequest(
+            member = me,
+            chatRoom = chatRoom,
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessage1)
+
+        val workoutRequest = WorkoutRequest.of(
+            chatMessage = chatMessage1,
+            fromMember = me,
+            toMember = other,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime
+        )
+        workoutRequestRepository.save(workoutRequest)
+
+        val chatMessage2 = ChatMessage.ofText(
+            member = me,
+            chatRoom = chatRoom2,
+            content = "content",
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessage2)
+
+        val request = listOf(
+            ExpireWorkoutRequest(
+                memberOneId = me.id!!,
+                memberTwoId = other.id!!,
+                chatRoomId = chatRoom.id!!
+            ),
+            ExpireWorkoutRequest(
+                memberOneId = me.id!!,
+                memberTwoId = other2.id!!,
+                chatRoomId = chatRoom2.id!!
+            )
+        )
+
+        // when
+        chatNoticeMessageService.addAllExpireChatNoticeFrom(request)
+
+        // then
+        assertThat(chatRoom.lastMessageAt).isEqualTo(time.nowLocalDateTime)
     }
 }

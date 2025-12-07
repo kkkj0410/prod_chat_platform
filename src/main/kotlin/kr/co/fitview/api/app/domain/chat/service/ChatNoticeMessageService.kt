@@ -22,6 +22,7 @@ import kr.co.fitview.api.app.global.time.Time
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
 
 
 @Service
@@ -47,11 +48,13 @@ class ChatNoticeMessageService(
         type : ChatNoticeMessageType,
         workoutHistory : WorkoutHistory? = null
     ) : ChatMessage {
+        val now = time.nowLocalDateTime
 
         val findChatRoom = chatRoomQueryService.findChatRoomFrom(workoutRequestId)
             ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
+        findChatRoom.updateLastMessageAt(now)
 
-        val savedChatMessage = saveChatMessage(findChatRoom)
+        val savedChatMessage = saveChatMessage(findChatRoom, now)
 
         saveChatNoticeMessage(workoutHistory, savedChatMessage, type)
 
@@ -69,11 +72,13 @@ class ChatNoticeMessageService(
 
     @Transactional
     fun addAllExpireChatNoticeFrom(expireWorkoutRequest: List<ExpireWorkoutRequest>) {
+        val now = time.nowLocalDateTime
 
         val chatRoomIds = expireWorkoutRequest.map { it.chatRoomId }
         val findChatRooms = chatRoomQueryService.findAllChatRoomReferenceFrom(chatRoomIds)
+        findChatRooms.forEach{it.updateLastMessageAt(now)}
 
-        val chatMessages = saveAllExpireChatNoticeMessage(findChatRooms)
+        val chatMessages = saveAllExpireChatNoticeMessage(findChatRooms, now)
 
         val memberPairs = expireWorkoutRequest.map { MemberPair(it.memberOneId, it.memberTwoId) }
         messageReadStatusService.addAllMessageReadStatusFrom(
@@ -85,10 +90,10 @@ class ChatNoticeMessageService(
         sendExpireWorkoutRequestStompMessage(chatRoomIds, chatMessages, expireWorkoutRequest)
     }
 
-    private fun saveChatMessage(findChatRoom: ChatRoom): ChatMessage {
+    private fun saveChatMessage(chatRoom: ChatRoom, now : LocalDateTime): ChatMessage {
         val chatMessage = ChatMessage.ofNotice(
-            chatRoom = findChatRoom,
-            sentAt = time.nowLocalDateTime
+            chatRoom = chatRoom,
+            sentAt = now
         )
         return chatMessageRepository.save(chatMessage)
     }
@@ -169,11 +174,11 @@ class ChatNoticeMessageService(
         return otherMemberId
     }
 
-    private fun saveAllExpireChatNoticeMessage(findChatRooms: List<ChatRoom>): List<ChatMessage> {
-        val chatMessages = findChatRooms.map {
+    private fun saveAllExpireChatNoticeMessage(chatRooms: List<ChatRoom>, now : LocalDateTime): List<ChatMessage> {
+        val chatMessages = chatRooms.map {
             ChatMessage.ofNotice(
                 chatRoom = it,
-                sentAt = time.nowLocalDateTime
+                sentAt = now
             )
         }
         chatMessageRepository.saveAll(chatMessages)
