@@ -93,11 +93,8 @@ class StompController(
 
         val senderId = principal.name
 
-        val response = workoutRequestService.modifyWorkoutRequest(senderId.toLong(), request)
+        workoutRequestService.modifyWorkoutRequest(senderId.toLong(), request)
 
-        notificationStompService.sendWorkoutRequestUpdate(
-            listOf(response)
-        )
     }
 
     fun isMemberConnected(memberId: String): Boolean {

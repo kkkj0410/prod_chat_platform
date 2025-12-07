@@ -11,9 +11,7 @@ import kr.co.fitview.api.app.domain.chat.service.MessageReadStatusService
 import kr.co.fitview.api.app.domain.member.dto.response.ChatRoomMemberProfile
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
-import kr.co.fitview.api.app.domain.notification.dto.response.StompEventWorkoutRequestMessageDepth1
-import kr.co.fitview.api.app.domain.notification.dto.response.StompEventWorkoutRequestMessageDepth2
-import kr.co.fitview.api.app.domain.notification.dto.response.StompEventWorkoutRequestMessageDepth3
+import kr.co.fitview.api.app.domain.notification.dto.response.*
 import kr.co.fitview.api.app.domain.workout.dto.response.WorkoutRequestUpdateResponse
 import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusForRequest
 import kr.co.fitview.api.app.domain.workout_history.entity.WorkoutHistory
@@ -82,33 +80,6 @@ class WorkoutRequestService(
     }
 
 
-//    @Transactional
-//    fun addWorkoutRequest(
-//        chatRoomId: Long,
-//        chatMessage: ChatMessage,
-//        fromMember: Member,
-//        toMember: Member,
-//        message: ChatWorkoutRequestMessageServiceRequest
-//    ): WorkoutRequest {
-//        // FE 테스트를 위해 validate 꺼둠. FE 검토 끝나면 다시 켜기(25.12.1)
-////        val findWorkoutRequest = findRecentWorkoutRequestFrom(chatRoomId)
-////
-////        validateExistsWorkoutRequest(findWorkoutRequest)
-//
-//        val workoutRequest = WorkoutRequest.of(
-//            chatMessage = chatMessage,
-//            fromMember = fromMember,
-//            toMember = toMember,
-//            location = message.location,
-//            scheduledAt = message.scheduledAt,
-//            requestedAt = time.nowLocalDateTime
-//        )
-//
-//        val savedWorkoutRequest = workoutRequestRepository.save(workoutRequest)
-//
-//        return savedWorkoutRequest
-//    }
-
     @Transactional
     fun modifyAllWorkoutRequestExpire(): List<WorkoutRequestUpdateResponse> {
 
@@ -120,11 +91,13 @@ class WorkoutRequestService(
 
         val expireResponse = response.map { it.copy(status = WorkoutRequestStatus.EXPIRE) }
 
+        sendAllStompExpireWorkoutRequest(response)
+
         return expireResponse
     }
 
     @Transactional
-    fun modifyWorkoutRequest(memberId: Long, request: WorkoutRequestUpdateRequest): WorkoutRequestUpdateResponse {
+    fun modifyWorkoutRequest(memberId: Long, request: WorkoutRequestUpdateRequest): WorkoutRequest {
 
         val findWorkoutRequest = workoutRequestRepository
             .findWorkoutRequestByIdAndDeletedAtIsNullWithChatMessage(request.workoutRequestId)
@@ -141,16 +114,11 @@ class WorkoutRequestService(
 
         addChatNoticeMessage(memberId, request, workoutHistory)
 
-        val response = WorkoutRequestUpdateResponse(
-            chatRoomId = findWorkoutRequest.getChatRoomId()!!,
-            workoutRequestId = findWorkoutRequest.id!!,
-            status = findWorkoutRequest.status!!,
-            fromMemberId = findWorkoutRequest.getFromMemberId(),
-            toMemberId = findWorkoutRequest.getToMemberId()
-        )
+        sendStompUpdateWorkoutRequest(findWorkoutRequest)
 
-        return response
+        return findWorkoutRequest
     }
+
 
     private fun sendStompWorkoutRequestMessage(
         fromMember: Member,
@@ -212,6 +180,31 @@ class WorkoutRequestService(
                 )
             )
         )
+    }
+
+    private fun sendAllStompExpireWorkoutRequest(response: List<WorkoutRequestUpdateResponse>) {
+        response.forEach {
+            val stomp1 = StompEventUpdateWorkoutRequestMessageDepth1(
+                memberId = it.fromMemberId,
+                message = StompEventUpdateWorkoutRequestMessageDepth2(
+                    chatRoomId = it.chatRoomId,
+                    workoutRequestId = it.workoutRequestId,
+                    status = WorkoutRequestStatus.EXPIRE
+                )
+            )
+
+            val stomp2 = StompEventUpdateWorkoutRequestMessageDepth1(
+                memberId = it.toMemberId,
+                message = StompEventUpdateWorkoutRequestMessageDepth2(
+                    chatRoomId = it.chatRoomId,
+                    workoutRequestId = it.workoutRequestId,
+                    status = WorkoutRequestStatus.EXPIRE
+                )
+            )
+
+            publisher.publishEvent(stomp1)
+            publisher.publishEvent(stomp2)
+        }
     }
 
     private fun validateAddWorkoutRequest(
@@ -398,6 +391,27 @@ class WorkoutRequestService(
     private fun isRequestComplete(requestStatus: WorkoutRequestStatusForRequest) =
         requestStatus.toWorkoutRequestStatus() == WorkoutRequestStatus.COMPLETE
 
+    private fun sendStompUpdateWorkoutRequest(workoutRequest: WorkoutRequest) {
+        val stomp1 = StompEventUpdateWorkoutRequestMessageDepth1(
+            memberId = workoutRequest.getFromMemberId(),
+            message = StompEventUpdateWorkoutRequestMessageDepth2(
+                chatRoomId = workoutRequest.getChatRoomId()!!,
+                workoutRequestId = workoutRequest.id!!,
+                status = workoutRequest.status!!
+            )
+        )
+        val stomp2 = StompEventUpdateWorkoutRequestMessageDepth1(
+            memberId = workoutRequest.getToMemberId(),
+            message = StompEventUpdateWorkoutRequestMessageDepth2(
+                chatRoomId = workoutRequest.getChatRoomId()!!,
+                workoutRequestId = workoutRequest.id!!,
+                status = workoutRequest.status!!
+            )
+        )
+
+        publisher.publishEvent(stomp1)
+        publisher.publishEvent(stomp2)
+    }
 
     private fun isNotNull(value: Any?) = value != null
 

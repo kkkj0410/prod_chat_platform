@@ -52,8 +52,6 @@ class WorkoutPartnerControllerTest : ControllerTestSupport(){
             "workoutPartnerRequestContentIndex" to 1
         )
 
-        given(notificationStompService.sendWorkoutPartnerRequest(any()))
-            .willAnswer {  }
 
         // when // then
         mockMvc.perform(
@@ -201,9 +199,6 @@ class WorkoutPartnerControllerTest : ControllerTestSupport(){
                 )
             )
 
-
-        given(notificationStompService.sendWorkoutPartnerAccept(any()))
-            .willAnswer {  }
 
         // when // then
         mockMvc.perform(
