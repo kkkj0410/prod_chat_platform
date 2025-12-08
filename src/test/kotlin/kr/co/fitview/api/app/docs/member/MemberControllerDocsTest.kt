@@ -6,7 +6,6 @@ import kr.co.fitview.api.app.docs.RestDocsSupport
 import kr.co.fitview.api.app.domain.address.dto.response.AddressResponse
 import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
 import kr.co.fitview.api.app.domain.address.service.AddressService
-import kr.co.fitview.api.app.domain.image.enums.S3Prefix
 import kr.co.fitview.api.app.domain.member.controller.MemberController
 import kr.co.fitview.api.app.domain.member.dto.request.Age
 import kr.co.fitview.api.app.domain.member.dto.request.MemberUpdateRequest
@@ -18,19 +17,22 @@ import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutStyle
 import kr.co.fitview.api.app.domain.member.entity.enums.WorkoutTimeName
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.domain.member.service.MemberService
+import kr.co.fitview.api.app.domain.review.dto.response.ReviewResponse
+import kr.co.fitview.api.app.domain.review.dto.response.ReviewTagCountResponse
+import kr.co.fitview.api.app.domain.review.service.ReviewQueryService
+import kr.co.fitview.api.app.domain.review.service.ReviewTagCountQueryService
 import kr.co.fitview.api.app.global.entity.Gender
 import kr.co.fitview.api.app.global.entity.Role
-import kr.co.fitview.api.app.global.enums.Direction
 import kr.co.fitview.api.app.global.util.SecurityUtil
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.mockito.BDDMockito.willReturn
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.any
 import org.mockito.kotlin.given
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.SliceImpl
 import org.springframework.http.MediaType
 import org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document
@@ -46,19 +48,30 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 
 class MemberControllerDocsTest : RestDocsSupport() {
 
     private val memberService: MemberService = mock(MemberService::class.java)
-    private val memberQueryService : MemberQueryService = mock(MemberQueryService::class.java)
+    private val memberQueryService: MemberQueryService = mock(MemberQueryService::class.java)
     private val addressService: AddressService = mock(AddressService::class.java)
+    private val reviewTagCountQueryService: ReviewTagCountQueryService = mock(ReviewTagCountQueryService::class.java)
+    private val reviewQueryService: ReviewQueryService = mock(ReviewQueryService::class.java)
     private val securityUtil: SecurityUtil = mock(SecurityUtil::class.java)
 
     override fun initController(): Any {
-        return MemberController(memberService, memberQueryService, addressService, securityUtil)
+        return MemberController(
+            memberService,
+            memberQueryService,
+            addressService,
+            reviewTagCountQueryService,
+            reviewQueryService,
+            securityUtil
+        )
     }
 
     @DisplayName("사용자 본인 조회 API")
@@ -647,5 +660,155 @@ class MemberControllerDocsTest : RestDocsSupport() {
             )
     }
 
+    @DisplayName("회원이 받은 리뷰 태그 메시지 조회 API")
+    @Test
+    fun memberReviewTagList() {
+        // given
+        given(reviewTagCountQueryService.findAllReviewTagCountFrom(any()))
+            .willReturn(
+                listOf(
+                    ReviewTagCountResponse(
+                        displayText = "집중력이 좋아요",
+                        count = 3
+                    ),
+                    ReviewTagCountResponse(
+                        displayText = "활기차요",
+                        count = 10
+                    )
+                )
+            )
 
+        // when // then
+        mockMvc.perform(
+            get("/api/v1/members/{memberId}/reviews/tags", 111)
+                .header("Authorization", "Bearer jwt-token")
+        )
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").exists())
+            .andExpect(jsonPath("$.code").value("ok"))
+            .andExpect(jsonPath("$.message").value("ok"))
+            .andExpect(jsonPath("$.data.length()").value(2))
+            .andExpect(jsonPath("$.data[0].displayText").value("집중력이 좋아요"))
+            .andExpect(jsonPath("$.data[0].count").value(3))
+            .andExpect(jsonPath("$.data[1].displayText").value("활기차요"))
+            .andExpect(jsonPath("$.data[1].count").value(10))
+            .andDo(
+                document(
+                    "member-review-tags",
+                    preprocessRequest(prettyPrint()),
+                    preprocessResponse(prettyPrint()),
+
+                    requestHeaders(
+                        RestDocsHeaders.authorizationHeader(Role.USER)
+                    ),
+
+                    pathParameters(
+                        parameterWithName("memberId").description("회원 ID")
+                    ),
+
+                    responseFields(
+                        fieldWithPath("status").description("API 호출 상태"),
+                        fieldWithPath("code").description("API 코드"),
+                        fieldWithPath("message").description("응답 메시지"),
+
+                        fieldWithPath("data").description("리뷰 태그 리스트"),
+                        fieldWithPath("data[].displayText").description("리뷰 태그 문구"),
+                        fieldWithPath("data[].count").description("리뷰 태그 빈도수")
+                    )
+                )
+            )
+    }
+
+    @DisplayName("회원이 받은 리뷰 메시지 조회 API")
+    @Test
+    fun memberReviewList() {
+        // given
+        given(reviewQueryService.findReviewFromCondition(any(), any()))
+            .willReturn(
+                SliceImpl(
+                    listOf(
+                        ReviewResponse(
+                            reviewId = 1L,
+                            memberId = 10L,
+                            nickname = "호박고구마",
+                            postedAt = LocalDateTime.now(),
+                            content = "내용1"
+                        ),
+                        ReviewResponse(
+                            reviewId = 2L,
+                            memberId = 11L,
+                            nickname = "고구마호박",
+                            postedAt = LocalDateTime.now().minusMinutes(1),
+                            content = "내용2"
+                        )
+                    ),
+                    PageRequest.of(0, 10),
+                    true
+                )
+            )
+
+        // when // then
+        mockMvc.perform(
+            get("/api/v1/members/{memberId}/reviews", 111)
+                .header("Authorization", "Bearer jwt-token")
+                .param("size", "10")
+                .param("lastPostedAt", "1763714029931")
+        )
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").exists())
+            .andExpect(jsonPath("$.code").value("ok"))
+            .andExpect(jsonPath("$.message").value("OK"))
+
+            .andExpect(jsonPath("$.data.content.length()").value(2))
+
+            .andExpect(jsonPath("$.data.content[0].reviewId").value(1))
+            .andExpect(jsonPath("$.data.content[0].memberId").value(10))
+            .andExpect(jsonPath("$.data.content[0].nickname").value("호박고구마"))
+            .andExpect(jsonPath("$.data.content[0].content").value("내용1"))
+
+            .andExpect(jsonPath("$.data.content[1].reviewId").value(2))
+            .andExpect(jsonPath("$.data.content[1].memberId").value(11))
+            .andExpect(jsonPath("$.data.content[1].nickname").value("고구마호박"))
+            .andExpect(jsonPath("$.data.content[1].content").value("내용2"))
+
+            .andDo(
+                document(
+                    "member-review-get",
+                    preprocessRequest(prettyPrint()),
+                    preprocessResponse(prettyPrint()),
+
+                    requestHeaders(
+                        RestDocsHeaders.authorizationHeader(Role.USER)
+                    ),
+
+                    queryParameters(
+                        parameterWithName("size").optional()
+                            .description("(Optional - default 10) 조회 크기"),
+                        parameterWithName("lastPostedAt").optional()
+                            .description("(Optional) 해당 부분에 값을 넣으면 해당 시간보다 더 옛날 시점의 후기가 조회됨"),
+                    ),
+
+                    pathParameters(
+                        parameterWithName("memberId").description("회원 ID")
+                    ),
+
+                    responseFields(
+                        fieldWithPath("status").description("API 호출 상태"),
+                        fieldWithPath("code").description("API 코드"),
+                        fieldWithPath("message").description("응답 메시지"),
+
+                        *RestDocsPagination.paginationByCursorAt(),
+
+                        fieldWithPath("data.content[]").description("리뷰 목록"),
+                        fieldWithPath("data.content[].reviewId").description("리뷰 ID"),
+                        fieldWithPath("data.content[].memberId").description("작성자 ID"),
+                        fieldWithPath("data.content[].nickname").description("작성자 닉네임"),
+                        fieldWithPath("data.content[].postedAt").description("작성 시간"),
+                        fieldWithPath("data.content[].content").description("리뷰 내용"),
+                    )
+                )
+            )
+    }
 }

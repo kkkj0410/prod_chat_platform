@@ -1,36 +1,29 @@
-package kr.co.fitview.api.app.domain.review.service
+package kr.co.fitview.api.app.domain.review.repository
 
 import kr.co.fitview.api.app.IntegrationTestSupport
-import kr.co.fitview.api.app.domain.chat.repository.ChatRoomRepository
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.domain.review.entity.ReviewCategory
 import kr.co.fitview.api.app.domain.review.entity.ReviewTag
 import kr.co.fitview.api.app.domain.review.entity.ReviewTagCount
-import kr.co.fitview.api.app.domain.review.repository.ReviewCategoryRepository
-import kr.co.fitview.api.app.domain.review.repository.ReviewTagCountRepository
-import kr.co.fitview.api.app.domain.review.repository.ReviewTagRepository
-import kr.co.fitview.api.app.domain.workout_history.repository.WorkoutHistoryRepository
 import kr.co.fitview.api.app.global.entity.Role
-import kr.co.fitview.api.app.global.time.Time
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.tuple
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
-class ReviewTagCountServiceTest @Autowired constructor(
+class ReviewTagCountRepositoryTest @Autowired constructor(
     private val reviewCategoryRepository: ReviewCategoryRepository,
     private val reviewTagRepository : ReviewTagRepository,
-    private val reviewTagCountService: ReviewTagCountService,
-    private val reviewTagCountRepository: ReviewTagCountRepository,
-    private val memberRepository : MemberRepository,
-
+    private val reviewTagCountRepository : ReviewTagCountRepository,
+    private val memberRepository : MemberRepository
 ) : IntegrationTestSupport(){
 
-    @DisplayName("회원이 처음받은 리뷰 태그라면 리뷰 태그 집계 데이터를 생성한다.")
+    @DisplayName("회원의 리뷰 태그 개수를 조회한다.")
     @Test
-    fun saveAllReviewTagCount() {
+    fun findByMemberIdAndReviewTagIdIn() {
         // given
         val reviewCategory1 = ReviewCategory(
             displayText = "displayText1",
@@ -69,18 +62,30 @@ class ReviewTagCountServiceTest @Autowired constructor(
         )
         memberRepository.save(me)
 
+        val reviewTagCounts = listOf(
+            ReviewTagCount.of(
+                member = me,
+                reviewTag = reviewTag1,
+            ),
+            ReviewTagCount.of(
+                member = me,
+                reviewTag = reviewTag2,
+            ),
+            ReviewTagCount.of(
+                member = me,
+                reviewTag = reviewTag3,
+            ),
+        )
+        reviewTagCountRepository.saveAll(reviewTagCounts)
+
         val reviewTagIds = listOf(reviewTag1.id!!, reviewTag2.id!!, reviewTag3.id!!)
 
         // when
-        reviewTagCountService.saveAllReviewTagCount(
-            memberId = me.id!!,
-            reviewTagIds = reviewTagIds
-        )
+        val findTagCounts = reviewTagCountRepository.findByMemberIdAndReviewTagIdIn(me.id!!, reviewTagIds)
 
         // then
-        val findReviewTagCounts = reviewTagCountRepository.findAll()
-        assertThat(findReviewTagCounts).hasSize(3)
-        assertThat(findReviewTagCounts)
+        assertThat(findTagCounts).hasSize(3)
+        assertThat(findTagCounts)
             .extracting("member", "reviewTag", "count")
             .contains(
                 tuple(me, reviewTag1, 1),
@@ -89,9 +94,10 @@ class ReviewTagCountServiceTest @Autowired constructor(
             )
     }
 
-    @DisplayName("회원이 이미받은 리뷰 태그라면 리뷰 태그 집계 데이터에 값을 업데이트한다.")
+
+    @DisplayName("회원이 받은 전체 리뷰 태그 메시지를 조회한다.")
     @Test
-    fun saveReviewTagCountExistsAllReviewTagCount() {
+    fun findAllReviewTagCountByMemberId() {
         // given
         val reviewCategory1 = ReviewCategory(
             displayText = "displayText1",
@@ -130,30 +136,32 @@ class ReviewTagCountServiceTest @Autowired constructor(
         )
         memberRepository.save(me)
 
-        val reviewTagCount = ReviewTagCount(
-            member = me,
-            reviewTag = reviewTag1,
-            count = 2
+        val reviewTagCounts = listOf(
+            ReviewTagCount.of(
+                member = me,
+                reviewTag = reviewTag1,
+            ),
+            ReviewTagCount.of(
+                member = me,
+                reviewTag = reviewTag2,
+            ),
+            ReviewTagCount.of(
+                member = me,
+                reviewTag = reviewTag3,
+            ),
         )
-        reviewTagCountRepository.save(reviewTagCount)
+        reviewTagCountRepository.saveAll(reviewTagCounts)
 
-        val reviewTagIds = listOf(reviewTag1.id!!, reviewTag2.id!!, reviewTag3.id!!)
-
-        // when
-        reviewTagCountService.saveAllReviewTagCount(
-            memberId = me.id!!,
-            reviewTagIds = reviewTagIds
-        )
+        //when
+        val response = reviewTagCountRepository.findAllReviewTagCountByMemberId(me.id!!)
 
         // then
-        val findReviewTagCounts = reviewTagCountRepository.findAll()
-        assertThat(findReviewTagCounts).hasSize(3)
-        assertThat(findReviewTagCounts)
-            .extracting("member", "reviewTag", "count")
+        assertThat(response)
+            .extracting("displayText", "count")
             .contains(
-                tuple(me, reviewTag1, 3),
-                tuple(me, reviewTag2, 1),
-                tuple(me, reviewTag3, 1),
+                tuple("tagText1", 1),
+                tuple("tagText2", 1),
+                tuple("tagText3", 1),
             )
     }
 

@@ -13,6 +13,8 @@ import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutGoal
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutStyle
 import kr.co.fitview.api.app.domain.member.entity.enums.WorkoutTimeName
 import kr.co.fitview.api.app.domain.oauth2.dto.request.OAuth2LoginRequest
+import kr.co.fitview.api.app.domain.review.dto.response.ReviewResponse
+import kr.co.fitview.api.app.domain.review.dto.response.ReviewTagCountResponse
 import kr.co.fitview.api.app.global.entity.Gender
 import kr.co.fitview.api.app.global.entity.OAuth2Provider
 import kr.co.fitview.api.app.global.entity.Role
@@ -28,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.SliceImpl
 import org.springframework.http.MediaType
 import org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document
@@ -43,6 +46,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 
 class MemberControllerTest : ControllerTestSupport() {
@@ -362,23 +366,123 @@ class MemberControllerTest : ControllerTestSupport() {
             .andExpect(jsonPath("$.data.content[0].workoutExperience").value("UNDER_ONE_YEAR"))
             .andExpect(jsonPath("$.data.content[0].workoutStyle").value("CARDIO"))
             .andExpect(jsonPath("$.data.content[0].workoutGoal").value("WEIGHT_LOSS"))
-            .andExpect(jsonPath("$.data.content[0].profileImageUrl")
-                .value("https://static.fitview.co.kr/member/profile/0cca097d-630a-46cb-9da6-685be5d3e1f2"))
+            .andExpect(
+                jsonPath("$.data.content[0].profileImageUrl")
+                    .value("https://static.fitview.co.kr/member/profile/0cca097d-630a-46cb-9da6-685be5d3e1f2")
+            )
 
             .andExpect(jsonPath("$.data.content[1].memberId").value(2))
             .andExpect(jsonPath("$.data.content[1].nickname").value("hulk"))
             .andExpect(jsonPath("$.data.content[1].workoutExperience").value("ONE_TO_THREE_YEARS"))
             .andExpect(jsonPath("$.data.content[1].workoutStyle").value("BALANCE"))
             .andExpect(jsonPath("$.data.content[1].workoutGoal").value("PERFORMANCE_GOAL"))
-            .andExpect(jsonPath("$.data.content[1].profileImageUrl")
-                .value("https://static.fitview.co.kr/member/profile/0cca097d-630a-46cb-9da6-685be5d3e1f2"))
+            .andExpect(
+                jsonPath("$.data.content[1].profileImageUrl")
+                    .value("https://static.fitview.co.kr/member/profile/0cca097d-630a-46cb-9da6-685be5d3e1f2")
+            )
 
             .andExpect(jsonPath("$.data.content[2].memberId").value(3))
             .andExpect(jsonPath("$.data.content[2].nickname").value("thor"))
             .andExpect(jsonPath("$.data.content[2].workoutExperience").value("FOUR_TO_SIX_YEARS"))
             .andExpect(jsonPath("$.data.content[2].workoutStyle").value("BALANCE"))
             .andExpect(jsonPath("$.data.content[2].workoutGoal").value("ENDURANCE"))
-            .andExpect(jsonPath("$.data.content[2].profileImageUrl")
-                .value("https://static.fitview.co.kr/member/profile/0cca097d-630a-46cb-9da6-685be5d3e1f2"))
+            .andExpect(
+                jsonPath("$.data.content[2].profileImageUrl")
+                    .value("https://static.fitview.co.kr/member/profile/0cca097d-630a-46cb-9da6-685be5d3e1f2")
+            )
+    }
+
+    @DisplayName("회원이 받은 리뷰 태그 메시지를 전체 조회한다.")
+    @Test
+    fun memberReviewTagList() {
+        // given
+        given(reviewTagCountQueryService.findAllReviewTagCountFrom(any()))
+            .willReturn(
+                listOf(
+                    ReviewTagCountResponse(
+                        displayText = "집중력이 좋아요",
+                        count = 3
+                    ),
+                    ReviewTagCountResponse(
+                        displayText = "활기차요",
+                        count = 10
+                    )
+                )
+            )
+
+        // when // then
+        mockMvc.perform(
+            get("/api/v1/members/{memberId}/reviews/tags", 111)
+                .header("Authorization", "Bearer jwt-token")
+        )
+            .andDo(print())
+            .andExpect(status().isOk())
+
+            .andExpect(jsonPath("$.status").exists())
+            .andExpect(jsonPath("$.code").value("ok"))
+            .andExpect(jsonPath("$.message").value("ok"))
+
+            .andExpect(jsonPath("$.data.length()").value(2))
+
+            .andExpect(jsonPath("$.data[0].displayText").value("집중력이 좋아요"))
+            .andExpect(jsonPath("$.data[0].count").value(3))
+
+            .andExpect(jsonPath("$.data[1].displayText").value("활기차요"))
+            .andExpect(jsonPath("$.data[1].count").value(10))
+    }
+
+    @DisplayName("회원이 받은 리뷰 메시지 조회 API")
+    @Test
+    fun memberReviewList() {
+        // given
+        given(reviewQueryService.findReviewFromCondition(any(), any()))
+            .willReturn(
+                SliceImpl(
+                    listOf(
+                        ReviewResponse(
+                            reviewId = 1L,
+                            memberId = 10L,
+                            nickname = "호박고구마",
+                            postedAt = LocalDateTime.now(),
+                            content = "내용1"
+                        ),
+                        ReviewResponse(
+                            reviewId = 2L,
+                            memberId = 11L,
+                            nickname = "고구마호박",
+                            postedAt = LocalDateTime.now().minusMinutes(1),
+                            content = "내용2"
+                        )
+                    ),
+                    PageRequest.of(0, 10),
+                    true
+                )
+            )
+
+        // when // then
+        mockMvc.perform(
+            get("/api/v1/members/{memberId}/reviews", 111)
+                .header("Authorization", "Bearer jwt-token")
+                .param("size", "10")
+                .param("lastPostedAt", "1763714029931")
+        )
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").exists())
+            .andExpect(jsonPath("$.code").value("ok"))
+            .andExpect(jsonPath("$.message").value("OK"))
+
+            .andExpect(jsonPath("$.data.content.length()").value(2))
+
+            .andExpect(jsonPath("$.data.content[0].reviewId").value(1))
+            .andExpect(jsonPath("$.data.content[0].memberId").value(10))
+            .andExpect(jsonPath("$.data.content[0].nickname").value("호박고구마"))
+            .andExpect(jsonPath("$.data.content[0].content").value("내용1"))
+
+            .andExpect(jsonPath("$.data.content[1].reviewId").value(2))
+            .andExpect(jsonPath("$.data.content[1].memberId").value(11))
+            .andExpect(jsonPath("$.data.content[1].nickname").value("고구마호박"))
+            .andExpect(jsonPath("$.data.content[1].content").value("내용2"))
+
     }
 }
