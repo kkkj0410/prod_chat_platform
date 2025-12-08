@@ -3,7 +3,7 @@ package kr.co.fitview.api.app.domain.workout_partner.entity
 import jakarta.persistence.*
 import jakarta.validation.constraints.NotNull
 import kr.co.fitview.api.app.domain.member.entity.Member
-import kr.co.fitview.api.app.global.entity.BaseEntity
+import kr.co.fitview.api.app.global.entity.BaseSoftDeleteEntity
 
 @Entity
 @Table(name = "workout_partner")
@@ -19,7 +19,7 @@ class WorkoutPartner(
     @JoinColumn(name = "member_two_id", nullable = false)
     var memberTwo: Member? = null
 
-) : BaseEntity() {
+) : BaseSoftDeleteEntity() {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

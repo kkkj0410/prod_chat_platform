@@ -4,8 +4,7 @@ import jakarta.persistence.*
 import jakarta.validation.constraints.NotNull
 import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
 import kr.co.fitview.api.app.domain.member.entity.Member
-import kr.co.fitview.api.app.global.entity.BaseEntity
-import java.time.Instant
+import kr.co.fitview.api.app.global.entity.BaseSoftDeleteEntity
 import java.time.LocalDateTime
 
 @Entity
@@ -29,7 +28,7 @@ class WorkoutHistory(
     @Column(name = "completed_at", nullable = false)
     var completedAt: LocalDateTime? = null
 
-) : BaseEntity() {
+) : BaseSoftDeleteEntity() {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

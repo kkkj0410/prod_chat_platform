@@ -5,9 +5,7 @@ import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
 import kr.co.fitview.api.app.domain.image.entity.enums.MemberImageType
 import kr.co.fitview.api.app.domain.member.entity.Member
-import kr.co.fitview.api.app.global.entity.BaseEntity
-import org.hibernate.annotations.ColumnDefault
-import java.time.Instant
+import kr.co.fitview.api.app.global.entity.BaseSoftDeleteEntity
 import java.time.LocalDateTime
 
 @Entity
@@ -33,7 +31,7 @@ class MemberImage(
     @Column(name = "seq")
     var seq: Int? = null
 
-)  : BaseEntity() {
+)  : BaseSoftDeleteEntity() {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -3,9 +3,8 @@ package kr.co.fitview.api.app.domain.chat.entity
 import jakarta.persistence.*
 import jakarta.validation.constraints.NotNull
 import kr.co.fitview.api.app.domain.member.entity.Member
-import kr.co.fitview.api.app.global.entity.BaseEntity
+import kr.co.fitview.api.app.global.entity.BaseSoftDeleteEntity
 import org.hibernate.annotations.ColumnDefault
-import java.time.Instant
 
 @Entity
 @Table(name = "message_read_status")
@@ -31,7 +30,7 @@ class MessageReadStatus(
     @Column(name = "is_read", nullable = false)
     var isRead: Boolean? = false
 
-) : BaseEntity() {
+) : BaseSoftDeleteEntity() {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

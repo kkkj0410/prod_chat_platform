@@ -20,7 +20,9 @@ import kr.co.fitview.api.app.domain.notification.service.NotificationStompServic
 import kr.co.fitview.api.app.domain.oauth2.controller.OAuth2Controller
 import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
 import kr.co.fitview.api.app.domain.review.controller.ReviewController
+import kr.co.fitview.api.app.domain.review.service.ReviewQueryService
 import kr.co.fitview.api.app.domain.review.service.ReviewService
+import kr.co.fitview.api.app.domain.review.service.ReviewTagCountQueryService
 import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestQueryService
 import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestService
 import kr.co.fitview.api.app.domain.workout_history.controller.WorkoutHistoryController
@@ -155,5 +157,11 @@ abstract class ControllerTestSupport {
 
     @MockitoBean
     protected lateinit var workoutHistoryQueryService: WorkoutHistoryQueryService
+
+    @MockitoBean
+    protected lateinit var reviewTagCountQueryService: ReviewTagCountQueryService
+
+    @MockitoBean
+    protected lateinit var reviewQueryService: ReviewQueryService
 
 }

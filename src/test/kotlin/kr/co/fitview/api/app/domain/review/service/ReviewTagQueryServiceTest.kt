@@ -3,11 +3,14 @@ package kr.co.fitview.api.app.domain.review.service
 import jakarta.persistence.EntityManager
 import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.chat.entity.QChatRoom.chatRoom
+import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.review.entity.QReviewTag.reviewTag
 import kr.co.fitview.api.app.domain.review.entity.ReviewCategory
 import kr.co.fitview.api.app.domain.review.entity.ReviewTag
+import kr.co.fitview.api.app.domain.review.entity.ReviewTagCount
 import kr.co.fitview.api.app.domain.review.repository.ReviewCategoryRepository
 import kr.co.fitview.api.app.domain.review.repository.ReviewTagRepository
+import kr.co.fitview.api.app.global.entity.Role
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.tuple
 import org.hibernate.proxy.HibernateProxy
@@ -68,4 +71,5 @@ class ReviewTagQueryServiceTest @Autowired constructor(
                 tuple("displayText2", 200),
             )
     }
+
 }

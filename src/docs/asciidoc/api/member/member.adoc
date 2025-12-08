@@ -84,3 +84,29 @@ include::{snippets}/member-detail/path-parameters.adoc[]
 ==== HTTP Response
 include::{snippets}/member-detail/http-response.adoc[]
 include::{snippets}/member-detail/response-fields.adoc[]
+
+
+[[member-review-tags]]
+=== 회원이 받은 후기 서브 메시지 전체 조회 API
+
+==== HTTP Request
+include::{snippets}/member-review-tags/http-request.adoc[]
+include::{snippets}/member-review-tags/request-headers.adoc[]
+include::{snippets}/member-review-tags/path-parameters.adoc[]
+
+==== HTTP Response
+include::{snippets}/member-review-tags/http-response.adoc[]
+include::{snippets}/member-review-tags/response-fields.adoc[]
+
+[[member-review-get]]
+=== 회원이 받은 후기 전체글 API
+
+==== HTTP Request
+include::{snippets}/member-review-get/http-request.adoc[]
+include::{snippets}/member-review-get/request-headers.adoc[]
+include::{snippets}/member-review-get/path-parameters.adoc[]
+include::{snippets}/member-review-get/query-parameters.adoc[]
+
+==== HTTP Response
+include::{snippets}/member-review-get/http-response.adoc[]
+include::{snippets}/member-review-get/response-fields.adoc[]

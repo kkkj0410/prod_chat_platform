@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.fcm.entity.enums.FcmTokenPlatform
-import kr.co.fitview.api.app.global.entity.BaseEntity
+import kr.co.fitview.api.app.global.entity.BaseSoftDeleteEntity
 import org.hibernate.annotations.ColumnDefault
 
 @Entity
@@ -38,7 +38,7 @@ class FcmToken(
     @Column(name = "platform", nullable = false, length = 30)
     var platform: FcmTokenPlatform? = null
 
-) : BaseEntity() {
+) : BaseSoftDeleteEntity() {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "fcm_token_id", nullable = false)

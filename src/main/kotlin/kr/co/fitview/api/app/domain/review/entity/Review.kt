@@ -6,9 +6,10 @@ import jakarta.validation.constraints.Size
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.review.entity.enums.ReviewType
 import kr.co.fitview.api.app.domain.workout_history.entity.WorkoutHistory
-import kr.co.fitview.api.app.global.entity.BaseEntity
+import kr.co.fitview.api.app.global.entity.BaseSoftDeleteEntity
 import org.hibernate.annotations.ColumnDefault
-import java.math.BigDecimal
+import java.time.Instant
+import java.time.LocalDateTime
 
 @Entity
 @Table(name = "review")
@@ -46,9 +47,12 @@ class Review(
 
     @Size(max = 1000)
     @Column(name = "content", length = 1000)
-    var content: String? = null
+    var content: String? = null,
 
-) : BaseEntity() {
+    @Column(name = "posted_at", nullable = false)
+    var postedAt: LocalDateTime? = null
+
+) : BaseSoftDeleteEntity() {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
