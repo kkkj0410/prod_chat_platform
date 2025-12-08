@@ -8,7 +8,7 @@ import java.time.LocalDateTime
 
 
 @MappedSuperclass
-open class BaseEntity {
+open class BaseSoftDeleteEntity {
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -18,5 +18,7 @@ open class BaseEntity {
     @Column(name = "updated_at", nullable = false)
     var updatedAt: LocalDateTime? = null
 
+    @Column(name = "deleted_at")
+    var deletedAt: LocalDateTime? = null
 
 }

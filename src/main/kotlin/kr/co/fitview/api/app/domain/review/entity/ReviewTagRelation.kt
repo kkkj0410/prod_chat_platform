@@ -2,9 +2,7 @@ package kr.co.fitview.api.app.domain.review.entity
 
 import jakarta.persistence.*
 import jakarta.validation.constraints.NotNull
-import kr.co.fitview.api.app.global.entity.BaseEntity
-import org.hibernate.annotations.ColumnDefault
-import java.time.Instant
+import kr.co.fitview.api.app.global.entity.BaseSoftDeleteEntity
 
 @Entity
 @Table(name = "review_tag_relation")
@@ -20,7 +18,7 @@ class ReviewTagRelation(
     @JoinColumn(name = "review_tag_id", nullable = false)
     var reviewTag: ReviewTag? = null
 
-) : BaseEntity() {
+) : BaseSoftDeleteEntity() {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

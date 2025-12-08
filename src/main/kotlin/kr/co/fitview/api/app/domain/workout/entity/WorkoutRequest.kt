@@ -7,9 +7,8 @@ import kr.co.fitview.api.app.domain.chat.entity.ChatMessage
 import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
-import kr.co.fitview.api.app.global.entity.BaseEntity
+import kr.co.fitview.api.app.global.entity.BaseSoftDeleteEntity
 import org.hibernate.annotations.ColumnDefault
-import java.time.Instant
 import java.time.LocalDateTime
 
 @Entity
@@ -50,7 +49,7 @@ class WorkoutRequest(
     @Column(name = "requested_at", nullable = false)
     var requestedAt: LocalDateTime? = null
 
-) : BaseEntity() {
+) : BaseSoftDeleteEntity() {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

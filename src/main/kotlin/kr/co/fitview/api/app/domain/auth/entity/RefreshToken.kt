@@ -4,9 +4,8 @@ import jakarta.persistence.*
 import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
 import kr.co.fitview.api.app.domain.member.entity.Member
-import kr.co.fitview.api.app.global.entity.BaseEntity
+import kr.co.fitview.api.app.global.entity.BaseSoftDeleteEntity
 import org.hibernate.annotations.ColumnDefault
-import java.time.Instant
 
 @Entity
 @Table(name = "refresh_token")
@@ -28,7 +27,7 @@ class RefreshToken(
     @Column(name = "status", nullable = false)
     var status: RefreshTokenStatus? = RefreshTokenStatus.ACTIVE
 
-) : BaseEntity() {
+) : BaseSoftDeleteEntity() {
 
     fun inactive() : RefreshToken{
         this.status = RefreshTokenStatus.INACTIVE

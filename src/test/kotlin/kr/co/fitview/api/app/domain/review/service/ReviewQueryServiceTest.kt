@@ -67,7 +67,8 @@ class ReviewQueryServiceTest @Autowired constructor(
             isPrivate = false,
             type = ReviewType.GOOD,
             score = 2.0,
-            content = "content"
+            content = "content",
+            postedAt = time.nowLocalDateTime
         )
 
         reviewRepository.save(review)

@@ -8,12 +8,11 @@ import kr.co.fitview.api.app.domain.image.entity.MemberImage
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutExperience
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutGoal
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutStyle
-import kr.co.fitview.api.app.global.entity.BaseEntity
+import kr.co.fitview.api.app.global.entity.BaseSoftDeleteEntity
 import kr.co.fitview.api.app.global.entity.Gender
 import kr.co.fitview.api.app.global.entity.OAuth2Provider
 import kr.co.fitview.api.app.global.entity.Role
 import org.hibernate.annotations.ColumnDefault
-import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -87,7 +86,7 @@ class Member(
     @Column(name = "workout_experience", length = 100)
     var workoutExperience: MemberWorkoutExperience? = null
 
-    ) : BaseEntity() {
+    ) : BaseSoftDeleteEntity() {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

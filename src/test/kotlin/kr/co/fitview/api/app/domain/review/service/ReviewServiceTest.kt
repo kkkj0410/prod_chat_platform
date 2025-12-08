@@ -11,6 +11,7 @@ import kr.co.fitview.api.app.domain.review.entity.ReviewCategory
 import kr.co.fitview.api.app.domain.review.entity.ReviewTag
 import kr.co.fitview.api.app.domain.review.entity.enums.ReviewType
 import kr.co.fitview.api.app.domain.review.repository.ReviewCategoryRepository
+import kr.co.fitview.api.app.domain.review.repository.ReviewTagCountRepository
 import kr.co.fitview.api.app.domain.review.repository.ReviewTagRepository
 import kr.co.fitview.api.app.domain.workout_history.entity.WorkoutHistory
 import kr.co.fitview.api.app.domain.workout_history.repository.WorkoutHistoryRepository
@@ -32,6 +33,7 @@ class ReviewServiceTest @Autowired constructor(
     private val memberRepository : MemberRepository,
     private val chatRoomRepository : ChatRoomRepository,
     private val workoutHistoryRepository : WorkoutHistoryRepository,
+    private val reviewTagCountRepository : ReviewTagCountRepository,
     private val time : Time
 ) : IntegrationTestSupport(){
 
@@ -228,6 +230,79 @@ class ReviewServiceTest @Autowired constructor(
         assertThat(savedReview)
             .extracting("fromMember", "toMember", "workoutHistory", "isPrivate", "type", "score", "content")
             .contains(me, other, workoutHistory, true, ReviewType.BAD, -2.0, "content")
+    }
+
+    @DisplayName("리뷰를 저장 시, 상대방 회원의 리뷰 태그 집계 테이블을 새로 집계한다..")
+    @Test
+    fun saveReviewWithReviewTagCount() {
+        // given
+        val me = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        val other = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(me)
+        memberRepository.save(other)
+
+        val chatRoom = ChatRoom(ChatRoomType.PRIVATE)
+        chatRoomRepository.save(chatRoom)
+
+        val workoutHistory = WorkoutHistory(
+            chatRoom = chatRoom,
+            memberOne = me,
+            memberTwo = other,
+            completedAt = time.nowLocalDateTime
+        )
+        workoutHistoryRepository.save(workoutHistory)
+
+        val reviewCategory = ReviewCategory(
+            displayText = "displayText",
+            seq = 100
+        )
+        reviewCategoryRepository.save(reviewCategory)
+
+        val reviewTag1 = ReviewTag(
+            reviewCategory = reviewCategory,
+            displayText = "displayText1",
+            seq = 100
+        )
+        val reviewTag2 = ReviewTag(
+            reviewCategory = reviewCategory,
+            displayText = "displayText2",
+            seq = 200
+        )
+        reviewTagRepository.save(reviewTag1)
+        reviewTagRepository.save(reviewTag2)
+
+        val reviewTagIds = listOf(reviewTag1.id!!, reviewTag2.id!!)
+
+        val request = ReviewCreateServiceRequest(
+            workoutHistoryId = workoutHistory.id!!,
+            type = ReviewType.GOOD,
+            reviewTagIds = reviewTagIds,
+            content = "content"
+        )
+
+        // when
+        val savedReview = reviewService.saveReview(
+            memberId = me.id!!,
+            request = request
+        )
+
+        // then
+        val findReviewTagCounts = reviewTagCountRepository.findAll()
+        assertThat(findReviewTagCounts).hasSize(2)
+        assertThat(findReviewTagCounts)
+            .extracting("member", "reviewTag", "count")
+            .contains(
+                tuple(other, reviewTag1, 1),
+                tuple(other, reviewTag2, 1),
+            )
     }
 
     @DisplayName("긍정 리뷰를 저장하는데 서브 메시지가 없으면 리뷰를 저장하지 않는다.")

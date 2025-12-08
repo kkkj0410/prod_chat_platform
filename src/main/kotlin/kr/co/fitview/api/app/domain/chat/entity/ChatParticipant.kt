@@ -3,9 +3,7 @@ package kr.co.fitview.api.app.domain.chat.entity
 import jakarta.persistence.*
 import jakarta.validation.constraints.NotNull
 import kr.co.fitview.api.app.domain.member.entity.Member
-import kr.co.fitview.api.app.global.entity.BaseEntity
-import org.hibernate.annotations.ColumnDefault
-import java.time.Instant
+import kr.co.fitview.api.app.global.entity.BaseSoftDeleteEntity
 
 @Entity
 @Table(name = "chat_participant")
@@ -21,7 +19,7 @@ class ChatParticipant(
     @JoinColumn(name = "member_id", nullable = false)
     var member: Member? = null
 
-) : BaseEntity() {
+) : BaseSoftDeleteEntity() {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "chat_participant_id", nullable = false)

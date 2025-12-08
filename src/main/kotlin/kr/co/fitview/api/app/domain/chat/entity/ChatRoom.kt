@@ -4,9 +4,7 @@ import jakarta.persistence.*
 import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatRoomType
-import kr.co.fitview.api.app.global.entity.BaseEntity
-import org.hibernate.annotations.ColumnDefault
-import java.time.Instant
+import kr.co.fitview.api.app.global.entity.BaseSoftDeleteEntity
 import java.time.LocalDateTime
 
 @Entity
@@ -19,7 +17,7 @@ class ChatRoom(
     @Enumerated(EnumType.STRING)
     var type: ChatRoomType? = null
 
-) : BaseEntity() {
+) : BaseSoftDeleteEntity() {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "chat_room_id", nullable = false)

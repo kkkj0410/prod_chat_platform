@@ -3,7 +3,7 @@ package kr.co.fitview.api.app.domain.image.entity
 import jakarta.persistence.*
 import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
-import kr.co.fitview.api.app.global.entity.BaseEntity
+import kr.co.fitview.api.app.global.entity.BaseSoftDeleteEntity
 import java.time.LocalDateTime
 
 @Entity
@@ -15,7 +15,7 @@ class Image(
     @Column(name = "url", nullable = false, length = 2048)
     var url: String? = null
 
-) : BaseEntity() {
+) : BaseSoftDeleteEntity() {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

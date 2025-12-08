@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatNoticeMessageType
 import kr.co.fitview.api.app.domain.workout_history.entity.WorkoutHistory
-import kr.co.fitview.api.app.global.entity.BaseEntity
+import kr.co.fitview.api.app.global.entity.BaseSoftDeleteEntity
 
 @Entity
 @Table(name = "chat_notice_message")
@@ -20,7 +20,7 @@ class ChatNoticeMessage(
     @Column(name = "type", nullable = false, length = 100)
     @Enumerated(EnumType.STRING)
     var type: ChatNoticeMessageType? = null
-) : BaseEntity() {
+) : BaseSoftDeleteEntity() {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

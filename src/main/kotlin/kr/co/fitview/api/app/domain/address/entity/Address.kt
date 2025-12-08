@@ -7,7 +7,7 @@ import kr.co.fitview.api.app.domain.address.converter.AddressSiDoConverter
 import kr.co.fitview.api.app.domain.address.dto.request.AddressCreateServiceRequest
 import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
 import kr.co.fitview.api.app.domain.member.entity.Member
-import kr.co.fitview.api.app.global.entity.BaseEntity
+import kr.co.fitview.api.app.global.entity.BaseSoftDeleteEntity
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.address.AddressErrorCode
 import org.hibernate.annotations.ColumnDefault
@@ -52,7 +52,7 @@ class Address(
     @Column(name = "radius_km")
     var radiusKm: Double? = 5.0
 
-) : BaseEntity() {
+) : BaseSoftDeleteEntity() {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "address_id", nullable = false)

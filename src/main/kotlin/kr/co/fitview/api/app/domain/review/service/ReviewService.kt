@@ -13,6 +13,7 @@ import kr.co.fitview.api.app.domain.workout_history.service.WorkoutHistoryQueryS
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.global.GlobalErrorCode
 import kr.co.fitview.api.app.global.exception.error.review.ReviewErrorCode
+import kr.co.fitview.api.app.global.time.Time
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -24,7 +25,9 @@ class ReviewService(
     private val memberQueryService: MemberQueryService,
     private val workoutHistoryQueryService : WorkoutHistoryQueryService,
     private val reviewRepository : ReviewRepository,
-    private val reviewTagRelationService: ReviewTagRelationService
+    private val reviewTagRelationService: ReviewTagRelationService,
+    private val reviewTagCountService : ReviewTagCountService,
+    private val time : Time
 ) {
 
 
@@ -49,12 +52,15 @@ class ReviewService(
                 reviewTagIds = request.reviewTagIds!!
             )
 
-            toMember.updateScore(request.type.score.toDouble())
+            toMember.updateScore(request.type.score)
+
+            reviewTagCountService.saveAllReviewTagCount(toMember.id!!, request.reviewTagIds)
+
             return review
         }
 
         val review = createNegativeReview(fromMember, toMember, findWorkoutHistory, request)
-        toMember.updateScore(request.type.score.toDouble())
+        toMember.updateScore(request.type.score)
         return reviewRepository.save(review)
     }
 
@@ -107,7 +113,8 @@ class ReviewService(
         isPrivate = false,
         type = request.type,
         score = request.type.score,
-        content = request.content
+        content = request.content,
+        postedAt = time.nowLocalDateTime
     )
 
     private fun createNegativeReview(
@@ -123,7 +130,8 @@ class ReviewService(
             isPrivate = true,
             type = request.type,
             score = request.type.score,
-            content = request.content
+            content = request.content,
+            postedAt = time.nowLocalDateTime
         )
         return review
     }

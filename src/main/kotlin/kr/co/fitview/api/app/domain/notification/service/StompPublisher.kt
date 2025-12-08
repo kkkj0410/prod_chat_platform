@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component
 class StompPublisher(
     private val messageTemplate : SimpMessageSendingOperations,
 ) {
-
     fun sendToUser(memberId: Long, destination: String, payload: WsResponse<Any>) {
         messageTemplate.convertAndSendToUser(memberId.toString(), destination, payload)
     }
