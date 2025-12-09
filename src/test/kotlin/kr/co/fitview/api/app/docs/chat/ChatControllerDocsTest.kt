@@ -202,6 +202,9 @@ class ChatControllerDocsTest : RestDocsSupport() {
                         beneathPath("data.content[].lastWorkoutRequest").withSubsectionId("workout-request"),
                         fieldWithPath("workoutRequestId").description("운동 요청 id"),
                         fieldWithPath("status").description("운동 요청 상태" + WorkoutRequestStatusForResponse.allDescription()),
+                        fieldWithPath("workoutHistoryId")
+                            .optional()
+                            .description("운동 기록 id"),
                     )
                 )
             )
@@ -303,6 +306,9 @@ class ChatControllerDocsTest : RestDocsSupport() {
                         beneathPath("data.content[].lastWorkoutRequest").withSubsectionId("workout-request"),
                         fieldWithPath("workoutRequestId").description("운동 요청 id"),
                         fieldWithPath("status").description("운동 요청 상태" + WorkoutRequestStatusForResponse.allDescription()),
+                        fieldWithPath("workoutHistoryId")
+                            .optional()
+                            .description("운동 기록 id"),
                     )
                 )
             )
@@ -396,6 +402,9 @@ class ChatControllerDocsTest : RestDocsSupport() {
                         beneathPath("data.content[].lastWorkoutRequest").withSubsectionId("workout-request"),
                         fieldWithPath("workoutRequestId").description("운동 요청 id"),
                         fieldWithPath("status").description("운동 요청 상태" + WorkoutRequestStatusForResponse.allDescription()),
+                        fieldWithPath("workoutHistoryId")
+                            .optional()
+                            .description("운동 기록 id"),
                     )
                 )
             )

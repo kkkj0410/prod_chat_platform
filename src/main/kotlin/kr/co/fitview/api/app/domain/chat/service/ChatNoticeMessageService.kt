@@ -13,6 +13,7 @@ import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.domain.notification.dto.response.StompEventChatNoticeMessageDepth1
 import kr.co.fitview.api.app.domain.notification.dto.response.StompEventChatNoticeMessageDepth2
 import kr.co.fitview.api.app.domain.notification.dto.response.StompEventChatNoticeMessageDepth3
+import kr.co.fitview.api.app.domain.workout_history.entity.QWorkoutHistory.workoutHistory
 import kr.co.fitview.api.app.domain.workout_history.entity.WorkoutHistory
 import kr.co.fitview.api.app.domain.workout_history.service.WorkoutHistoryQueryService
 import kr.co.fitview.api.app.domain.workout_history.service.WorkoutHistoryService
@@ -64,7 +65,7 @@ class ChatNoticeMessageService(
             chatRoom = findChatRoom
         )
 
-        sendModifyWorkoutRequestStompMessage(memberId, findChatRoom, savedChatMessage, type)
+        sendModifyWorkoutRequestStompMessage(memberId, findChatRoom, savedChatMessage, type, workoutHistory)
 
         return savedChatMessage
     }
@@ -118,7 +119,8 @@ class ChatNoticeMessageService(
         memberId: Long,
         chatRoom: ChatRoom,
         chatMessage: ChatMessage,
-        type : ChatNoticeMessageType
+        type : ChatNoticeMessageType,
+        workoutHistory : WorkoutHistory?,
     ) {
         val otherMemberId = findOtherMemberId(memberId, chatRoom)
 
@@ -133,6 +135,7 @@ class ChatNoticeMessageService(
             otherMemberProfile = findOtherMemberProfile,
             chatMessage = chatMessage,
             type = type,
+            workoutHistory = workoutHistory,
         )
         val otherStompMessage = createStompMessage(
             receiveMemberId = otherMemberId,
@@ -141,6 +144,7 @@ class ChatNoticeMessageService(
             otherMemberProfile = findMeMemberProfile,
             chatMessage = chatMessage,
             type = type,
+            workoutHistory = workoutHistory,
         )
         publisher.publishEvent(meStompMessage)
         publisher.publishEvent(otherStompMessage)
@@ -243,7 +247,8 @@ class ChatNoticeMessageService(
         isCompleteWorkout: Boolean,
         otherMemberProfile: ChatRoomMemberProfile?,
         chatMessage: ChatMessage,
-        type : ChatNoticeMessageType
+        type : ChatNoticeMessageType,
+        workoutHistory : WorkoutHistory? = null
     ) = StompEventChatNoticeMessageDepth1(
         memberId = receiveMemberId,
         message = StompEventChatNoticeMessageDepth2(
@@ -254,7 +259,7 @@ class ChatNoticeMessageService(
             chatMessage = StompEventChatNoticeMessageDepth3(
                 chatMessageId = chatMessage.id!!,
                 sentAt = chatMessage.sentAt!!,
-                workoutHistoryId = null,
+                workoutHistoryId = workoutHistory?.id,
                 content = type
             )
         )

@@ -109,7 +109,7 @@ class WorkoutRequestService(
 
         var workoutHistory : WorkoutHistory? = null
         if(isSuccessComplete(findWorkoutRequest)){
-            workoutHistory = workoutHistoryService.addWorkoutHistory(findWorkoutRequest.getChatRoom()!!, findWorkoutRequest.fromMember!!, findWorkoutRequest.toMember!!)
+            workoutHistory = workoutHistoryService.addWorkoutHistory(findWorkoutRequest.getChatRoom()!!, findWorkoutRequest, findWorkoutRequest.fromMember!!, findWorkoutRequest.toMember!!)
         }
 
         addChatNoticeMessage(memberId, request, workoutHistory)

@@ -605,8 +605,19 @@ class ChatNoticeMessageServiceTest @Autowired constructor(
         )
         chatMessageRepository.save(chatMessage2)
 
+        val workoutRequest2 = WorkoutRequest.of(
+            chatMessage = chatMessage2,
+            fromMember = me,
+            toMember = other2,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime
+        )
+        workoutRequestRepository.save(workoutRequest2)
+
         val workoutHistory = WorkoutHistory(
             chatRoom = chatRoom2,
+            workoutRequest = workoutRequest2,
             memberOne = me,
             memberTwo = other2,
             completedAt = time.nowLocalDateTime
@@ -730,4 +741,5 @@ class ChatNoticeMessageServiceTest @Autowired constructor(
         // then
         assertThat(chatRoom.lastMessageAt).isEqualTo(time.nowLocalDateTime)
     }
+
 }

@@ -44,8 +44,11 @@ class WorkoutRequestRepositoryImpl(
         r.status,
         r.requested_at,
         r.scheduled_at,
-        r.chat_room_id
+        r.chat_room_id,
+        wh.workout_history_id
         FROM RankedRequests r
+        LEFT JOIN workout_history wh
+        ON wh.workout_request_id = r.workout_request_id
         WHERE rn = 1;
     """.trimIndent()
 
@@ -63,6 +66,7 @@ class WorkoutRequestRepositoryImpl(
             val requestedAt = (r[2] as Timestamp).toLocalDateTime()
             val scheduledAt = (r[3] as Timestamp).toLocalDateTime()
             val chatRoomId = r[4] as Long
+            val workoutHistoryId = r[5] as Long?
 
             LastWorkoutRequestMessage(
                 workoutRequestId = workoutRequestId,
@@ -72,7 +76,8 @@ class WorkoutRequestRepositoryImpl(
                     scheduledAt,
                     time.nowLocalDateTime
                 ),
-                chatRoomId = chatRoomId
+                chatRoomId = chatRoomId,
+                workoutHistoryId = workoutHistoryId
             )
         }
     }

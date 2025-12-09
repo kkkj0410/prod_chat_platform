@@ -1,8 +1,11 @@
 package kr.co.fitview.api.app.domain.review.repository
 
 import kr.co.fitview.api.app.IntegrationTestSupport
+import kr.co.fitview.api.app.domain.chat.entity.ChatMessage
 import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
+import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatRoomType
+import kr.co.fitview.api.app.domain.chat.repository.ChatMessageRepository
 import kr.co.fitview.api.app.domain.chat.repository.ChatRoomRepository
 import kr.co.fitview.api.app.domain.member.condition.MemberReviewCondition
 import kr.co.fitview.api.app.domain.member.entity.Member
@@ -13,6 +16,8 @@ import kr.co.fitview.api.app.domain.review.entity.ReviewCategory
 import kr.co.fitview.api.app.domain.review.entity.ReviewTag
 import kr.co.fitview.api.app.domain.review.entity.enums.ReviewType
 import kr.co.fitview.api.app.domain.review.service.ReviewService
+import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequest
+import kr.co.fitview.api.app.domain.workout.repository.WorkoutRequestRepository
 import kr.co.fitview.api.app.domain.workout_history.entity.WorkoutHistory
 import kr.co.fitview.api.app.domain.workout_history.repository.WorkoutHistoryRepository
 import kr.co.fitview.api.app.global.entity.Role
@@ -33,6 +38,8 @@ class ReviewRepositoryTest @Autowired constructor(
     private val chatRoomRepository : ChatRoomRepository,
     private val workoutHistoryRepository : WorkoutHistoryRepository,
     private val reviewRepository : ReviewRepository,
+    private val chatMessageRepository : ChatMessageRepository,
+    private val workoutRequestRepository : WorkoutRequestRepository,
     private val time : Time
 ) : IntegrationTestSupport(){
 
@@ -56,8 +63,28 @@ class ReviewRepositoryTest @Autowired constructor(
         val chatRoom = ChatRoom(ChatRoomType.PRIVATE)
         chatRoomRepository.save(chatRoom)
 
+        val chatMessage = ChatMessage(
+            member = me,
+            chatRoom = chatRoom,
+            type = ChatMessageType.WORKOUT_REQUEST,
+            content = "content",
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessage)
+
+        val workoutRequest = WorkoutRequest.of(
+            chatMessage = chatMessage,
+            fromMember = me,
+            toMember = other,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime
+        )
+        workoutRequestRepository.save(workoutRequest)
+
         val workoutHistory = WorkoutHistory(
             chatRoom = chatRoom,
+            workoutRequest = workoutRequest,
             memberOne = me,
             memberTwo = other,
             completedAt = time.nowLocalDateTime
@@ -127,8 +154,28 @@ class ReviewRepositoryTest @Autowired constructor(
         val chatRoom = ChatRoom(ChatRoomType.PRIVATE)
         chatRoomRepository.save(chatRoom)
 
+        val chatMessage = ChatMessage(
+            member = me,
+            chatRoom = chatRoom,
+            type = ChatMessageType.WORKOUT_REQUEST,
+            content = "content",
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessage)
+
+        val workoutRequest = WorkoutRequest.of(
+            chatMessage = chatMessage,
+            fromMember = me,
+            toMember = other,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime
+        )
+        workoutRequestRepository.save(workoutRequest)
+
         val workoutHistory = WorkoutHistory(
             chatRoom = chatRoom,
+            workoutRequest = workoutRequest,
             memberOne = me,
             memberTwo = other,
             completedAt = time.nowLocalDateTime
@@ -175,16 +222,56 @@ class ReviewRepositoryTest @Autowired constructor(
         val chatRoom = ChatRoom(ChatRoomType.PRIVATE)
         chatRoomRepository.save(chatRoom)
 
+        val chatMessage = ChatMessage(
+            member = me,
+            chatRoom = chatRoom,
+            type = ChatMessageType.WORKOUT_REQUEST,
+            content = "content",
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessage)
+
+        val workoutRequest = WorkoutRequest.of(
+            chatMessage = chatMessage,
+            fromMember = me,
+            toMember = other,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime
+        )
+        workoutRequestRepository.save(workoutRequest)
+
         val workoutHistory = WorkoutHistory(
             chatRoom = chatRoom,
+            workoutRequest = workoutRequest,
             memberOne = me,
             memberTwo = other,
             completedAt = time.nowLocalDateTime
         )
         workoutHistoryRepository.save(workoutHistory)
 
+        val chatMessage2 = ChatMessage(
+            member = me,
+            chatRoom = chatRoom,
+            type = ChatMessageType.WORKOUT_REQUEST,
+            content = "content",
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessage2)
+
+        val workoutRequest2 = WorkoutRequest.of(
+            chatMessage = chatMessage2,
+            fromMember = me,
+            toMember = other,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime
+        )
+        workoutRequestRepository.save(workoutRequest2)
+
         val workoutHistory2 = WorkoutHistory(
             chatRoom = chatRoom,
+            workoutRequest = workoutRequest2,
             memberOne = me,
             memberTwo = other,
             completedAt = time.nowLocalDateTime
@@ -249,16 +336,56 @@ class ReviewRepositoryTest @Autowired constructor(
         val chatRoom = ChatRoom(ChatRoomType.PRIVATE)
         chatRoomRepository.save(chatRoom)
 
+        val chatMessage = ChatMessage(
+            member = me,
+            chatRoom = chatRoom,
+            type = ChatMessageType.WORKOUT_REQUEST,
+            content = "content",
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessage)
+
+        val workoutRequest = WorkoutRequest.of(
+            chatMessage = chatMessage,
+            fromMember = me,
+            toMember = other,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime
+        )
+        workoutRequestRepository.save(workoutRequest)
+
         val workoutHistory = WorkoutHistory(
             chatRoom = chatRoom,
+            workoutRequest = workoutRequest,
             memberOne = me,
             memberTwo = other,
             completedAt = time.nowLocalDateTime
         )
         workoutHistoryRepository.save(workoutHistory)
 
+        val chatMessage2 = ChatMessage(
+            member = me,
+            chatRoom = chatRoom,
+            type = ChatMessageType.WORKOUT_REQUEST,
+            content = "content",
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessage2)
+
+        val workoutRequest2 = WorkoutRequest.of(
+            chatMessage = chatMessage2,
+            fromMember = me,
+            toMember = other,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime
+        )
+        workoutRequestRepository.save(workoutRequest2)
+
         val workoutHistory2 = WorkoutHistory(
             chatRoom = chatRoom,
+            workoutRequest = workoutRequest2,
             memberOne = me,
             memberTwo = other,
             completedAt = time.nowLocalDateTime
@@ -328,16 +455,56 @@ class ReviewRepositoryTest @Autowired constructor(
         val chatRoom = ChatRoom(ChatRoomType.PRIVATE)
         chatRoomRepository.save(chatRoom)
 
+        val chatMessage = ChatMessage(
+            member = me,
+            chatRoom = chatRoom,
+            type = ChatMessageType.WORKOUT_REQUEST,
+            content = "content",
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessage)
+
+        val workoutRequest = WorkoutRequest.of(
+            chatMessage = chatMessage,
+            fromMember = me,
+            toMember = other,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime
+        )
+        workoutRequestRepository.save(workoutRequest)
+
         val workoutHistory = WorkoutHistory(
             chatRoom = chatRoom,
+            workoutRequest = workoutRequest,
             memberOne = me,
             memberTwo = other,
             completedAt = time.nowLocalDateTime
         )
         workoutHistoryRepository.save(workoutHistory)
 
+        val chatMessage2 = ChatMessage(
+            member = me,
+            chatRoom = chatRoom,
+            type = ChatMessageType.WORKOUT_REQUEST,
+            content = "content",
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessage2)
+
+        val workoutRequest2 = WorkoutRequest.of(
+            chatMessage = chatMessage2,
+            fromMember = me,
+            toMember = other,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime
+        )
+        workoutRequestRepository.save(workoutRequest2)
+
         val workoutHistory2 = WorkoutHistory(
             chatRoom = chatRoom,
+            workoutRequest = workoutRequest2,
             memberOne = me,
             memberTwo = other,
             completedAt = time.nowLocalDateTime
@@ -406,16 +573,56 @@ class ReviewRepositoryTest @Autowired constructor(
         val chatRoom = ChatRoom(ChatRoomType.PRIVATE)
         chatRoomRepository.save(chatRoom)
 
+        val chatMessage = ChatMessage(
+            member = me,
+            chatRoom = chatRoom,
+            type = ChatMessageType.WORKOUT_REQUEST,
+            content = "content",
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessage)
+
+        val workoutRequest = WorkoutRequest.of(
+            chatMessage = chatMessage,
+            fromMember = me,
+            toMember = other,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime
+        )
+        workoutRequestRepository.save(workoutRequest)
+
         val workoutHistory = WorkoutHistory(
             chatRoom = chatRoom,
+            workoutRequest = workoutRequest,
             memberOne = me,
             memberTwo = other,
             completedAt = time.nowLocalDateTime
         )
         workoutHistoryRepository.save(workoutHistory)
 
+        val chatMessage2 = ChatMessage(
+            member = me,
+            chatRoom = chatRoom,
+            type = ChatMessageType.WORKOUT_REQUEST,
+            content = "content",
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessage2)
+
+        val workoutRequest2 = WorkoutRequest.of(
+            chatMessage = chatMessage,
+            fromMember = me,
+            toMember = other,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime
+        )
+        workoutRequestRepository.save(workoutRequest2)
+
         val workoutHistory2 = WorkoutHistory(
             chatRoom = chatRoom,
+            workoutRequest = workoutRequest2,
             memberOne = me,
             memberTwo = other,
             completedAt = time.nowLocalDateTime
