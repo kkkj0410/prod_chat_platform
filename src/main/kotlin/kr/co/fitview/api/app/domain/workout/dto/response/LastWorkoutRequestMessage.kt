@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 data class LastWorkoutRequestMessage(
     val workoutRequestId : Long,
     val status : WorkoutRequestStatusForResponse,
+    val workoutHistoryId : Long? = null,
 
     @get:JsonIgnore
     val chatRoomId : Long? = null

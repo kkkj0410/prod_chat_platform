@@ -2,7 +2,9 @@ package kr.co.fitview.api.app.domain.workout_history.service
 
 import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
 import kr.co.fitview.api.app.domain.member.entity.Member
+import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequest
 import kr.co.fitview.api.app.domain.workout_history.dto.response.WorkoutHistoryReviewStatusResponse
+import kr.co.fitview.api.app.domain.workout_history.entity.QWorkoutHistory.workoutHistory
 import kr.co.fitview.api.app.domain.workout_history.entity.WorkoutHistory
 import kr.co.fitview.api.app.domain.workout_history.repository.WorkoutHistoryRepository
 import kr.co.fitview.api.app.domain.workout_history.repository.findByOrderedMemberOneIdAndMemberTwoIdAndDeletedAtIsNull
@@ -20,9 +22,10 @@ class WorkoutHistoryService(
 
 
     @Transactional
-    fun addWorkoutHistory(chatRoom : ChatRoom, memberOne : Member, memberTwo : Member) : WorkoutHistory {
+    fun addWorkoutHistory(chatRoom : ChatRoom, workoutRequest : WorkoutRequest, memberOne : Member, memberTwo : Member) : WorkoutHistory {
         val workoutHistory = WorkoutHistory.of(
             chatRoom = chatRoom,
+            workoutRequest = workoutRequest,
             memberOne = memberOne,
             memberTwo = memberTwo,
             completedAt = time.nowLocalDateTime

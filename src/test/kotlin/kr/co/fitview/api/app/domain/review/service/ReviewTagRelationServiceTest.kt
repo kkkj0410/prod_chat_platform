@@ -1,8 +1,11 @@
 package kr.co.fitview.api.app.domain.review.service
 
 import kr.co.fitview.api.app.IntegrationTestSupport
+import kr.co.fitview.api.app.domain.chat.entity.ChatMessage
 import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
+import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatRoomType
+import kr.co.fitview.api.app.domain.chat.repository.ChatMessageRepository
 import kr.co.fitview.api.app.domain.chat.repository.ChatRoomRepository
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
@@ -14,6 +17,9 @@ import kr.co.fitview.api.app.domain.review.repository.ReviewCategoryRepository
 import kr.co.fitview.api.app.domain.review.repository.ReviewRepository
 import kr.co.fitview.api.app.domain.review.repository.ReviewTagRelationRepository
 import kr.co.fitview.api.app.domain.review.repository.ReviewTagRepository
+import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequest
+import kr.co.fitview.api.app.domain.workout.repository.WorkoutRequestRepository
+import kr.co.fitview.api.app.domain.workout_history.entity.QWorkoutHistory.workoutHistory
 import kr.co.fitview.api.app.domain.workout_history.entity.WorkoutHistory
 import kr.co.fitview.api.app.domain.workout_history.repository.WorkoutHistoryRepository
 import kr.co.fitview.api.app.global.entity.Role
@@ -33,6 +39,8 @@ class ReviewTagRelationServiceTest @Autowired constructor(
     private val memberRepository : MemberRepository,
     private val chatRoomRepository : ChatRoomRepository,
     private val workoutHistoryRepository : WorkoutHistoryRepository,
+    private val chatMessageRepository : ChatMessageRepository,
+    private val workoutRequestRepository : WorkoutRequestRepository,
     private val time : Time
 ) : IntegrationTestSupport(){
 
@@ -78,8 +86,28 @@ class ReviewTagRelationServiceTest @Autowired constructor(
         val chatRoom = ChatRoom(ChatRoomType.PRIVATE)
         chatRoomRepository.save(chatRoom)
 
+        val chatMessage = ChatMessage(
+            member = me,
+            chatRoom = chatRoom,
+            type = ChatMessageType.WORKOUT_REQUEST,
+            content = "content",
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessage)
+
+        val workoutRequest = WorkoutRequest.of(
+            chatMessage = chatMessage,
+            fromMember = me,
+            toMember = other,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime
+        )
+        workoutRequestRepository.save(workoutRequest)
+
         val workoutHistory = WorkoutHistory(
             chatRoom = chatRoom,
+            workoutRequest = workoutRequest,
             memberOne = me,
             memberTwo = other,
             completedAt = time.nowLocalDateTime

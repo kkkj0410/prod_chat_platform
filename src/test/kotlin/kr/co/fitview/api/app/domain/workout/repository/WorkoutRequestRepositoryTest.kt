@@ -16,6 +16,8 @@ import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestSta
 import kr.co.fitview.api.app.domain.workout.entity.QWorkoutRequest.workoutRequest
 import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequest
 import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
+import kr.co.fitview.api.app.domain.workout_history.entity.WorkoutHistory
+import kr.co.fitview.api.app.domain.workout_history.repository.WorkoutHistoryRepository
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.time.Time
 import org.assertj.core.api.Assertions.assertThat
@@ -31,6 +33,7 @@ class WorkoutRequestRepositoryTest @Autowired constructor(
     val memberRepository : MemberRepository,
     val chatParticipantRepository : ChatParticipantRepository,
     val chatMessageRepository : ChatMessageRepository,
+    val workoutHistoryRepository: WorkoutHistoryRepository,
     val time : Time,
     val em : EntityManager
 ) : IntegrationTestSupport() {
@@ -97,6 +100,79 @@ class WorkoutRequestRepositoryTest @Autowired constructor(
         assertThat(response[0])
             .extracting("status", "chatRoomId")
             .contains(status, chatRoom.id!!)
+    }
+
+    @DisplayName("채팅방의 최근 운동 요청이 완료됐으면 운동 기록 id를 추가로 조회할수있다.")
+    @Test
+    fun findRecentWorkoutRequestWorkoutHistoryId() {
+        //given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val other = Member(
+            email = "email2",
+            password = "password2",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+        memberRepository.save(other)
+
+        val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+
+        val chatParticipant1 = ChatParticipant(
+            chatRoom,
+            me
+        )
+        val chatParticipant2 = ChatParticipant(
+            chatRoom,
+            other
+        )
+
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+
+        val message = ChatMessage(
+            member = other,
+            chatRoom = chatRoom,
+            type = ChatMessageType.WORKOUT_REQUEST,
+            sentAt = time.nowLocalDateTime
+        )
+
+        val scheduledAt = time.nowLocalDateTime.plusHours(24)
+        val requestedAt = time.nowLocalDateTime.minusHours(3)
+        val workout = WorkoutRequest(
+            chatMessage = message,
+            fromMember = other,
+            toMember = me,
+            status = WorkoutRequestStatus.COMPLETE,
+            location = "location",
+            scheduledAt = scheduledAt,
+            requestedAt = requestedAt
+        )
+        chatMessageRepository.save(message)
+        workoutRequestRepository.save(workout)
+
+        val workoutHistory = WorkoutHistory(
+            chatRoom = chatRoom,
+            workoutRequest = workout,
+            memberOne = me,
+            memberTwo = other,
+            completedAt = time.nowLocalDateTime
+        )
+        workoutHistoryRepository.save(workoutHistory)
+
+        val chatRoomIds = listOf(chatRoom.id!!)
+
+        //when
+        val response = workoutRequestRepository.findRecentWorkoutRequest(chatRoomIds)
+
+        // then
+        val status = WorkoutRequestStatusForResponse.from(workout.status!!, requestedAt, scheduledAt, time.nowLocalDateTime)
+        assertThat(response[0])
+            .extracting("status", "chatRoomId", "workoutHistoryId")
+            .contains(status, chatRoom.id!!, workoutHistory.id!!)
     }
 
     @DisplayName("만료된 운동 요청을 전부 조회한다.")
