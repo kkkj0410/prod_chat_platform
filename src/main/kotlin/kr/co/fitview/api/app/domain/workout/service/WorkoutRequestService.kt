@@ -15,6 +15,7 @@ import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.domain.notification.dto.request.*
 import kr.co.fitview.api.app.domain.workout.dto.response.WorkoutRequestUpdateResponse
 import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusForRequest
+import kr.co.fitview.api.app.domain.workout.entity.QWorkoutRequest.workoutRequest
 import kr.co.fitview.api.app.domain.workout_history.entity.WorkoutHistory
 import kr.co.fitview.api.app.domain.workout.repository.WorkoutRequestRepository
 import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequest
@@ -115,6 +116,8 @@ class WorkoutRequestService(
         var workoutHistory : WorkoutHistory? = null
         if(isSuccessComplete(findWorkoutRequest)){
             workoutHistory = workoutHistoryService.addWorkoutHistory(findWorkoutRequest.getChatRoom()!!, findWorkoutRequest, findWorkoutRequest.fromMember!!, findWorkoutRequest.toMember!!)
+
+            sendNotificationCompleteWorkoutRequest(findWorkoutRequest, workoutHistory)
         }
 
         addChatNoticeMessage(memberId, request, workoutHistory)
@@ -125,9 +128,12 @@ class WorkoutRequestService(
             sendAcceptNotificationWorkoutRequest(findWorkoutRequest)
         }
 
+        if(isReject(request)){
+            sendRejectNotificationWorkoutRequest(findWorkoutRequest)
+        }
+
         return findWorkoutRequest
     }
-
 
     private fun sendStompWorkoutRequestMessage(
         fromMember: Member,
@@ -447,6 +453,56 @@ class WorkoutRequestService(
         publisher.publishEvent(stomp2)
     }
 
+
+    private fun sendNotificationCompleteWorkoutRequest(
+        findWorkoutRequest: WorkoutRequest,
+        workoutHistory: WorkoutHistory
+    ) {
+        val findMemberProfiles = memberQueryService
+            .findMemberProfileFromMemberId(findWorkoutRequest.getFromMemberId(), findWorkoutRequest.getToMemberId())
+            ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
+
+        val fromMemberProfile = findMemberProfiles.memberOne
+            ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
+
+        val toMemberProfile = findMemberProfiles.memberTwo
+            ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
+
+        val findChatRoom = chatRoomQueryService.findChatRoomFrom(findWorkoutRequest.id!!)
+            ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
+
+        val fromEvent = EventWorkoutComplete(
+            memberId = fromMemberProfile.memberId,
+            sender = EventSender(
+                memberId = toMemberProfile.memberId,
+                nickname = toMemberProfile.nickname,
+                profileImageUrl = toMemberProfile.profileImageUrl
+            ),
+            payload = EventWorkoutCompletePayload(
+                workoutRequestId = findWorkoutRequest.id!!,
+                workoutHistoryId = workoutHistory.id!!,
+                chatRoomId = findChatRoom.id!!
+            )
+        )
+
+        val toEvent = EventWorkoutComplete(
+            memberId = toMemberProfile.memberId,
+            sender = EventSender(
+                memberId = fromMemberProfile.memberId,
+                nickname = fromMemberProfile.nickname,
+                profileImageUrl = fromMemberProfile.profileImageUrl
+            ),
+            payload = EventWorkoutCompletePayload(
+                workoutRequestId = findWorkoutRequest.id!!,
+                workoutHistoryId = workoutHistory.id!!,
+                chatRoomId = findChatRoom.id!!
+            )
+        )
+
+        publisher.publishEvent(fromEvent)
+        publisher.publishEvent(toEvent)
+    }
+
     private fun sendAcceptNotificationWorkoutRequest(workoutRequest: WorkoutRequest) {
 
         val findMemberProfiles = memberQueryService
@@ -483,6 +539,50 @@ class WorkoutRequestService(
                 profileImageUrl = fromMemberProfile.profileImageUrl
             ),
             payload = EventWorkoutRequestAcceptPayload(
+                workoutRequestId = workoutRequest.id!!,
+                chatRoomId = findChatRoom.id!!
+            )
+        )
+
+        publisher.publishEvent(fromEvent)
+        publisher.publishEvent(toEvent)
+    }
+
+    private fun sendRejectNotificationWorkoutRequest(workoutRequest: WorkoutRequest) {
+        val findMemberProfiles = memberQueryService
+            .findMemberProfileFromMemberId(workoutRequest.getFromMemberId(), workoutRequest.getToMemberId())
+            ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
+
+        val fromMemberProfile = findMemberProfiles.memberOne
+            ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
+
+        val toMemberProfile = findMemberProfiles.memberTwo
+            ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
+
+        val findChatRoom = chatRoomQueryService.findChatRoomFrom(workoutRequest.id!!)
+            ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
+
+        val fromEvent = EventWorkoutRequestReject(
+            memberId = fromMemberProfile.memberId,
+            sender = EventSender(
+                memberId = toMemberProfile.memberId,
+                nickname = toMemberProfile.nickname,
+                profileImageUrl = toMemberProfile.profileImageUrl
+            ),
+            payload = EventWorkoutRequestRejectPayload(
+                workoutRequestId = workoutRequest.id!!,
+                chatRoomId = findChatRoom.id!!
+            )
+        )
+
+        val toEvent = EventWorkoutRequestReject(
+            memberId = toMemberProfile.memberId,
+            sender = EventSender(
+                memberId = fromMemberProfile.memberId,
+                nickname = fromMemberProfile.nickname,
+                profileImageUrl = fromMemberProfile.profileImageUrl
+            ),
+            payload = EventWorkoutRequestRejectPayload(
                 workoutRequestId = workoutRequest.id!!,
                 chatRoomId = findChatRoom.id!!
             )

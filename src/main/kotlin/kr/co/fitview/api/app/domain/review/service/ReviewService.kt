@@ -14,6 +14,7 @@ import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.global.GlobalErrorCode
 import kr.co.fitview.api.app.global.exception.error.review.ReviewErrorCode
 import kr.co.fitview.api.app.global.time.Time
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -27,6 +28,7 @@ class ReviewService(
     private val reviewRepository : ReviewRepository,
     private val reviewTagRelationService: ReviewTagRelationService,
     private val reviewTagCountService : ReviewTagCountService,
+    private val publisher: ApplicationEventPublisher,
     private val time : Time
 ) {
 
@@ -61,6 +63,9 @@ class ReviewService(
 
         val review = createNegativeReview(fromMember, toMember, findWorkoutHistory, request)
         toMember.updateScore(request.type.score)
+
+
+
         return reviewRepository.save(review)
     }
 
