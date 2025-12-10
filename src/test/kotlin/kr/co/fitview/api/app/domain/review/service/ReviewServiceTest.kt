@@ -9,6 +9,9 @@ import kr.co.fitview.api.app.domain.chat.repository.ChatMessageRepository
 import kr.co.fitview.api.app.domain.chat.repository.ChatRoomRepository
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
+import kr.co.fitview.api.app.domain.notification.dto.request.EventReviewReceive
+import kr.co.fitview.api.app.domain.notification.dto.request.EventWorkoutComplete
+import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
 import kr.co.fitview.api.app.domain.review.dto.request.ReviewCreateServiceRequest
 import kr.co.fitview.api.app.domain.review.entity.ReviewCategory
 import kr.co.fitview.api.app.domain.review.entity.ReviewTag
@@ -24,6 +27,7 @@ import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.review.ReviewErrorCode
 import kr.co.fitview.api.app.global.time.Time
+import kr.co.fitview.api.app.global.util.TestDataFactory
 import org.assertj.core.api.Assertions.*
 import org.assertj.core.api.ThrowingConsumer
 import org.junit.jupiter.api.DisplayName
@@ -41,6 +45,7 @@ class ReviewServiceTest @Autowired constructor(
     private val reviewTagCountRepository : ReviewTagCountRepository,
     private val chatMessageRepository : ChatMessageRepository,
     private val workoutRequestRepository : WorkoutRequestRepository,
+    private val oAuth2Service : OAuth2Service,
     private val time : Time
 ) : IntegrationTestSupport(){
 
@@ -123,6 +128,9 @@ class ReviewServiceTest @Autowired constructor(
         memberRepository.save(me)
         memberRepository.save(other)
 
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest, me.id!!)
+
         val chatRoom = ChatRoom(ChatRoomType.PRIVATE)
         chatRoomRepository.save(chatRoom)
 
@@ -192,6 +200,96 @@ class ReviewServiceTest @Autowired constructor(
         assertThat(savedReview)
             .extracting("fromMember", "toMember", "workoutHistory", "isPrivate", "type", "score", "content")
             .contains(me, other, workoutHistory, false, ReviewType.GOOD, 1.0, "content")
+    }
+
+    @DisplayName("긍정 리뷰면 상대방에게 인앱 알림이 전달된다.")
+    @Test
+    fun saveReviewNotification() {
+        // given
+        val me = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        val other = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(me)
+        memberRepository.save(other)
+
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest, me.id!!)
+
+        val chatRoom = ChatRoom(ChatRoomType.PRIVATE)
+        chatRoomRepository.save(chatRoom)
+
+        val chatMessage = ChatMessage(
+            member = me,
+            chatRoom = chatRoom,
+            type = ChatMessageType.WORKOUT_REQUEST,
+            content = "content",
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessage)
+
+        val workoutRequest = WorkoutRequest.of(
+            chatMessage = chatMessage,
+            fromMember = me,
+            toMember = other,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime
+        )
+        workoutRequestRepository.save(workoutRequest)
+
+        val workoutHistory = WorkoutHistory(
+            chatRoom = chatRoom,
+            workoutRequest = workoutRequest,
+            memberOne = me,
+            memberTwo = other,
+            completedAt = time.nowLocalDateTime
+        )
+        workoutHistoryRepository.save(workoutHistory)
+
+        val reviewCategory = ReviewCategory(
+            displayText = "displayText",
+            seq = 100
+        )
+        reviewCategoryRepository.save(reviewCategory)
+
+        val reviewTag1 = ReviewTag(
+            reviewCategory = reviewCategory,
+            displayText = "displayText1",
+            seq = 100
+        )
+        val reviewTag2 = ReviewTag(
+            reviewCategory = reviewCategory,
+            displayText = "displayText2",
+            seq = 200
+        )
+        reviewTagRepository.save(reviewTag1)
+        reviewTagRepository.save(reviewTag2)
+
+        val reviewTagIds = listOf(reviewTag1.id!!, reviewTag2.id!!)
+
+        val request = ReviewCreateServiceRequest(
+            workoutHistoryId = workoutHistory.id!!,
+            type = ReviewType.GOOD,
+            reviewTagIds = reviewTagIds,
+            content = "content"
+        )
+
+        // when
+        reviewService.saveReview(
+            memberId = me.id!!,
+            request = request
+        )
+
+        // then
+        val count = events.stream(EventReviewReceive::class.java).count()
+        assertThat(count).isEqualTo(1)
     }
 
     @DisplayName("악평 리뷰를 저장한다.")
@@ -295,6 +393,9 @@ class ReviewServiceTest @Autowired constructor(
         )
         memberRepository.save(me)
         memberRepository.save(other)
+
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest, me.id!!)
 
         val chatRoom = ChatRoom(ChatRoomType.PRIVATE)
         chatRoomRepository.save(chatRoom)
@@ -569,6 +670,9 @@ class ReviewServiceTest @Autowired constructor(
         memberRepository.save(me)
         memberRepository.save(other)
 
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest, me.id!!)
+
         val chatRoom = ChatRoom(ChatRoomType.PRIVATE)
         chatRoomRepository.save(chatRoom)
 
@@ -654,6 +758,9 @@ class ReviewServiceTest @Autowired constructor(
         )
         memberRepository.save(me)
         memberRepository.save(other)
+
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest, me.id!!)
 
         val chatRoom = ChatRoom(ChatRoomType.PRIVATE)
         chatRoomRepository.save(chatRoom)

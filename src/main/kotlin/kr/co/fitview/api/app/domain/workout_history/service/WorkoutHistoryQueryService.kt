@@ -1,5 +1,6 @@
 package kr.co.fitview.api.app.domain.workout_history.service
 
+import kr.co.fitview.api.app.domain.review.entity.Review
 import kr.co.fitview.api.app.domain.review.service.ReviewQueryService
 import kr.co.fitview.api.app.domain.workout_history.dto.response.WorkoutHistoryChatRoomResponse
 import kr.co.fitview.api.app.domain.workout_history.dto.response.WorkoutHistoryReviewStatusResponse
@@ -46,6 +47,11 @@ class WorkoutHistoryQueryService(
         return WorkoutHistoryReviewStatusResponse(WorkoutHistoryReviewStatus.WRITABLE)
     }
 
+    fun findAllWorkoutHistoryExceed24HoursWithoutReview() : List<WorkoutHistory> {
+        return workoutHistoryRepository.findAllWorkoutHistoryExceed24HoursWithoutReview()
+    }
+
+
     fun existsWorkoutHistoryFrom(chatRoomId : Long) : Boolean{
         return workoutHistoryRepository.existsByChatRoomIdAndDeletedAtIsNull(chatRoomId)
     }
@@ -54,5 +60,4 @@ class WorkoutHistoryQueryService(
         findWorkoutHistory.completedAt!!.isBefore(time.nowLocalDateTime.minusDays(3))
 
     private fun isNotNull(value : Any?) = value != null
-
 }

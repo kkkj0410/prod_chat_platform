@@ -19,17 +19,7 @@ class ReviewQueryService(
     }
 
     fun findReviewFromCondition(memberId : Long, condition : MemberReviewCondition) : Slice<ReviewResponse>{
-        val findReviews = reviewRepository.findAllPublicReviewByToMemberIdOrderByPostedAtDesc(memberId, condition)
-
-        return findReviews.map{
-            ReviewResponse(
-                reviewId = it.id!!,
-                memberId = it.fromMember!!.id!!,
-                nickname = it.fromMember!!.nickname!!,
-                postedAt = it.postedAt!!,
-                content = it.content!!
-            )
-        }
+        return reviewRepository.findAllPublicReviewByToMemberIdOrderByPostedAtDesc(memberId, condition)
     }
 
 

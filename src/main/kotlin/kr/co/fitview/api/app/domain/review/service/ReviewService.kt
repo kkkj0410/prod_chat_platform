@@ -2,6 +2,9 @@ package kr.co.fitview.api.app.domain.review.service
 
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
+import kr.co.fitview.api.app.domain.notification.dto.request.EventReviewReceive
+import kr.co.fitview.api.app.domain.notification.dto.request.EventReviewReceivePayload
+import kr.co.fitview.api.app.domain.notification.dto.request.EventSender
 import kr.co.fitview.api.app.domain.review.dto.request.ReviewCreateServiceRequest
 import kr.co.fitview.api.app.domain.review.entity.enums.ReviewType
 import kr.co.fitview.api.app.domain.review.dto.response.ReviewCategoryResponse
@@ -14,6 +17,7 @@ import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.global.GlobalErrorCode
 import kr.co.fitview.api.app.global.exception.error.review.ReviewErrorCode
 import kr.co.fitview.api.app.global.time.Time
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -27,6 +31,7 @@ class ReviewService(
     private val reviewRepository : ReviewRepository,
     private val reviewTagRelationService: ReviewTagRelationService,
     private val reviewTagCountService : ReviewTagCountService,
+    private val publisher: ApplicationEventPublisher,
     private val time : Time
 ) {
 
@@ -56,11 +61,15 @@ class ReviewService(
 
             reviewTagCountService.saveAllReviewTagCount(toMember.id!!, request.reviewTagIds)
 
+            sendNotificationCompleteReview(toMember.id!!, memberId, review.id!!, findWorkoutHistory)
+
             return review
         }
 
         val review = createNegativeReview(fromMember, toMember, findWorkoutHistory, request)
         toMember.updateScore(request.type.score)
+
+
         return reviewRepository.save(review)
     }
 
@@ -71,6 +80,32 @@ class ReviewService(
 
     private fun isPositiveType(type: ReviewType) =
         type == ReviewType.GOOD || type == ReviewType.NORMAL
+
+    private fun sendNotificationCompleteReview(
+        toMemberId: Long,
+        fromMemberId: Long,
+        reviewId: Long,
+        workoutHistory: WorkoutHistory
+    ) {
+        val fromMemberProfile = memberQueryService.findMemberProfileFromMemberId(fromMemberId)
+            ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
+
+        val event = EventReviewReceive(
+            memberId = toMemberId,
+            sender = EventSender(
+                memberId = fromMemberProfile.memberId,
+                nickname = fromMemberProfile.nickname,
+                profileImageUrl = fromMemberProfile.profileImageUrl
+            ),
+            payload = EventReviewReceivePayload(
+                reviewId = reviewId,
+                workoutHistoryId = workoutHistory.id!!,
+                chatRoomId = workoutHistory.getChatRoomId()
+            )
+        )
+        publisher.publishEvent(event)
+    }
+
 
     private fun isNegativeType(request: ReviewCreateServiceRequest) =
         request.type == ReviewType.BAD
