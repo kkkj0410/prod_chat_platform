@@ -6,6 +6,7 @@ data class ReviewResponse(
     val reviewId : Long,
     val memberId : Long,
     val nickname : String,
+    val profileImageUrl : String,
     val postedAt : LocalDateTime,
     val content : String
 )

@@ -735,6 +735,7 @@ class MemberControllerDocsTest : RestDocsSupport() {
                             reviewId = 1L,
                             memberId = 10L,
                             nickname = "호박고구마",
+                            profileImageUrl = "profileImageUrl",
                             postedAt = LocalDateTime.now(),
                             content = "내용1"
                         ),
@@ -742,6 +743,7 @@ class MemberControllerDocsTest : RestDocsSupport() {
                             reviewId = 2L,
                             memberId = 11L,
                             nickname = "고구마호박",
+                            profileImageUrl = "profileImageUrl",
                             postedAt = LocalDateTime.now().minusMinutes(1),
                             content = "내용2"
                         )
@@ -769,11 +771,13 @@ class MemberControllerDocsTest : RestDocsSupport() {
             .andExpect(jsonPath("$.data.content[0].reviewId").value(1))
             .andExpect(jsonPath("$.data.content[0].memberId").value(10))
             .andExpect(jsonPath("$.data.content[0].nickname").value("호박고구마"))
+            .andExpect(jsonPath("$.data.content[0].profileImageUrl").value("profileImageUrl"))
             .andExpect(jsonPath("$.data.content[0].content").value("내용1"))
 
             .andExpect(jsonPath("$.data.content[1].reviewId").value(2))
             .andExpect(jsonPath("$.data.content[1].memberId").value(11))
             .andExpect(jsonPath("$.data.content[1].nickname").value("고구마호박"))
+            .andExpect(jsonPath("$.data.content[1].profileImageUrl").value("profileImageUrl"))
             .andExpect(jsonPath("$.data.content[1].content").value("내용2"))
 
             .andDo(
@@ -808,6 +812,7 @@ class MemberControllerDocsTest : RestDocsSupport() {
                         fieldWithPath("data.content[].reviewId").description("리뷰 ID"),
                         fieldWithPath("data.content[].memberId").description("작성자 ID"),
                         fieldWithPath("data.content[].nickname").description("작성자 닉네임"),
+                        fieldWithPath("data.content[].profileImageUrl").description("회원 프로필 이미지"),
                         fieldWithPath("data.content[].postedAt").description("작성 시간"),
                         fieldWithPath("data.content[].content").description("리뷰 내용"),
                     )
