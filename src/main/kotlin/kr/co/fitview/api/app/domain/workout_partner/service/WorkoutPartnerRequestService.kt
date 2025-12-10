@@ -1,6 +1,9 @@
 package kr.co.fitview.api.app.domain.workout_partner.service
 
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
+import kr.co.fitview.api.app.domain.notification.dto.request.EventSender
+import kr.co.fitview.api.app.domain.notification.dto.request.EventWorkoutPartnerRequest
+import kr.co.fitview.api.app.domain.notification.dto.request.EventWorkoutPartnerRequestPayload
 import kr.co.fitview.api.app.global.stomp.dto.request.StompEventAcceptWorkoutPartnerDepth1
 import kr.co.fitview.api.app.global.stomp.dto.request.StompEventAcceptWorkoutPartnerDepth2
 import kr.co.fitview.api.app.global.stomp.dto.request.StompEventWorkoutPartnerRequestDepth1
@@ -45,9 +48,10 @@ class WorkoutPartnerRequestService(
 
 //        validateAddWorkoutPartnerRequest(findWorkoutPartner)
 
+        val toMember = memberQueryService.findMemberReferenceFrom(request.memberId)
         val workoutPartnerRequest = WorkoutPartnerRequest.of(
             fromMember = memberQueryService.findMemberReferenceFrom(memberId),
-            toMember = memberQueryService.findMemberReferenceFrom(request.memberId),
+            toMember = toMember,
             now = time.nowLocalDateTime,
             content = request.workoutPartnerRequestContentIndex
         )
@@ -55,6 +59,8 @@ class WorkoutPartnerRequestService(
         val savedWorkoutPartnerRequest = workoutPartnerRequestRepository.save(workoutPartnerRequest)
 
         sendStompWorkoutPartnerRequest(savedWorkoutPartnerRequest)
+
+        sendNotificationWorkoutPartnerRequest(memberId, request.memberId, savedWorkoutPartnerRequest.id!!)
 
         return savedWorkoutPartnerRequest
     }
@@ -143,6 +149,30 @@ class WorkoutPartnerRequestService(
 
         publisher.publishEvent(stomp1)
         publisher.publishEvent(stomp2)
+    }
+
+    private fun sendNotificationWorkoutPartnerRequest(
+        fromMemberId: Long,
+        toMemberId : Long,
+        workoutPartnerRequestId : Long
+    ) {
+        val findMemberProfile = memberQueryService.findMemberProfileFromMemberId(fromMemberId)
+            ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
+
+        val event = EventWorkoutPartnerRequest(
+            memberId = toMemberId,
+            sender = EventSender(
+                memberId = findMemberProfile.memberId,
+                nickname = findMemberProfile.nickname,
+                profileImageUrl = findMemberProfile.profileImageUrl
+            ),
+            payload = EventWorkoutPartnerRequestPayload(
+                memberId = findMemberProfile.memberId,
+                workoutPartnerRequestId = workoutPartnerRequestId
+            )
+        )
+
+        publisher.publishEvent(event)
     }
 
     private fun validateUpdateWorkoutPartnerRequest(workoutPartnerRequest: WorkoutPartnerRequest) {

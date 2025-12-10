@@ -655,5 +655,27 @@ class MemberRepositoryImpl(
             .fetchOne()
     }
 
+    override fun findMemberProfileBy(memberId: Long): MemberProfile? {
+        return queryFactory
+            .select(
+                Projections.constructor(
+                    MemberProfile::class.java,
+                    member.id,
+                    member.nickname,
+                    image.url
+                )
+            )
+            .from(member)
+            .join(member.mutableMemberImages, memberImage)
+            .join(memberImage.image, image)
+            .where(
+                member.id.eq(memberId),
+                memberImage.type.eq(MemberImageType.PROFILE),
+                member.deletedAt.isNull,
+                memberImage.deletedAt.isNull
+            )
+            .fetchOne()
+    }
+
 
 }

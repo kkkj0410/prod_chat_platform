@@ -31,4 +31,6 @@ interface MemberRepositoryCustom {
     fun findChatRoomMemberProfile(memberId: Long, chatRoomId: Long): ChatRoomMemberProfile?
 
     fun findOtherMemberBy(memberId: Long, chatRoomId: Long): Member?
+
+    fun findMemberProfileBy(memberId: Long): MemberProfile?
 }

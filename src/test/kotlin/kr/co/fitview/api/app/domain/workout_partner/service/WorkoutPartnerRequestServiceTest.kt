@@ -10,6 +10,7 @@ import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutStyle
 import kr.co.fitview.api.app.domain.member.entity.enums.WorkoutTimeName
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.domain.member.service.MemberService
+import kr.co.fitview.api.app.domain.notification.dto.request.EventWorkoutPartnerRequest
 import kr.co.fitview.api.app.global.stomp.dto.request.StompEventAcceptWorkoutPartnerDepth1
 import kr.co.fitview.api.app.global.stomp.dto.request.StompEventWorkoutPartnerRequestDepth1
 import kr.co.fitview.api.app.domain.oauth2.dto.request.OAuth2SignupServiceRequest
@@ -125,6 +126,41 @@ class WorkoutPartnerRequestServiceTest @Autowired constructor(
         assertThat(count).isEqualTo(1)
     }
 
+
+    @DisplayName("운동 파트너 요청 대상자에게 인앱 알람을 저장시킨다.")
+    @Test
+    fun addWorkoutPartnerRequestNotification() {
+        // given
+        val fromMember = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+
+        val toMember = Member(
+            email = "email2",
+            password = "password2",
+            role = Role.USER,
+        )
+
+        val savedFromMember = memberService.addMember(fromMember)
+        val savedToMember = memberService.addMember(toMember)
+
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest , savedFromMember.id!!)
+
+        val request = WorkoutPartnerCreateServiceRequest(
+            memberId = savedToMember.id!!,
+            workoutPartnerRequestContentIndex = WorkoutPartnerRequestContent.BURN
+        )
+
+        // when
+        workoutPartnerRequestService.addWorkoutPartnerRequest(savedFromMember.id!!, request)
+
+        // then
+        val count = events.stream(EventWorkoutPartnerRequest::class.java).count()
+        assertThat(count).isEqualTo(1)
+    }
 
     @DisplayName("핏버디 요청 시, 24시간 동안 본인이 상대방에게 요청을 보냈으면 요청 불가")
 //    @Test
