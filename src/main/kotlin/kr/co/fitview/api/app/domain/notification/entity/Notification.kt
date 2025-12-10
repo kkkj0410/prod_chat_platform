@@ -4,6 +4,7 @@ import jakarta.persistence.*
 import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
 import kr.co.fitview.api.app.domain.member.entity.Member
+import kr.co.fitview.api.app.domain.notification.entity.enums.NotificationType
 import kr.co.fitview.api.app.global.entity.BaseEntity
 import org.hibernate.annotations.ColumnDefault
 import org.hibernate.annotations.JdbcTypeCode
@@ -22,7 +23,8 @@ class Notification(
 
     @Size(max = 100)
     @Column(name = "type", length = 100)
-    var type: String? = null,
+    @Enumerated(EnumType.STRING)
+    var type: NotificationType? = null,
 
     @NotNull
     @ColumnDefault("0")
@@ -45,4 +47,20 @@ class Notification(
     @Column(name = "notification_id", nullable = false)
     var id: Long? = null
 
+    companion object {
+        fun of(
+            member: Member,
+            type: NotificationType,
+            content: MutableMap<String, Any>,
+            sentAt: LocalDateTime
+        ): Notification {
+            return Notification(
+                member = member,
+                type = type,
+                isRead = false,
+                content = content,
+                sentAt = sentAt
+            )
+        }
+    }
 }

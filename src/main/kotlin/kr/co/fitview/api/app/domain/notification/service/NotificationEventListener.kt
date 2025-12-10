@@ -1,5 +1,6 @@
 package kr.co.fitview.api.app.domain.notification.service
 
+import kr.co.fitview.api.app.domain.notification.dto.request.*
 import kr.co.fitview.api.app.global.stomp.dto.request.StompEventTextMessageDepth1
 import org.springframework.stereotype.Component
 import org.springframework.transaction.event.TransactionPhase
@@ -12,8 +13,48 @@ class NotificationEventListener(
 ) {
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    fun sendChatTextMessage(event : StompEventTextMessageDepth1){
+    fun saveWorkoutPartnerRequest(event : EventWorkoutPartnerRequest){
+        notificationService.saveWorkoutPartnerRequest(event)
+    }
 
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    fun saveWorkoutPartnerAccept(event : EventWorkoutPartnerAccept){
+        notificationService.saveWorkoutPartnerAccept(event)
+    }
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    fun saveWorkoutPartnerReject(event : EventWorkoutPartnerReject){
+        notificationService.saveWorkoutPartnerReject(event)
+    }
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    fun saveWorkoutRequest(event : EventWorkoutRequest){
+        notificationService.saveWorkoutRequest(event)
+    }
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    fun saveWorkoutRequestAccept(event : EventWorkoutRequestAccept){
+        notificationService.saveWorkoutRequestAccept(event)
+    }
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    fun saveWorkoutRequestReject(event : EventWorkoutRequestReject){
+        notificationService.saveWorkoutRequestReject(event)
+    }
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    fun saveWorkoutComplete(event : EventWorkoutComplete){
+        notificationService.saveWorkoutComplete(event)
+    }
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    fun saveReviewReceive(event : EventReviewReceive){
+        notificationService.saveReviewReceive(event)
+    }
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    fun saveReviewRequest(event : EventReviewRequest){
+        notificationService.saveReviewRequest(event)
     }
 
 
