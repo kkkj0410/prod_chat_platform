@@ -14,6 +14,7 @@ import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.domain.notification.dto.request.EventWorkoutPartnerRequest
 import kr.co.fitview.api.app.domain.notification.dto.request.EventWorkoutRequest
+import kr.co.fitview.api.app.domain.notification.dto.request.EventWorkoutRequestAccept
 import kr.co.fitview.api.app.global.stomp.dto.request.StompEventUpdateWorkoutRequestMessageDepth1
 import kr.co.fitview.api.app.global.stomp.dto.request.StompEventWorkoutRequestMessageDepth1
 import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
@@ -755,6 +756,70 @@ class WorkoutRequestServiceTest @Autowired constructor(
 
         // then
         val count = events.stream(StompEventUpdateWorkoutRequestMessageDepth1::class.java).count()
+        assertThat(count).isEqualTo(2)
+    }
+
+    @DisplayName("운동 요청 수락 시, 인앱 알람을 양측에 보낸다.")
+    @Test
+    fun modifyWorkoutRequestAcceptNotification() {
+        // given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val other = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+        memberRepository.save(other)
+
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest, me.id!!)
+        oAuth2Service.signup(signupRequest, other.id!!)
+
+        val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+
+        val chatParticipant1 = ChatParticipant(
+            chatRoom,
+            me
+        )
+        val chatParticipant2 = ChatParticipant(
+            chatRoom,
+            other
+        )
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+
+        val chatMessage = ChatMessage.ofWorkoutRequest(
+            member = me,
+            chatRoom = chatRoom,
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessage)
+
+        val workoutRequest = WorkoutRequest.of(
+            chatMessage = chatMessage,
+            fromMember = me,
+            toMember = other,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime
+        )
+        workoutRequestRepository.save(workoutRequest)
+
+        val request = WorkoutRequestUpdateRequest(
+            workoutRequestId = workoutRequest.id!!,
+            status = WorkoutRequestStatusForRequest.ACCEPT
+        )
+
+        // when
+        workoutRequestService.modifyWorkoutRequest(other.id!!, request)
+
+        // then
+        val count = events.stream(EventWorkoutRequestAccept::class.java).count()
         assertThat(count).isEqualTo(2)
     }
 
