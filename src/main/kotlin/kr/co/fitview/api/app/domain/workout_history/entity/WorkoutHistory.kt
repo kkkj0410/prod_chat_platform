@@ -49,6 +49,10 @@ class WorkoutHistory(
         return this.memberTwo!!.id!!
     }
 
+    fun getChatRoomId() : Long{
+        return this.chatRoom!!.id!!
+    }
+
     companion object {
         fun of(chatRoom : ChatRoom, workoutRequest : WorkoutRequest, memberOne: Member, memberTwo: Member, completedAt : LocalDateTime): WorkoutHistory {
             require(memberOne.id != null && memberTwo.id != null) {
