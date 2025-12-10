@@ -375,8 +375,11 @@ class WorkoutPartnerRequestServiceTest @Autowired constructor(
         val savedFromMember = memberService.addMember(fromMember)
         val savedToMember = memberService.addMember(toMember)
 
-        val signupRequest = TestDataFactory.oAuth2SignupRequest()
-        oAuth2Service.signup(signupRequest, toMember.id!!)
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest1, toMember.id!!)
+
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest2, fromMember.id!!)
 
         val workoutPartnerRequest = WorkoutPartnerRequest.of(
             fromMember = savedFromMember,
@@ -428,8 +431,11 @@ class WorkoutPartnerRequestServiceTest @Autowired constructor(
         val savedFromMember = memberService.addMember(fromMember)
         val savedToMember = memberService.addMember(toMember)
 
-        val signupRequest = TestDataFactory.oAuth2SignupRequest()
-        oAuth2Service.signup(signupRequest, toMember.id!!)
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest1, toMember.id!!)
+
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest2, fromMember.id!!)
 
         val workoutPartnerRequest = WorkoutPartnerRequest.of(
             fromMember = savedFromMember,
@@ -452,7 +458,7 @@ class WorkoutPartnerRequestServiceTest @Autowired constructor(
 
         // then
         val count = events.stream(StompEventAcceptWorkoutPartnerDepth1::class.java).count()
-        assertThat(count).isEqualTo(1)
+        assertThat(count).isEqualTo(2)
     }
 
     @DisplayName("핏버디 요청을 거절한다.")

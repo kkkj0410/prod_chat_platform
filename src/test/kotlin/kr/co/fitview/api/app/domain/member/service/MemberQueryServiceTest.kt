@@ -675,7 +675,6 @@ class MemberQueryServiceTest @Autowired constructor(
             lat = 50.0,
             lng = 50.0,
             fullAddress = "fullAddress",
-            radiusKm = 10.0
         )
         addressRepository.save(address)
 
@@ -846,7 +845,6 @@ class MemberQueryServiceTest @Autowired constructor(
             lat = 50.0,
             lng = 50.0,
             fullAddress = "fullAddress",
-            radiusKm = 10.0
         )
         addressRepository.save(address)
 
@@ -928,7 +926,8 @@ class MemberQueryServiceTest @Autowired constructor(
 
 
         val condition = MemberLocalCondition(
-            size = 10
+            size = 10,
+            radiusKm = 10
         )
 
         val seed = 123L
@@ -978,7 +977,6 @@ class MemberQueryServiceTest @Autowired constructor(
             lat = 50.0,
             lng = 50.0,
             fullAddress = "fullAddress",
-            radiusKm = 10.0
         )
         addressRepository.save(address)
 
@@ -1118,7 +1116,8 @@ class MemberQueryServiceTest @Autowired constructor(
         oAuth2Service.signup(signupRequest6, member6.id!!)
 
         val condition = MemberLocalCondition(
-            size = 10
+            size = 10,
+            radiusKm = 10
         )
 
         given(redisClient.get(any()))
@@ -1172,7 +1171,6 @@ class MemberQueryServiceTest @Autowired constructor(
             lat = 50.0,
             lng = 50.0,
             fullAddress = "fullAddress",
-            radiusKm = 10.0
         )
         addressRepository.save(address)
 
@@ -1252,7 +1250,8 @@ class MemberQueryServiceTest @Autowired constructor(
 
 
         val condition = MemberLocalCondition(
-            size = 10
+            size = 10,
+            radiusKm = 10
         )
 
         given(redisClient.get(any()))

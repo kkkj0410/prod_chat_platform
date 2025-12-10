@@ -48,23 +48,23 @@ class AddressService(
         return findAddress!!.update(request)
     }
 
-    @Transactional
-    fun modifyRadiusKm(memberId: Long, addressId: Long, request: AddressRadiusServiceRequest) : Address {
-        if(isNegativeNumber(request.radiusKm)){
-            throw GlobalException(AddressErrorCode.NEGATIVE_RADIUS)
-        }
-
-        val findAddress = addressRepository.findByIdAndMemberIdAndDeletedAtIsNull(
-            addressId = addressId,
-            memberId = memberId
-        )
-
-        if (isNull(findAddress)) {
-            throw GlobalException(AddressErrorCode.MEMBER_ADDRESS_NOT_FOUND)
-        }
-
-        return findAddress!!.updateRadiusKm(request.radiusKm)
-    }
+//    @Transactional
+//    fun modifyRadiusKm(memberId: Long, addressId: Long, request: AddressRadiusServiceRequest) : Address {
+//        if(isNegativeNumber(request.radiusKm)){
+//            throw GlobalException(AddressErrorCode.NEGATIVE_RADIUS)
+//        }
+//
+//        val findAddress = addressRepository.findByIdAndMemberIdAndDeletedAtIsNull(
+//            addressId = addressId,
+//            memberId = memberId
+//        )
+//
+//        if (isNull(findAddress)) {
+//            throw GlobalException(AddressErrorCode.MEMBER_ADDRESS_NOT_FOUND)
+//        }
+//
+//        return findAddress!!.updateRadiusKm(request.radiusKm)
+//    }
 
 
     fun findAddressFromMemberId(memberId: Long): AddressResponse {

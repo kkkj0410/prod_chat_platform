@@ -48,9 +48,9 @@ class Address(
     @Column(name = "full_address", nullable = false)
     var fullAddress: String? = null,
 
-    @ColumnDefault("5")
-    @Column(name = "radius_km")
-    var radiusKm: Double? = 5.0
+//    @ColumnDefault("5")
+//    @Column(name = "radius_km")
+//    var radiusKm: Double? = 5.0
 
 ) : BaseSoftDeleteEntity() {
     @Id
@@ -69,11 +69,6 @@ class Address(
         return this
     }
 
-    fun updateRadiusKm(radiusKm: Int): Address {
-        this.radiusKm = radiusKm.toDouble()
-        return this
-    }
-
     fun delete(now: LocalDateTime): Address {
         this.deletedAt = now
         return this
@@ -89,81 +84,9 @@ class Address(
                 lat = request.lat,
                 lng = request.lng,
                 fullAddress = request.fullAddress,
-                radiusKm = 5.toDouble()
             )
         }
 
-        private fun convertToStandardSiDo(inputSiDo: String?): String? {
-            if (inputSiDo == null) {
-                return null
-            }
-
-            val siDoMap = mapOf(
-                "서울" to "서울특별시",
-                "부산" to "부산광역시",
-                "인천" to "인천광역시",
-                "대구" to "대구광역시",
-                "대전" to "대전광역시",
-                "광주" to "광주광역시",
-                "울산" to "울산광역시",
-                "세종" to "세종특별자치시",
-                "경기" to "경기도",
-                "충북" to "충청북도",
-                "충남" to "충청남도",
-                "전남" to "전라남도",
-                "전북" to "전라북도",
-                "경북" to "경상북도",
-                "경남" to "경상남도",
-                "강원" to "강원특별자치도",
-                "제주" to "제주특별자치도"
-            )
-
-            if (containsFullSiDo(inputSiDo, siDoMap)) {
-                return getFullSiDo(inputSiDo, siDoMap)
-            }
-
-            if (containsKeySiDo(inputSiDo, siDoMap)) {
-                return getValueSiDoByKey(inputSiDo, siDoMap)
-            }
-
-            if (containsKeyFuzzySiDo(inputSiDo, siDoMap)) {
-                return getKeyFuzzySiDoValue(inputSiDo, siDoMap)
-            }
-
-            throw GlobalException(AddressErrorCode.INVALID_SI_DO)
-        }
-
-        private fun containsFullSiDo(inputSiDo: String, siDoMap: Map<String, String>): Boolean {
-            return siDoMap.values.any { inputSiDo.contains(it) }
-        }
-
-        private fun getFullSiDo(inputSiDo: String, siDoMap: Map<String, String>): String {
-            return siDoMap.values.first { inputSiDo.contains(it) }
-        }
-
-        private fun containsKeySiDo(inputSiDo: String, siDoMap: Map<String, String>): Boolean {
-            return siDoMap.keys.any { inputSiDo.contains(it) }
-        }
-
-        private fun getValueSiDoByKey(inputSiDo: String, siDoMap: Map<String, String>): String {
-            val matchedKey = siDoMap.keys.first { inputSiDo.contains(it) }
-            return siDoMap[matchedKey]!!
-        }
-
-        private fun containsKeyFuzzySiDo(inputSiDo: String, siDoMap: Map<String, String>): Boolean {
-            return siDoMap.keys.any { key ->
-                val pattern = key.toCharArray().joinToString(".*") { Regex.escape(it.toString()) }
-                Regex(pattern, RegexOption.DOT_MATCHES_ALL).containsMatchIn(inputSiDo)
-            }
-        }
-
-        private fun getKeyFuzzySiDoValue(inputSiDo: String, siDoMap: Map<String, String>): String {
-            val entry = siDoMap.entries.first { (key, _) ->
-                val pattern = key.toCharArray().joinToString(".*") { Regex.escape(it.toString()) }
-                Regex(pattern, RegexOption.DOT_MATCHES_ALL).containsMatchIn(inputSiDo)
-            }
-            return entry.value
-        }
     }
 
 

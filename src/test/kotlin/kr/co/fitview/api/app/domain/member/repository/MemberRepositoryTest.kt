@@ -296,7 +296,7 @@ class MemberRepositoryTest@Autowired constructor(
     }
 
 
-    private fun createBoundingBox(address: Address) : BoundingBox {
+    private fun createBoundingBox(address: Address, radiusKm : Int) : BoundingBox {
         var lat = address.lat
         var lng = address.lng
 
@@ -305,15 +305,15 @@ class MemberRepositoryTest@Autowired constructor(
             lng = AddressConstant.DEFAULT_LNG
         }
 
-        val latDeg = address.radiusKm?.div(111)
+        val latDeg = radiusKm.toDouble().div(111)
         val latRad = Math.toRadians(address.lat!!)
-        val lngDeg = address.radiusKm?.div(111 * cos(latRad))
+        val lngDeg = radiusKm.toDouble().div(111 * cos(latRad))
 
-        val minLat = lat?.minus(latDeg!!)
-        val maxLat = lat?.plus(latDeg!!)
+        val minLat = lat?.minus(latDeg)
+        val maxLat = lat?.plus(latDeg)
 
-        val minLng = lng?.minus(lngDeg!!)
-        val maxLng = lng?.plus(lngDeg!!)
+        val minLng = lng?.minus(lngDeg)
+        val maxLng = lng?.plus(lngDeg)
 
         return BoundingBox(
             minLat = minLat!!,
@@ -341,11 +341,10 @@ class MemberRepositoryTest@Autowired constructor(
             lat = 50.0,
             lng = 50.0,
             fullAddress = "fullAddress",
-            radiusKm = 10.0
         )
         addressRepository.save(address)
 
-        val boundingBox = createBoundingBox(address)
+        val boundingBox = createBoundingBox(address, 10)
 
         // BoundingBox(minLat=49.909909909909906, maxLat=50.090090090090094, minLng=49.85984470028284, maxLng=50.14015529971716)
 
@@ -521,10 +520,9 @@ class MemberRepositoryTest@Autowired constructor(
             lat = 50.0,
             lng = 50.0,
             fullAddress = "fullAddress",
-            radiusKm = 10.0
         )
         addressRepository.save(address)
-        val boundingBox = createBoundingBox(address)
+        val boundingBox = createBoundingBox(address, 10)
 
         // BoundingBox(minLat=49.909909909909906, maxLat=50.090090090090094, minLng=49.85984470028284, maxLng=50.14015529971716)
 
@@ -656,10 +654,9 @@ class MemberRepositoryTest@Autowired constructor(
             lat = 50.0,
             lng = 50.0,
             fullAddress = "fullAddress",
-            radiusKm = 10.0
         )
         addressRepository.save(address)
-        val boundingBox = createBoundingBox(address)
+        val boundingBox = createBoundingBox(address, 10)
 
         // BoundingBox(minLat=49.909909909909906, maxLat=50.090090090090094, minLng=49.85984470028284, maxLng=50.14015529971716)
 
@@ -771,10 +768,9 @@ class MemberRepositoryTest@Autowired constructor(
             lat = 50.0,
             lng = 50.0,
             fullAddress = "fullAddress",
-            radiusKm = 10.0
         )
         addressRepository.save(address)
-        val boundingBox = createBoundingBox(address)
+        val boundingBox = createBoundingBox(address, 10)
 
 
         // BoundingBox(minLat=49.909909909909906, maxLat=50.090090090090094, minLng=49.85984470028284, maxLng=50.14015529971716)
@@ -887,10 +883,9 @@ class MemberRepositoryTest@Autowired constructor(
             lat = 50.0,
             lng = 50.0,
             fullAddress = "fullAddress",
-            radiusKm = 10.0
         )
         addressRepository.save(address)
-        val boundingBox = createBoundingBox(address)
+        val boundingBox = createBoundingBox(address, 10)
 
         // BoundingBox(minLat=49.909909909909906, maxLat=50.090090090090094, minLng=49.85984470028284, maxLng=50.14015529971716)
 
@@ -990,10 +985,9 @@ class MemberRepositoryTest@Autowired constructor(
             lat = 50.0,
             lng = 50.0,
             fullAddress = "fullAddress",
-            radiusKm = 10.0
         )
         addressRepository.save(address)
-        val boundingBox = createBoundingBox(address)
+        val boundingBox = createBoundingBox(address, 10)
 
 
         // BoundingBox(minLat=49.909909909909906, maxLat=50.090090090090094, minLng=49.85984470028284, maxLng=50.14015529971716)
@@ -1094,10 +1088,9 @@ class MemberRepositoryTest@Autowired constructor(
             lat = 50.0,
             lng = 50.0,
             fullAddress = "fullAddress",
-            radiusKm = 10.0
         )
         addressRepository.save(address)
-        val boundingBox = createBoundingBox(address)
+        val boundingBox = createBoundingBox(address, 10)
 
 
         val member1 = Member(
@@ -1200,10 +1193,9 @@ class MemberRepositoryTest@Autowired constructor(
             lat = 50.0,
             lng = 50.0,
             fullAddress = "fullAddress",
-            radiusKm = 10.0
         )
         addressRepository.save(address)
-        val boundingBox = createBoundingBox(address)
+        val boundingBox = createBoundingBox(address, 10)
 
 
         // BoundingBox(minLat=49.909909909909906, maxLat=50.090090090090094, minLng=49.85984470028284, maxLng=50.14015529971716)
@@ -1281,10 +1273,9 @@ class MemberRepositoryTest@Autowired constructor(
             lat = 50.0,
             lng = 50.0,
             fullAddress = "fullAddress",
-            radiusKm = 10.0
         )
         addressRepository.save(address)
-        val boundingBox = createBoundingBox(address)
+        val boundingBox = createBoundingBox(address, 10)
 
 
         // BoundingBox(minLat=49.909909909909906, maxLat=50.090090090090094, minLng=49.85984470028284, maxLng=50.14015529971716)
@@ -1362,10 +1353,9 @@ class MemberRepositoryTest@Autowired constructor(
             lat = 50.0,
             lng = 50.0,
             fullAddress = "fullAddress",
-            radiusKm = 10.0
         )
         addressRepository.save(address)
-        val boundingBox = createBoundingBox(address)
+        val boundingBox = createBoundingBox(address, 10)
 
 
         // BoundingBox(minLat=49.909909909909906, maxLat=50.090090090090094, minLng=49.85984470028284, maxLng=50.14015529971716)
@@ -1443,10 +1433,9 @@ class MemberRepositoryTest@Autowired constructor(
             lat = 50.0,
             lng = 50.0,
             fullAddress = "fullAddress",
-            radiusKm = 10.0
         )
         addressRepository.save(address)
-        val boundingBox = createBoundingBox(address)
+        val boundingBox = createBoundingBox(address, 10)
 
 
         // BoundingBox(minLat=49.909909909909906, maxLat=50.090090090090094, minLng=49.85984470028284, maxLng=50.14015529971716)
@@ -1530,9 +1519,8 @@ class MemberRepositoryTest@Autowired constructor(
         )
         oAuth2Service.signup(baseSignupRequest, baseMember.id!!)
         val findAddress = addressRepository.findByMemberIdAndDeletedAtIsNull(baseMember.id!!)
-        findAddress!!.radiusKm = 10.0
 
-        val boundingBox = createBoundingBox(findAddress)
+        val boundingBox = createBoundingBox(findAddress!!, 10)
 
 
         // BoundingBox(minLat=49.909909909909906, maxLat=50.090090090090094, minLng=49.85984470028284, maxLng=50.14015529971716)

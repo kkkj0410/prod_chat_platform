@@ -469,6 +469,7 @@ class MemberControllerDocsTest : RestDocsSupport() {
                 .header("Authorization", "Bearer jwt-token")
                 .param("size", "10")
                 .param("page", "1")
+                .param("radiusKm", "5")
                 .param("minWorkoutExperience", "JUST_STARTED")
                 .param("maxWorkoutExperience", "ONE_TO_THREE_YEARS")
                 .param("workoutStyle", "CARDIO", "PERFORMANCE")
@@ -500,6 +501,8 @@ class MemberControllerDocsTest : RestDocsSupport() {
                             .description("(Optional - default 10) 조회 크기"),
                         parameterWithName("page").optional()
                             .description("(Optional - default 1) 조회 페이지 - 시작 1page"),
+                        parameterWithName("radiusKm").optional()
+                            .description("(Optional - default 5) 조회 반경 거리"),
                         parameterWithName("minWorkoutExperience").optional()
                             .description("(Optional) 운동 경험 시작 지점" + MemberWorkoutExperience.allDescription()),
                         parameterWithName("maxWorkoutExperience").optional()

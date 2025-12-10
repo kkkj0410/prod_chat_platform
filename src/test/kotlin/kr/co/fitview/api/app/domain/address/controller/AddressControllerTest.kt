@@ -174,33 +174,33 @@ class AddressControllerTest : ControllerTestSupport() {
 
 
     }
-
-    @DisplayName("회원 주소 탐색 반경 변경")
-    @Test
-    fun addressRadiusModify() {
-        // given
-        val request = AddressRadiusRequest(
-            radiusKm = 2
-        )
-
-        // when // then
-        mockMvc.perform(
-            patch("/api/v1/addresses/{addressId}/radius-km", 1)
-                .content(objectMapper.writeValueAsString(request))
-                .contentType(MediaType.APPLICATION_JSON)
-                .header("Authorization", "Bearer jwt-token")
-        )
-            .andDo(print())
-            .andExpect(status().isOk())
-
-        responseFields(
-            fieldWithPath("status").type(JsonFieldType.NUMBER),
-            fieldWithPath("code").type(JsonFieldType.STRING),
-            fieldWithPath("message").type(JsonFieldType.STRING),
-            fieldWithPath("data").type(JsonFieldType.STRING)
-        )
-
-
-    }
+//
+//    @DisplayName("회원 주소 탐색 반경 변경")
+//    @Test
+//    fun addressRadiusModify() {
+//        // given
+//        val request = AddressRadiusRequest(
+//            radiusKm = 2
+//        )
+//
+//        // when // then
+//        mockMvc.perform(
+//            patch("/api/v1/addresses/{addressId}/radius-km", 1)
+//                .content(objectMapper.writeValueAsString(request))
+//                .contentType(MediaType.APPLICATION_JSON)
+//                .header("Authorization", "Bearer jwt-token")
+//        )
+//            .andDo(print())
+//            .andExpect(status().isOk())
+//
+//        responseFields(
+//            fieldWithPath("status").type(JsonFieldType.NUMBER),
+//            fieldWithPath("code").type(JsonFieldType.STRING),
+//            fieldWithPath("message").type(JsonFieldType.STRING),
+//            fieldWithPath("data").type(JsonFieldType.STRING)
+//        )
+//
+//
+//    }
 
 }
