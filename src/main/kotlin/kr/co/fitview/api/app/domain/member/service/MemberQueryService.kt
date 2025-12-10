@@ -76,6 +76,10 @@ class MemberQueryService(
         return memberRepository.findMemberProfileBy(memberId)
     }
 
+    fun findMemberProfileFromMemberId(memberOneId : Long, memberTwoId : Long) : MemberProfiles? {
+        return memberRepository.findMemberProfileBy(memberOneId, memberTwoId)
+    }
+
     fun findMemberFromEmail(email : String) : Member?{
         return memberRepository.findByEmailAndDeletedAtIsNull(email)
     }

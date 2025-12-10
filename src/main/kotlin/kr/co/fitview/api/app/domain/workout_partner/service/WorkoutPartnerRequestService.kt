@@ -1,9 +1,8 @@
 package kr.co.fitview.api.app.domain.workout_partner.service
 
+import kr.co.fitview.api.app.domain.member.dto.response.MemberProfile
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
-import kr.co.fitview.api.app.domain.notification.dto.request.EventSender
-import kr.co.fitview.api.app.domain.notification.dto.request.EventWorkoutPartnerRequest
-import kr.co.fitview.api.app.domain.notification.dto.request.EventWorkoutPartnerRequestPayload
+import kr.co.fitview.api.app.domain.notification.dto.request.*
 import kr.co.fitview.api.app.global.stomp.dto.request.StompEventAcceptWorkoutPartnerDepth1
 import kr.co.fitview.api.app.global.stomp.dto.request.StompEventAcceptWorkoutPartnerDepth2
 import kr.co.fitview.api.app.global.stomp.dto.request.StompEventWorkoutPartnerRequestDepth1
@@ -78,9 +77,11 @@ class WorkoutPartnerRequestService(
 
             findWorkoutPartnerRequest.accept()
 
-            addWorkoutPartner(findWorkoutPartnerRequest)
+            val savedWorkoutPartner = addWorkoutPartner(findWorkoutPartnerRequest)
 
             sendStompAcceptWorkoutPartnerRequest(findWorkoutPartnerRequest)
+
+            sendNotificationAcceptWorkoutPartnerRequest(findWorkoutPartnerRequest, savedWorkoutPartner.id!!)
 
             return findWorkoutPartnerRequest
         }
@@ -91,10 +92,11 @@ class WorkoutPartnerRequestService(
     }
 
     @Transactional
-    fun addWorkoutPartner(workoutPartnerRequest: WorkoutPartnerRequest) {
+    fun addWorkoutPartner(workoutPartnerRequest: WorkoutPartnerRequest) : WorkoutPartner{
         val workoutPartner =
             WorkoutPartner.of(workoutPartnerRequest.fromMember!!, workoutPartnerRequest.toMember!!)
-        workoutPartnerRepository.save(workoutPartner)
+
+        return workoutPartnerRepository.save(workoutPartner)
     }
 
     private fun sendStompWorkoutPartnerRequest(
@@ -150,6 +152,53 @@ class WorkoutPartnerRequestService(
         publisher.publishEvent(stomp1)
         publisher.publishEvent(stomp2)
     }
+
+
+    private fun sendNotificationAcceptWorkoutPartnerRequest(
+        workoutPartnerRequest: WorkoutPartnerRequest,
+        workoutPartnerId : Long
+    ) {
+        val findMemberProfiles = memberQueryService
+            .findMemberProfileFromMemberId(
+                workoutPartnerRequest.getFromMemberId(),
+                workoutPartnerRequest.getToMemberId()
+            )
+            ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
+
+        val fromMemberProfile = findMemberProfiles.memberOne
+            ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
+
+        val toMemberProfile = findMemberProfiles.memberTwo
+            ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
+
+        val fromNotification =
+            createEventNotification(fromMemberProfile, toMemberProfile, workoutPartnerRequest, workoutPartnerId)
+
+        val toNotification =
+            createEventNotification(toMemberProfile, fromMemberProfile, workoutPartnerRequest, workoutPartnerId)
+
+        publisher.publishEvent(fromNotification)
+        publisher.publishEvent(toNotification)
+    }
+
+    private fun createEventNotification(
+        memberOneProfile: MemberProfile,
+        memberTwoProfile: MemberProfile,
+        workoutPartnerRequest: WorkoutPartnerRequest,
+        workoutPartnerId: Long
+    ) = EventWorkoutPartnerAccept(
+        memberId = memberOneProfile.memberId,
+        sender = EventSender(
+            memberId = memberTwoProfile.memberId,
+            nickname = memberTwoProfile.nickname,
+            profileImageUrl = memberTwoProfile.profileImageUrl
+        ),
+        payload = EventWorkoutPartnerAcceptPayload(
+            workoutPartnerRequestId = workoutPartnerRequest.id!!,
+            workoutPartnerId = workoutPartnerId,
+            memberId = memberTwoProfile.memberId
+        )
+    )
 
     private fun sendNotificationWorkoutPartnerRequest(
         fromMemberId: Long,
