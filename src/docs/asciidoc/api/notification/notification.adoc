@@ -1,0 +1,111 @@
+[[notification-workout-partner-request]]
+=== 알람 조회 - (WORKOUT_PARTNER_REQUEST 유형) API
+
+==== HTTP Request
+include::{snippets}/notification-workout-partner-request/http-request.adoc[]
+include::{snippets}/notification-workout-partner-request/request-headers.adoc[]
+include::{snippets}/notification-workout-partner-request/query-parameters.adoc[]
+
+==== HTTP Response
+include::{snippets}/notification-workout-partner-request/http-response.adoc[]
+include::{snippets}/notification-workout-partner-request/response-fields.adoc[]
+
+[[notification-workout-partner-accept]]
+=== 알람 조회 - (WORKOUT_PARTNER_ACCEPT 유형) API
+
+==== HTTP Request
+include::{snippets}/notification-workout-partner-accept/http-request.adoc[]
+include::{snippets}/notification-workout-partner-accept/request-headers.adoc[]
+include::{snippets}/notification-workout-partner-accept/query-parameters.adoc[]
+
+==== HTTP Response
+include::{snippets}/notification-workout-partner-accept/http-response.adoc[]
+include::{snippets}/notification-workout-partner-accept/response-fields.adoc[]
+
+[[notification-workout-partner-reject]]
+=== 알람 조회 - (WORKOUT_PARTNER_REJECT 유형) API
+
+==== HTTP Request
+include::{snippets}/notification-workout-partner-reject/http-request.adoc[]
+include::{snippets}/notification-workout-partner-reject/request-headers.adoc[]
+include::{snippets}/notification-workout-partner-reject/query-parameters.adoc[]
+
+==== HTTP Response
+include::{snippets}/notification-workout-partner-reject/http-response.adoc[]
+include::{snippets}/notification-workout-partner-reject/response-fields.adoc[]
+
+[[notification-workout-request]]
+=== 알람 조회 - (WORKOUT_REQUEST 유형) API
+
+==== HTTP Request
+include::{snippets}/notification-workout-request/http-request.adoc[]
+include::{snippets}/notification-workout-request/request-headers.adoc[]
+include::{snippets}/notification-workout-request/query-parameters.adoc[]
+
+==== HTTP Response
+include::{snippets}/notification-workout-request/http-response.adoc[]
+include::{snippets}/notification-workout-request/response-fields.adoc[]
+
+[[notification-workout-request-accept]]
+=== 알람 조회 - (WORKOUT_REQUEST_ACCEPT 유형) API
+
+==== HTTP Request
+include::{snippets}/notification-workout-request-accept/http-request.adoc[]
+include::{snippets}/notification-workout-request-accept/request-headers.adoc[]
+include::{snippets}/notification-workout-request-accept/query-parameters.adoc[]
+
+==== HTTP Response
+include::{snippets}/notification-workout-request-accept/http-response.adoc[]
+include::{snippets}/notification-workout-request-accept/response-fields.adoc[]
+
+[[notification-workout-request-reject]]
+=== 알람 조회 - (WORKOUT_REQUEST_REJECT 유형) API
+
+==== HTTP Request
+include::{snippets}/notification-workout-request-reject/http-request.adoc[]
+include::{snippets}/notification-workout-request-reject/request-headers.adoc[]
+include::{snippets}/notification-workout-request-reject/query-parameters.adoc[]
+
+==== HTTP Response
+include::{snippets}/notification-workout-request-reject/http-response.adoc[]
+include::{snippets}/notification-workout-request-reject/response-fields.adoc[]
+
+[[notification-workout-complete]]
+=== 알람 조회 - (WORKOUT_COMPLETE 유형) API
+
+==== HTTP Request
+include::{snippets}/notification-workout-complete/http-request.adoc[]
+include::{snippets}/notification-workout-complete/request-headers.adoc[]
+include::{snippets}/notification-workout-complete/query-parameters.adoc[]
+
+==== HTTP Response
+include::{snippets}/notification-workout-complete/http-response.adoc[]
+include::{snippets}/notification-workout-complete/response-fields.adoc[]
+
+
+[[notification-review-request]]
+=== 알람 조회 - (REVIEW_REQUEST 유형) API
+
+==== HTTP Request
+include::{snippets}/notification-review-request/http-request.adoc[]
+include::{snippets}/notification-review-request/request-headers.adoc[]
+include::{snippets}/notification-review-request/query-parameters.adoc[]
+
+==== HTTP Response
+include::{snippets}/notification-review-request/http-response.adoc[]
+include::{snippets}/notification-review-request/response-fields.adoc[]
+
+
+[[notification-review-receive]]
+=== 알람 조회 - (REVIEW_RECEIVE 유형) API
+
+==== HTTP Request
+include::{snippets}/notification-review-receive/http-request.adoc[]
+include::{snippets}/notification-review-receive/request-headers.adoc[]
+include::{snippets}/notification-review-receive/query-parameters.adoc[]
+
+==== HTTP Response
+include::{snippets}/notification-review-receive/http-response.adoc[]
+include::{snippets}/notification-review-receive/response-fields.adoc[]
+
+
