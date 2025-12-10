@@ -1,10 +1,10 @@
-package kr.co.fitview.api.app.domain.notification.service
+package kr.co.fitview.api.app.global.stomp.service
 
-import kr.co.fitview.api.app.domain.notification.constant.StompConstant
-import kr.co.fitview.api.app.domain.notification.dto.response.*
+import kr.co.fitview.api.app.global.stomp.constant.StompConstant
 import kr.co.fitview.api.app.global.dto.WsMessageType
 import kr.co.fitview.api.app.global.dto.WsResponse
 import kr.co.fitview.api.app.global.exception.error.ErrorCode
+import kr.co.fitview.api.app.global.stomp.dto.request.*
 import org.springframework.stereotype.Service
 
 @Service

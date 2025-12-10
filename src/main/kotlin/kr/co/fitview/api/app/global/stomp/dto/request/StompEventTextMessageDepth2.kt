@@ -1,4 +1,4 @@
-package kr.co.fitview.api.app.domain.notification.dto.response
+package kr.co.fitview.api.app.global.stomp.dto.request
 
 data class StompEventTextMessageDepth2(
     val chatRoomId: Long,

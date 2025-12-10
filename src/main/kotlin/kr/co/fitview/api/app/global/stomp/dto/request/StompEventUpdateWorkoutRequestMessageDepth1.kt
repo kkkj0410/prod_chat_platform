@@ -1,6 +1,4 @@
-package kr.co.fitview.api.app.domain.notification.dto.response
-
-import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
+package kr.co.fitview.api.app.global.stomp.dto.request
 
 data class StompEventUpdateWorkoutRequestMessageDepth1(
     val memberId : Long,

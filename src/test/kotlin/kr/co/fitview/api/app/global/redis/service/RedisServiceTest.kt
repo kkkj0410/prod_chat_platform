@@ -2,7 +2,7 @@ package kr.co.fitview.api.app.global.redis.service
 
 import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.chat.dto.response.withIsMe
-import kr.co.fitview.api.app.domain.notification.constant.StompConstant
+import kr.co.fitview.api.app.global.stomp.constant.StompConstant
 import kr.co.fitview.api.app.global.dto.WsMessageType
 import kr.co.fitview.api.app.global.dto.WsResponse
 import org.assertj.core.api.Assertions.assertThat

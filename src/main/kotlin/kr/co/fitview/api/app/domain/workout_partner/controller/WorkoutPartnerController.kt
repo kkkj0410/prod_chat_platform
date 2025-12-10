@@ -1,7 +1,7 @@
 package kr.co.fitview.api.app.domain.workout_partner.controller
 
 import jakarta.validation.Valid
-import kr.co.fitview.api.app.domain.notification.service.StompPublishService
+import kr.co.fitview.api.app.global.stomp.service.StompPublishService
 import kr.co.fitview.api.app.domain.workout_partner.condition.WorkoutPartnerRequestCondition
 import kr.co.fitview.api.app.domain.workout_partner.dto.request.WorkoutPartnerCreateRequest
 import kr.co.fitview.api.app.domain.workout_partner.dto.request.WorkoutPartnerUpdateRequest

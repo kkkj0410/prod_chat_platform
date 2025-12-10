@@ -1,7 +1,5 @@
-package kr.co.fitview.api.app.domain.notification.dto.response
+package kr.co.fitview.api.app.global.stomp.dto.request
 
-import kr.co.fitview.api.app.domain.chat.entity.enums.ChatNoticeMessageType
-import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequest
 import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
 import java.time.LocalDateTime
 

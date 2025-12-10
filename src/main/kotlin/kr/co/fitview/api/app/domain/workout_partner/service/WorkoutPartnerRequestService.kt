@@ -1,10 +1,10 @@
 package kr.co.fitview.api.app.domain.workout_partner.service
 
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
-import kr.co.fitview.api.app.domain.notification.dto.response.StompEventAcceptWorkoutPartnerDepth1
-import kr.co.fitview.api.app.domain.notification.dto.response.StompEventAcceptWorkoutPartnerDepth2
-import kr.co.fitview.api.app.domain.notification.dto.response.StompEventWorkoutPartnerRequestDepth1
-import kr.co.fitview.api.app.domain.notification.dto.response.StompEventWorkoutPartnerRequestDepth2
+import kr.co.fitview.api.app.global.stomp.dto.request.StompEventAcceptWorkoutPartnerDepth1
+import kr.co.fitview.api.app.global.stomp.dto.request.StompEventAcceptWorkoutPartnerDepth2
+import kr.co.fitview.api.app.global.stomp.dto.request.StompEventWorkoutPartnerRequestDepth1
+import kr.co.fitview.api.app.global.stomp.dto.request.StompEventWorkoutPartnerRequestDepth2
 import kr.co.fitview.api.app.domain.workout_partner.dto.request.WorkoutPartnerCreateServiceRequest
 import kr.co.fitview.api.app.domain.workout_partner.dto.request.WorkoutPartnerUpdateServiceRequest
 import kr.co.fitview.api.app.domain.workout_partner.dto.request.enums.WorkoutPartnerRequestUpdateStatus

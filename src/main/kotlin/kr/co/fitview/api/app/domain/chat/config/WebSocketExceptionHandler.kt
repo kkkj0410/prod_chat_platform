@@ -1,6 +1,6 @@
 package kr.co.fitview.api.app.domain.chat.config
 
-import kr.co.fitview.api.app.domain.notification.service.StompPublishService
+import kr.co.fitview.api.app.global.stomp.service.StompPublishService
 import kr.co.fitview.api.app.global.exception.GlobalException
 import org.springframework.messaging.handler.annotation.MessageExceptionHandler
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor

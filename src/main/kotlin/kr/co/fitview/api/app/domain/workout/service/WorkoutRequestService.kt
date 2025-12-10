@@ -11,7 +11,6 @@ import kr.co.fitview.api.app.domain.chat.service.MessageReadStatusService
 import kr.co.fitview.api.app.domain.member.dto.response.ChatRoomMemberProfile
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
-import kr.co.fitview.api.app.domain.notification.dto.response.*
 import kr.co.fitview.api.app.domain.workout.dto.response.WorkoutRequestUpdateResponse
 import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusForRequest
 import kr.co.fitview.api.app.domain.workout_history.entity.WorkoutHistory
@@ -24,6 +23,7 @@ import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.chat.ChatErrorCode
 import kr.co.fitview.api.app.global.exception.error.global.GlobalErrorCode
 import kr.co.fitview.api.app.global.exception.error.workout_request.WorkoutRequestErrorCode
+import kr.co.fitview.api.app.global.stomp.dto.request.*
 import kr.co.fitview.api.app.global.time.Time
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
@@ -161,7 +161,7 @@ class WorkoutRequestService(
         savedChatMessage: ChatMessage,
         workoutRequest: WorkoutRequest,
         isMe : Boolean
-    ) : StompEventWorkoutRequestMessageDepth1{
+    ) : StompEventWorkoutRequestMessageDepth1 {
         return StompEventWorkoutRequestMessageDepth1(
             memberId = member.id!!,
             message = StompEventWorkoutRequestMessageDepth2(

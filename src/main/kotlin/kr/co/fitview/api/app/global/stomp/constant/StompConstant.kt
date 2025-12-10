@@ -1,4 +1,4 @@
-package kr.co.fitview.api.app.domain.notification.constant
+package kr.co.fitview.api.app.global.stomp.constant
 
 import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
 

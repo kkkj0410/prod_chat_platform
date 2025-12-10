@@ -1,9 +1,8 @@
-package kr.co.fitview.api.app.domain.notification.dto.response
+package kr.co.fitview.api.app.global.stomp.dto.request
 
-data class MemberWorkoutPartnerRequestAcceptProfileResponse(
+data class StompEventAcceptWorkoutPartnerDepth2(
     val memberId : Long,
     val profileImageUrl : String,
     val nickname : String,
     val workoutPartnerRequestContentIndex : Int,
-) {
-}
+)

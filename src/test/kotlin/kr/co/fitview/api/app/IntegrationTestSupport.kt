@@ -1,8 +1,7 @@
 package kr.co.fitview.api.app
 
 import kr.co.fitview.api.app.domain.fcm.service.FcmPublisher
-import kr.co.fitview.api.app.domain.notification.service.StompPublisher
-import kr.co.fitview.api.app.domain.oauth2.service.AppleAuthService
+import kr.co.fitview.api.app.global.stomp.service.StompPublisher
 import kr.co.fitview.api.app.global.config.TestJwtConfig
 import kr.co.fitview.api.app.global.network.NetworkService
 import kr.co.fitview.api.app.global.redis.service.RedisClient
@@ -14,7 +13,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.event.ApplicationEvents
 import org.springframework.test.context.event.RecordApplicationEvents
 import org.springframework.transaction.annotation.Transactional
-import software.amazon.awssdk.services.s3.presigner.S3Presigner
 
 
 @ActiveProfiles("test")

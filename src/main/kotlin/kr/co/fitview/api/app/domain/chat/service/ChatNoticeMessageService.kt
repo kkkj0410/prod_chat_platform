@@ -10,10 +10,9 @@ import kr.co.fitview.api.app.domain.chat.repository.ChatMessageRepository
 import kr.co.fitview.api.app.domain.chat.repository.ChatNoticeMessageRepository
 import kr.co.fitview.api.app.domain.member.dto.response.ChatRoomMemberProfile
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
-import kr.co.fitview.api.app.domain.notification.dto.response.StompEventChatNoticeMessageDepth1
-import kr.co.fitview.api.app.domain.notification.dto.response.StompEventChatNoticeMessageDepth2
-import kr.co.fitview.api.app.domain.notification.dto.response.StompEventChatNoticeMessageDepth3
-import kr.co.fitview.api.app.domain.workout_history.entity.QWorkoutHistory.workoutHistory
+import kr.co.fitview.api.app.global.stomp.dto.request.StompEventChatNoticeMessageDepth1
+import kr.co.fitview.api.app.global.stomp.dto.request.StompEventChatNoticeMessageDepth2
+import kr.co.fitview.api.app.global.stomp.dto.request.StompEventChatNoticeMessageDepth3
 import kr.co.fitview.api.app.domain.workout_history.entity.WorkoutHistory
 import kr.co.fitview.api.app.domain.workout_history.service.WorkoutHistoryQueryService
 import kr.co.fitview.api.app.domain.workout_history.service.WorkoutHistoryService

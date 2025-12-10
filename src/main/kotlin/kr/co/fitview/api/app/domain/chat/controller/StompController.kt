@@ -4,7 +4,7 @@ import jakarta.validation.Valid
 import kr.co.fitview.api.app.domain.chat.dto.request.ChatMessageRequest
 import kr.co.fitview.api.app.domain.chat.dto.request.WorkoutRequestUpdateRequest
 import kr.co.fitview.api.app.domain.chat.service.ChatService
-import kr.co.fitview.api.app.domain.notification.service.StompPublishService
+import kr.co.fitview.api.app.global.stomp.service.StompPublishService
 import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestService
 import org.springframework.messaging.handler.annotation.DestinationVariable
 import org.springframework.messaging.handler.annotation.MessageMapping
@@ -72,14 +72,7 @@ class StompController(
         @Payload
         message: ChatMessageRequest
     ) {
-
-        val senderId = principal.name
-        val response = chatService.sendMessage(principal.name.toLong(), chatRoomId, message)
-
-//        notificationStompService.sendChatMessage(
-//            memberId = senderId.toLong(),
-//            response = response
-//        )
+        chatService.sendMessage(principal.name.toLong(), chatRoomId, message)
     }
 
     @MessageMapping("/workout-requests")
@@ -90,11 +83,8 @@ class StompController(
         @Payload
         request: WorkoutRequestUpdateRequest
     ) {
-
         val senderId = principal.name
-
         workoutRequestService.modifyWorkoutRequest(senderId.toLong(), request)
-
     }
 
     fun isMemberConnected(memberId: String): Boolean {

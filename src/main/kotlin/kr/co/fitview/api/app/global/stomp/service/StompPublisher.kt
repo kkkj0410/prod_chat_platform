@@ -1,4 +1,4 @@
-package kr.co.fitview.api.app.domain.notification.service
+package kr.co.fitview.api.app.global.stomp.service
 
 import kr.co.fitview.api.app.global.dto.WsResponse
 import org.springframework.messaging.simp.SimpMessageSendingOperations

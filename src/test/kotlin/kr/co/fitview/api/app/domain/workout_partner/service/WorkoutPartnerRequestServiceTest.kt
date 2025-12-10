@@ -10,9 +10,8 @@ import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutStyle
 import kr.co.fitview.api.app.domain.member.entity.enums.WorkoutTimeName
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.domain.member.service.MemberService
-import kr.co.fitview.api.app.domain.notification.dto.response.StompEventAcceptWorkoutPartnerDepth1
-import kr.co.fitview.api.app.domain.notification.dto.response.StompEventChatNoticeMessageDepth1
-import kr.co.fitview.api.app.domain.notification.dto.response.StompEventWorkoutPartnerRequestDepth1
+import kr.co.fitview.api.app.global.stomp.dto.request.StompEventAcceptWorkoutPartnerDepth1
+import kr.co.fitview.api.app.global.stomp.dto.request.StompEventWorkoutPartnerRequestDepth1
 import kr.co.fitview.api.app.domain.oauth2.dto.request.OAuth2SignupServiceRequest
 import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
 import kr.co.fitview.api.app.domain.workout_partner.condition.WorkoutPartnerRequestCondition

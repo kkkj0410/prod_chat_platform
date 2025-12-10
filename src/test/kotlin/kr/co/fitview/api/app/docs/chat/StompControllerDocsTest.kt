@@ -3,7 +3,7 @@ package kr.co.fitview.api.app.docs.chat
 import kr.co.fitview.api.app.docs.RestDocsSupport
 import kr.co.fitview.api.app.domain.chat.controller.StompController
 import kr.co.fitview.api.app.domain.chat.service.ChatService
-import kr.co.fitview.api.app.domain.notification.service.StompPublishService
+import kr.co.fitview.api.app.global.stomp.service.StompPublishService
 import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestService
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
