@@ -583,144 +583,144 @@ class AddressServiceTest @Autowired constructor(
 //            })
 //    }
 
-    @DisplayName("특정 주소의 탐색 반경을 수정한다.")
-    @Test
-    fun modifyRadiusKm() {
-        // given
-        val member = Member(
-            email = "email",
-            password = "password",
-            role = Role.USER,
-        )
-        val savedMember = memberRepository.save(member)
+//    @DisplayName("특정 주소의 탐색 반경을 수정한다.")
+//    @Test
+//    fun modifyRadiusKm() {
+//        // given
+//        val member = Member(
+//            email = "email",
+//            password = "password",
+//            role = Role.USER,
+//        )
+//        val savedMember = memberRepository.save(member)
+//
+//        val address = Address(
+//            member = member,
+//            siDo = AddressSiDo.SEOUL,
+//            siGunGu = "강남구",
+//            eupMyeonDong = "테헤란로",
+//            lat = 10.123,
+//            lng = 10.234,
+//            fullAddress = "fullAddress"
+//        )
+//        val savedAddress = addressRepository.save(address)
+//
+//        val request = AddressRadiusServiceRequest(
+//            radiusKm = 10
+//        )
+//
+//        // when
+//        val modifyAddress = addressService.modifyRadiusKm(savedMember.id!!, savedAddress.id!!, request)
+//
+//        // then
+//        assertThat(modifyAddress.radiusKm).isEqualTo(request.radiusKm.toDouble())
+//    }
 
-        val address = Address(
-            member = member,
-            siDo = AddressSiDo.SEOUL,
-            siGunGu = "강남구",
-            eupMyeonDong = "테헤란로",
-            lat = 10.123,
-            lng = 10.234,
-            fullAddress = "fullAddress"
-        )
-        val savedAddress = addressRepository.save(address)
-
-        val request = AddressRadiusServiceRequest(
-            radiusKm = 10
-        )
-
-        // when
-        val modifyAddress = addressService.modifyRadiusKm(savedMember.id!!, savedAddress.id!!, request)
-
-        // then
-        assertThat(modifyAddress.radiusKm).isEqualTo(request.radiusKm.toDouble())
-    }
-
-    @DisplayName("주소의 탐색 반경은 음수가 될 수 없다.")
-    @Test
-    fun modifyRadiusKmNegativeNumber() {
-        // given
-        val member = Member(
-            email = "email",
-            password = "password",
-            role = Role.USER,
-        )
-        val savedMember = memberRepository.save(member)
-
-        val address = Address(
-            member = member,
-            siDo = AddressSiDo.SEOUL,
-            siGunGu = "강남구",
-            eupMyeonDong = "테헤란로",
-            lat = 10.123,
-            lng = 10.234,
-            fullAddress = "fullAddress"
-        )
-        val savedAddress = addressRepository.save(address)
-
-        val request = AddressRadiusServiceRequest(
-            radiusKm = -1
-        )
-
-        // when & then
-        assertThatThrownBy {
-            addressService.modifyRadiusKm(savedMember.id!!, savedAddress.id!!, request)
-        }
-            .isInstanceOf(GlobalException::class.java)
-            .satisfies(ThrowingConsumer { ex ->
-                val globalEx = ex as GlobalException
-                assertThat(globalEx.errorCode)
-                    .isEqualTo(AddressErrorCode.NEGATIVE_RADIUS)
-            })
-
-    }
+//    @DisplayName("주소의 탐색 반경은 음수가 될 수 없다.")
+//    @Test
+//    fun modifyRadiusKmNegativeNumber() {
+//        // given
+//        val member = Member(
+//            email = "email",
+//            password = "password",
+//            role = Role.USER,
+//        )
+//        val savedMember = memberRepository.save(member)
+//
+//        val address = Address(
+//            member = member,
+//            siDo = AddressSiDo.SEOUL,
+//            siGunGu = "강남구",
+//            eupMyeonDong = "테헤란로",
+//            lat = 10.123,
+//            lng = 10.234,
+//            fullAddress = "fullAddress"
+//        )
+//        val savedAddress = addressRepository.save(address)
+//
+//        val request = AddressRadiusServiceRequest(
+//            radiusKm = -1
+//        )
+//
+//        // when & then
+//        assertThatThrownBy {
+//            addressService.modifyRadiusKm(savedMember.id!!, savedAddress.id!!, request)
+//        }
+//            .isInstanceOf(GlobalException::class.java)
+//            .satisfies(ThrowingConsumer { ex ->
+//                val globalEx = ex as GlobalException
+//                assertThat(globalEx.errorCode)
+//                    .isEqualTo(AddressErrorCode.NEGATIVE_RADIUS)
+//            })
+//
+//    }
 
 
-    @DisplayName("주소가 없다면 탐색 반경을 변경할 수 없다.")
-    @Test
-    fun modifyRadiusKmWithoutAddress() {
-        // given
-        val request = AddressRadiusServiceRequest(
-            radiusKm = 10
-        )
+//    @DisplayName("주소가 없다면 탐색 반경을 변경할 수 없다.")
+//    @Test
+//    fun modifyRadiusKmWithoutAddress() {
+//        // given
+//        val request = AddressRadiusServiceRequest(
+//            radiusKm = 10
+//        )
+//
+//        // when & then
+//        assertThatThrownBy {
+//            addressService.modifyRadiusKm(1L, 1L, request)
+//        }
+//            .isInstanceOf(GlobalException::class.java)
+//            .satisfies(ThrowingConsumer { ex ->
+//                val globalEx = ex as GlobalException
+//                assertThat(globalEx.errorCode)
+//                    .isEqualTo(AddressErrorCode.MEMBER_ADDRESS_NOT_FOUND)
+//            })
+//
+//    }
 
-        // when & then
-        assertThatThrownBy {
-            addressService.modifyRadiusKm(1L, 1L, request)
-        }
-            .isInstanceOf(GlobalException::class.java)
-            .satisfies(ThrowingConsumer { ex ->
-                val globalEx = ex as GlobalException
-                assertThat(globalEx.errorCode)
-                    .isEqualTo(AddressErrorCode.MEMBER_ADDRESS_NOT_FOUND)
-            })
-
-    }
-
-    @DisplayName("해당 회원의 주소가 아니면 해당 주소의 탐색 반경을 변경할 수 없다.")
-    @Test
-    fun modifyRadiusKmInvalidMemberId() {
-        // given
-        val member = Member(
-            email = "email1",
-            password = "password",
-            role = Role.USER,
-        )
-        val otherMember = Member(
-            email = "email2",
-            password = "password",
-            role = Role.USER,
-        )
-        memberRepository.save(member)
-        val savedOtherMember = memberRepository.save(otherMember)
-
-        val address = Address(
-            member = member,
-            siDo = AddressSiDo.SEOUL,
-            siGunGu = "강남구",
-            eupMyeonDong = "테헤란로",
-            lat = 10.123,
-            lng = 10.234,
-            fullAddress = "fullAddress"
-        )
-        val savedAddress = addressRepository.save(address)
-
-        val request = AddressRadiusServiceRequest(
-            radiusKm = 10
-        )
-
-        // when & then
-        assertThatThrownBy {
-            addressService.modifyRadiusKm(savedOtherMember.id!!, savedAddress.id!!, request)
-        }
-            .isInstanceOf(GlobalException::class.java)
-            .satisfies(ThrowingConsumer { ex ->
-                val globalEx = ex as GlobalException
-                assertThat(globalEx.errorCode)
-                    .isEqualTo(AddressErrorCode.MEMBER_ADDRESS_NOT_FOUND)
-            })
-
-    }
+//    @DisplayName("해당 회원의 주소가 아니면 해당 주소의 탐색 반경을 변경할 수 없다.")
+//    @Test
+//    fun modifyRadiusKmInvalidMemberId() {
+//        // given
+//        val member = Member(
+//            email = "email1",
+//            password = "password",
+//            role = Role.USER,
+//        )
+//        val otherMember = Member(
+//            email = "email2",
+//            password = "password",
+//            role = Role.USER,
+//        )
+//        memberRepository.save(member)
+//        val savedOtherMember = memberRepository.save(otherMember)
+//
+//        val address = Address(
+//            member = member,
+//            siDo = AddressSiDo.SEOUL,
+//            siGunGu = "강남구",
+//            eupMyeonDong = "테헤란로",
+//            lat = 10.123,
+//            lng = 10.234,
+//            fullAddress = "fullAddress"
+//        )
+//        val savedAddress = addressRepository.save(address)
+//
+//        val request = AddressRadiusServiceRequest(
+//            radiusKm = 10
+//        )
+//
+//        // when & then
+//        assertThatThrownBy {
+//            addressService.modifyRadiusKm(savedOtherMember.id!!, savedAddress.id!!, request)
+//        }
+//            .isInstanceOf(GlobalException::class.java)
+//            .satisfies(ThrowingConsumer { ex ->
+//                val globalEx = ex as GlobalException
+//                assertThat(globalEx.errorCode)
+//                    .isEqualTo(AddressErrorCode.MEMBER_ADDRESS_NOT_FOUND)
+//            })
+//
+//    }
 
     @DisplayName("회원의 주소를 조회한다.")
     @Test
@@ -749,7 +749,7 @@ class AddressServiceTest @Autowired constructor(
 
         // then
         assertThat(findAddress)
-            .extracting("member", "siDo", "siGunGu", "eupMyeonDong", "lat", "lng", "fullAddress", "radiusKm")
+            .extracting("member", "siDo", "siGunGu", "eupMyeonDong", "lat", "lng", "fullAddress")
             .contains(
                 member,
                 address.siDo,
@@ -758,7 +758,6 @@ class AddressServiceTest @Autowired constructor(
                 address.lat,
                 address.lng,
                 address.fullAddress,
-                address.radiusKm,
             )
 
     }

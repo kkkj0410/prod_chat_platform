@@ -168,55 +168,55 @@ class AddressControllerDocsTest : RestDocsSupport() {
     }
 
 
-    @DisplayName("회원 주소 반경 변경 API")
-    @Test
-    fun addressRadiusModify() {
-        // given
-        val request = AddressRadiusRequest(
-            radiusKm = 2
-        )
-
-        // when // then
-        mockMvc.perform(
-            patch("/api/v1/addresses/{addressId}/radius-km", 1)
-                .content(objectMapper.writeValueAsString(request))
-                .contentType(MediaType.APPLICATION_JSON)
-                .header("Authorization", "Bearer jwt-token")
-        )
-            .andDo(print())
-            .andExpect(status().isOk())
-            .andDo(
-                document(
-                    "address-radius-update",
-                    preprocessRequest(prettyPrint()),
-                    preprocessResponse(prettyPrint()),
-
-                    requestHeaders(
-                        RestDocsHeaders.authorizationHeader(Role.USER)
-                    ),
-
-                    pathParameters(
-                        parameterWithName("addressId").description("수정 대상 주소 id")
-                    ),
-
-                    requestFields(
-                        fieldWithPath("radiusKm").type(JsonFieldType.NUMBER)
-                            .description("해당 주소 기준으로 반경 km ex) radius = 5 -> 반경 5km")
-                    ),
-
-                    responseFields(
-                        fieldWithPath("status").type(JsonFieldType.NUMBER)
-                            .description("상태"),
-                        fieldWithPath("code").type(JsonFieldType.STRING)
-                            .description("코드"),
-                        fieldWithPath("message").type(JsonFieldType.STRING)
-                            .description("에러 메시지"),
-                        fieldWithPath("data").type(JsonFieldType.STRING)
-                            .description("응답 데이터"),
-                    )
-                )
-            )
-    }
+//    @DisplayName("회원 주소 반경 변경 API")
+//    @Test
+//    fun addressRadiusModify() {
+//        // given
+//        val request = AddressRadiusRequest(
+//            radiusKm = 2
+//        )
+//
+//        // when // then
+//        mockMvc.perform(
+//            patch("/api/v1/addresses/{addressId}/radius-km", 1)
+//                .content(objectMapper.writeValueAsString(request))
+//                .contentType(MediaType.APPLICATION_JSON)
+//                .header("Authorization", "Bearer jwt-token")
+//        )
+//            .andDo(print())
+//            .andExpect(status().isOk())
+//            .andDo(
+//                document(
+//                    "address-radius-update",
+//                    preprocessRequest(prettyPrint()),
+//                    preprocessResponse(prettyPrint()),
+//
+//                    requestHeaders(
+//                        RestDocsHeaders.authorizationHeader(Role.USER)
+//                    ),
+//
+//                    pathParameters(
+//                        parameterWithName("addressId").description("수정 대상 주소 id")
+//                    ),
+//
+//                    requestFields(
+//                        fieldWithPath("radiusKm").type(JsonFieldType.NUMBER)
+//                            .description("해당 주소 기준으로 반경 km ex) radius = 5 -> 반경 5km")
+//                    ),
+//
+//                    responseFields(
+//                        fieldWithPath("status").type(JsonFieldType.NUMBER)
+//                            .description("상태"),
+//                        fieldWithPath("code").type(JsonFieldType.STRING)
+//                            .description("코드"),
+//                        fieldWithPath("message").type(JsonFieldType.STRING)
+//                            .description("에러 메시지"),
+//                        fieldWithPath("data").type(JsonFieldType.STRING)
+//                            .description("응답 데이터"),
+//                    )
+//                )
+//            )
+//    }
 
 
 }

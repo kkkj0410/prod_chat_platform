@@ -675,7 +675,6 @@ class MemberQueryServiceTest @Autowired constructor(
             lat = 50.0,
             lng = 50.0,
             fullAddress = "fullAddress",
-            radiusKm = 10.0
         )
         addressRepository.save(address)
 
@@ -846,7 +845,6 @@ class MemberQueryServiceTest @Autowired constructor(
             lat = 50.0,
             lng = 50.0,
             fullAddress = "fullAddress",
-            radiusKm = 10.0
         )
         addressRepository.save(address)
 
@@ -979,7 +977,6 @@ class MemberQueryServiceTest @Autowired constructor(
             lat = 50.0,
             lng = 50.0,
             fullAddress = "fullAddress",
-            radiusKm = 10.0
         )
         addressRepository.save(address)
 
@@ -1174,7 +1171,6 @@ class MemberQueryServiceTest @Autowired constructor(
             lat = 50.0,
             lng = 50.0,
             fullAddress = "fullAddress",
-            radiusKm = 10.0
         )
         addressRepository.save(address)
 
