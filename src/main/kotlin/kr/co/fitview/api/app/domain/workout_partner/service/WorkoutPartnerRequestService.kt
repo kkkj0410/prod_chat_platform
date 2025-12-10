@@ -88,8 +88,11 @@ class WorkoutPartnerRequestService(
 
         findWorkoutPartnerRequest.reject()
 
+        sendNotificationRejectWorkoutPartnerRequest(findWorkoutPartnerRequest)
+
         return findWorkoutPartnerRequest
     }
+
 
     @Transactional
     fun addWorkoutPartner(workoutPartnerRequest: WorkoutPartnerRequest) : WorkoutPartner{
@@ -172,16 +175,16 @@ class WorkoutPartnerRequestService(
             ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
 
         val fromNotification =
-            createEventNotification(fromMemberProfile, toMemberProfile, workoutPartnerRequest, workoutPartnerId)
+            createEventWorkoutPartnerAcceptNotification(fromMemberProfile, toMemberProfile, workoutPartnerRequest, workoutPartnerId)
 
         val toNotification =
-            createEventNotification(toMemberProfile, fromMemberProfile, workoutPartnerRequest, workoutPartnerId)
+            createEventWorkoutPartnerAcceptNotification(toMemberProfile, fromMemberProfile, workoutPartnerRequest, workoutPartnerId)
 
         publisher.publishEvent(fromNotification)
         publisher.publishEvent(toNotification)
     }
 
-    private fun createEventNotification(
+    private fun createEventWorkoutPartnerAcceptNotification(
         memberOneProfile: MemberProfile,
         memberTwoProfile: MemberProfile,
         workoutPartnerRequest: WorkoutPartnerRequest,
@@ -222,6 +225,27 @@ class WorkoutPartnerRequestService(
         )
 
         publisher.publishEvent(event)
+    }
+
+    private fun sendNotificationRejectWorkoutPartnerRequest(workoutPartnerRequest: WorkoutPartnerRequest) {
+        val findToMemberProfile =
+            memberQueryService.findMemberProfileFromMemberId(workoutPartnerRequest.getToMemberId())
+                ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
+
+        val notificationEvent = EventWorkoutPartnerReject(
+            memberId = workoutPartnerRequest.getFromMemberId(),
+            sender = EventSender(
+                memberId = findToMemberProfile.memberId,
+                nickname = findToMemberProfile.nickname,
+                profileImageUrl = findToMemberProfile.profileImageUrl
+            ),
+            payload = EventWorkoutPartnerRejectPayload(
+                workoutPartnerRequestId = workoutPartnerRequest.id!!,
+                memberId = findToMemberProfile.memberId
+            )
+        )
+
+        publisher.publishEvent(notificationEvent)
     }
 
     private fun validateUpdateWorkoutPartnerRequest(workoutPartnerRequest: WorkoutPartnerRequest) {
