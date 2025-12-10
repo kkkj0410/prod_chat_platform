@@ -4,7 +4,7 @@ import jakarta.validation.Valid
 import kr.co.fitview.api.app.domain.chat.dto.request.ChatMessageRequest
 import kr.co.fitview.api.app.domain.chat.dto.request.WorkoutRequestUpdateRequest
 import kr.co.fitview.api.app.domain.chat.service.ChatService
-import kr.co.fitview.api.app.domain.notification.service.NotificationStompService
+import kr.co.fitview.api.app.domain.notification.service.StompPublishService
 import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestService
 import org.springframework.messaging.handler.annotation.DestinationVariable
 import org.springframework.messaging.handler.annotation.MessageMapping
@@ -21,7 +21,7 @@ class StompController(
     private val simpUserRegistry: SimpUserRegistry,
     private val chatService : ChatService,
     private val workoutRequestService : WorkoutRequestService,
-    private val notificationStompService : NotificationStompService
+    private val stompPublishService : StompPublishService
 ) {
 
 

@@ -7,38 +7,38 @@ import org.springframework.transaction.event.TransactionalEventListener
 
 
 @Component
-class NotificationStompEventListener(
-    private val notificationStompService: NotificationStompService
+class StompEventListener(
+    private val stompPublishService: StompPublishService
 ) {
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun sendChatTextMessage(event : StompEventTextMessageDepth1){
-        notificationStompService.sendChatTextMessage(event)
+        stompPublishService.sendChatTextMessage(event)
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun sendChatWorkoutRequestMessage(event : StompEventWorkoutRequestMessageDepth1){
-        notificationStompService.sendChatWorkoutRequestMessage(event)
+        stompPublishService.sendChatWorkoutRequestMessage(event)
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun sendChatNoticeMessage(event : StompEventChatNoticeMessageDepth1){
-        notificationStompService.sendChatNoticeMessage(event)
+        stompPublishService.sendChatNoticeMessage(event)
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun sendUpdateWorkoutRequest(event : StompEventUpdateWorkoutRequestMessageDepth1){
-        notificationStompService.sendUpdateWorkoutRequest(event)
+        stompPublishService.sendUpdateWorkoutRequest(event)
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun sendWorkoutPartnerRequest(event : StompEventWorkoutPartnerRequestDepth1){
-        notificationStompService.sendWorkoutPartnerRequest(event)
+        stompPublishService.sendWorkoutPartnerRequest(event)
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun sendAcceptWorkoutPartner(event : StompEventAcceptWorkoutPartnerDepth1){
-        notificationStompService.sendAcceptWorkoutPartner(event)
+        stompPublishService.sendAcceptWorkoutPartner(event)
     }
 
 

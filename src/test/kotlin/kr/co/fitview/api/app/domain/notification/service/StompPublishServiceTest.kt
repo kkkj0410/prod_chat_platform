@@ -10,17 +10,11 @@ import kr.co.fitview.api.app.domain.chat.repository.*
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.domain.notification.constant.StompConstant
-import kr.co.fitview.api.app.domain.notification.dto.StompSendEvent
 import kr.co.fitview.api.app.domain.notification.dto.response.*
 import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
-import kr.co.fitview.api.app.domain.workout.dto.response.WorkoutRequestUpdateResponse
 import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequest
 import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
-import kr.co.fitview.api.app.domain.workout_history.repository.WorkoutHistoryRepository
 import kr.co.fitview.api.app.domain.workout.repository.WorkoutRequestRepository
-import kr.co.fitview.api.app.domain.workout_partner.entity.QWorkoutPartnerRequest.workoutPartnerRequest
-import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartnerRequest
-import kr.co.fitview.api.app.domain.workout_partner.entity.enums.WorkoutPartnerRequestContent
 import kr.co.fitview.api.app.domain.workout_partner.repository.WorkoutPartnerRequestRepository
 import kr.co.fitview.api.app.global.dto.WsMessageType
 import kr.co.fitview.api.app.global.dto.WsResponse
@@ -35,8 +29,8 @@ import org.mockito.kotlin.given
 import org.mockito.kotlin.then
 import org.springframework.beans.factory.annotation.Autowired
 
-class NotificationStompServiceTest @Autowired constructor(
-    val notificationStompService: NotificationStompService,
+class StompPublishServiceTest @Autowired constructor(
+    val stompPublishService: StompPublishService,
     val memberRepository: MemberRepository,
     val workoutPartnerRequestRepository : WorkoutPartnerRequestRepository,
     val oAuth2Service: OAuth2Service,
@@ -70,7 +64,7 @@ class NotificationStompServiceTest @Autowired constructor(
         given(stompPublisher.sendToUser(any(), any(), any())).willAnswer {}
 
         // when
-        notificationStompService.sendChatTextMessage(sendMessage)
+        stompPublishService.sendChatTextMessage(sendMessage)
 
         // then
         then(stompPublisher).should().sendToUser(
@@ -109,7 +103,7 @@ class NotificationStompServiceTest @Autowired constructor(
         given(stompPublisher.sendToUser(any(), any(), any())).willAnswer {}
 
         // when
-        notificationStompService.sendChatWorkoutRequestMessage(sendMessage)
+        stompPublishService.sendChatWorkoutRequestMessage(sendMessage)
 
         // then
         then(stompPublisher).should().sendToUser(
@@ -145,7 +139,7 @@ class NotificationStompServiceTest @Autowired constructor(
         given(stompPublisher.sendToUser(any(), any(), any())).willAnswer {}
 
         // when
-        notificationStompService.sendChatNoticeMessage(sendMessage)
+        stompPublishService.sendChatNoticeMessage(sendMessage)
 
         // then
         then(stompPublisher).should().sendToUser(
@@ -174,7 +168,7 @@ class NotificationStompServiceTest @Autowired constructor(
         given(stompPublisher.sendToUser(any(), any(), any())).willAnswer {}
 
         // when
-        notificationStompService.sendUpdateWorkoutRequest(sendMessage)
+        stompPublishService.sendUpdateWorkoutRequest(sendMessage)
 
         // then
         then(stompPublisher).should().sendToUser(
@@ -205,7 +199,7 @@ class NotificationStompServiceTest @Autowired constructor(
         given(stompPublisher.sendToUser(any(), any(), any())).willAnswer {}
 
         // when
-        notificationStompService.sendWorkoutPartnerRequest(sendMessage)
+        stompPublishService.sendWorkoutPartnerRequest(sendMessage)
 
         // then
         then(stompPublisher).should().sendToUser(
@@ -235,7 +229,7 @@ class NotificationStompServiceTest @Autowired constructor(
         given(stompPublisher.sendToUser(any(), any(), any())).willAnswer {}
 
         // when
-        notificationStompService.sendAcceptWorkoutPartner(sendMessage)
+        stompPublishService.sendAcceptWorkoutPartner(sendMessage)
 
         // then
         then(stompPublisher).should().sendToUser(
@@ -424,7 +418,7 @@ class NotificationStompServiceTest @Autowired constructor(
         given(stompPublisher.sendToUser(any(), any(), any())).willAnswer {}
 
         // when
-        notificationStompService.sendGlobalError(
+        stompPublishService.sendGlobalError(
             memberId = memberId,
             errorCode = errorCode
         )
@@ -450,7 +444,7 @@ class NotificationStompServiceTest @Autowired constructor(
         given(stompPublisher.sendToUser(any(), any(), any())).willAnswer {}
 
         // when
-        notificationStompService.sendOtherError(
+        stompPublishService.sendOtherError(
             memberId = memberId,
             ex = ex
         )
@@ -557,8 +551,8 @@ class NotificationStompServiceTest @Autowired constructor(
         )
 
         // when
-        notificationStompService.sendChatNoticeMessage(stomp1)
-        notificationStompService.sendChatNoticeMessage(stomp2)
+        stompPublishService.sendChatNoticeMessage(stomp1)
+        stompPublishService.sendChatNoticeMessage(stomp2)
 
         // then
         then(stompPublisher).should().sendToUser(

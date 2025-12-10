@@ -1,20 +1,14 @@
 package kr.co.fitview.api.app.domain.notification.service
 
-import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.domain.notification.constant.StompConstant
-import kr.co.fitview.api.app.domain.notification.dto.StompSendEvent
 import kr.co.fitview.api.app.domain.notification.dto.response.*
-import kr.co.fitview.api.app.domain.workout.dto.response.WorkoutRequestUpdateResponse
-import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartnerRequest
 import kr.co.fitview.api.app.global.dto.WsMessageType
 import kr.co.fitview.api.app.global.dto.WsResponse
-import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.ErrorCode
-import kr.co.fitview.api.app.global.exception.error.global.GlobalErrorCode
 import org.springframework.stereotype.Service
 
 @Service
-class NotificationStompService(
+class StompPublishService(
     private val stompPublisher: StompPublisher,
 ) {
 

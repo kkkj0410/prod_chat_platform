@@ -1,11 +1,9 @@
 package kr.co.fitview.api.app.docs.chat
 
 import kr.co.fitview.api.app.docs.RestDocsSupport
-import kr.co.fitview.api.app.domain.auth.controller.AuthController
-import kr.co.fitview.api.app.domain.auth.service.AuthService
 import kr.co.fitview.api.app.domain.chat.controller.StompController
 import kr.co.fitview.api.app.domain.chat.service.ChatService
-import kr.co.fitview.api.app.domain.notification.service.NotificationStompService
+import kr.co.fitview.api.app.domain.notification.service.StompPublishService
 import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestService
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -13,7 +11,6 @@ import org.mockito.Mockito.mock
 import org.springframework.messaging.simp.SimpMessageSendingOperations
 import org.springframework.messaging.simp.user.SimpUserRegistry
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document
-import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders
 import org.springframework.restdocs.operation.preprocess.Preprocessors.*
 import org.springframework.restdocs.payload.JsonFieldType
 import org.springframework.restdocs.payload.PayloadDocumentation.*
@@ -24,11 +21,11 @@ class StompControllerDocsTest : RestDocsSupport(){
     private val simpUserRegistry: SimpUserRegistry = mock(SimpUserRegistry::class.java)
     private val chatService : ChatService = mock(ChatService::class.java)
     private val workoutRequestService : WorkoutRequestService = mock(WorkoutRequestService::class.java)
-    private val notificationStompService : NotificationStompService = mock(NotificationStompService::class.java)
+    private val stompPublishService : StompPublishService = mock(StompPublishService::class.java)
 
 
     override fun initController(): Any {
-        return StompController(simpMessageSendingOperations, simpUserRegistry, chatService, workoutRequestService, notificationStompService)
+        return StompController(simpMessageSendingOperations, simpUserRegistry, chatService, workoutRequestService, stompPublishService)
     }
 
     @DisplayName("사용자 회원가입 API")
