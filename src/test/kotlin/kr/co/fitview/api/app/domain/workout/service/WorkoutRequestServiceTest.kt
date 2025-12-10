@@ -12,6 +12,8 @@ import kr.co.fitview.api.app.domain.chat.entity.enums.ChatRoomType
 import kr.co.fitview.api.app.domain.chat.repository.*
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
+import kr.co.fitview.api.app.domain.notification.dto.request.EventWorkoutPartnerRequest
+import kr.co.fitview.api.app.domain.notification.dto.request.EventWorkoutRequest
 import kr.co.fitview.api.app.global.stomp.dto.request.StompEventUpdateWorkoutRequestMessageDepth1
 import kr.co.fitview.api.app.global.stomp.dto.request.StompEventWorkoutRequestMessageDepth1
 import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
@@ -173,6 +175,56 @@ class WorkoutRequestServiceTest @Autowired constructor(
         assertThat(count).isEqualTo(2)
     }
 
+
+    @DisplayName("회원은 운동 요청 메시지를 보낼 시, 상대방에게 인앱 알림이 발생한다.")
+    @Test
+    fun saveChatWorkoutRequestMessageNotification() {
+        // given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val other = Member(
+            email = "email2",
+            password = "password2",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+        memberRepository.save(other)
+
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest, me.id!!)
+
+        val savedChatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+
+        val chatParticipant1 = ChatParticipant(
+            savedChatRoom,
+            me
+        )
+        val chatParticipant2 = ChatParticipant(
+            savedChatRoom,
+            other
+        )
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+
+        val request = ChatWorkoutRequestMessageServiceRequest(
+            scheduledAt = time.nowLocalDateTime.plusHours(5),
+            location = "location"
+        )
+
+        // when
+        workoutRequestService.saveChatWorkoutRequestMessage(
+            fromMember = me,
+            chatRoom = savedChatRoom,
+            message = request
+        )
+
+        // then
+        val count = events.stream(EventWorkoutRequest::class.java).count()
+        assertThat(count).isEqualTo(1)
+    }
 
     @DisplayName("운동 요청이 이미 존재하지만 끝난 상태이면 다시 운동 요청 가능")
     @ParameterizedTest(name = "case {index}: 기존 요청 상태 = {0}")

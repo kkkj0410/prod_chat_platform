@@ -11,6 +11,9 @@ import kr.co.fitview.api.app.domain.chat.service.MessageReadStatusService
 import kr.co.fitview.api.app.domain.member.dto.response.ChatRoomMemberProfile
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
+import kr.co.fitview.api.app.domain.notification.dto.request.EventSender
+import kr.co.fitview.api.app.domain.notification.dto.request.EventWorkoutRequest
+import kr.co.fitview.api.app.domain.notification.dto.request.EventWorkoutRequestPayload
 import kr.co.fitview.api.app.domain.workout.dto.response.WorkoutRequestUpdateResponse
 import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusForRequest
 import kr.co.fitview.api.app.domain.workout_history.entity.WorkoutHistory
@@ -75,6 +78,8 @@ class WorkoutRequestService(
         )
 
         sendStompWorkoutRequestMessage(fromMember, toMember, chatRoom, savedChatMessage, workoutRequest)
+
+        sendNotificationWorkoutRequest(fromMember.id!!, toMember.id!!, workoutRequest.id!!, chatRoom.id!!)
 
         return savedChatMessage
     }
@@ -180,6 +185,31 @@ class WorkoutRequestService(
                 )
             )
         )
+    }
+
+    private fun sendNotificationWorkoutRequest(
+        fromMemberId: Long,
+        toMemberId: Long,
+        workoutRequestId: Long,
+        chatRoomId: Long
+    ) {
+        val findFromMemberProfile = memberQueryService.findMemberProfileFromMemberId(fromMemberId)
+            ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
+
+        val eventNotification = EventWorkoutRequest(
+            memberId = toMemberId,
+            sender = EventSender(
+                memberId = findFromMemberProfile.memberId,
+                nickname = findFromMemberProfile.nickname,
+                profileImageUrl = findFromMemberProfile.profileImageUrl
+            ),
+            payload = EventWorkoutRequestPayload(
+                workoutRequestId = workoutRequestId,
+                chatRoomId = chatRoomId
+            )
+        )
+
+        publisher.publishEvent(eventNotification)
     }
 
     private fun sendAllStompExpireWorkoutRequest(response: List<WorkoutRequestUpdateResponse>) {
