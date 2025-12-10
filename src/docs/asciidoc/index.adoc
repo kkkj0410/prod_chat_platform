@@ -61,4 +61,9 @@ include::api/review/review.adoc[]
 
 include::api/workout_history/workoutHistory.adoc[]
 
+[[NOTIFICATION]]
+== NOTIFICATION API
+
+include::api/notification/notification.adoc[]
+
 

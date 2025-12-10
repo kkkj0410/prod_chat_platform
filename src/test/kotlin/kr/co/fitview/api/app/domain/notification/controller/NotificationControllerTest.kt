@@ -1,0 +1,90 @@
+package kr.co.fitview.api.app.domain.notification.controller
+
+import kr.co.fitview.api.app.ControllerTestSupport
+import kr.co.fitview.api.app.domain.member.entity.Member
+import kr.co.fitview.api.app.domain.notification.condition.NotificationCondition
+import kr.co.fitview.api.app.domain.notification.dto.response.LinkType
+import kr.co.fitview.api.app.domain.notification.dto.response.NotificationLink
+import kr.co.fitview.api.app.domain.notification.dto.response.NotificationResponse
+import kr.co.fitview.api.app.domain.notification.dto.response.NotificationSender
+import kr.co.fitview.api.app.domain.notification.entity.Notification
+import kr.co.fitview.api.app.domain.notification.entity.enums.NotificationType
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
+import org.mockito.kotlin.given
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Slice
+import org.springframework.data.domain.SliceImpl
+import org.springframework.http.MediaType
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
+import java.time.LocalDateTime
+
+class NotificationControllerTest : ControllerTestSupport(){
+
+
+    @DisplayName("회원의 알림 메시지를 조회한다.")
+    @Test
+    fun notificationList() {
+        // given
+        val memberId = 1L
+        val condition = NotificationCondition(size = 10, lastSentAt = null)
+
+        val notifications = listOf(
+            NotificationResponse(
+                notificationId = 1L,
+                type = NotificationType.WORKOUT_PARTNER_REQUEST,
+                sentAt = LocalDateTime.now(),
+                isRead = true,
+                sender = NotificationSender(123L, "호박", "https://..."),
+                link = NotificationLink(LinkType.MEMBER_PROFILE, mapOf("memberId" to 123))
+            ),
+            NotificationResponse(
+                notificationId = 2L,
+                type = NotificationType.WORKOUT_PARTNER_ACCEPT,
+                sentAt = LocalDateTime.now().minusMinutes(5),
+                isRead = true,
+                sender = NotificationSender(124L, "멜론", "https://..."),
+                link = NotificationLink(LinkType.CHAT_START, mapOf("memberId" to 124))
+            ),
+            NotificationResponse(
+                notificationId = 3L,
+                type = NotificationType.WORKOUT_COMPLETE,
+                sentAt = LocalDateTime.now().minusHours(1),
+                isRead = false,
+                sender = NotificationSender(125L, "감자", "https://..."),
+                link = NotificationLink(LinkType.REVIEW_WRITE, mapOf("workoutHistoryId" to 456, "chatRoomId" to 789))
+            )
+        )
+
+        val slice: Slice<NotificationResponse> = SliceImpl(notifications, PageRequest.of(0, 10), false)
+
+        given(notificationQueryService.findAllNotificationFrom(any(), any())).willReturn(slice)
+
+
+        // when / then
+        mockMvc.perform(
+            get("/api/v1/notifications")
+                .param("memberId", memberId.toString())
+                .param("size", condition.size.toString())
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andDo(print())
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.data.content[0].notificationId").value(1))
+            .andExpect(jsonPath("$.data.content[0].type").value("WORKOUT_PARTNER_REQUEST"))
+            .andExpect(jsonPath("$.data.content[0].isRead").value(true))
+            .andExpect(jsonPath("$.data.content[0].sender.memberId").value(123))
+            .andExpect(jsonPath("$.data.content[0].link.type").value("MEMBER_PROFILE"))
+            .andExpect(jsonPath("$.data.content[1].notificationId").value(2))
+            .andExpect(jsonPath("$.data.content[1].type").value("WORKOUT_PARTNER_ACCEPT"))
+            .andExpect(jsonPath("$.data.content[1].link.type").value("CHAT_START"))
+            .andExpect(jsonPath("$.data.content[2].notificationId").value(3))
+            .andExpect(jsonPath("$.data.content[2].type").value("WORKOUT_COMPLETE"))
+            .andExpect(jsonPath("$.data.content[2].link.type").value("REVIEW_WRITE"))
+    }
+}

@@ -4,6 +4,8 @@ import com.querydsl.core.types.Projections
 import com.querydsl.jpa.impl.JPAQueryFactory
 import kr.co.fitview.api.app.domain.chat.entity.QChatRoom.chatRoom
 import kr.co.fitview.api.app.domain.review.entity.QReview.review
+import kr.co.fitview.api.app.domain.review.entity.QReviewReminderLog.reviewReminderLog
+import kr.co.fitview.api.app.domain.review.entity.enums.ReviewReminderLogType
 import kr.co.fitview.api.app.domain.workout_history.dto.response.WorkoutHistoryChatRoomResponse
 import kr.co.fitview.api.app.domain.workout_history.entity.QWorkoutHistory.workoutHistory
 import kr.co.fitview.api.app.domain.workout_history.entity.WorkoutHistory
@@ -38,9 +40,15 @@ class WorkoutHistoryRepositoryImpl(
             .selectFrom(workoutHistory)
             .leftJoin(review)
             .on(review.workoutHistory.id.eq(workoutHistory.id))
+            .leftJoin(reviewReminderLog)
+            .on(
+                reviewReminderLog.workoutHistory.id.eq(workoutHistory.id),
+                reviewReminderLog.type.eq(ReviewReminderLogType.REVIEW_24H)
+            )
             .where(
                 workoutHistory.completedAt.loe(twentyFourHoursAgo),
                 review.id.isNull,
+                reviewReminderLog.id.isNull,
                 workoutHistory.deletedAt.isNull,
             )
             .fetch()

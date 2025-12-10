@@ -16,6 +16,8 @@ import kr.co.fitview.api.app.domain.image.service.S3Service
 import kr.co.fitview.api.app.domain.member.controller.MemberController
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.domain.member.service.MemberService
+import kr.co.fitview.api.app.domain.notification.controller.NotificationController
+import kr.co.fitview.api.app.domain.notification.service.NotificationQueryService
 import kr.co.fitview.api.app.global.stomp.service.StompPublishService
 import kr.co.fitview.api.app.domain.oauth2.controller.OAuth2Controller
 import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
@@ -65,6 +67,7 @@ import org.springframework.test.web.servlet.MockMvc
     FcmController::class,
     ReviewController::class,
     WorkoutHistoryController::class,
+    NotificationController::class,
     GlobalExceptionHandler::class
 ],
 excludeFilters = [
@@ -163,5 +166,8 @@ abstract class ControllerTestSupport {
 
     @MockitoBean
     protected lateinit var reviewQueryService: ReviewQueryService
+
+    @MockitoBean
+    protected lateinit var notificationQueryService : NotificationQueryService
 
 }
