@@ -3,30 +3,22 @@ package kr.co.fitview.api.app.docs.workout_partner
 import kr.co.fitview.api.app.docs.RestDocsHeaders
 import kr.co.fitview.api.app.docs.RestDocsPagination
 import kr.co.fitview.api.app.docs.RestDocsSupport
-import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
-import kr.co.fitview.api.app.domain.member.dto.request.Age
-import kr.co.fitview.api.app.domain.member.dto.response.MemberProfileResponse
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutExperience
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutGoal
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutStyle
-import kr.co.fitview.api.app.domain.member.entity.enums.WorkoutTimeName
-import kr.co.fitview.api.app.domain.notification.service.NotificationStompService
-import kr.co.fitview.api.app.domain.oauth2.dto.response.OAuth2LoginResponse
+import kr.co.fitview.api.app.global.stomp.service.StompPublishService
 import kr.co.fitview.api.app.domain.workout_partner.controller.WorkoutPartnerController
-import kr.co.fitview.api.app.domain.workout_partner.dto.request.WorkoutPartnerCreateRequest
 import kr.co.fitview.api.app.domain.workout_partner.dto.request.WorkoutPartnerUpdateRequest
 import kr.co.fitview.api.app.domain.workout_partner.dto.request.enums.WorkoutPartnerRequestType
 import kr.co.fitview.api.app.domain.workout_partner.dto.request.enums.WorkoutPartnerRequestUpdateStatus
 import kr.co.fitview.api.app.domain.workout_partner.dto.response.WorkoutPartnerRequestResponse
 import kr.co.fitview.api.app.domain.workout_partner.dto.response.enums.WorkoutPartnerRequestStatusForResponse
-import kr.co.fitview.api.app.domain.workout_partner.entity.QWorkoutPartner.workoutPartner
 import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartnerRequest
 import kr.co.fitview.api.app.domain.workout_partner.entity.enums.WorkoutPartnerRequestContent
 import kr.co.fitview.api.app.domain.workout_partner.entity.enums.WorkoutPartnerRequestStatus
 import kr.co.fitview.api.app.domain.workout_partner.service.WorkoutPartnerRequestQueryService
 import kr.co.fitview.api.app.domain.workout_partner.service.WorkoutPartnerRequestService
-import kr.co.fitview.api.app.global.entity.Gender
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.util.SecurityUtil
 import org.junit.jupiter.api.DisplayName
@@ -56,10 +48,10 @@ class WorkoutPartnerControllerDocsTest : RestDocsSupport() {
     private val workoutPartnerRequestQueryService: WorkoutPartnerRequestQueryService =
         mock(WorkoutPartnerRequestQueryService::class.java)
     private val securityUtil: SecurityUtil = mock(SecurityUtil::class.java)
-    private val notificationStompService: NotificationStompService = mock(NotificationStompService::class.java)
+    private val stompPublishService: StompPublishService = mock(StompPublishService::class.java)
 
     override fun initController(): Any {
-        return WorkoutPartnerController(workoutPartnerRequestService, workoutPartnerRequestQueryService, securityUtil, notificationStompService)
+        return WorkoutPartnerController(workoutPartnerRequestService, workoutPartnerRequestQueryService, securityUtil, stompPublishService)
     }
 
     @DisplayName("핏버디 요청 API")

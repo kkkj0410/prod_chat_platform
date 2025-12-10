@@ -7,13 +7,12 @@ import kr.co.fitview.api.app.domain.chat.repository.ChatMessageRepository
 import kr.co.fitview.api.app.domain.member.dto.response.ChatRoomMemberProfile
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
-import kr.co.fitview.api.app.domain.notification.dto.response.*
-import kr.co.fitview.api.app.domain.workout.entity.QWorkoutRequest.workoutRequest
-import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequest
 import kr.co.fitview.api.app.domain.workout_history.service.WorkoutHistoryQueryService
-import kr.co.fitview.api.app.domain.workout_history.service.WorkoutHistoryService
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.global.GlobalErrorCode
+import kr.co.fitview.api.app.global.stomp.dto.request.StompEventTextMessageDepth1
+import kr.co.fitview.api.app.global.stomp.dto.request.StompEventTextMessageDepth2
+import kr.co.fitview.api.app.global.stomp.dto.request.StompEventTextMessageDepth3
 import kr.co.fitview.api.app.global.time.Time
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
@@ -105,7 +104,7 @@ class ChatMessageService(
         meProfile: ChatRoomMemberProfile,
         chatMessage: ChatMessage,
         isMe : Boolean
-    ) : StompEventTextMessageDepth1{
+    ) : StompEventTextMessageDepth1 {
         return StompEventTextMessageDepth1(
             memberId = memberId,
             message = StompEventTextMessageDepth2(

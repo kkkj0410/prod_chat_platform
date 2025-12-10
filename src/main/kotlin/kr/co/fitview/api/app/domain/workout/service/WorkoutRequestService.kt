@@ -7,11 +7,12 @@ import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatNoticeMessageType
 import kr.co.fitview.api.app.domain.chat.service.ChatMessageService
 import kr.co.fitview.api.app.domain.chat.service.ChatNoticeMessageService
+import kr.co.fitview.api.app.domain.chat.service.ChatRoomQueryService
 import kr.co.fitview.api.app.domain.chat.service.MessageReadStatusService
 import kr.co.fitview.api.app.domain.member.dto.response.ChatRoomMemberProfile
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
-import kr.co.fitview.api.app.domain.notification.dto.response.*
+import kr.co.fitview.api.app.domain.notification.dto.request.*
 import kr.co.fitview.api.app.domain.workout.dto.response.WorkoutRequestUpdateResponse
 import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusForRequest
 import kr.co.fitview.api.app.domain.workout_history.entity.WorkoutHistory
@@ -24,6 +25,7 @@ import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.chat.ChatErrorCode
 import kr.co.fitview.api.app.global.exception.error.global.GlobalErrorCode
 import kr.co.fitview.api.app.global.exception.error.workout_request.WorkoutRequestErrorCode
+import kr.co.fitview.api.app.global.stomp.dto.request.*
 import kr.co.fitview.api.app.global.time.Time
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
@@ -41,6 +43,7 @@ class WorkoutRequestService(
     private val memberQueryService : MemberQueryService,
     private val messageReadStatusService : MessageReadStatusService,
     private val workoutRequestQueryService: WorkoutRequestQueryService,
+    private val chatRoomQueryService : ChatRoomQueryService,
     private val publisher: ApplicationEventPublisher,
     private val time: Time
 ) {
@@ -75,6 +78,8 @@ class WorkoutRequestService(
         )
 
         sendStompWorkoutRequestMessage(fromMember, toMember, chatRoom, savedChatMessage, workoutRequest)
+
+        sendNotificationWorkoutRequest(fromMember.id!!, toMember.id!!, workoutRequest.id!!, chatRoom.id!!)
 
         return savedChatMessage
     }
@@ -115,6 +120,10 @@ class WorkoutRequestService(
         addChatNoticeMessage(memberId, request, workoutHistory)
 
         sendStompUpdateWorkoutRequest(findWorkoutRequest)
+
+        if(isAccept(request)){
+            sendAcceptNotificationWorkoutRequest(findWorkoutRequest)
+        }
 
         return findWorkoutRequest
     }
@@ -161,7 +170,7 @@ class WorkoutRequestService(
         savedChatMessage: ChatMessage,
         workoutRequest: WorkoutRequest,
         isMe : Boolean
-    ) : StompEventWorkoutRequestMessageDepth1{
+    ) : StompEventWorkoutRequestMessageDepth1 {
         return StompEventWorkoutRequestMessageDepth1(
             memberId = member.id!!,
             message = StompEventWorkoutRequestMessageDepth2(
@@ -180,6 +189,31 @@ class WorkoutRequestService(
                 )
             )
         )
+    }
+
+    private fun sendNotificationWorkoutRequest(
+        fromMemberId: Long,
+        toMemberId: Long,
+        workoutRequestId: Long,
+        chatRoomId: Long
+    ) {
+        val findFromMemberProfile = memberQueryService.findMemberProfileFromMemberId(fromMemberId)
+            ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
+
+        val eventNotification = EventWorkoutRequest(
+            memberId = toMemberId,
+            sender = EventSender(
+                memberId = findFromMemberProfile.memberId,
+                nickname = findFromMemberProfile.nickname,
+                profileImageUrl = findFromMemberProfile.profileImageUrl
+            ),
+            payload = EventWorkoutRequestPayload(
+                workoutRequestId = workoutRequestId,
+                chatRoomId = chatRoomId
+            )
+        )
+
+        publisher.publishEvent(eventNotification)
     }
 
     private fun sendAllStompExpireWorkoutRequest(response: List<WorkoutRequestUpdateResponse>) {
@@ -411,6 +445,51 @@ class WorkoutRequestService(
 
         publisher.publishEvent(stomp1)
         publisher.publishEvent(stomp2)
+    }
+
+    private fun sendAcceptNotificationWorkoutRequest(workoutRequest: WorkoutRequest) {
+
+        val findMemberProfiles = memberQueryService
+            .findMemberProfileFromMemberId(workoutRequest.getFromMemberId(), workoutRequest.getToMemberId())
+            ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
+
+        val fromMemberProfile = findMemberProfiles.memberOne
+            ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
+
+        val toMemberProfile = findMemberProfiles.memberTwo
+            ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
+
+        val findChatRoom = chatRoomQueryService.findChatRoomFrom(workoutRequest.id!!)
+            ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
+
+        val fromEvent = EventWorkoutRequestAccept(
+            memberId = fromMemberProfile.memberId,
+            sender = EventSender(
+                memberId = toMemberProfile.memberId,
+                nickname = toMemberProfile.nickname,
+                profileImageUrl = toMemberProfile.profileImageUrl
+            ),
+            payload = EventWorkoutRequestAcceptPayload(
+                workoutRequestId = workoutRequest.id!!,
+                chatRoomId = findChatRoom.id!!
+            )
+        )
+
+        val toEvent = EventWorkoutRequestAccept(
+            memberId = toMemberProfile.memberId,
+            sender = EventSender(
+                memberId = fromMemberProfile.memberId,
+                nickname = fromMemberProfile.nickname,
+                profileImageUrl = fromMemberProfile.profileImageUrl
+            ),
+            payload = EventWorkoutRequestAcceptPayload(
+                workoutRequestId = workoutRequest.id!!,
+                chatRoomId = findChatRoom.id!!
+            )
+        )
+
+        publisher.publishEvent(fromEvent)
+        publisher.publishEvent(toEvent)
     }
 
     private fun isNotNull(value: Any?) = value != null

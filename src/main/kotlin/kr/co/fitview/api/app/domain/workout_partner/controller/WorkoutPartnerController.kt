@@ -1,7 +1,7 @@
 package kr.co.fitview.api.app.domain.workout_partner.controller
 
 import jakarta.validation.Valid
-import kr.co.fitview.api.app.domain.notification.service.NotificationStompService
+import kr.co.fitview.api.app.global.stomp.service.StompPublishService
 import kr.co.fitview.api.app.domain.workout_partner.condition.WorkoutPartnerRequestCondition
 import kr.co.fitview.api.app.domain.workout_partner.dto.request.WorkoutPartnerCreateRequest
 import kr.co.fitview.api.app.domain.workout_partner.dto.request.WorkoutPartnerUpdateRequest
@@ -23,7 +23,7 @@ class WorkoutPartnerController(
     private val workoutPartnerRequestService : WorkoutPartnerRequestService,
     private val workoutPartnerRequestQueryService : WorkoutPartnerRequestQueryService,
     private val securityUtil : SecurityUtil,
-    private val notificationStompService : NotificationStompService
+    private val stompPublishService : StompPublishService
 ) {
 
     @PostMapping("/workout-partners")

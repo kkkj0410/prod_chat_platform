@@ -72,6 +72,13 @@ class MemberQueryService(
         return memberRepository.findChatRoomMemberProfile(memberId, chatRoomId)
     }
 
+    fun findMemberProfileFromMemberId(memberId : Long) : MemberProfile? {
+        return memberRepository.findMemberProfileBy(memberId)
+    }
+
+    fun findMemberProfileFromMemberId(memberOneId : Long, memberTwoId : Long) : MemberProfiles? {
+        return memberRepository.findMemberProfileBy(memberOneId, memberTwoId)
+    }
 
     fun findMemberFromEmail(email : String) : Member?{
         return memberRepository.findByEmailAndDeletedAtIsNull(email)

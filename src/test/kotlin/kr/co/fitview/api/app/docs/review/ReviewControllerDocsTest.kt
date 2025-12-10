@@ -17,6 +17,7 @@ import kr.co.fitview.api.app.domain.member.dto.response.ChatMemberProfile
 import kr.co.fitview.api.app.domain.member.dto.response.ChatMemberProfileResponse
 import kr.co.fitview.api.app.domain.member.dto.response.MemberChatRoomProfile
 import kr.co.fitview.api.app.domain.member.dto.response.MemberProfileResponse
+import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutExperience
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutGoal
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutStyle
@@ -26,11 +27,15 @@ import kr.co.fitview.api.app.domain.review.controller.ReviewController
 import kr.co.fitview.api.app.domain.review.dto.request.ReviewCreateRequest
 import kr.co.fitview.api.app.domain.review.dto.response.ReviewCategoryResponse
 import kr.co.fitview.api.app.domain.review.dto.response.ReviewTagResponse
+import kr.co.fitview.api.app.domain.review.entity.Review
 import kr.co.fitview.api.app.domain.review.entity.enums.ReviewType
 import kr.co.fitview.api.app.domain.review.service.ReviewService
 import kr.co.fitview.api.app.domain.workout.dto.response.LastWorkoutRequestMessage
 import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusForResponse
 import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestService
+import kr.co.fitview.api.app.domain.workout_history.entity.WorkoutHistory
+import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartnerRequest
+import kr.co.fitview.api.app.domain.workout_partner.entity.enums.WorkoutPartnerRequestStatus
 import kr.co.fitview.api.app.global.entity.Gender
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.enums.Direction
@@ -185,6 +190,29 @@ class ReviewControllerDocsTest : RestDocsSupport() {
             content = "content"
         )
 
+        val fromMember = Member()
+        fromMember.id = 1L
+
+        val toMember = Member()
+        toMember.id = 2L
+
+        val workoutHistory = WorkoutHistory()
+
+        given(reviewService.saveReview(any(), any()))
+            .willReturn(
+                Review(
+                    fromMember = fromMember,
+                    toMember = toMember,
+                    workoutHistory = workoutHistory,
+                    isPrivate = false,
+                    type = ReviewType.GOOD,
+                    score = 1.0,
+                    content = "content",
+                    postedAt = LocalDateTime.now()
+                )
+            )
+
+
         // when // then
         mockMvc.perform(
             post("/api/v1/reviews")
@@ -226,8 +254,10 @@ class ReviewControllerDocsTest : RestDocsSupport() {
                             .description("코드"),
                         fieldWithPath("message").type(JsonFieldType.STRING)
                             .description("에러 메시지"),
-                        fieldWithPath("data").type(JsonFieldType.STRING)
+                        fieldWithPath("data").type(JsonFieldType.OBJECT)
                             .description("응답 데이터"),
+                        fieldWithPath("data.toMemberId").type(JsonFieldType.NUMBER)
+                            .description("리뷰 받는 대상자 회원 id"),
 
                         )
                 )

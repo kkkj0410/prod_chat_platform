@@ -10,9 +10,11 @@ import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutStyle
 import kr.co.fitview.api.app.domain.member.entity.enums.WorkoutTimeName
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.domain.member.service.MemberService
-import kr.co.fitview.api.app.domain.notification.dto.response.StompEventAcceptWorkoutPartnerDepth1
-import kr.co.fitview.api.app.domain.notification.dto.response.StompEventChatNoticeMessageDepth1
-import kr.co.fitview.api.app.domain.notification.dto.response.StompEventWorkoutPartnerRequestDepth1
+import kr.co.fitview.api.app.domain.notification.dto.request.EventWorkoutPartnerAccept
+import kr.co.fitview.api.app.domain.notification.dto.request.EventWorkoutPartnerReject
+import kr.co.fitview.api.app.domain.notification.dto.request.EventWorkoutPartnerRequest
+import kr.co.fitview.api.app.global.stomp.dto.request.StompEventAcceptWorkoutPartnerDepth1
+import kr.co.fitview.api.app.global.stomp.dto.request.StompEventWorkoutPartnerRequestDepth1
 import kr.co.fitview.api.app.domain.oauth2.dto.request.OAuth2SignupServiceRequest
 import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
 import kr.co.fitview.api.app.domain.workout_partner.condition.WorkoutPartnerRequestCondition
@@ -126,6 +128,41 @@ class WorkoutPartnerRequestServiceTest @Autowired constructor(
         assertThat(count).isEqualTo(1)
     }
 
+
+    @DisplayName("운동 파트너 요청 대상자에게 인앱 알람을 저장시킨다.")
+    @Test
+    fun addWorkoutPartnerRequestNotification() {
+        // given
+        val fromMember = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+
+        val toMember = Member(
+            email = "email2",
+            password = "password2",
+            role = Role.USER,
+        )
+
+        val savedFromMember = memberService.addMember(fromMember)
+        val savedToMember = memberService.addMember(toMember)
+
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest , savedFromMember.id!!)
+
+        val request = WorkoutPartnerCreateServiceRequest(
+            memberId = savedToMember.id!!,
+            workoutPartnerRequestContentIndex = WorkoutPartnerRequestContent.BURN
+        )
+
+        // when
+        workoutPartnerRequestService.addWorkoutPartnerRequest(savedFromMember.id!!, request)
+
+        // then
+        val count = events.stream(EventWorkoutPartnerRequest::class.java).count()
+        assertThat(count).isEqualTo(1)
+    }
 
     @DisplayName("핏버디 요청 시, 24시간 동안 본인이 상대방에게 요청을 보냈으면 요청 불가")
 //    @Test
@@ -412,7 +449,7 @@ class WorkoutPartnerRequestServiceTest @Autowired constructor(
             .contains(savedFromMember, savedToMember, WorkoutPartnerRequestStatus.ACCEPT)
     }
 
-    @DisplayName("핏버디 요청을 수락 시, 요청을 보낸자에게 실시간 알람을 보낸다.")
+    @DisplayName("핏버디 요청을 수락 시, 요청을 양측에게 실시간 알람을 보낸다.")
     @Test
     fun updateWorkoutPartnerRequestAcceptStomp() {
         // given
@@ -461,6 +498,55 @@ class WorkoutPartnerRequestServiceTest @Autowired constructor(
         assertThat(count).isEqualTo(2)
     }
 
+    @DisplayName("핏버디 요청을 수락 시, 양측에 인앱 알람을 저장한다.")
+    @Test
+    fun updateWorkoutPartnerRequestAcceptNotification() {
+        // given
+        val fromMember = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+
+        val toMember = Member(
+            email = "email2",
+            password = "password2",
+            role = Role.USER,
+        )
+
+        val savedFromMember = memberService.addMember(fromMember)
+        val savedToMember = memberService.addMember(toMember)
+
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest1, toMember.id!!)
+
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest2, fromMember.id!!)
+
+        val workoutPartnerRequest = WorkoutPartnerRequest.of(
+            fromMember = savedFromMember,
+            toMember = savedToMember,
+            now = time.nowLocalDateTime,
+            content = WorkoutPartnerRequestContent.BURN
+        )
+        val savedWorkoutPartnerRequest = workoutPartnerRequestRepository.save(workoutPartnerRequest)
+
+        val request = WorkoutPartnerUpdateServiceRequest(
+            type = WorkoutPartnerRequestUpdateStatus.ACCEPT
+        )
+
+        // when
+        workoutPartnerRequestService.updateWorkoutPartnerRequest(
+            memberId = savedToMember.id!!,
+            workoutPartnerRequestId = savedWorkoutPartnerRequest.id!!,
+            request
+        )
+
+        // then
+        val count = events.stream(EventWorkoutPartnerAccept::class.java).count()
+        assertThat(count).isEqualTo(2)
+    }
+
     @DisplayName("핏버디 요청을 거절한다.")
     @Test
     fun updateWorkoutPartnerRequestReject() {
@@ -479,6 +565,9 @@ class WorkoutPartnerRequestServiceTest @Autowired constructor(
 
         val savedFromMember = memberService.addMember(fromMember)
         val savedToMember = memberService.addMember(toMember)
+
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest1, toMember.id!!)
 
         val workoutPartnerRequest = WorkoutPartnerRequest.of(
             fromMember = savedFromMember,
@@ -504,6 +593,52 @@ class WorkoutPartnerRequestServiceTest @Autowired constructor(
         assertThat(updatedWorkoutPartnerRequest)
             .extracting("fromMember", "toMember", "status")
             .contains(savedFromMember, savedToMember, WorkoutPartnerRequestStatus.REJECT)
+    }
+
+    @DisplayName("핏버디 요청을 거절하면, 핏버디 요청자는 인앱 알람을 받는다.")
+    @Test
+    fun updateWorkoutPartnerRequestRejectNotification() {
+        // given
+        val fromMember = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+
+        val toMember = Member(
+            email = "email2",
+            password = "password2",
+            role = Role.USER,
+        )
+
+        val savedFromMember = memberService.addMember(fromMember)
+        val savedToMember = memberService.addMember(toMember)
+
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest1, toMember.id!!)
+
+        val workoutPartnerRequest = WorkoutPartnerRequest.of(
+            fromMember = savedFromMember,
+            toMember = savedToMember,
+            now = time.nowLocalDateTime,
+            content = WorkoutPartnerRequestContent.BURN
+        )
+        val savedWorkoutPartnerRequest = workoutPartnerRequestRepository.save(workoutPartnerRequest)
+
+        val request = WorkoutPartnerUpdateServiceRequest(
+            type = WorkoutPartnerRequestUpdateStatus.REJECT
+        )
+
+        // when
+        workoutPartnerRequestService.updateWorkoutPartnerRequest(
+            memberId = savedToMember.id!!,
+            workoutPartnerRequestId = savedWorkoutPartnerRequest.id!!,
+            request
+        )
+
+        // then
+        val count = events.stream(EventWorkoutPartnerReject::class.java).count()
+        assertThat(count).isEqualTo(1)
     }
 
     @DisplayName("핏버디 요청이 이미 취소됐으면 핏버디 요청을 받지 못한다.")

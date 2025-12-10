@@ -1,14 +1,18 @@
 package kr.co.fitview.api.app.domain.review.controller
 
 import kr.co.fitview.api.app.ControllerTestSupport
+import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.review.dto.request.ReviewCreateRequest
 import kr.co.fitview.api.app.domain.review.dto.response.ReviewCategoryResponse
 import kr.co.fitview.api.app.domain.review.dto.response.ReviewTagResponse
+import kr.co.fitview.api.app.domain.review.entity.Review
 import kr.co.fitview.api.app.domain.review.entity.enums.ReviewType
+import kr.co.fitview.api.app.domain.workout_history.entity.WorkoutHistory
 import kr.co.fitview.api.app.global.exception.error.request.RequestErrorCode
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
 import org.mockito.kotlin.given
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
@@ -17,6 +21,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultHandlers
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import java.time.LocalDateTime
 
 class ReviewControllerTest : ControllerTestSupport(){
 
@@ -115,6 +120,28 @@ class ReviewControllerTest : ControllerTestSupport(){
             content = "content"
         )
 
+        val fromMember = Member()
+        fromMember.id = 1L
+
+        val toMember = Member()
+        toMember.id = 2L
+
+        val workoutHistory = WorkoutHistory()
+
+        given(reviewService.saveReview(any(), any()))
+            .willReturn(
+                Review(
+                    fromMember = fromMember,
+                    toMember = toMember,
+                    workoutHistory = workoutHistory,
+                    isPrivate = false,
+                    type = ReviewType.GOOD,
+                    score = 1.0,
+                    content = "content",
+                    postedAt = LocalDateTime.now()
+                )
+            )
+
         // when // then
         mockMvc.perform(
             post("/api/v1/reviews")
@@ -126,7 +153,7 @@ class ReviewControllerTest : ControllerTestSupport(){
             .andExpect(jsonPath("$.status").exists())
             .andExpect(jsonPath("$.code").value("ok"))
             .andExpect(jsonPath("$.message").value("ok"))
-            .andExpect(jsonPath("$.data").value("ok"))
+            .andExpect(jsonPath("$.data.toMemberId").value(2L))
     }
 
     @DisplayName("회원 리뷰를 저장 시, 운동 이력 id는 필수다")

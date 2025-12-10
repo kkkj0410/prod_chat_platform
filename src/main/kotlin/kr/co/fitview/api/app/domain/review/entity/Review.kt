@@ -59,4 +59,8 @@ class Review(
     @Column(name = "review_id", nullable = false)
     var id: Long? = null
 
+    fun getToMemberId() : Long{
+        return this.toMember!!.id!!
+    }
+
 }

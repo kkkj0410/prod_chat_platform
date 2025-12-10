@@ -14,10 +14,8 @@ import kr.co.fitview.api.app.domain.chat.repository.ChatParticipantRepository
 import kr.co.fitview.api.app.domain.chat.repository.ChatRoomRepository
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
-import kr.co.fitview.api.app.domain.notification.dto.response.StompEventTextMessageDepth1
-import kr.co.fitview.api.app.domain.notification.dto.response.StompEventWorkoutRequestMessageDepth1
+import kr.co.fitview.api.app.global.stomp.dto.request.StompEventTextMessageDepth1
 import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
-import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusForResponse
 import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequest
 import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
 import kr.co.fitview.api.app.domain.workout.repository.WorkoutRequestRepository

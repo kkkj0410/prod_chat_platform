@@ -3,6 +3,7 @@ package kr.co.fitview.api.app.domain.review.controller
 import jakarta.validation.Valid
 import kr.co.fitview.api.app.domain.review.dto.request.ReviewCreateRequest
 import kr.co.fitview.api.app.domain.review.dto.response.ReviewCategoryResponse
+import kr.co.fitview.api.app.domain.review.dto.response.ReviewCreateResponse
 import kr.co.fitview.api.app.domain.review.service.ReviewService
 import kr.co.fitview.api.app.domain.review.service.ReviewTagCountQueryService
 import kr.co.fitview.api.app.global.dto.ApiResponse
@@ -34,10 +35,14 @@ class ReviewController(
         @RequestBody
         request : ReviewCreateRequest
 
-    ): ResponseEntity<ApiResponse<*>>
+    ): ResponseEntity<ApiResponse<ReviewCreateResponse>>
     {
-        reviewService.saveReview(securityUtil.getMemberId(), request.toServiceRequest())
+        val savedReview = reviewService.saveReview(securityUtil.getMemberId(), request.toServiceRequest())
 
-        return ResponseEntity.ok(ApiResponse.success("ok"))
+        val response = ReviewCreateResponse(
+            toMemberId = savedReview.getToMemberId()
+        )
+
+        return ResponseEntity.ok(ApiResponse.success(response))
     }
 }
