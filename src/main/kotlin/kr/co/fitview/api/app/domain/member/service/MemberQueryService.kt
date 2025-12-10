@@ -22,6 +22,7 @@ import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import javax.management.Query.div
 import kotlin.math.cos
 
 
@@ -109,7 +110,7 @@ class MemberQueryService(
         val randomMemberId: Long = createRandomMemberId(memberId, seed)
 
         val findAddress = addressService.findAddressEntityFrom(memberId)
-        val boundingBox = createBoundingBox(findAddress!!)
+        val boundingBox = createBoundingBox(findAddress!!, condition.radiusKm)
 
         val findMembers = memberRepository.findMemberWithinLocal(memberId, randomMemberId, boundingBox, condition)
         val shuffledMembers = randomCustom.shuffled(seed, findMembers).toMutableList()
@@ -188,7 +189,7 @@ class MemberQueryService(
     ) = workoutTimeNames
         .map { WorkoutTime(member = member, name = it) }
 
-    private fun createBoundingBox(address: Address) : BoundingBox {
+    private fun createBoundingBox(address: Address, radiusKm : Int) : BoundingBox {
         var lat = address.lat
         var lng = address.lng
 
@@ -197,15 +198,15 @@ class MemberQueryService(
             lng = AddressConstant.DEFAULT_LNG
         }
 
-        val latDeg = address.radiusKm?.div(111)
+        val latDeg = radiusKm.toDouble().div(111)
         val latRad = Math.toRadians(address.lat!!)
-        val lngDeg = address.radiusKm?.div(111 * cos(latRad))
+        val lngDeg = radiusKm.toDouble().div(111 * cos(latRad))
 
-        val minLat = lat?.minus(latDeg!!)
-        val maxLat = lat?.plus(latDeg!!)
+        val minLat = lat?.minus(latDeg)
+        val maxLat = lat?.plus(latDeg)
 
-        val minLng = lng?.minus(lngDeg!!)
-        val maxLng = lng?.plus(lngDeg!!)
+        val minLng = lng?.minus(lngDeg)
+        val maxLng = lng?.plus(lngDeg)
 
         return BoundingBox(
             minLat = minLat!!,

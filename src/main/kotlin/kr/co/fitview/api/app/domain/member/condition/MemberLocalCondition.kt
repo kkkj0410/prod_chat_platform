@@ -8,6 +8,7 @@ import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutStyle
 data class MemberLocalCondition(
     val size: Int = 10,
     val page: Int = 1,
+    val radiusKm : Int = 5,
     val minWorkoutExperience: MemberWorkoutExperience? = null,
     val maxWorkoutExperience: MemberWorkoutExperience? = null,
     val workoutStyle: List<MemberWorkoutStyle>? = null,

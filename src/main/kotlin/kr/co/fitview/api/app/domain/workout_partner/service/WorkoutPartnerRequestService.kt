@@ -113,20 +113,36 @@ class WorkoutPartnerRequestService(
     private fun sendStompAcceptWorkoutPartnerRequest(
         workoutPartnerRequest: WorkoutPartnerRequest,
     ) {
-        val findMemberProfile =
+        val findMemberProfile1 =
             memberQueryService.findMemberWorkoutRequestProfileFrom(workoutPartnerRequest.getToMemberId())
                 ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
 
-        val stomp = StompEventAcceptWorkoutPartnerDepth1(
+        val stomp1 = StompEventAcceptWorkoutPartnerDepth1(
             memberId = workoutPartnerRequest.getFromMemberId(),
             message = StompEventAcceptWorkoutPartnerDepth2(
-                memberId = findMemberProfile.memberId,
-                profileImageUrl = findMemberProfile.profileImageUrl,
-                nickname = findMemberProfile.nickname,
+                memberId = findMemberProfile1.memberId,
+                profileImageUrl = findMemberProfile1.profileImageUrl,
+                nickname = findMemberProfile1.nickname,
                 workoutPartnerRequestContentIndex = workoutPartnerRequest.content!!.index
             )
         )
-        publisher.publishEvent(stomp)
+
+        val findMemberProfile2 =
+            memberQueryService.findMemberWorkoutRequestProfileFrom(workoutPartnerRequest.getFromMemberId())
+                ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
+
+        val stomp2 = StompEventAcceptWorkoutPartnerDepth1(
+            memberId = workoutPartnerRequest.getToMemberId(),
+            message = StompEventAcceptWorkoutPartnerDepth2(
+                memberId = findMemberProfile2.memberId,
+                profileImageUrl = findMemberProfile2.profileImageUrl,
+                nickname = findMemberProfile2.nickname,
+                workoutPartnerRequestContentIndex = workoutPartnerRequest.content!!.index
+            )
+        )
+
+        publisher.publishEvent(stomp1)
+        publisher.publishEvent(stomp2)
     }
 
     private fun validateUpdateWorkoutPartnerRequest(workoutPartnerRequest: WorkoutPartnerRequest) {
