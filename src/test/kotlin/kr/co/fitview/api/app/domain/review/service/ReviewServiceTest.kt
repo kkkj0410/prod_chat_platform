@@ -762,6 +762,9 @@ class ReviewServiceTest @Autowired constructor(
         val signupRequest = TestDataFactory.oAuth2SignupRequest()
         oAuth2Service.signup(signupRequest, me.id!!)
 
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest2, other.id!!)
+
         val chatRoom = ChatRoom(ChatRoomType.PRIVATE)
         chatRoomRepository.save(chatRoom)
 
@@ -840,6 +843,105 @@ class ReviewServiceTest @Autowired constructor(
                     .isEqualTo(ReviewErrorCode.REVIEW_ALREADY_EXISTS)
             })
 
+    }
+
+    @DisplayName("특정 운동 기록에 대해서 리뷰 작성 시, 상대방이 작성했어도 본인도 리뷰 작성 가능하다.")
+    @Test
+    fun saveReviewOtherReview() {
+        // given
+        val me = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        val other = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(me)
+        memberRepository.save(other)
+
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest, me.id!!)
+
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest2, other.id!!)
+
+        val chatRoom = ChatRoom(ChatRoomType.PRIVATE)
+        chatRoomRepository.save(chatRoom)
+
+        val chatMessage = ChatMessage(
+            member = me,
+            chatRoom = chatRoom,
+            type = ChatMessageType.WORKOUT_REQUEST,
+            content = "content",
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessage)
+
+        val workoutRequest = WorkoutRequest.of(
+            chatMessage = chatMessage,
+            fromMember = me,
+            toMember = other,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime
+        )
+        workoutRequestRepository.save(workoutRequest)
+
+        val workoutHistory = WorkoutHistory(
+            chatRoom = chatRoom,
+            workoutRequest = workoutRequest,
+            memberOne = me,
+            memberTwo = other,
+            completedAt = time.nowLocalDateTime
+        )
+        workoutHistoryRepository.save(workoutHistory)
+
+        val reviewCategory = ReviewCategory(
+            displayText = "displayText",
+            seq = 100
+        )
+        reviewCategoryRepository.save(reviewCategory)
+
+        val reviewTag1 = ReviewTag(
+            reviewCategory = reviewCategory,
+            displayText = "displayText1",
+            seq = 100
+        )
+        val reviewTag2 = ReviewTag(
+            reviewCategory = reviewCategory,
+            displayText = "displayText2",
+            seq = 200
+        )
+        reviewTagRepository.save(reviewTag1)
+        reviewTagRepository.save(reviewTag2)
+
+        val reviewTagIds = listOf(reviewTag1.id!!, reviewTag2.id!!)
+
+        val request = ReviewCreateServiceRequest(
+            workoutHistoryId = workoutHistory.id!!,
+            type = ReviewType.GOOD,
+            reviewTagIds = reviewTagIds,
+            content = "content"
+        )
+
+        reviewService.saveReview(
+            memberId = other.id!!,
+            request = request
+        )
+
+        // when
+        val savedReview = reviewService.saveReview(
+            memberId = me.id!!,
+            request = request
+        )
+
+        // then
+        assertThat(savedReview)
+            .extracting("fromMember", "toMember", "workoutHistory", "isPrivate", "type", "score", "content")
+            .contains(me, other, workoutHistory, false, ReviewType.GOOD, 1.0, "content")
     }
 
     @DisplayName("리뷰 작성 시, 운동 이력이 없으면 리뷰 작성이 불가하다.")

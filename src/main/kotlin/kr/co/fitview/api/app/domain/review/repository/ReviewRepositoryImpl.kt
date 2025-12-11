@@ -28,20 +28,12 @@ class ReviewRepositoryImpl(
 
     override fun findReviewBy(memberId : Long, workoutHistoryId : Long) : Review?{
 
-        val memberOne = QMember("memberOne")
-        val memberTwo = QMember("memberTwo")
-
         return queryFactory
             .selectFrom(review)
-            .join(review.workoutHistory, workoutHistory)
-            .join(workoutHistory.memberOne, memberOne)
-            .join(workoutHistory.memberTwo, memberTwo)
             .where(
-                workoutHistory.id.eq(workoutHistoryId),
-                memberOne.id.eq(memberId)
-                    .or(memberTwo.id.eq(memberId)),
+                review.workoutHistory.id.eq(workoutHistoryId),
+                review.fromMember.id.eq(memberId),
                 review.deletedAt.isNull,
-                workoutHistory.deletedAt.isNull
             ).fetchOne()
     }
 
