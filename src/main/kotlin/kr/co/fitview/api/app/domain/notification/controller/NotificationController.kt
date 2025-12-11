@@ -12,6 +12,7 @@ import kr.co.fitview.api.app.domain.member.service.MemberService
 import kr.co.fitview.api.app.domain.notification.condition.NotificationCondition
 import kr.co.fitview.api.app.domain.notification.dto.response.NotificationResponse
 import kr.co.fitview.api.app.domain.notification.service.NotificationQueryService
+import kr.co.fitview.api.app.domain.notification.service.NotificationService
 import kr.co.fitview.api.app.domain.review.dto.response.ReviewResponse
 import kr.co.fitview.api.app.domain.review.dto.response.ReviewTagCountResponse
 import kr.co.fitview.api.app.domain.review.service.ReviewQueryService
@@ -27,6 +28,7 @@ import org.springframework.web.bind.annotation.*
 @RestController
 @RequestMapping("/api/v1/notifications")
 class NotificationController(
+    val notificationService : NotificationService,
     val notificationQueryService : NotificationQueryService,
     val securityUtil : SecurityUtil
 ) {
@@ -43,6 +45,18 @@ class NotificationController(
             slice = response,
             timeExtractor = { it.sentAt }
         ))
+    }
+
+
+    @PatchMapping("/{notificationId}/read")
+    fun notificationReadModify(
+        @PathVariable
+        notificationId : Long
+    ) : ResponseEntity<ApiResponse<*>> {
+
+        notificationService.modifyNotificationRead(notificationId)
+
+        return ResponseEntity.ok(ApiResponse.success("ok"))
     }
 
 

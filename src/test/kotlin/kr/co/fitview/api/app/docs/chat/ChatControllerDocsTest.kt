@@ -134,6 +134,18 @@ class ChatControllerDocsTest : RestDocsSupport() {
                     memberId = 12L,
                     content = "오늘 운동할래?"
                 ),
+                members = ChatMemberProfileResponse(
+                    me = ChatMemberProfile(
+                        memberId = 124L,
+                        nickname = "meNick",
+                        profileImageUrl = "profile"
+                    ),
+                    other = ChatMemberProfile(
+                        memberId = 234,
+                        nickname = "otherNick",
+                        profileImageUrl = "profile"
+                    ),
+                ),
                 lastWorkoutRequest = LastWorkoutRequestMessage(
                     workoutRequestId = 123L,
                     status = WorkoutRequestStatusForResponse.PENDING,
@@ -187,6 +199,16 @@ class ChatControllerDocsTest : RestDocsSupport() {
                         fieldWithPath("data.content[].nickname").description("상대 닉네임"),
                         fieldWithPath("data.content[].isRead").description("읽음 여부"),
 
+                        fieldWithPath("data.content[].members").type(JsonFieldType.OBJECT).description("채팅방 참여자 정보"),
+                        fieldWithPath("data.content[].members.me").type(JsonFieldType.OBJECT).description("요청 사용자 정보"),
+                        fieldWithPath("data.content[].members.me.memberId").type(JsonFieldType.NUMBER).description("요청 사용자 ID"),
+                        fieldWithPath("data.content[].members.me.nickname").type(JsonFieldType.STRING).description("요청 사용자 닉네임"),
+                        fieldWithPath("data.content[].members.me.profileImageUrl").type(JsonFieldType.STRING).description("요청 사용자 프로필 이미지 URL"),
+                        fieldWithPath("data.content[].members.other").type(JsonFieldType.OBJECT).description("상대방 정보"),
+                        fieldWithPath("data.content[].members.other.memberId").type(JsonFieldType.NUMBER).description("상대방 사용자 ID"),
+                        fieldWithPath("data.content[].members.other.nickname").type(JsonFieldType.STRING).description("상대방 닉네임"),
+                        fieldWithPath("data.content[].members.other.profileImageUrl").type(JsonFieldType.STRING).description("상대방 프로필 이미지 URL"),
+
                     ),
 
                     responseFields(
@@ -232,6 +254,18 @@ class ChatControllerDocsTest : RestDocsSupport() {
                     status = WorkoutRequestStatusForResponse.ACCEPT,
                     scheduledAt = LocalDateTime.now().plusDays(1),
                     location = "스타벅스 앞"
+                ),
+                members = ChatMemberProfileResponse(
+                    me = ChatMemberProfile(
+                        memberId = 124L,
+                        nickname = "meNick",
+                        profileImageUrl = "profile"
+                    ),
+                    other = ChatMemberProfile(
+                        memberId = 234,
+                        nickname = "otherNick",
+                        profileImageUrl = "profile"
+                    ),
                 ),
                 lastWorkoutRequest = LastWorkoutRequestMessage(
                     workoutRequestId = 123L,
@@ -287,6 +321,16 @@ class ChatControllerDocsTest : RestDocsSupport() {
                         fieldWithPath("data.content[].nickname").description("상대 닉네임"),
                         fieldWithPath("data.content[].isRead").description("읽음 여부"),
 
+                        fieldWithPath("data.content[].members").type(JsonFieldType.OBJECT).description("채팅방 참여자 정보"),
+                        fieldWithPath("data.content[].members.me").type(JsonFieldType.OBJECT).description("요청 사용자 정보"),
+                        fieldWithPath("data.content[].members.me.memberId").type(JsonFieldType.NUMBER).description("요청 사용자 ID"),
+                        fieldWithPath("data.content[].members.me.nickname").type(JsonFieldType.STRING).description("요청 사용자 닉네임"),
+                        fieldWithPath("data.content[].members.me.profileImageUrl").type(JsonFieldType.STRING).description("요청 사용자 프로필 이미지 URL"),
+                        fieldWithPath("data.content[].members.other").type(JsonFieldType.OBJECT).description("상대방 정보"),
+                        fieldWithPath("data.content[].members.other.memberId").type(JsonFieldType.NUMBER).description("상대방 사용자 ID"),
+                        fieldWithPath("data.content[].members.other.nickname").type(JsonFieldType.STRING).description("상대방 닉네임"),
+                        fieldWithPath("data.content[].members.other.profileImageUrl").type(JsonFieldType.STRING).description("상대방 프로필 이미지 URL"),
+
 
                     ),
 
@@ -331,6 +375,18 @@ class ChatControllerDocsTest : RestDocsSupport() {
                     isRead = false,
                     chatRoomId = 1L,
                     content = ChatNoticeMessageType.WORKOUT_REQUEST_COMPLETE
+                ),
+                members = ChatMemberProfileResponse(
+                    me = ChatMemberProfile(
+                        memberId = 124L,
+                        nickname = "meNick",
+                        profileImageUrl = "profile"
+                    ),
+                    other = ChatMemberProfile(
+                        memberId = 234,
+                        nickname = "otherNick",
+                        profileImageUrl = "profile"
+                    ),
                 ),
                 lastWorkoutRequest = LastWorkoutRequestMessage(
                     workoutRequestId = 123L,
@@ -384,6 +440,16 @@ class ChatControllerDocsTest : RestDocsSupport() {
                         fieldWithPath("data.content[].profileImageUrl").description("상대 프로필 이미지 URL"),
                         fieldWithPath("data.content[].nickname").description("상대 닉네임"),
                         fieldWithPath("data.content[].isRead").description("읽음 여부"),
+
+                        fieldWithPath("data.content[].members").type(JsonFieldType.OBJECT).description("채팅방 참여자 정보"),
+                        fieldWithPath("data.content[].members.me").type(JsonFieldType.OBJECT).description("요청 사용자 정보"),
+                        fieldWithPath("data.content[].members.me.memberId").type(JsonFieldType.NUMBER).description("요청 사용자 ID"),
+                        fieldWithPath("data.content[].members.me.nickname").type(JsonFieldType.STRING).description("요청 사용자 닉네임"),
+                        fieldWithPath("data.content[].members.me.profileImageUrl").type(JsonFieldType.STRING).description("요청 사용자 프로필 이미지 URL"),
+                        fieldWithPath("data.content[].members.other").type(JsonFieldType.OBJECT).description("상대방 정보"),
+                        fieldWithPath("data.content[].members.other.memberId").type(JsonFieldType.NUMBER).description("상대방 사용자 ID"),
+                        fieldWithPath("data.content[].members.other.nickname").type(JsonFieldType.STRING).description("상대방 닉네임"),
+                        fieldWithPath("data.content[].members.other.profileImageUrl").type(JsonFieldType.STRING).description("상대방 프로필 이미지 URL"),
 
                         ),
 

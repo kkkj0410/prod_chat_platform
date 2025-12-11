@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Size
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.notification.entity.enums.NotificationType
 import kr.co.fitview.api.app.global.entity.BaseEntity
+import kr.co.fitview.api.app.global.entity.BaseSoftDeleteEntity
 import org.hibernate.annotations.ColumnDefault
 import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.type.SqlTypes
@@ -40,12 +41,17 @@ class Notification(
     @Column(name = "sent_at", nullable = false)
     var sentAt: LocalDateTime? = null
 
-) : BaseEntity() {
+) : BaseSoftDeleteEntity() {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "notification_id", nullable = false)
     var id: Long? = null
+
+    fun updateIsRead(isRead : Boolean) : Notification{
+        this.isRead = isRead
+        return this
+    }
 
     companion object {
         fun of(

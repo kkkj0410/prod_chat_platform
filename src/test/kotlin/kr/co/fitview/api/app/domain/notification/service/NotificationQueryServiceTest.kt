@@ -77,4 +77,45 @@ class NotificationQueryServiceTest @Autowired constructor(
                 999L
             )
     }
+
+    @DisplayName("알람 id로 알람을 조회한다.")
+    @Test
+    fun findNotificationFrom() {
+        // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(member)
+
+        val senderData = mapOf(
+            "memberId" to 999L,
+            "nickname" to "헬스매니아",
+            "profileImageUrl" to "https://image.url/profile.jpg"
+        )
+
+        val payloadData = mapOf(
+            "memberId" to 999L,
+            "workoutPartnerRequestId" to 100L
+        )
+
+        val contentMap: MutableMap<String, Any> = mutableMapOf(
+            "sender" to senderData,
+            "payload" to payloadData
+        )
+        val notification = Notification.of(
+            member = member,
+            type = NotificationType.WORKOUT_PARTNER_REQUEST,
+            content = contentMap,
+            sentAt = time.nowLocalDateTime
+        )
+        notificationRepository.save(notification)
+
+        // when
+        val findNotification = notificationQueryService.findNotificationFrom(notification.id!!)
+
+        // then
+        assertThat(findNotification!!.id!!).isEqualTo(notification.id!!)
+    }
 }

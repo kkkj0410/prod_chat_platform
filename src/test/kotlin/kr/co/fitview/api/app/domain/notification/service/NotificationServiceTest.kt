@@ -18,8 +18,37 @@ class NotificationServiceTest @Autowired constructor(
     private val time : Time
 ) : IntegrationTestSupport(){
 
+
     private fun createMember() = Member(email = "email", password = "password", role = Role.USER).also {
         memberRepository.save(it)
+    }
+
+    @DisplayName("알람 메시지를 읽음 여부 처리한다.")
+    @Test
+    fun modifyNotificationRead() {
+        // given
+        val member = createMember()
+
+        val event = EventWorkoutPartnerRequest(
+            memberId = member.id!!,
+            sender = EventSender(
+                memberId = 123L,
+                nickname = "nickname",
+                profileImageUrl = "profileImageUrl"
+            ),
+            payload = EventWorkoutPartnerRequestPayload(
+                memberId = 123L,
+                workoutPartnerRequestId = 345L
+            )
+        )
+
+        val savedNotification = notificationService.saveWorkoutPartnerRequest(event)
+
+        // when
+        val updatedNotification = notificationService.modifyNotificationRead(savedNotification.id!!)
+
+        // then
+        assertThat(updatedNotification.isRead).isEqualTo(true)
     }
 
     @DisplayName("운동 파트너 요청 알람을 저장한다.")

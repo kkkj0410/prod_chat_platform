@@ -110,6 +110,18 @@ class ChatControllerTest : ControllerTestSupport(){
                     memberId = 12L,
                     content = "오늘 운동할래?"
                 ),
+                members = ChatMemberProfileResponse(
+                    me = ChatMemberProfile(
+                        memberId = 124L,
+                        nickname = "meNick",
+                        profileImageUrl = "profile"
+                    ),
+                    other = ChatMemberProfile(
+                        memberId = 234,
+                        nickname = "otherNick",
+                        profileImageUrl = "profile"
+                    ),
+                ),
                 lastWorkoutRequest = LastWorkoutRequestMessage(
                     workoutRequestId = 123L,
                     status = WorkoutRequestStatusForResponse.PENDING,
@@ -135,6 +147,18 @@ class ChatControllerTest : ControllerTestSupport(){
                     scheduledAt = LocalDateTime.now().plusDays(1),
                     location = "스타벅스 앞"
                 ),
+                members = ChatMemberProfileResponse(
+                    me = ChatMemberProfile(
+                        memberId = 124L,
+                        nickname = "meNick",
+                        profileImageUrl = "profile"
+                    ),
+                    other = ChatMemberProfile(
+                        memberId = 234,
+                        nickname = "otherNick",
+                        profileImageUrl = "profile"
+                    ),
+                ),
                 lastWorkoutRequest = LastWorkoutRequestMessage(
                     workoutRequestId = 123L,
                     status = WorkoutRequestStatusForResponse.ACCEPT,
@@ -156,6 +180,18 @@ class ChatControllerTest : ControllerTestSupport(){
                     chatRoomId = 3L,
                     memberId = 30L,
                     content = "ㅇㅋ 내일 보자"
+                ),
+                members = ChatMemberProfileResponse(
+                    me = ChatMemberProfile(
+                        memberId = 124L,
+                        nickname = "meNick",
+                        profileImageUrl = "profile"
+                    ),
+                    other = ChatMemberProfile(
+                        memberId = 234,
+                        nickname = "otherNick",
+                        profileImageUrl = "profile"
+                    ),
                 ),
                 lastWorkoutRequest = null
             )
@@ -188,6 +224,13 @@ class ChatControllerTest : ControllerTestSupport(){
             .andExpect(jsonPath("$.data.content[0].chatRoomId").value(1))
             .andExpect(jsonPath("$.data.content[0].nickname").value("철수"))
             .andExpect(jsonPath("$.data.content[0].lastChatMessage.chatMessageId").value(101))
+
+            .andExpect(jsonPath("$.data.content[0].members.me.memberId").value(124L))
+            .andExpect(jsonPath("$.data.content[0].members.me.nickname").value("meNick"))
+            .andExpect(jsonPath("$.data.content[0].members.me.profileImageUrl").value("profile"))
+            .andExpect(jsonPath("$.data.content[0].members.other.memberId").value(234L))
+            .andExpect(jsonPath("$.data.content[0].members.other.nickname").value("otherNick"))
+            .andExpect(jsonPath("$.data.content[0].members.other.profileImageUrl").value("profile"))
 
             .andExpect(jsonPath("$.data.content[0].lastWorkoutRequest.workoutRequestId").value(123L))
             .andExpect(jsonPath("$.data.content[0].lastWorkoutRequest.status").value("PENDING"))

@@ -1,5 +1,6 @@
 package kr.co.fitview.api.app.domain.workout_partner.service
 
+import kr.co.fitview.api.app.domain.chat.service.ChatRoomQueryService
 import kr.co.fitview.api.app.domain.chat.service.ChatRoomService
 import kr.co.fitview.api.app.domain.member.dto.response.WorkoutPartnerStatusResponse
 import kr.co.fitview.api.app.domain.member.dto.response.enums.ProfileWorkoutPartnerStatus
@@ -14,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional
 class WorkoutPartnerQueryService(
     val workoutPartnerRepository : WorkoutPartnerRepository,
     val workoutPartnerRequestQueryService : WorkoutPartnerRequestQueryService,
-    val chatRoomService : ChatRoomService
+    val chatRoomQueryService : ChatRoomQueryService
 ) {
 
     fun findWorkoutPartnerStatus(fromMemberId : Long, toMemberId : Long): WorkoutPartnerStatusResponse {
@@ -46,7 +47,7 @@ class WorkoutPartnerQueryService(
         val findWorkoutPartner = workoutPartnerRepository.findByOrderedMemberOneIdAndMemberTwoIdAndDeletedAtIsNull(fromMemberId, toMemberId)
 
         if (isNotNull(findWorkoutPartner)) {
-            val chatRoom = chatRoomService.findChatRoomFrom(fromMemberId, toMemberId)
+            val chatRoom = chatRoomQueryService.findChatRoomFrom(fromMemberId, toMemberId)
 
             return WorkoutPartnerStatusResponse(
                 status = ProfileWorkoutPartnerStatus.PARTNER,

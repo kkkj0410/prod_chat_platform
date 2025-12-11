@@ -6,6 +6,7 @@ import kr.co.fitview.api.app.domain.chat.entity.ChatParticipant
 import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatRoomType
 import kr.co.fitview.api.app.domain.chat.repository.ChatRoomRepository
+import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestQueryService
 import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestService
 import org.springframework.data.domain.Slice
@@ -19,17 +20,14 @@ import org.springframework.transaction.annotation.Transactional
 class ChatRoomService(
     private val chatRoomRepository : ChatRoomRepository,
     private val chatMessageQueryService : ChatMessageQueryService,
-    private val workoutRequestQueryService : WorkoutRequestQueryService
+    private val workoutRequestQueryService : WorkoutRequestQueryService,
+    private val memberQueryService : MemberQueryService
 ) {
 
     @Transactional
     fun addPrivateChatRoom() : ChatRoom {
         val chatRoom = ChatRoom(ChatRoomType.PRIVATE)
         return chatRoomRepository.save(chatRoom)
-    }
-
-    fun findChatRoomFrom(fromMemberId: Long, toMemberId: Long): ChatRoom? {
-        return chatRoomRepository.findPrivateChatRoomIdBetweenMemberIds(fromMemberId, toMemberId)
     }
 
     fun findPrivateChatRoomFrom(memberOneId : Long, memberTwoId : Long) : ChatRoom? {
@@ -48,9 +46,11 @@ class ChatRoomService(
 
         val chatMessages = chatMessageQueryService.findLastChatMessages(memberId, chatRoomIds)
 
+        val members = memberQueryService.findAllMemberProfileFrom(chatRoomIds)
+
         val recentWorkoutRequests = workoutRequestQueryService.findRecentWorkoutRequestFrom(chatRoomIds)
 
-        val chatRoomResponses = ChatRoomResponse.from(profiles, chatMessages, recentWorkoutRequests)
+        val chatRoomResponses = ChatRoomResponse.from(memberId, profiles, chatMessages, members, recentWorkoutRequests)
 
         return SliceImpl(chatRoomResponses, slice.pageable, slice.hasNext())
     }
