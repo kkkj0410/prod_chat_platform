@@ -9,6 +9,7 @@ import kr.co.fitview.api.app.domain.notification.dto.response.NotificationRespon
 import kr.co.fitview.api.app.domain.notification.dto.response.NotificationSender
 import kr.co.fitview.api.app.domain.notification.entity.Notification
 import kr.co.fitview.api.app.domain.notification.entity.enums.NotificationType
+import kr.co.fitview.api.app.global.exception.error.request.RequestErrorCode
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -19,6 +20,7 @@ import org.springframework.data.domain.Slice
 import org.springframework.data.domain.SliceImpl
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
@@ -86,5 +88,18 @@ class NotificationControllerTest : ControllerTestSupport(){
             .andExpect(jsonPath("$.data.content[2].notificationId").value(3))
             .andExpect(jsonPath("$.data.content[2].type").value("WORKOUT_COMPLETE"))
             .andExpect(jsonPath("$.data.content[2].link.type").value("REVIEW_WRITE"))
+    }
+
+    @DisplayName("회원의 알람 메시지를 읽음 처리한다.")
+    @Test
+    fun notificationReadModify() {
+
+        // when / then
+        mockMvc.perform(
+            patch("/api/v1/notifications/{notificationId}/read", 123)
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andDo(print())
+            .andExpect(status().isOk)
     }
 }

@@ -41,68 +41,6 @@ class ChatRoomServiceTest @Autowired constructor(
 ) : IntegrationTestSupport() {
 
 
-    @DisplayName("두 회원간의 개인 채팅방을 조회한다.")
-    @Test
-    fun findChatRoomFrom() {
-        // given
-        val member1 = Member(
-            email = "email1",
-            password = "password1",
-            role = Role.USER,
-        )
-        val member2 = Member(
-            email = "email2",
-            password = "password2",
-            role = Role.USER,
-        )
-        val savedMember1 = memberRepository.save(member1)
-        val savedMember2 = memberRepository.save(member2)
-
-        val savedChatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
-
-        val chatParticipant1 = ChatParticipant(
-            savedChatRoom,
-            savedMember1
-        )
-        val chatParticipant2 = ChatParticipant(
-            savedChatRoom,
-            savedMember2
-        )
-        chatParticipantRepository.save(chatParticipant1)
-        chatParticipantRepository.save(chatParticipant2)
-
-        // when
-        val findChatRoom = chatRoomService.findChatRoomFrom(member1.id!!, member2.id!!)
-
-        // then
-        assertThat(findChatRoom!!.id).isNotNull()
-        assertThat(findChatRoom.type).isEqualTo(ChatRoomType.PRIVATE)
-    }
-
-    @DisplayName("두 회원간의 채팅방이 없으면 채팅방 조회 하지 못한다.")
-    @Test
-    fun findChatRoomFromNoneChatRoom() {
-        // given
-        val member1 = Member(
-            email = "email1",
-            password = "password1",
-            role = Role.USER,
-        )
-        val member2 = Member(
-            email = "email2",
-            password = "password2",
-            role = Role.USER,
-        )
-        memberRepository.save(member1)
-        memberRepository.save(member2)
-
-        // when
-        val findChatRoom = chatRoomService.findChatRoomFrom(member1.id!!, member2.id!!)
-
-        // then
-        assertThat(findChatRoom).isNull()
-    }
-
     @DisplayName("비밀 채팅방을 생성한다.")
     @Test
     fun addPrivateChatRoom() {
@@ -323,5 +261,161 @@ class ChatRoomServiceTest @Autowired constructor(
 
         assertThat(response.hasNext()).isEqualTo(false)
     }
+
+    @DisplayName("채팅방 목록 조회 시, 채팅방의 참여자도 조회한다.")
+    @Test
+    fun findChatRoomsMembers() {
+        //given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val other1 = Member(
+            email = "email2",
+            password = "password2",
+            role = Role.USER,
+        )
+        val other2 = Member(
+            email = "email2",
+            password = "password2",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+        memberRepository.save(other1)
+        memberRepository.save(other2)
+
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "meNick",
+            profileImageUrl = "meProfile"
+        )
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "otherNick",
+            profileImageUrl = "otherProfile"
+        )
+        val signupRequest3 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "other3Nick",
+            profileImageUrl = "other2Profile"
+        )
+
+        oAuth2Service.signup(signupRequest1, me.id!!)
+        oAuth2Service.signup(signupRequest2, other1.id!!)
+        oAuth2Service.signup(signupRequest3, other2.id!!)
+
+        val chatRoom1 = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+        val chatRoom2 = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+
+        val chatParticipant1 = ChatParticipant(
+            chatRoom1,
+            me
+        )
+        val chatParticipant2 = ChatParticipant(
+            chatRoom1,
+            other1
+        )
+        val chatParticipant3 = ChatParticipant(
+            chatRoom2,
+            me
+        )
+        val chatParticipant4 = ChatParticipant(
+            chatRoom2,
+            other2
+        )
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+        chatParticipantRepository.save(chatParticipant3)
+        chatParticipantRepository.save(chatParticipant4)
+
+        val message1ByChatRoom1 = ChatMessage(
+            member = me,
+            chatRoom = chatRoom1,
+            type = ChatMessageType.TEXT,
+            content = "content",
+            sentAt = time.nowLocalDateTime.minusHours(3)
+        )
+        val message2ByChatRoom1 = ChatMessage(
+            member = me,
+            chatRoom = chatRoom1,
+            type = ChatMessageType.TEXT,
+            content = "content",
+            sentAt = time.nowLocalDateTime
+        )
+
+        val message1ByChatRoom2 = ChatMessage(
+            member = other2,
+            chatRoom = chatRoom2,
+            type = ChatMessageType.WORKOUT_REQUEST,
+            sentAt = time.nowLocalDateTime.minusHours(3)
+        )
+        val workout1ByChatRoom2 = WorkoutRequest(
+            chatMessage = message1ByChatRoom2,
+            fromMember = other2,
+            toMember = me,
+            status = WorkoutRequestStatus.PENDING,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusHours(24),
+            requestedAt = time.nowLocalDateTime.minusHours(3)
+        )
+        chatMessageRepository.save(message1ByChatRoom1)
+        chatMessageRepository.save(message2ByChatRoom1)
+        chatMessageRepository.save(message1ByChatRoom2)
+
+        chatRoom1.updateLastMessageAt(time.nowLocalDateTime)
+        chatRoom2.updateLastMessageAt(time.nowLocalDateTime.minusHours(3))
+
+        workoutRequestRepository.save(workout1ByChatRoom2)
+
+        val messageRead = MessageReadStatus(
+            chatRoom = chatRoom2,
+            member = me,
+            chatMessage = message1ByChatRoom2,
+            isRead = true
+        )
+        messageReadStatusRepository.save(messageRead)
+
+        val condition = ChatCondition()
+
+        // when
+        val response = chatRoomService.findChatRooms(me.id!!, condition)
+        val content = response.content
+
+        //then
+        assertThat(content[0].members)
+            .extracting(
+                "me.memberId",
+                "me.nickname",
+                "me.profileImageUrl",
+                "other.memberId",
+                "other.nickname",
+                "other.profileImageUrl"
+            )
+            .contains(
+                me.id!!,
+                signupRequest1.nickname,
+                signupRequest1.profileImageUrl,
+                other1.id!!,
+                signupRequest2.nickname,
+                signupRequest2.profileImageUrl,
+            )
+
+        assertThat(content[1].members)
+            .extracting(
+                "me.memberId",
+                "me.nickname",
+                "me.profileImageUrl",
+                "other.memberId",
+                "other.nickname",
+                "other.profileImageUrl"
+            )
+            .contains(
+                me.id!!,
+                signupRequest1.nickname,
+                signupRequest1.profileImageUrl,
+                other2.id!!,
+                signupRequest3.nickname,
+                signupRequest3.profileImageUrl,
+            )
+    }
+
 
 }

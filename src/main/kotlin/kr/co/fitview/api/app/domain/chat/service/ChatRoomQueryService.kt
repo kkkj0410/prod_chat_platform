@@ -21,5 +21,8 @@ class ChatRoomQueryService(
         }
     }
 
+    fun findChatRoomFrom(fromMemberId: Long, toMemberId: Long): ChatRoom? {
+        return chatRoomRepository.findPrivateChatRoomIdBetweenMemberIds(fromMemberId, toMemberId)
+    }
 
 }

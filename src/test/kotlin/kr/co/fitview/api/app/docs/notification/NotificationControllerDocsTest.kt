@@ -77,11 +77,45 @@ import java.time.ZoneOffset
 
 class NotificationControllerDocsTest : RestDocsSupport() {
 
+    private val notificationService: NotificationService = mock(NotificationService::class.java)
     private val notificationQueryService: NotificationQueryService = mock(NotificationQueryService::class.java)
     private val securityUtil: SecurityUtil = mock(SecurityUtil::class.java)
 
     override fun initController(): Any {
-        return NotificationController(notificationQueryService, securityUtil)
+        return NotificationController(notificationService, notificationQueryService, securityUtil)
+    }
+
+    @DisplayName("알림 메시지 읽음 처리")
+    @Test
+    fun notificationReadModify() {
+
+        mockMvc.perform(
+            patch("/api/v1/notifications/{notificationId}/read", 123)
+                .header("Authorization", "Bearer jwt-token")
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andDo(print())
+            .andExpect(status().isOk)
+            .andDo(
+                document(
+                    "notification-read",
+                    preprocessRequest(prettyPrint()),
+                    preprocessResponse(prettyPrint()),
+
+                    requestHeaders(RestDocsHeaders.authorizationHeader(Role.USER)),
+
+                    pathParameters(
+                        parameterWithName("notificationId").description("인앱 알람 메시지 id")
+                    ),
+
+                    responseFields(
+                        fieldWithPath("status").type(JsonFieldType.NUMBER).description("상태"),
+                        fieldWithPath("code").type(JsonFieldType.STRING).description("코드"),
+                        fieldWithPath("message").type(JsonFieldType.STRING).description("메시지"),
+                        fieldWithPath("data").type(JsonFieldType.STRING).description("응답 데이터"),
+                    )
+                )
+            )
     }
 
     @DisplayName("운동 파트너 요청 알림")

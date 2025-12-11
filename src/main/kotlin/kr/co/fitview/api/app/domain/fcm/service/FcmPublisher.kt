@@ -1,5 +1,6 @@
 package kr.co.fitview.api.app.domain.fcm.service
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.google.firebase.messaging.*
 import kr.co.fitview.api.app.domain.fcm.dto.FcmSendEvent
 import kr.co.fitview.api.app.domain.fcm.entity.enums.FcmTokenPlatform
@@ -13,10 +14,15 @@ class FcmPublisher(
     private val firebaseMessaging : FirebaseMessaging,
 ) {
 
-
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun send(event : FcmSendEvent) {
         if(isAndroid(event.platform)){
+            val message = buildAndroidMessage(event.token, event.title, event.body)
+
+
+//            val mapper = jacksonObjectMapper()
+//            val json = mapper.writeValueAsString(message)
+//            println(json)
+
             firebaseMessaging.send(buildAndroidMessage(event.token, event.title, event.body))
             return
         }

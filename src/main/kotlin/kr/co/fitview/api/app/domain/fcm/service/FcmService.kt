@@ -3,6 +3,7 @@ package kr.co.fitview.api.app.domain.fcm.service
 import kr.co.fitview.api.app.domain.fcm.dto.FcmSendEvent
 import kr.co.fitview.api.app.domain.fcm.dto.request.FcmTokenCreateServiceRequest
 import kr.co.fitview.api.app.domain.fcm.entity.FcmToken
+import kr.co.fitview.api.app.domain.fcm.entity.enums.FcmTokenPlatform
 import kr.co.fitview.api.app.domain.fcm.enums.FcmMessage
 import kr.co.fitview.api.app.domain.fcm.repository.FcmTokenRepository
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
@@ -22,9 +23,17 @@ class FcmService(
 
 
     fun send(memberId: Long, fcmMessage: FcmMessage) {
-        val findFcmTokens = fcmTokenRepository.findAllByMemberIdAndIsActiveTrueAndDeletedAtIsNull(memberId)
+//        val event = FcmSendEvent(
+//            token = "eLAcQds",
+//            title = "title",
+//            body = "body",
+//            platform = FcmTokenPlatform.ANDROID
+//        )
+//        fcmPublisher.send(event)
 
-        sendAllDevice(findFcmTokens, fcmMessage)
+//        val findFcmTokens = fcmTokenRepository.findAllByMemberIdAndIsActiveTrueAndDeletedAtIsNull(memberId)
+//
+//        sendAllDevice(findFcmTokens, fcmMessage)
     }
 
     @Transactional

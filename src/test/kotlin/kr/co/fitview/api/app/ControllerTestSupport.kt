@@ -18,6 +18,7 @@ import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.domain.member.service.MemberService
 import kr.co.fitview.api.app.domain.notification.controller.NotificationController
 import kr.co.fitview.api.app.domain.notification.service.NotificationQueryService
+import kr.co.fitview.api.app.domain.notification.service.NotificationService
 import kr.co.fitview.api.app.global.stomp.service.StompPublishService
 import kr.co.fitview.api.app.domain.oauth2.controller.OAuth2Controller
 import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
@@ -169,5 +170,8 @@ abstract class ControllerTestSupport {
 
     @MockitoBean
     protected lateinit var notificationQueryService : NotificationQueryService
+
+    @MockitoBean
+    protected lateinit var notificationService : NotificationService
 
 }

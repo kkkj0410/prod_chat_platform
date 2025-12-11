@@ -109,3 +109,14 @@ include::{snippets}/notification-review-receive/http-response.adoc[]
 include::{snippets}/notification-review-receive/response-fields.adoc[]
 
 
+[[notification-read]]
+=== 알람 읽음 처리 API
+
+==== HTTP Request
+include::{snippets}/notification-read/http-request.adoc[]
+include::{snippets}/notification-read/request-headers.adoc[]
+include::{snippets}/notification-read/path-parameters.adoc[]
+
+==== HTTP Response
+include::{snippets}/notification-read/http-response.adoc[]
+include::{snippets}/notification-read/response-fields.adoc[]

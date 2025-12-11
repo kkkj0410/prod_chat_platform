@@ -7,4 +7,5 @@ import org.springframework.data.domain.Slice
 
 interface NotificationRepositoryCustom {
     fun findAllNotificationBy(memberId: Long, condition : NotificationCondition): Slice<Notification>
+
 }

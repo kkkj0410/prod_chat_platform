@@ -5,6 +5,8 @@ import kr.co.fitview.api.app.domain.notification.dto.request.*
 import kr.co.fitview.api.app.domain.notification.entity.Notification
 import kr.co.fitview.api.app.domain.notification.entity.enums.NotificationType
 import kr.co.fitview.api.app.domain.notification.repository.NotificationRepository
+import kr.co.fitview.api.app.global.exception.GlobalException
+import kr.co.fitview.api.app.global.exception.error.global.GlobalErrorCode
 import kr.co.fitview.api.app.global.time.Time
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -14,9 +16,20 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional(readOnly = true)
 class NotificationService(
     private val memberQueryService : MemberQueryService,
+    private val notificationQueryService : NotificationQueryService,
     private val notificationRepository : NotificationRepository,
     private val time : Time
 ) {
+
+    @Transactional
+    fun modifyNotificationRead(notificationId: Long) : Notification{
+        val findNotification = notificationQueryService.findNotificationFrom(notificationId)
+            ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
+
+        findNotification.updateIsRead(true)
+
+        return findNotification
+    }
 
     @Transactional
     fun saveWorkoutPartnerRequest(event: EventWorkoutPartnerRequest) : Notification {
