@@ -3,6 +3,7 @@ package kr.co.fitview.api.app.domain.workout_partner.service
 import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.address.dto.request.AddressCreateServiceRequest
 import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
+import kr.co.fitview.api.app.domain.fcm.dto.request.EventFcmWorkoutPartnerRequest
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutExperience
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutGoal
@@ -163,6 +164,42 @@ class WorkoutPartnerRequestServiceTest @Autowired constructor(
         val count = events.stream(EventWorkoutPartnerRequest::class.java).count()
         assertThat(count).isEqualTo(1)
     }
+
+    @DisplayName("운동 파트너 요청 대상자에게 푸시 알람을 보낸다.")
+    @Test
+    fun addWorkoutPartnerRequestFcm() {
+        // given
+        val fromMember = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+
+        val toMember = Member(
+            email = "email2",
+            password = "password2",
+            role = Role.USER,
+        )
+
+        val savedFromMember = memberService.addMember(fromMember)
+        val savedToMember = memberService.addMember(toMember)
+
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest , savedFromMember.id!!)
+
+        val request = WorkoutPartnerCreateServiceRequest(
+            memberId = savedToMember.id!!,
+            workoutPartnerRequestContentIndex = WorkoutPartnerRequestContent.BURN
+        )
+
+        // when
+        workoutPartnerRequestService.addWorkoutPartnerRequest(savedFromMember.id!!, request)
+
+        // then
+        val count = events.stream(EventFcmWorkoutPartnerRequest::class.java).count()
+        assertThat(count).isEqualTo(1)
+    }
+
 
     @DisplayName("핏버디 요청 시, 24시간 동안 본인이 상대방에게 요청을 보냈으면 요청 불가")
 //    @Test
