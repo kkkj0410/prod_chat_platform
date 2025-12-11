@@ -14,26 +14,30 @@ class FcmPublisher(
     private val firebaseMessaging : FirebaseMessaging,
 ) {
 
-    fun send(event : FcmSendEvent) {
-        if(isAndroid(event.platform)){
-            val message = buildAndroidMessage(event.token, event.title, event.body)
+    fun send(
+        token : String,
+        title : String,
+        body : String,
+        platform : FcmTokenPlatform,
+        data: Map<String, Any>,
 
-
-//            val mapper = jacksonObjectMapper()
-//            val json = mapper.writeValueAsString(message)
-//            println(json)
-
-            firebaseMessaging.send(buildAndroidMessage(event.token, event.title, event.body))
+    ) {
+        if(isAndroid(platform)){
+            firebaseMessaging.send(buildAndroidMessage(token, title, body, data))
             return
         }
 
-        firebaseMessaging.send(buildIosMessage(event.token, event.title, event.body))
+        firebaseMessaging.send(buildIosMessage(token, title, body, data))
     }
+
 
     private fun isAndroid(platform: FcmTokenPlatform) =
         platform == FcmTokenPlatform.ANDROID
 
-    private fun buildAndroidMessage(token: String, title: String, body: String): Message {
+    private fun buildAndroidMessage(token: String, title: String, body: String, data: Map<String, Any>): Message {
+
+        val stringData = data.mapValues { (_, v) -> v.toString() }
+
         return Message.builder()
             .setAndroidConfig(
                 AndroidConfig.builder()
@@ -45,13 +49,15 @@ class FcmPublisher(
                             .setChannelId("default")
                             .build()
                     )
+                    .putAllData(stringData)
                     .build()
             )
             .setToken(token)
             .build()
     }
 
-    private fun buildIosMessage(token: String, title: String, body: String): Message {
+    private fun buildIosMessage(token: String, title: String, body: String, data: Map<String, Any>): Message {
+
         return Message.builder()
             .setApnsConfig(
                 ApnsConfig.builder()
@@ -66,6 +72,7 @@ class FcmPublisher(
                             .setSound("default")
                             .build()
                     )
+                    .putAllCustomData(data)
                     .build()
             )
             .setToken(token)
