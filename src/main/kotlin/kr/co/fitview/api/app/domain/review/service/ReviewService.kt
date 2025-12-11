@@ -1,5 +1,6 @@
 package kr.co.fitview.api.app.domain.review.service
 
+import kr.co.fitview.api.app.domain.fcm.dto.request.EventFcmReviewReceive
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.domain.notification.dto.request.EventReviewReceive
@@ -61,6 +62,8 @@ class ReviewService(
 
             reviewTagCountService.saveAllReviewTagCount(toMember.id!!, request.reviewTagIds)
 
+            sendFcmCompleteReview(toMember.id!!)
+
             sendNotificationCompleteReview(toMember.id!!, memberId, review.id!!, findWorkoutHistory)
 
             return review
@@ -73,13 +76,19 @@ class ReviewService(
         return reviewRepository.save(review)
     }
 
-
     fun findReviewCategoryAndTag() : List<ReviewCategoryResponse>{
         return reviewTagRepository.findAllReviewTag()
     }
 
     private fun isPositiveType(type: ReviewType) =
         type == ReviewType.GOOD || type == ReviewType.NORMAL
+
+    private fun sendFcmCompleteReview(toMemberId: Long) {
+        val fcmEvent = EventFcmReviewReceive(
+            toMemberId = toMemberId
+        )
+        publisher.publishEvent(fcmEvent)
+    }
 
     private fun sendNotificationCompleteReview(
         toMemberId: Long,

@@ -1,5 +1,6 @@
 package kr.co.fitview.api.app.domain.workout_partner.service
 
+import kr.co.fitview.api.app.domain.fcm.dto.request.EventFcmWorkoutPartnerAccept
 import kr.co.fitview.api.app.domain.fcm.dto.request.EventFcmWorkoutPartnerRequest
 import kr.co.fitview.api.app.domain.member.dto.response.MemberProfile
 import kr.co.fitview.api.app.domain.member.entity.Member
@@ -89,6 +90,8 @@ class WorkoutPartnerRequestService(
 
             sendStompAcceptWorkoutPartnerRequest(findWorkoutPartnerRequest)
 
+            sendFcmNotificationAcceptWorkoutPartnerRequest(findWorkoutPartnerRequest.getFromMemberId(), findWorkoutPartnerRequest.getToMemberId())
+
             sendNotificationAcceptWorkoutPartnerRequest(findWorkoutPartnerRequest, savedWorkoutPartner.id!!)
 
             return findWorkoutPartnerRequest
@@ -100,7 +103,6 @@ class WorkoutPartnerRequestService(
 
         return findWorkoutPartnerRequest
     }
-
 
     @Transactional
     fun addWorkoutPartner(workoutPartnerRequest: WorkoutPartnerRequest) : WorkoutPartner{
@@ -164,6 +166,22 @@ class WorkoutPartnerRequestService(
         publisher.publishEvent(stomp2)
     }
 
+    private fun sendFcmNotificationAcceptWorkoutPartnerRequest(
+        memberOneId : Long,
+        memberTwoId : Long
+    )
+    {
+        val toFcmEvent = EventFcmWorkoutPartnerAccept(
+            toMemberId = memberOneId,
+            fromMemberId = memberTwoId
+        )
+        val fromFcmEvent = EventFcmWorkoutPartnerAccept(
+            toMemberId = memberTwoId,
+            fromMemberId = memberOneId
+        )
+        publisher.publishEvent(toFcmEvent)
+        publisher.publishEvent(fromFcmEvent)
+    }
 
     private fun sendNotificationAcceptWorkoutPartnerRequest(
         workoutPartnerRequest: WorkoutPartnerRequest,

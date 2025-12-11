@@ -1,5 +1,6 @@
 package kr.co.fitview.api.app.global.scheduler
 
+import kr.co.fitview.api.app.domain.fcm.dto.request.EventFcmReviewRequest
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.domain.notification.dto.request.EventReviewRequest
 import kr.co.fitview.api.app.domain.notification.dto.request.EventReviewRequestPayload
@@ -33,7 +34,34 @@ class ReviewScheduler(
 
         val chatRoomIds = findWorkoutHistories.map{it.getChatRoomId()}
 
+        sendFcmReviewRequest(findWorkoutHistories)
+
         sendNotificationReviewRequest(chatRoomIds, findWorkoutHistories)
+    }
+
+    private fun sendFcmReviewRequest(
+        workoutHistories : List<WorkoutHistory>
+    ) {
+
+        val events = workoutHistories.map{
+            val fcmOneEvent = EventFcmReviewRequest(
+                toMemberId = it.getMemberOneId(),
+                chatRoomId = it.getChatRoomId(),
+                workoutHistoryId = it.id!!
+            )
+
+            val fcmTwoEvent = EventFcmReviewRequest(
+                toMemberId = it.getMemberTwoId(),
+                chatRoomId = it.getChatRoomId(),
+                workoutHistoryId = it.id!!
+            )
+
+            listOf(fcmOneEvent, fcmTwoEvent)
+        }
+
+        events.forEach { event ->
+            publisher.publishEvent(event)
+        }
     }
 
     private fun sendNotificationReviewRequest(

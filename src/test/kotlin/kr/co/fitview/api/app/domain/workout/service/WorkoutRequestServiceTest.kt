@@ -10,6 +10,10 @@ import kr.co.fitview.api.app.domain.chat.entity.enums.ChatNoticeMessageType
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatRoomType
 import kr.co.fitview.api.app.domain.chat.repository.*
+import kr.co.fitview.api.app.domain.fcm.dto.request.EventFcmWorkoutComplete
+import kr.co.fitview.api.app.domain.fcm.dto.request.EventFcmWorkoutRequest
+import kr.co.fitview.api.app.domain.fcm.dto.request.EventFcmWorkoutRequestAccept
+import kr.co.fitview.api.app.domain.fcm.dto.request.EventFcmWorkoutRequestReject
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.domain.notification.dto.request.*
@@ -173,6 +177,57 @@ class WorkoutRequestServiceTest @Autowired constructor(
         val count = events.stream(StompEventWorkoutRequestMessageDepth1::class.java).count()
         assertThat(count).isEqualTo(2)
     }
+
+    @DisplayName("회원은 운동 요청 메시지를 보낼 시, 상대방에게 푸시 알림이 발생한다.")
+    @Test
+    fun saveChatWorkoutRequestMessageFcm() {
+        // given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val other = Member(
+            email = "email2",
+            password = "password2",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+        memberRepository.save(other)
+
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest, me.id!!)
+
+        val savedChatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+
+        val chatParticipant1 = ChatParticipant(
+            savedChatRoom,
+            me
+        )
+        val chatParticipant2 = ChatParticipant(
+            savedChatRoom,
+            other
+        )
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+
+        val request = ChatWorkoutRequestMessageServiceRequest(
+            scheduledAt = time.nowLocalDateTime.plusHours(5),
+            location = "location"
+        )
+
+        // when
+        workoutRequestService.saveChatWorkoutRequestMessage(
+            fromMember = me,
+            chatRoom = savedChatRoom,
+            message = request
+        )
+
+        // then
+        val count = events.stream(EventFcmWorkoutRequest::class.java).count()
+        assertThat(count).isEqualTo(1)
+    }
+
 
 
     @DisplayName("회원은 운동 요청 메시지를 보낼 시, 상대방에게 인앱 알림이 발생한다.")
@@ -821,6 +876,135 @@ class WorkoutRequestServiceTest @Autowired constructor(
         assertThat(count).isEqualTo(2)
     }
 
+    @DisplayName("운동 요청 수락 시, 푸시 알람을 양측에 보낸다.")
+    @Test
+    fun modifyWorkoutRequestAcceptFcm() {
+        // given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val other = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+        memberRepository.save(other)
+
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest, me.id!!)
+        oAuth2Service.signup(signupRequest, other.id!!)
+
+        val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+
+        val chatParticipant1 = ChatParticipant(
+            chatRoom,
+            me
+        )
+        val chatParticipant2 = ChatParticipant(
+            chatRoom,
+            other
+        )
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+
+        val chatMessage = ChatMessage.ofWorkoutRequest(
+            member = me,
+            chatRoom = chatRoom,
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessage)
+
+        val workoutRequest = WorkoutRequest.of(
+            chatMessage = chatMessage,
+            fromMember = me,
+            toMember = other,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime
+        )
+        workoutRequestRepository.save(workoutRequest)
+
+        val request = WorkoutRequestUpdateRequest(
+            workoutRequestId = workoutRequest.id!!,
+            status = WorkoutRequestStatusForRequest.ACCEPT
+        )
+
+        // when
+        workoutRequestService.modifyWorkoutRequest(other.id!!, request)
+
+        // then
+        val count = events.stream(EventFcmWorkoutRequestAccept::class.java).count()
+        assertThat(count).isEqualTo(2)
+    }
+
+    @DisplayName("운동 요청 거절 시, 푸시 알람을 양측에 보낸다.")
+    @Test
+    fun modifyWorkoutRequestRejectFcm() {
+        // given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val other = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+        memberRepository.save(other)
+
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest, me.id!!)
+        oAuth2Service.signup(signupRequest, other.id!!)
+
+        val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+
+        val chatParticipant1 = ChatParticipant(
+            chatRoom,
+            me
+        )
+        val chatParticipant2 = ChatParticipant(
+            chatRoom,
+            other
+        )
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+
+        val chatMessage = ChatMessage.ofWorkoutRequest(
+            member = me,
+            chatRoom = chatRoom,
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessage)
+
+        val workoutRequest = WorkoutRequest.of(
+            chatMessage = chatMessage,
+            fromMember = me,
+            toMember = other,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime
+        )
+        workoutRequestRepository.save(workoutRequest)
+
+        val request = WorkoutRequestUpdateRequest(
+            workoutRequestId = workoutRequest.id!!,
+            status = WorkoutRequestStatusForRequest.REJECT
+        )
+
+        // when
+        workoutRequestService.modifyWorkoutRequest(other.id!!, request)
+
+        // then
+        val count = events.stream(EventFcmWorkoutRequestReject::class.java).count()
+        assertThat(count).isEqualTo(2)
+    }
+
+
     @DisplayName("운동 요청 거절 시, 인앱 알람을 양측에 보낸다.")
     @Test
     fun modifyWorkoutRequestRejectNotification() {
@@ -960,6 +1144,72 @@ class WorkoutRequestServiceTest @Autowired constructor(
             .extracting("memberOne", "memberTwo")
             .contains(me, other)
     }
+
+    @DisplayName("운동 요청의 상태를 완료로 바꾸면 양측에 푸시 알람을 보낸다")
+    @Test
+    fun modifyWorkoutRequestCompleteFcm() {
+        // given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val other = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+        memberRepository.save(other)
+
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest, me.id!!)
+        oAuth2Service.signup(signupRequest, other.id!!)
+
+        val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+
+        val chatParticipant1 = ChatParticipant(
+            chatRoom,
+            me
+        )
+        val chatParticipant2 = ChatParticipant(
+            chatRoom,
+            other
+        )
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+
+        val chatMessage = ChatMessage.ofWorkoutRequest(
+            member = me,
+            chatRoom = chatRoom,
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessage)
+
+        val workoutRequest = WorkoutRequest.of(
+            chatMessage = chatMessage,
+            fromMember = me,
+            toMember = other,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime
+        )
+        workoutRequest.updateStatus(WorkoutRequestStatus.ACCEPT)
+        workoutRequestRepository.save(workoutRequest)
+
+        val request = WorkoutRequestUpdateRequest(
+            workoutRequestId = workoutRequest.id!!,
+            status = WorkoutRequestStatusForRequest.COMPLETE
+        )
+
+        // when
+        workoutRequestService.modifyWorkoutRequest(other.id!!, request)
+
+        // then
+        val count = events.stream(EventFcmWorkoutComplete::class.java).count()
+        assertThat(count).isEqualTo(2)
+    }
+
 
     @DisplayName("운동 요청의 상태를 완료로 바꾸면 양측에 인앱 알람을 저장한다")
     @Test

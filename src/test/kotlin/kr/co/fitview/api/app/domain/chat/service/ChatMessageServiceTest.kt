@@ -7,6 +7,7 @@ import kr.co.fitview.api.app.domain.chat.entity.*
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatRoomType
 import kr.co.fitview.api.app.domain.chat.repository.*
+import kr.co.fitview.api.app.domain.fcm.dto.request.EventFcmChatMessage
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.global.stomp.dto.request.StompEventTextMessageDepth1
@@ -241,5 +242,55 @@ class ChatMessageServiceTest @Autowired constructor(
         val count = events.stream(StompEventTextMessageDepth1::class.java).count()
         assertThat(count).isEqualTo(2)
     }
+
+    @DisplayName("회원은 TEXT 형태의 채팅 메시지를 보낼 시, 상대방에게 푸시 알람이 발생한다.")
+    @Test
+    fun saveChatTextMessageFcm() {
+        // given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val other = Member(
+            email = "email2",
+            password = "password2",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+        memberRepository.save(other)
+
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest, me.id!!)
+
+        val savedChatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+
+        val chatParticipant1 = ChatParticipant(
+            savedChatRoom,
+            me
+        )
+        val chatParticipant2 = ChatParticipant(
+            savedChatRoom,
+            other
+        )
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+
+        val request = ChatTextMessageServiceRequest(
+            content = "hello"
+        )
+
+        // when
+        chatMessageService.saveChatTextMessage(
+            member = me,
+            chatRoom = savedChatRoom,
+            message = request
+        )
+
+        // then
+        val count = events.stream(EventFcmChatMessage::class.java).count()
+        assertThat(count).isEqualTo(1)
+    }
+
 
 }

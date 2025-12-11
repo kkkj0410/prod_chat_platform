@@ -3,6 +3,7 @@ package kr.co.fitview.api.app.domain.workout_partner.service
 import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.address.dto.request.AddressCreateServiceRequest
 import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
+import kr.co.fitview.api.app.domain.fcm.dto.request.EventFcmWorkoutPartnerAccept
 import kr.co.fitview.api.app.domain.fcm.dto.request.EventFcmWorkoutPartnerRequest
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutExperience
@@ -581,6 +582,55 @@ class WorkoutPartnerRequestServiceTest @Autowired constructor(
 
         // then
         val count = events.stream(EventWorkoutPartnerAccept::class.java).count()
+        assertThat(count).isEqualTo(2)
+    }
+
+    @DisplayName("핏버디 요청을 수락 시, 양측에 푸시 알람을 보낸다.")
+    @Test
+    fun updateWorkoutPartnerRequestAcceptFcm() {
+        // given
+        val fromMember = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+
+        val toMember = Member(
+            email = "email2",
+            password = "password2",
+            role = Role.USER,
+        )
+
+        val savedFromMember = memberService.addMember(fromMember)
+        val savedToMember = memberService.addMember(toMember)
+
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest1, toMember.id!!)
+
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest2, fromMember.id!!)
+
+        val workoutPartnerRequest = WorkoutPartnerRequest.of(
+            fromMember = savedFromMember,
+            toMember = savedToMember,
+            now = time.nowLocalDateTime,
+            content = WorkoutPartnerRequestContent.BURN
+        )
+        val savedWorkoutPartnerRequest = workoutPartnerRequestRepository.save(workoutPartnerRequest)
+
+        val request = WorkoutPartnerUpdateServiceRequest(
+            type = WorkoutPartnerRequestUpdateStatus.ACCEPT
+        )
+
+        // when
+        workoutPartnerRequestService.updateWorkoutPartnerRequest(
+            memberId = savedToMember.id!!,
+            workoutPartnerRequestId = savedWorkoutPartnerRequest.id!!,
+            request
+        )
+
+        // then
+        val count = events.stream(EventFcmWorkoutPartnerAccept::class.java).count()
         assertThat(count).isEqualTo(2)
     }
 
