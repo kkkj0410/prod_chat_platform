@@ -1,8 +1,10 @@
 package kr.co.fitview.api.app.domain.notification.mapper
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import kr.co.fitview.api.app.domain.notification.dto.response.LinkType
+import kr.co.fitview.api.app.domain.member.entity.Member
+import kr.co.fitview.api.app.domain.notification.dto.response.enums.LinkType
 import kr.co.fitview.api.app.domain.notification.dto.response.NotificationLink
+import kr.co.fitview.api.app.domain.notification.dto.response.NotificationMessage
 import kr.co.fitview.api.app.domain.notification.dto.response.NotificationResponse
 import kr.co.fitview.api.app.domain.notification.dto.response.WorkoutRequestContent
 import kr.co.fitview.api.app.domain.notification.entity.Notification
@@ -16,9 +18,13 @@ class WorkoutRequestMapper(
 
     override fun supportedType() = NotificationType.WORKOUT_REQUEST
 
-    override fun map(notification: Notification): NotificationResponse {
+    override fun map(notification: Notification, member : Member): NotificationResponse {
         val jsonString = objectMapper.writeValueAsString(notification.content)
         val content = objectMapper.readValue(jsonString, WorkoutRequestContent::class.java)
+
+        val displayText1 = NotificationType.WORKOUT_REQUEST.displayText1.format(content.sender.nickname)
+        val displayText2 = NotificationType.WORKOUT_REQUEST.displayText2
+
         return NotificationResponse(
             notificationId = notification.id!!,
             type = notification.type!!,
@@ -27,7 +33,14 @@ class WorkoutRequestMapper(
             sender = content.sender,
             link = NotificationLink(
                 type = LinkType.CHAT_ROOM,
-                parameters = mapOf("chatRoomId" to content.payload.chatRoomId)
+                parameters = mapOf(
+                    "chatRoomId" to content.payload.chatRoomId,
+                    "chatMessageId" to content.payload.chatMessageId
+                )
+            ),
+            messages = NotificationMessage(
+                text1 = displayText1,
+                text2 = displayText2
             )
         )
     }

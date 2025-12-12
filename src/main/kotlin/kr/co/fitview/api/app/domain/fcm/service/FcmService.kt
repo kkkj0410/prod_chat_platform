@@ -22,20 +22,6 @@ class FcmService(
 ) {
 
 
-    fun send(memberId: Long, fcmMessage: FcmMessage) {
-//        val event = FcmSendEvent(
-//            token = "eLAcQds",
-//            title = "title",
-//            body = "body",
-//            platform = FcmTokenPlatform.ANDROID
-//        )
-//        fcmPublisher.send(event)
-
-//        val findFcmTokens = fcmTokenRepository.findAllByMemberIdAndIsActiveTrueAndDeletedAtIsNull(memberId)
-//
-//        sendAllDevice(findFcmTokens, fcmMessage)
-    }
-
     @Transactional
     fun saveFcmToken(memberId: Long, request: FcmTokenCreateServiceRequest): FcmToken {
         val findMember =
@@ -60,20 +46,5 @@ class FcmService(
 
     private fun isNotNull(value: Any?) = value != null
 
-    private fun sendAllDevice(
-        findFcmTokens: List<FcmToken>,
-        fcmMessage: FcmMessage
-    ) {
-        findFcmTokens.forEach {
-            fcmPublisher.send(
-                FcmSendEvent(
-                    token = it.token!!,
-                    title = fcmMessage.title,
-                    body = fcmMessage.body,
-                    platform = it.platform!!
-                )
-            )
-        }
-    }
 
 }

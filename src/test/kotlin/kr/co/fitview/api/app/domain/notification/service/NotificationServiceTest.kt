@@ -158,12 +158,16 @@ class NotificationServiceTest @Autowired constructor(
         val event = EventWorkoutRequest(
             memberId = member.id!!,
             sender = EventSender(123L, "nickname", "profileImageUrl"),
-            payload = EventWorkoutRequestPayload(345L, 678L)
+            payload = EventWorkoutRequestPayload(
+                chatMessageId = 333L,
+                workoutRequestId = 345L,
+                chatRoomId = 678L
+            )
         )
 
         val expectedContent = mapOf(
             "sender" to mapOf("memberId" to 123L, "nickname" to "nickname", "profileImageUrl" to "profileImageUrl"),
-            "payload" to mapOf("workoutRequestId" to 345L, "chatRoomId" to 678L)
+            "payload" to mapOf("chatMessageId" to 333L, "workoutRequestId" to 345L, "chatRoomId" to 678L)
         )
 
         //when
@@ -184,12 +188,16 @@ class NotificationServiceTest @Autowired constructor(
         val event = EventWorkoutRequestAccept(
             memberId = member.id!!,
             sender = EventSender(123L, "nickname", "profileImageUrl"),
-            payload = EventWorkoutRequestAcceptPayload(345L, 678L)
+            payload = EventWorkoutRequestAcceptPayload(
+                chatMessageId = 333L,
+                workoutRequestId = 345L,
+                chatRoomId = 678L
+            )
         )
 
         val expectedContent = mapOf(
             "sender" to mapOf("memberId" to 123L, "nickname" to "nickname", "profileImageUrl" to "profileImageUrl"),
-            "payload" to mapOf("workoutRequestId" to 345L, "chatRoomId" to 678L)
+            "payload" to mapOf("chatMessageId" to 333L, "workoutRequestId" to 345L, "chatRoomId" to 678L)
         )
 
         //when
@@ -210,12 +218,16 @@ class NotificationServiceTest @Autowired constructor(
         val event = EventWorkoutRequestReject(
             memberId = member.id!!,
             sender = EventSender(123L, "nickname", "profileImageUrl"),
-            payload = EventWorkoutRequestRejectPayload(345L, 678L)
+            payload = EventWorkoutRequestRejectPayload(
+                chatMessageId = 555L,
+                workoutRequestId = 345L,
+                chatRoomId = 678L
+            )
         )
 
         val expectedContent = mapOf(
             "sender" to mapOf("memberId" to 123L, "nickname" to "nickname", "profileImageUrl" to "profileImageUrl"),
-            "payload" to mapOf("workoutRequestId" to 345L, "chatRoomId" to 678L)
+            "payload" to mapOf("chatMessageId" to 555L, "workoutRequestId" to 345L, "chatRoomId" to 678L)
         )
 
         //when
@@ -236,12 +248,17 @@ class NotificationServiceTest @Autowired constructor(
         val event = EventWorkoutComplete(
             memberId = member.id!!,
             sender = EventSender(123L, "nickname", "profileImageUrl"),
-            payload = EventWorkoutCompletePayload(345L, 678L, 901L)
+            payload = EventWorkoutCompletePayload(
+                chatMessageId = 555L,
+                workoutRequestId = 345L,
+                workoutHistoryId = 678L,
+                chatRoomId = 901L
+            )
         )
 
         val expectedContent = mapOf(
             "sender" to mapOf("memberId" to 123L, "nickname" to "nickname", "profileImageUrl" to "profileImageUrl"),
-            "payload" to mapOf("workoutRequestId" to 345L, "workoutHistoryId" to 678L, "chatRoomId" to 901L)
+            "payload" to mapOf("chatMessageId" to 555L,"workoutRequestId" to 345L, "workoutHistoryId" to 678L, "chatRoomId" to 901L)
         )
 
         //when

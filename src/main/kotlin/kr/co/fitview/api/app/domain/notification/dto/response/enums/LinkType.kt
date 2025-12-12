@@ -1,6 +1,4 @@
-package kr.co.fitview.api.app.domain.notification.dto.response
-
-import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
+package kr.co.fitview.api.app.domain.notification.dto.response.enums
 
 enum class LinkType(val description : String) {
     MEMBER_PROFILE("상대 회원 프로필 이동"),

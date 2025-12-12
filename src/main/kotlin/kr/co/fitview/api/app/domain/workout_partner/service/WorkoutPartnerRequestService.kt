@@ -1,6 +1,9 @@
 package kr.co.fitview.api.app.domain.workout_partner.service
 
+import kr.co.fitview.api.app.domain.fcm.dto.request.EventFcmWorkoutPartnerAccept
+import kr.co.fitview.api.app.domain.fcm.dto.request.EventFcmWorkoutPartnerRequest
 import kr.co.fitview.api.app.domain.member.dto.response.MemberProfile
+import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.domain.notification.dto.request.*
 import kr.co.fitview.api.app.global.stomp.dto.request.StompEventAcceptWorkoutPartnerDepth1
@@ -18,6 +21,7 @@ import kr.co.fitview.api.app.domain.workout_partner.repository.WorkoutPartnerReq
 import kr.co.fitview.api.app.domain.workout_partner.repository.findByOrderedMemberOneIdAndMemberTwoIdAndDeletedAtIsNull
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.global.GlobalErrorCode
+import kr.co.fitview.api.app.global.exception.error.member.MemberErrorCode
 import kr.co.fitview.api.app.global.exception.error.workout_partner.WorkoutPartnerErrorCode
 import kr.co.fitview.api.app.global.time.Time
 import org.springframework.context.ApplicationEventPublisher
@@ -48,8 +52,11 @@ class WorkoutPartnerRequestService(
 //        validateAddWorkoutPartnerRequest(findWorkoutPartner)
 
         val toMember = memberQueryService.findMemberReferenceFrom(request.memberId)
+        val fromMember = memberQueryService.findMemberFromId(memberId)
+            ?: throw GlobalException(MemberErrorCode.MEMBER_NOT_FOUND)
+
         val workoutPartnerRequest = WorkoutPartnerRequest.of(
-            fromMember = memberQueryService.findMemberReferenceFrom(memberId),
+            fromMember = fromMember,
             toMember = toMember,
             now = time.nowLocalDateTime,
             content = request.workoutPartnerRequestContentIndex
@@ -58,6 +65,8 @@ class WorkoutPartnerRequestService(
         val savedWorkoutPartnerRequest = workoutPartnerRequestRepository.save(workoutPartnerRequest)
 
         sendStompWorkoutPartnerRequest(savedWorkoutPartnerRequest)
+
+        sendFcmWorkoutPartnerRequest(toMember, fromMember)
 
         sendNotificationWorkoutPartnerRequest(memberId, request.memberId, savedWorkoutPartnerRequest.id!!)
 
@@ -81,6 +90,8 @@ class WorkoutPartnerRequestService(
 
             sendStompAcceptWorkoutPartnerRequest(findWorkoutPartnerRequest)
 
+            sendFcmNotificationAcceptWorkoutPartnerRequest(findWorkoutPartnerRequest.getFromMemberId(), findWorkoutPartnerRequest.getToMemberId())
+
             sendNotificationAcceptWorkoutPartnerRequest(findWorkoutPartnerRequest, savedWorkoutPartner.id!!)
 
             return findWorkoutPartnerRequest
@@ -92,7 +103,6 @@ class WorkoutPartnerRequestService(
 
         return findWorkoutPartnerRequest
     }
-
 
     @Transactional
     fun addWorkoutPartner(workoutPartnerRequest: WorkoutPartnerRequest) : WorkoutPartner{
@@ -156,6 +166,22 @@ class WorkoutPartnerRequestService(
         publisher.publishEvent(stomp2)
     }
 
+    private fun sendFcmNotificationAcceptWorkoutPartnerRequest(
+        memberOneId : Long,
+        memberTwoId : Long
+    )
+    {
+        val toFcmEvent = EventFcmWorkoutPartnerAccept(
+            toMemberId = memberOneId,
+            fromMemberId = memberTwoId
+        )
+        val fromFcmEvent = EventFcmWorkoutPartnerAccept(
+            toMemberId = memberTwoId,
+            fromMemberId = memberOneId
+        )
+        publisher.publishEvent(toFcmEvent)
+        publisher.publishEvent(fromFcmEvent)
+    }
 
     private fun sendNotificationAcceptWorkoutPartnerRequest(
         workoutPartnerRequest: WorkoutPartnerRequest,
@@ -225,6 +251,18 @@ class WorkoutPartnerRequestService(
         )
 
         publisher.publishEvent(event)
+    }
+
+    private fun sendFcmWorkoutPartnerRequest(
+        toMember: Member,
+        fromMember: Member
+    ) {
+        val fcmEvent = EventFcmWorkoutPartnerRequest(
+            toMemberId = toMember.id!!,
+            fromNickname = fromMember.nickname!!,
+            fromMemberId = fromMember.id!!
+        )
+        publisher.publishEvent(fcmEvent)
     }
 
     private fun sendNotificationRejectWorkoutPartnerRequest(workoutPartnerRequest: WorkoutPartnerRequest) {

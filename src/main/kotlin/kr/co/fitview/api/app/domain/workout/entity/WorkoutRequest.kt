@@ -73,6 +73,10 @@ class WorkoutRequest(
         return chatMessage?.chatRoom?.id
     }
 
+    fun getChatMessageId(): Long? {
+        return chatMessage?.id
+    }
+
     fun getChatRoom() : ChatRoom?{
         return chatMessage?.chatRoom
     }

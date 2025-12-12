@@ -1,5 +1,7 @@
 package kr.co.fitview.api.app.domain.workout_history.service
 
+import jakarta.persistence.*
+import jakarta.validation.constraints.NotNull
 import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.chat.entity.ChatMessage
 import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
@@ -11,7 +13,10 @@ import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.domain.review.entity.QReview.review
 import kr.co.fitview.api.app.domain.review.entity.Review
+import kr.co.fitview.api.app.domain.review.entity.ReviewReminderLog
+import kr.co.fitview.api.app.domain.review.entity.enums.ReviewReminderLogType
 import kr.co.fitview.api.app.domain.review.entity.enums.ReviewType
+import kr.co.fitview.api.app.domain.review.repository.ReviewReminderLogRepository
 import kr.co.fitview.api.app.domain.review.repository.ReviewRepository
 import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequest
 import kr.co.fitview.api.app.domain.workout.repository.WorkoutRequestRepository
@@ -26,6 +31,7 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.math.BigDecimal
+import java.time.LocalDateTime
 
 class WorkoutHistoryQueryServiceTest @Autowired constructor(
     val workoutHistoryRepository: WorkoutHistoryRepository,
@@ -350,4 +356,94 @@ class WorkoutHistoryQueryServiceTest @Autowired constructor(
         // then
         assertThat(response.status).isEqualTo(WorkoutHistoryReviewStatus.EXPIRED)
     }
+
+    @DisplayName("24시간이 지나도 리뷰 작성이 없는 운동 완료 이력을 조회한다.")
+    @Test
+    fun findAllWorkoutHistoryExceed24HoursWithoutReview() {
+        // given
+        val me = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        val other = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(me)
+        memberRepository.save(other)
+
+        val chatRoom = ChatRoom(ChatRoomType.PRIVATE)
+        chatRoomRepository.save(chatRoom)
+
+        val chatMessage = ChatMessage(
+            member = me,
+            chatRoom = chatRoom,
+            type = ChatMessageType.WORKOUT_REQUEST,
+            content = "content",
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessage)
+
+        val chatMessage2 = ChatMessage(
+            member = me,
+            chatRoom = chatRoom,
+            type = ChatMessageType.WORKOUT_REQUEST,
+            content = "content",
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessage2)
+
+        val workoutRequest = WorkoutRequest.of(
+            chatMessage = chatMessage,
+            fromMember = me,
+            toMember = other,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime
+        )
+        workoutRequestRepository.save(workoutRequest)
+
+        val workoutRequest2 = WorkoutRequest.of(
+            chatMessage = chatMessage,
+            fromMember = me,
+            toMember = other,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime
+        )
+        workoutRequestRepository.save(workoutRequest2)
+
+        val workoutHistory = WorkoutHistory(
+            chatRoom = chatRoom,
+            workoutRequest = workoutRequest,
+            memberOne = me,
+            memberTwo = other,
+            completedAt = time.nowLocalDateTime.minusHours(24)
+        )
+        workoutHistoryRepository.save(workoutHistory)
+
+        val workoutHistory2 = WorkoutHistory(
+            chatRoom = chatRoom,
+            workoutRequest = workoutRequest2,
+            memberOne = me,
+            memberTwo = other,
+            completedAt = time.nowLocalDateTime.minusHours(23).minusMinutes(59)
+        )
+        workoutHistoryRepository.save(workoutHistory2)
+
+
+        // when
+        val findWorkoutHistories = workoutHistoryQueryService.findAllWorkoutHistoryExceed24HoursWithoutReview()
+
+
+        // then
+        assertThat(findWorkoutHistories).hasSize(1)
+        assertThat(findWorkoutHistories[0])
+            .extracting("chatRoom", "workoutRequest", "memberOne", "memberTwo", "completedAt")
+            .contains(chatRoom, workoutRequest, me, other, time.nowLocalDateTime.minusHours(24))
+
+    }
+
 }

@@ -1,16 +1,10 @@
 package kr.co.fitview.api.app.domain.notification.controller
 
 import kr.co.fitview.api.app.ControllerTestSupport
-import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.notification.condition.NotificationCondition
-import kr.co.fitview.api.app.domain.notification.dto.response.LinkType
-import kr.co.fitview.api.app.domain.notification.dto.response.NotificationLink
-import kr.co.fitview.api.app.domain.notification.dto.response.NotificationResponse
-import kr.co.fitview.api.app.domain.notification.dto.response.NotificationSender
-import kr.co.fitview.api.app.domain.notification.entity.Notification
+import kr.co.fitview.api.app.domain.notification.dto.response.*
+import kr.co.fitview.api.app.domain.notification.dto.response.enums.LinkType
 import kr.co.fitview.api.app.domain.notification.entity.enums.NotificationType
-import kr.co.fitview.api.app.global.exception.error.request.RequestErrorCode
-import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
@@ -43,7 +37,11 @@ class NotificationControllerTest : ControllerTestSupport(){
                 sentAt = LocalDateTime.now(),
                 isRead = true,
                 sender = NotificationSender(123L, "호박", "https://..."),
-                link = NotificationLink(LinkType.MEMBER_PROFILE, mapOf("memberId" to 123))
+                link = NotificationLink(LinkType.MEMBER_PROFILE, mapOf("memberId" to 123)),
+                messages = NotificationMessage(
+                    text1 = NotificationType.WORKOUT_PARTNER_REQUEST.displayText1,
+                    text2 = NotificationType.WORKOUT_PARTNER_REQUEST.displayText2,
+                )
             ),
             NotificationResponse(
                 notificationId = 2L,
@@ -51,7 +49,11 @@ class NotificationControllerTest : ControllerTestSupport(){
                 sentAt = LocalDateTime.now().minusMinutes(5),
                 isRead = true,
                 sender = NotificationSender(124L, "멜론", "https://..."),
-                link = NotificationLink(LinkType.CHAT_START, mapOf("memberId" to 124))
+                link = NotificationLink(LinkType.CHAT_START, mapOf("memberId" to 124)),
+                messages = NotificationMessage(
+                    text1 = NotificationType.WORKOUT_COMPLETE.displayText1,
+                    text2 = NotificationType.WORKOUT_COMPLETE.displayText2,
+                )
             ),
             NotificationResponse(
                 notificationId = 3L,
@@ -59,7 +61,11 @@ class NotificationControllerTest : ControllerTestSupport(){
                 sentAt = LocalDateTime.now().minusHours(1),
                 isRead = false,
                 sender = NotificationSender(125L, "감자", "https://..."),
-                link = NotificationLink(LinkType.REVIEW_WRITE, mapOf("workoutHistoryId" to 456, "chatRoomId" to 789))
+                link = NotificationLink(LinkType.REVIEW_WRITE, mapOf("workoutHistoryId" to 456, "chatRoomId" to 789)),
+                messages = NotificationMessage(
+                    text1 = NotificationType.WORKOUT_COMPLETE.displayText1,
+                    text2 = NotificationType.WORKOUT_COMPLETE.displayText2,
+                )
             )
         )
 
@@ -101,5 +107,28 @@ class NotificationControllerTest : ControllerTestSupport(){
         )
             .andDo(print())
             .andExpect(status().isOk)
+    }
+
+
+
+    @DisplayName("회원의 알림 메시지를 조회한다.")
+    @Test
+    fun notificationRead() {
+        // given
+        given(notificationQueryService.findNotificationRead(any())).willReturn(
+            NotificationReadResponse(
+                isUnreadNotificationExists = true
+            )
+        )
+
+
+        // when / then
+        mockMvc.perform(
+            get("/api/v1/notifications/read")
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andDo(print())
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.data.isUnreadNotificationExists").value(true))
     }
 }

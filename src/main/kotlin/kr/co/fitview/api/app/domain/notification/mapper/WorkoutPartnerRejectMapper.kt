@@ -1,8 +1,10 @@
 package kr.co.fitview.api.app.domain.notification.mapper
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import kr.co.fitview.api.app.domain.notification.dto.response.LinkType
+import kr.co.fitview.api.app.domain.member.entity.Member
+import kr.co.fitview.api.app.domain.notification.dto.response.enums.LinkType
 import kr.co.fitview.api.app.domain.notification.dto.response.NotificationLink
+import kr.co.fitview.api.app.domain.notification.dto.response.NotificationMessage
 import kr.co.fitview.api.app.domain.notification.dto.response.NotificationResponse
 import kr.co.fitview.api.app.domain.notification.dto.response.WorkoutPartnerRejectContent
 import kr.co.fitview.api.app.domain.notification.entity.Notification
@@ -16,9 +18,13 @@ class WorkoutPartnerRejectMapper(
 
     override fun supportedType() = NotificationType.WORKOUT_PARTNER_REJECT
 
-    override fun map(notification: Notification): NotificationResponse {
+    override fun map(notification: Notification, member : Member): NotificationResponse {
         val jsonString = objectMapper.writeValueAsString(notification.content)
         val content = objectMapper.readValue(jsonString, WorkoutPartnerRejectContent::class.java)
+
+        val displayText1 = NotificationType.WORKOUT_PARTNER_REJECT.displayText1.format(content.sender.nickname)
+        val displayText2 = NotificationType.WORKOUT_PARTNER_REJECT.displayText2
+
         return NotificationResponse(
             notificationId = notification.id!!,
             type = notification.type!!,
@@ -28,6 +34,10 @@ class WorkoutPartnerRejectMapper(
             link = NotificationLink(
                 type = LinkType.MEMBER_PROFILE,
                 parameters = mapOf("memberId" to content.payload.memberId)
+            ),
+            messages = NotificationMessage(
+                text1 = displayText1,
+                text2 = displayText2
             )
         )
     }

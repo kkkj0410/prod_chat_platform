@@ -2,6 +2,7 @@ package kr.co.fitview.api.app.domain.notification.service
 
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.domain.notification.dto.request.*
+import kr.co.fitview.api.app.domain.notification.dto.response.NotificationReadResponse
 import kr.co.fitview.api.app.domain.notification.entity.Notification
 import kr.co.fitview.api.app.domain.notification.entity.enums.NotificationType
 import kr.co.fitview.api.app.domain.notification.repository.NotificationRepository
@@ -206,6 +207,7 @@ class NotificationService(
             "sender" to createSender(event.sender),
 
             "payload" to mapOf(
+                "chatMessageId" to event.payload.chatMessageId,
                 "workoutRequestId" to event.payload.workoutRequestId,
                 "chatRoomId" to event.payload.chatRoomId,
             )
@@ -216,6 +218,7 @@ class NotificationService(
             "sender" to createSender(event.sender),
 
             "payload" to mapOf(
+                "chatMessageId" to event.payload.chatMessageId,
                 "workoutRequestId" to event.payload.workoutRequestId,
                 "chatRoomId" to event.payload.chatRoomId,
             )
@@ -226,6 +229,7 @@ class NotificationService(
             "sender" to createSender(event.sender),
 
             "payload" to mapOf(
+                "chatMessageId" to event.payload.chatMessageId,
                 "workoutRequestId" to event.payload.workoutRequestId,
                 "chatRoomId" to event.payload.chatRoomId,
             )
@@ -236,6 +240,7 @@ class NotificationService(
             "sender" to createSender(event.sender),
 
             "payload" to mapOf(
+                "chatMessageId" to event.payload.chatMessageId,
                 "workoutRequestId" to event.payload.workoutRequestId,
                 "workoutHistoryId" to event.payload.workoutHistoryId,
                 "chatRoomId" to event.payload.chatRoomId,

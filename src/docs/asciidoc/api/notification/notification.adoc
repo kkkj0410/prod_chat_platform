@@ -120,3 +120,15 @@ include::{snippets}/notification-read/path-parameters.adoc[]
 ==== HTTP Response
 include::{snippets}/notification-read/http-response.adoc[]
 include::{snippets}/notification-read/response-fields.adoc[]
+
+
+[[notification-read-get]]
+=== 전체 인앱 알람 읽음 여부 조회 API
+
+==== HTTP Request
+include::{snippets}/notification-read-get/http-request.adoc[]
+include::{snippets}/notification-read-get/request-headers.adoc[]
+
+==== HTTP Response
+include::{snippets}/notification-read-get/http-response.adoc[]
+include::{snippets}/notification-read-get/response-fields.adoc[]

@@ -501,6 +501,8 @@ class ChatControllerDocsTest : RestDocsSupport() {
                 .contentType(MediaType.APPLICATION_JSON)
                 .param("size", "10")
                 .param("lastMessageAt", now.toEpochSecond(ZoneOffset.UTC).toString())
+                .param("targetChatMessageId", "2")
+                .param("direction", "DESC")
         )
             .andExpect(status().isOk())
             .andDo(
@@ -516,6 +518,11 @@ class ChatControllerDocsTest : RestDocsSupport() {
                     queryParameters(
                         parameterWithName("size").optional().description("(Optional - default 10) 조회 크기"),
                         parameterWithName("lastMessageAt").optional().description("Optional - 기준 메시지 시간 - direction과 혼합 시, lastMessageAt 기점으로 ASC, DESC 문자 조회"),
+                        parameterWithName("targetChatMessageId").optional().description(
+                            "Optional - direction에 따라 해당 chatMessageId를 포함한 채팅방 문자 조회(해당 id의 문자가 없으면 해당 채팅 문자는 생략. direction에 따른 그 이후/이전 문자 조회)" +
+                                "targetChatMessageId + lastMessageAt 동시 사용 시, 두 조건을 모두 만족하는 direction 채팅 문자들 조회" +
+                                "targetChatMessageId의 채팅 문자가 lastMessageAt 조건에 부합되지 못하면 해당 targetChatMessageId는 조회X"
+                        ),
                         parameterWithName("direction").optional().description("Optional(기본 DESC) - ASC(오래된 메시지 -> 최신 메시지 조회), DESC(최신 메시지 -> 오래된 메시지 조회)" + Direction.allDescription())
 
                     ),

@@ -37,7 +37,8 @@ data class WorkoutRequestContent(
 ) {
     data class Payload(
         val workoutRequestId: Long,
-        val chatRoomId: Long
+        val chatRoomId: Long,
+        val chatMessageId : Long
     )
 }
 
@@ -47,7 +48,8 @@ data class WorkoutRequestAcceptContent(
 ) {
     data class Payload(
         val workoutRequestId: Long,
-        val chatRoomId: Long
+        val chatRoomId: Long,
+        val chatMessageId : Long
     )
 }
 
@@ -57,7 +59,8 @@ data class WorkoutRequestRejectContent(
 ) {
     data class Payload(
         val workoutRequestId: Long,
-        val chatRoomId: Long
+        val chatRoomId: Long,
+        val chatMessageId : Long
     )
 }
 
@@ -68,7 +71,8 @@ data class WorkoutCompleteContent(
     data class Payload(
         val workoutRequestId: Long,
         val workoutHistoryId: Long,
-        val chatRoomId: Long
+        val chatRoomId: Long,
+        val chatMessageId : Long
     )
 }
 

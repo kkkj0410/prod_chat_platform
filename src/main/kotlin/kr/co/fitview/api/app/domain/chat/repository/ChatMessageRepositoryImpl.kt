@@ -164,23 +164,41 @@ class ChatMessageRepositoryImpl(
         }
     }
 
+
+
     override fun findChatMessageByCondition(chatRoomId: Long, condition: ChatMessageCondition) : Slice<ChatMessageAndWorkoutRequest> {
 
+        fun messagePredicate(): BooleanExpression? {
+            val lastAt = condition.lastMessageAt()
+            val targetId = condition.targetChatMessageId
 
-        fun ltLastMessageAt(): BooleanExpression? {
-            return condition.lastMessageAt()?.let { lastAt ->
-                if (condition.direction == Direction.ASC) {
-                    chatMessage.sentAt.gt(lastAt)
+            val predicates = mutableListOf<BooleanExpression>()
+
+            targetId?.let {
+                val targetPredicate = if (condition.direction == Direction.ASC) {
+                    chatMessage.id.goe(it)
                 } else {
-                    chatMessage.sentAt.lt(lastAt)
+                    chatMessage.id.loe(it)
                 }
+                predicates.add(targetPredicate)
             }
+
+            lastAt?.let {
+                val timePredicate = if (condition.direction == Direction.ASC) {
+                    chatMessage.sentAt.gt(it)
+                } else {
+                    chatMessage.sentAt.lt(it)
+                }
+                predicates.add(timePredicate)
+            }
+
+            return predicates.reduceOrNull { acc, expr -> acc.and(expr) }
         }
 
         val orderSpecifier = if (condition.direction == Direction.ASC) {
-            chatMessage.sentAt.asc().nullsLast()
+            listOf(chatMessage.sentAt.asc().nullsLast(), chatMessage.id.asc())
         } else {
-            chatMessage.sentAt.desc().nullsLast()
+            listOf(chatMessage.sentAt.desc().nullsLast(), chatMessage.id.desc())
         }
 
         val result = queryFactory
@@ -195,8 +213,8 @@ class ChatMessageRepositoryImpl(
             .on(workoutRequest.chatMessage.id.eq(chatMessage.id))
             .leftJoin(chatNoticeMessage)
             .on(chatNoticeMessage.chatMessage.id.eq(chatMessage.id))
-            .where(ltLastMessageAt())
-            .orderBy(orderSpecifier)
+            .where(messagePredicate())
+            .orderBy(*orderSpecifier.toTypedArray())
             .limit((condition.size!! + 1).toLong())
             .fetch()
 

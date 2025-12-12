@@ -3,13 +3,16 @@ package kr.co.fitview.api.app.domain.chat.service
 import kr.co.fitview.api.app.domain.chat.dto.request.*
 import kr.co.fitview.api.app.domain.chat.entity.ChatMessage
 import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
+import kr.co.fitview.api.app.domain.chat.entity.QChatRoom.chatRoom
 import kr.co.fitview.api.app.domain.chat.repository.ChatMessageRepository
+import kr.co.fitview.api.app.domain.fcm.dto.request.EventFcmChatMessage
 import kr.co.fitview.api.app.domain.member.dto.response.ChatRoomMemberProfile
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.domain.workout_history.service.WorkoutHistoryQueryService
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.global.GlobalErrorCode
+import kr.co.fitview.api.app.global.exception.error.member.MemberErrorCode
 import kr.co.fitview.api.app.global.stomp.dto.request.StompEventTextMessageDepth1
 import kr.co.fitview.api.app.global.stomp.dto.request.StompEventTextMessageDepth2
 import kr.co.fitview.api.app.global.stomp.dto.request.StompEventTextMessageDepth3
@@ -44,11 +47,12 @@ class ChatMessageService(
             chatRoom = chatRoom
         )
 
-        sendStompWorkoutRequestMessage(member, chatRoom, savedChatMessage)
+        sendStompChatTextMessage(member, chatRoom, savedChatMessage)
+
+        sendFcmChatTextMessage(member, chatRoom.id!!, savedChatMessage.id!!)
 
         return savedChatMessage
     }
-
 
     @Transactional
     fun addWorkoutRequestMessage(fromMember: Member, chatRoom: ChatRoom, now: LocalDateTime) : ChatMessage {
@@ -78,7 +82,7 @@ class ChatMessageService(
     }
 
 
-    private fun sendStompWorkoutRequestMessage(
+    private fun sendStompChatTextMessage(
         fromMember: Member,
         chatRoom: ChatRoom,
         chatMessage: ChatMessage,
@@ -120,6 +124,23 @@ class ChatMessageService(
                 )
             )
         )
+    }
+
+    private fun sendFcmChatTextMessage(
+        member: Member,
+        chatRoomId: Long,
+        chatMessageId: Long
+    ) {
+        val toMember = memberQueryService.findOtherMemberFrom(member.id!!, chatRoomId)
+            ?: throw GlobalException(MemberErrorCode.MEMBER_NOT_FOUND)
+
+        val fcmChatMessage = EventFcmChatMessage(
+            toMemberId = toMember.id!!,
+            fromNickname = member.nickname!!,
+            chatRoomId = chatRoomId,
+            chatMessageId = chatMessageId
+        )
+        publisher.publishEvent(fcmChatMessage)
     }
 
 }

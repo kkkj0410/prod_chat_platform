@@ -4,10 +4,8 @@ import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.domain.notification.condition.NotificationCondition
-import kr.co.fitview.api.app.domain.notification.dto.response.LinkType
 import kr.co.fitview.api.app.domain.notification.entity.Notification
 import kr.co.fitview.api.app.domain.notification.entity.enums.NotificationType
-import kr.co.fitview.api.app.domain.workout_history.entity.QWorkoutHistory.workoutHistory
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.time.Time
 import org.assertj.core.api.Assertions.assertThat
@@ -115,6 +113,69 @@ class NotificationRepositoryTest @Autowired constructor(
 
         // then
         assertThat(findNotification!!.id!!).isEqualTo(notification.id!!)
+    }
+
+    @DisplayName("회원은 인앱 알람을 안읽은 것이 있다.")
+    @Test
+    fun findNotificationReadBy() {
+        // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(member)
+
+        val notification = Notification.of(
+            member = member,
+            type = NotificationType.WORKOUT_PARTNER_REQUEST,
+            content = mutableMapOf(),
+            sentAt = time.nowLocalDateTime
+        )
+        notificationRepository.save(notification)
+
+        // when
+        val response = notificationRepository.findNotificationReadBy(member.id!!)
+
+        // then
+        assertThat(response.isUnreadNotificationExists).isTrue()
+    }
+
+    @DisplayName("회원은 인앱 알람을 모두 읽었다.")
+    @Test
+    fun findNotificationReadByAllRead() {
+        // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(member)
+
+        val notification = Notification.of(
+            member = member,
+            type = NotificationType.WORKOUT_PARTNER_REQUEST,
+            content = mutableMapOf(),
+            sentAt = time.nowLocalDateTime
+        )
+        val notification2 = Notification.of(
+            member = member,
+            type = NotificationType.WORKOUT_PARTNER_REQUEST,
+            content = mutableMapOf(),
+            sentAt = time.nowLocalDateTime
+        )
+
+        notification.isRead = true
+        notification2.isRead = true
+
+        notificationRepository.save(notification)
+        notificationRepository.save(notification2)
+
+        // when
+        val response = notificationRepository.findNotificationReadBy(member.id!!)
+
+        // then
+        assertThat(response.isUnreadNotificationExists).isFalse()
     }
 
 }
