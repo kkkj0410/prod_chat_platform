@@ -31,6 +31,9 @@ abstract class IntegrationTestSupport {
     lateinit var stompPublisher: StompPublisher
 
     @MockitoBean
+    lateinit var fcmPublisher: FcmPublisher
+
+    @MockitoBean
     lateinit var redisClient: RedisClient
 
 //    @MockitoBean

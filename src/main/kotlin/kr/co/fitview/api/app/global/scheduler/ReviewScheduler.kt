@@ -43,7 +43,7 @@ class ReviewScheduler(
         workoutHistories : List<WorkoutHistory>
     ) {
 
-        val events = workoutHistories.map{
+        val events = workoutHistories.flatMap{
             val fcmOneEvent = EventFcmReviewRequest(
                 toMemberId = it.getMemberOneId(),
                 chatRoomId = it.getChatRoomId(),
