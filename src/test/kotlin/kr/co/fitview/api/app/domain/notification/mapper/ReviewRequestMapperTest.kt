@@ -5,12 +5,15 @@ import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.domain.notification.dto.response.enums.LinkType
 import kr.co.fitview.api.app.domain.notification.dto.response.NotificationLink
+import kr.co.fitview.api.app.domain.notification.dto.response.NotificationMessage
 import kr.co.fitview.api.app.domain.notification.dto.response.NotificationSender
 import kr.co.fitview.api.app.domain.notification.entity.Notification
 import kr.co.fitview.api.app.domain.notification.entity.enums.NotificationType
 import kr.co.fitview.api.app.domain.notification.repository.NotificationRepository
+import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.time.Time
+import kr.co.fitview.api.app.global.util.TestDataFactory
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -20,6 +23,7 @@ class ReviewRequestMapperTest @Autowired constructor(
     private val reviewRequestMapper: ReviewRequestMapper,
     private val notificationRepository : NotificationRepository,
     private val memberRepository : MemberRepository,
+    private val oAuth2Service : OAuth2Service,
     private val time : Time
 ) : IntegrationTestSupport(){
 
@@ -29,6 +33,9 @@ class ReviewRequestMapperTest @Autowired constructor(
     fun map() {
         val member = Member(email = "email", password = "password", role = Role.USER)
         memberRepository.save(member)
+
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest, member.id!!)
 
         val content: MutableMap<String, Any> = mutableMapOf(
             "sender" to mutableMapOf(
@@ -51,10 +58,10 @@ class ReviewRequestMapperTest @Autowired constructor(
         )
         notificationRepository.save(notification)
 
-        val response = reviewRequestMapper.map(notification)
+        val response = reviewRequestMapper.map(notification, member)
 
         assertThat(response)
-            .extracting("notificationId", "type", "sentAt", "isRead", "sender", "link")
+            .extracting("notificationId", "type", "sentAt", "isRead", "sender", "link", "messages")
             .contains(
                 notification.id!!,
                 NotificationType.REVIEW_REQUEST,
@@ -67,6 +74,10 @@ class ReviewRequestMapperTest @Autowired constructor(
                         "workoutHistoryId" to 789L,
                         "chatRoomId" to 456L
                     )
+                ),
+                NotificationMessage(
+                    text1 = NotificationType.REVIEW_REQUEST.displayText1.format(signupRequest.nickname),
+                    text2 = NotificationType.REVIEW_REQUEST.displayText2.format("nick")
                 )
             )
     }

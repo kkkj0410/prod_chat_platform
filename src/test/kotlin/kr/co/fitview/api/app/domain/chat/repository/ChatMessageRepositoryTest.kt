@@ -555,6 +555,94 @@ class ChatMessageRepositoryTest @Autowired constructor(
     }
 
 
+    @DisplayName("채팅방의 메시지를 조회한다. 시간과 채팅 메시지 id를 지정하면 두 조건을 모두 만족하는 문자만 조회한다..")
+    @Test
+    fun findChatMessageByConditionLastMessageAtAndTargetChatMessageId() {
+        //given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val other = Member(
+            email = "email2",
+            password = "password2",
+            role = Role.USER,
+        )
+
+        memberRepository.save(me)
+        memberRepository.save(other)
+
+        val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+
+        val chatParticipant1 = ChatParticipant(
+            chatRoom,
+            me
+        )
+        val chatParticipant2 = ChatParticipant(
+            chatRoom,
+            other
+        )
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+
+
+        val chatMessage1 = ChatMessage(
+            member = me,
+            chatRoom = chatRoom,
+            type = ChatMessageType.TEXT,
+            content = "content",
+            sentAt = time.nowLocalDateTime.minusHours(20)
+        )
+        chatMessageRepository.save(chatMessage1)
+
+        val chatMessage2 = ChatMessage(
+            member = me,
+            chatRoom = chatRoom,
+            type = ChatMessageType.WORKOUT_REQUEST,
+            sentAt = time.nowLocalDateTime.minusHours(10)
+        )
+        val workoutRequest = WorkoutRequest(
+            chatMessage = chatMessage2,
+            fromMember = other,
+            toMember = me,
+            status = WorkoutRequestStatus.PENDING,
+            scheduledAt = time.nowLocalDateTime.plusHours(24),
+            requestedAt = time.nowLocalDateTime.minusHours(10),
+            location = "location"
+        )
+        chatMessageRepository.save(chatMessage2)
+        workoutRequestRepository.save(workoutRequest)
+
+        val chatMessage3 = ChatMessage(
+            member = me,
+            chatRoom = chatRoom,
+            type = ChatMessageType.TEXT,
+            content = "content",
+            sentAt = time.nowLocalDateTime.minusHours(9)
+        )
+        chatMessageRepository.save(chatMessage3)
+
+        val condition = ChatMessageCondition(
+            size = 10,
+            lastMessageAt = time.nowLocalDateTime.minusHours(10)
+                .atZone(ZoneId.systemDefault())
+                .toInstant()
+                .toEpochMilli(),
+            targetChatMessageId = chatMessage2.id!!,
+            direction = Direction.ASC
+        )
+
+        // when
+        val chatMessageAndWorkoutRequests = chatMessageRepository.findChatMessageByCondition(chatRoom.id!!, condition)
+        val response = chatMessageAndWorkoutRequests.content
+
+        // then
+        assertThat(response).hasSize(1)
+        assertThat(response[0].chatMessage).isEqualTo(chatMessage3)
+    }
+
+
     @DisplayName("채팅방의 메시지를 최근순으로 조회한다.")
     @Test
     fun findChatMessageByConditionAsc() {

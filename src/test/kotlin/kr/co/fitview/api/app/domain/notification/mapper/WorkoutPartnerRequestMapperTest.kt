@@ -5,12 +5,15 @@ import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.domain.notification.dto.response.enums.LinkType
 import kr.co.fitview.api.app.domain.notification.dto.response.NotificationLink
+import kr.co.fitview.api.app.domain.notification.dto.response.NotificationMessage
 import kr.co.fitview.api.app.domain.notification.dto.response.NotificationSender
 import kr.co.fitview.api.app.domain.notification.entity.Notification
 import kr.co.fitview.api.app.domain.notification.entity.enums.NotificationType
 import kr.co.fitview.api.app.domain.notification.repository.NotificationRepository
+import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.time.Time
+import kr.co.fitview.api.app.global.util.TestDataFactory
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -20,6 +23,7 @@ class WorkoutPartnerRequestMapperTest @Autowired constructor(
     private val workoutPartnerRequestMapper : WorkoutPartnerRequestMapper,
     private val notificationRepository : NotificationRepository,
     private val memberRepository : MemberRepository,
+    private val oAuth2Service : OAuth2Service,
     private val time : Time
 ) : IntegrationTestSupport(){
 
@@ -34,6 +38,9 @@ class WorkoutPartnerRequestMapperTest @Autowired constructor(
             role = Role.USER
         )
         memberRepository.save(member)
+
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest, member.id!!)
 
         val content: MutableMap<String, Any> = mutableMapOf(
             "sender" to mutableMapOf(
@@ -57,7 +64,7 @@ class WorkoutPartnerRequestMapperTest @Autowired constructor(
         notificationRepository.save(notification)
 
         // when
-        val response = workoutPartnerRequestMapper.map(notification)
+        val response = workoutPartnerRequestMapper.map(notification, member)
 
 
         // then
@@ -68,7 +75,8 @@ class WorkoutPartnerRequestMapperTest @Autowired constructor(
                 "sentAt",
                 "isRead",
                 "sender",
-                "link"
+                "link",
+                "messages"
             )
             .contains(
                 notification.id!!,
@@ -85,6 +93,10 @@ class WorkoutPartnerRequestMapperTest @Autowired constructor(
                     parameters = mapOf(
                         "memberId" to 123L,
                     )
+                ),
+                NotificationMessage(
+                    text1 = NotificationType.WORKOUT_PARTNER_REQUEST.displayText1.format("nick"),
+                    text2 = NotificationType.WORKOUT_PARTNER_REQUEST.displayText2
                 )
             )
 

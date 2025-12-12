@@ -2,6 +2,7 @@ package kr.co.fitview.api.app.domain.notification.service
 
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.domain.notification.dto.request.*
+import kr.co.fitview.api.app.domain.notification.dto.response.NotificationReadResponse
 import kr.co.fitview.api.app.domain.notification.entity.Notification
 import kr.co.fitview.api.app.domain.notification.entity.enums.NotificationType
 import kr.co.fitview.api.app.domain.notification.repository.NotificationRepository

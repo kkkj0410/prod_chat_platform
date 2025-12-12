@@ -46,7 +46,7 @@ enum class NotificationType(
     WORKOUT_COMPLETE(
         "운동 완료",
         "%s님!",
-        "세모님과의 운동은 어떠셨나요? 후기를 남겨주세요!"
+        "%s님과의 운동은 어떠셨나요? 후기를 남겨주세요!"
     ),
 
     REVIEW_RECEIVE(
@@ -58,7 +58,7 @@ enum class NotificationType(
     REVIEW_REQUEST(
         "후기 미작성",
         "%s님!",
-        "세모님과의 운동은 어떠셨나요? 후기를 남겨주세요!"
+        "%s님과의 운동은 어떠셨나요? 후기를 남겨주세요!"
     );
     ;
 

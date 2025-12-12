@@ -9,5 +9,6 @@ data class NotificationResponse(
     val sentAt: LocalDateTime,
     val isRead: Boolean,
     val sender: NotificationSender,
-    val link: NotificationLink
+    val link: NotificationLink,
+    val messages : NotificationMessage
 )
