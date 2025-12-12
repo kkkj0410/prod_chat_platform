@@ -2,6 +2,7 @@ package kr.co.fitview.api.app.domain.notification.mapper
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import kr.co.fitview.api.app.domain.notification.dto.response.*
+import kr.co.fitview.api.app.domain.notification.dto.response.enums.LinkType
 import kr.co.fitview.api.app.domain.notification.entity.Notification
 import kr.co.fitview.api.app.domain.notification.entity.enums.NotificationType
 import org.springframework.stereotype.Component

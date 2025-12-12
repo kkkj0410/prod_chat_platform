@@ -206,6 +206,7 @@ class NotificationService(
             "sender" to createSender(event.sender),
 
             "payload" to mapOf(
+                "chatMessageId" to event.payload.chatMessageId,
                 "workoutRequestId" to event.payload.workoutRequestId,
                 "chatRoomId" to event.payload.chatRoomId,
             )
@@ -216,6 +217,7 @@ class NotificationService(
             "sender" to createSender(event.sender),
 
             "payload" to mapOf(
+                "chatMessageId" to event.payload.chatMessageId,
                 "workoutRequestId" to event.payload.workoutRequestId,
                 "chatRoomId" to event.payload.chatRoomId,
             )
@@ -226,6 +228,7 @@ class NotificationService(
             "sender" to createSender(event.sender),
 
             "payload" to mapOf(
+                "chatMessageId" to event.payload.chatMessageId,
                 "workoutRequestId" to event.payload.workoutRequestId,
                 "chatRoomId" to event.payload.chatRoomId,
             )
@@ -236,6 +239,7 @@ class NotificationService(
             "sender" to createSender(event.sender),
 
             "payload" to mapOf(
+                "chatMessageId" to event.payload.chatMessageId,
                 "workoutRequestId" to event.payload.workoutRequestId,
                 "workoutHistoryId" to event.payload.workoutHistoryId,
                 "chatRoomId" to event.payload.chatRoomId,

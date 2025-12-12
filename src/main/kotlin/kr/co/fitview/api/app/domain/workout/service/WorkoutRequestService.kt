@@ -91,8 +91,13 @@ class WorkoutRequestService(
             savedChatMessage.id!!
         )
 
-
-        sendNotificationWorkoutRequest(fromMember.id!!, toMember.id!!, workoutRequest.id!!, chatRoom.id!!)
+        sendNotificationWorkoutRequest(
+            fromMemberId = fromMember.id!!,
+            toMemberId = toMember.id!!,
+            chatMessageId = savedChatMessage.id!!,
+            workoutRequestId = workoutRequest.id!!,
+            chatRoomId = chatRoom.id!!
+        )
 
         return savedChatMessage
     }
@@ -235,6 +240,7 @@ class WorkoutRequestService(
     private fun sendNotificationWorkoutRequest(
         fromMemberId: Long,
         toMemberId: Long,
+        chatMessageId : Long,
         workoutRequestId: Long,
         chatRoomId: Long
     ) {
@@ -249,6 +255,7 @@ class WorkoutRequestService(
                 profileImageUrl = findFromMemberProfile.profileImageUrl
             ),
             payload = EventWorkoutRequestPayload(
+                chatMessageId = chatMessageId,
                 workoutRequestId = workoutRequestId,
                 chatRoomId = chatRoomId
             )
@@ -504,11 +511,11 @@ class WorkoutRequestService(
     }
 
     private fun sendNotificationCompleteWorkoutRequest(
-        findWorkoutRequest: WorkoutRequest,
+        workoutRequest: WorkoutRequest,
         workoutHistory: WorkoutHistory
     ) {
         val findMemberProfiles = memberQueryService
-            .findMemberProfileFromMemberId(findWorkoutRequest.getFromMemberId(), findWorkoutRequest.getToMemberId())
+            .findMemberProfileFromMemberId(workoutRequest.getFromMemberId(), workoutRequest.getToMemberId())
             ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
 
         val fromMemberProfile = findMemberProfiles.memberOne
@@ -517,7 +524,7 @@ class WorkoutRequestService(
         val toMemberProfile = findMemberProfiles.memberTwo
             ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
 
-        val findChatRoom = chatRoomQueryService.findChatRoomFrom(findWorkoutRequest.id!!)
+        val findChatRoom = chatRoomQueryService.findChatRoomFrom(workoutRequest.id!!)
             ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
 
         val fromEvent = EventWorkoutComplete(
@@ -528,8 +535,9 @@ class WorkoutRequestService(
                 profileImageUrl = toMemberProfile.profileImageUrl
             ),
             payload = EventWorkoutCompletePayload(
-                workoutRequestId = findWorkoutRequest.id!!,
+                workoutRequestId = workoutRequest.id!!,
                 workoutHistoryId = workoutHistory.id!!,
+                chatMessageId = workoutRequest.getChatMessageId()!!,
                 chatRoomId = findChatRoom.id!!
             )
         )
@@ -542,8 +550,9 @@ class WorkoutRequestService(
                 profileImageUrl = fromMemberProfile.profileImageUrl
             ),
             payload = EventWorkoutCompletePayload(
-                workoutRequestId = findWorkoutRequest.id!!,
+                workoutRequestId = workoutRequest.id!!,
                 workoutHistoryId = workoutHistory.id!!,
+                chatMessageId = workoutRequest.getChatMessageId()!!,
                 chatRoomId = findChatRoom.id!!
             )
         )
@@ -594,6 +603,7 @@ class WorkoutRequestService(
             ),
             payload = EventWorkoutRequestAcceptPayload(
                 workoutRequestId = workoutRequest.id!!,
+                chatMessageId = workoutRequest.getChatMessageId()!!,
                 chatRoomId = findChatRoom.id!!
             )
         )
@@ -607,6 +617,7 @@ class WorkoutRequestService(
             ),
             payload = EventWorkoutRequestAcceptPayload(
                 workoutRequestId = workoutRequest.id!!,
+                chatMessageId = workoutRequest.getChatMessageId()!!,
                 chatRoomId = findChatRoom.id!!
             )
         )
@@ -653,6 +664,7 @@ class WorkoutRequestService(
             ),
             payload = EventWorkoutRequestRejectPayload(
                 workoutRequestId = workoutRequest.id!!,
+                chatMessageId = workoutRequest.getChatMessageId()!!,
                 chatRoomId = findChatRoom.id!!
             )
         )
@@ -666,6 +678,7 @@ class WorkoutRequestService(
             ),
             payload = EventWorkoutRequestRejectPayload(
                 workoutRequestId = workoutRequest.id!!,
+                chatMessageId = workoutRequest.getChatMessageId()!!,
                 chatRoomId = findChatRoom.id!!
             )
         )

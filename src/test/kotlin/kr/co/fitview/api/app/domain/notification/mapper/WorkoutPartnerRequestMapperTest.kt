@@ -3,7 +3,7 @@ package kr.co.fitview.api.app.domain.notification.mapper
 import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
-import kr.co.fitview.api.app.domain.notification.dto.response.LinkType
+import kr.co.fitview.api.app.domain.notification.dto.response.enums.LinkType
 import kr.co.fitview.api.app.domain.notification.dto.response.NotificationLink
 import kr.co.fitview.api.app.domain.notification.dto.response.NotificationSender
 import kr.co.fitview.api.app.domain.notification.entity.Notification
@@ -12,11 +12,9 @@ import kr.co.fitview.api.app.domain.notification.repository.NotificationReposito
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.time.Time
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import java.time.LocalDateTime
 
 class WorkoutPartnerRequestMapperTest @Autowired constructor(
     private val workoutPartnerRequestMapper : WorkoutPartnerRequestMapper,

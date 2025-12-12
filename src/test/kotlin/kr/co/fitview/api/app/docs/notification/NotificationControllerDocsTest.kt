@@ -3,51 +3,16 @@ package kr.co.fitview.api.app.docs.notification
 import kr.co.fitview.api.app.docs.RestDocsHeaders
 import kr.co.fitview.api.app.docs.RestDocsPagination
 import kr.co.fitview.api.app.docs.RestDocsSupport
-import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
-import kr.co.fitview.api.app.domain.chat.controller.ChatController
-import kr.co.fitview.api.app.domain.chat.dto.request.ChatRoomCreateRequest
-import kr.co.fitview.api.app.domain.chat.dto.response.*
-import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
-import kr.co.fitview.api.app.domain.chat.service.ChatMessageService
-import kr.co.fitview.api.app.domain.chat.service.ChatRoomService
-import kr.co.fitview.api.app.domain.chat.service.ChatService
-import kr.co.fitview.api.app.domain.chat.service.MessageReadStatusService
-import kr.co.fitview.api.app.domain.member.dto.request.Age
-import kr.co.fitview.api.app.domain.member.dto.response.ChatMemberProfile
-import kr.co.fitview.api.app.domain.member.dto.response.ChatMemberProfileResponse
-import kr.co.fitview.api.app.domain.member.dto.response.MemberChatRoomProfile
-import kr.co.fitview.api.app.domain.member.dto.response.MemberProfileResponse
-import kr.co.fitview.api.app.domain.member.entity.Member
-import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutExperience
-import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutGoal
-import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutStyle
-import kr.co.fitview.api.app.domain.member.entity.enums.WorkoutTimeName
-import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.domain.notification.condition.NotificationCondition
 import kr.co.fitview.api.app.domain.notification.controller.NotificationController
-import kr.co.fitview.api.app.domain.notification.dto.response.LinkType
+import kr.co.fitview.api.app.domain.notification.dto.response.enums.LinkType
 import kr.co.fitview.api.app.domain.notification.dto.response.NotificationLink
 import kr.co.fitview.api.app.domain.notification.dto.response.NotificationResponse
 import kr.co.fitview.api.app.domain.notification.dto.response.NotificationSender
 import kr.co.fitview.api.app.domain.notification.entity.enums.NotificationType
 import kr.co.fitview.api.app.domain.notification.service.NotificationQueryService
 import kr.co.fitview.api.app.domain.notification.service.NotificationService
-import kr.co.fitview.api.app.domain.review.controller.ReviewController
-import kr.co.fitview.api.app.domain.review.dto.request.ReviewCreateRequest
-import kr.co.fitview.api.app.domain.review.dto.response.ReviewCategoryResponse
-import kr.co.fitview.api.app.domain.review.dto.response.ReviewTagResponse
-import kr.co.fitview.api.app.domain.review.entity.Review
-import kr.co.fitview.api.app.domain.review.entity.enums.ReviewType
-import kr.co.fitview.api.app.domain.review.service.ReviewService
-import kr.co.fitview.api.app.domain.workout.dto.response.LastWorkoutRequestMessage
-import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusForResponse
-import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestService
-import kr.co.fitview.api.app.domain.workout_history.entity.WorkoutHistory
-import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartnerRequest
-import kr.co.fitview.api.app.domain.workout_partner.entity.enums.WorkoutPartnerRequestStatus
-import kr.co.fitview.api.app.global.entity.Gender
 import kr.co.fitview.api.app.global.entity.Role
-import kr.co.fitview.api.app.global.enums.Direction
 import kr.co.fitview.api.app.global.util.SecurityUtil
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -68,11 +33,8 @@ import org.springframework.restdocs.request.RequestDocumentation.queryParameters
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
-import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.ZoneOffset
 
 
 class NotificationControllerDocsTest : RestDocsSupport() {

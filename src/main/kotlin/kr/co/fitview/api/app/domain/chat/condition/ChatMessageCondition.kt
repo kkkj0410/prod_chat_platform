@@ -8,8 +8,9 @@ import java.time.ZoneId
 data class ChatMessageCondition(
     val size: Int? = 10,
     val lastMessageAt: Long? = null,
+    val targetChatMessageId : Long? = null,
     val isCompleteWorkout : Boolean? = false,
-    val direction : Direction = Direction.DESC
+    val direction : Direction = Direction.DESC,
 ){
     fun lastMessageAt(): LocalDateTime? =
         lastMessageAt?.let {

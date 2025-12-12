@@ -1,16 +1,12 @@
 package kr.co.fitview.api.app.domain.notification.controller
 
 import kr.co.fitview.api.app.ControllerTestSupport
-import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.notification.condition.NotificationCondition
-import kr.co.fitview.api.app.domain.notification.dto.response.LinkType
+import kr.co.fitview.api.app.domain.notification.dto.response.enums.LinkType
 import kr.co.fitview.api.app.domain.notification.dto.response.NotificationLink
 import kr.co.fitview.api.app.domain.notification.dto.response.NotificationResponse
 import kr.co.fitview.api.app.domain.notification.dto.response.NotificationSender
-import kr.co.fitview.api.app.domain.notification.entity.Notification
 import kr.co.fitview.api.app.domain.notification.entity.enums.NotificationType
-import kr.co.fitview.api.app.global.exception.error.request.RequestErrorCode
-import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
