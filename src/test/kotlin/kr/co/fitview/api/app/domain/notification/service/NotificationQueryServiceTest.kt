@@ -4,6 +4,7 @@ import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.domain.notification.condition.NotificationCondition
+import kr.co.fitview.api.app.domain.notification.dto.response.NotificationMessage
 import kr.co.fitview.api.app.domain.notification.dto.response.enums.LinkType
 import kr.co.fitview.api.app.domain.notification.entity.Notification
 import kr.co.fitview.api.app.domain.notification.entity.enums.NotificationType
@@ -65,14 +66,18 @@ class NotificationQueryServiceTest @Autowired constructor(
         val response = findNotifications.content
         assertThat(response).hasSize(1)
         assertThat(response[0])
-            .extracting("notificationId", "type", "sentAt", "isRead", "link.type", "link.parameters.memberId")
+            .extracting("notificationId", "type", "sentAt", "isRead", "link.type", "link.parameters.memberId", "messages")
             .contains(
                 notification.id!!,
                 NotificationType.WORKOUT_PARTNER_REQUEST,
                 time.nowLocalDateTime,
                 false,
                 LinkType.MEMBER_PROFILE,
-                999L
+                999L,
+                NotificationMessage(
+                    text1 = NotificationType.WORKOUT_PARTNER_REQUEST.displayText1.format("헬스매니아"),
+                    text2 = NotificationType.WORKOUT_PARTNER_REQUEST.displayText2
+                )
             )
     }
 

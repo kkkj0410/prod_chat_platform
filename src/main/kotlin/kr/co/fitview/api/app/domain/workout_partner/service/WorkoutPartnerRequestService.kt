@@ -44,7 +44,6 @@ class WorkoutPartnerRequestService(
     fun addWorkoutPartnerRequest(memberId : Long, request: WorkoutPartnerCreateServiceRequest): WorkoutPartnerRequest {
         validateAlreadyWorkoutPartner(memberId, request.memberId)
 
-
         // FE 편의상 validate 취소
         // 정식상으로 다시 validate 활성화 필요
 //        val findWorkoutPartner = workoutPartnerRequestRepository.findTop1ByFromMemberIdAndToMemberIdAndDeletedAtIsNullOrderByRequestedAtDesc(memberId, request.memberId)

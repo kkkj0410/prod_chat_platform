@@ -12,6 +12,7 @@ import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartner
 import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartnerRequest
 import kr.co.fitview.api.app.domain.workout_partner.entity.enums.WorkoutPartnerRequestContent
+import kr.co.fitview.api.app.domain.workout_partner.entity.enums.WorkoutPartnerRequestStatus
 import kr.co.fitview.api.app.domain.workout_partner.repository.WorkoutPartnerRepository
 import kr.co.fitview.api.app.domain.workout_partner.repository.WorkoutPartnerRequestRepository
 import kr.co.fitview.api.app.global.entity.Role
@@ -301,6 +302,76 @@ class WorkoutPartnerQueryServiceTest @Autowired constructor(
             now = time.nowLocalDateTime.minusHours(24),
             content = WorkoutPartnerRequestContent.BURN
         )
+        workoutPartnerRequestRepository.save(workoutPartnerRequest)
+
+        // when
+        val response = workoutPartnerQueryService.findWorkoutPartnerStatus(me.id!!, otherMember.id!!)
+
+        // then
+        assertThat(response)
+            .extracting("status", "workoutPartnerRequestId", "chatRoomId")
+            .contains(ProfileWorkoutPartnerStatus.NONE, null, null)
+    }
+
+    @DisplayName("운동 파트너 요청 확인 시, 24시간 내 파트너 요청을 본인이 받았지만 이미 상태 처리 되어있으면 운동 요청 상태가 없음을 나타낸다.")
+    @Test
+    fun findWorkoutPartnerStatusExistsReceiveNotPending() {
+        // given
+        val me = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        val otherMember = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+        memberRepository.save(otherMember)
+
+        val workoutPartnerRequest = WorkoutPartnerRequest.of(
+            fromMember = otherMember,
+            toMember = me,
+            now = time.nowLocalDateTime.minusHours(5),
+            content = WorkoutPartnerRequestContent.BURN
+        )
+        workoutPartnerRequest.status = WorkoutPartnerRequestStatus.REJECT
+        workoutPartnerRequestRepository.save(workoutPartnerRequest)
+
+        // when
+        val response = workoutPartnerQueryService.findWorkoutPartnerStatus(me.id!!, otherMember.id!!)
+
+        // then
+        assertThat(response)
+            .extracting("status", "workoutPartnerRequestId", "chatRoomId")
+            .contains(ProfileWorkoutPartnerStatus.NONE, null, null)
+    }
+
+    @DisplayName("운동 파트너 요청 확인 시, 24시간 내 파트너 요청을 본인이 보냈지만 이미 상태 처리 되어있으면 운동 요청 상태가 없음을 나타낸다.")
+    @Test
+    fun findWorkoutPartnerStatusExistsSendNotPending() {
+        // given
+        val me = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        val otherMember = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+        memberRepository.save(otherMember)
+
+        val workoutPartnerRequest = WorkoutPartnerRequest.of(
+            fromMember = me,
+            toMember = otherMember,
+            now = time.nowLocalDateTime.minusHours(5),
+            content = WorkoutPartnerRequestContent.BURN
+        )
+        workoutPartnerRequest.status = WorkoutPartnerRequestStatus.REJECT
         workoutPartnerRequestRepository.save(workoutPartnerRequest)
 
         // when
