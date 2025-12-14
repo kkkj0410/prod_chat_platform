@@ -9,6 +9,7 @@ import kr.co.fitview.api.app.domain.auth.service.RefreshTokenService
 import kr.co.fitview.api.app.domain.auth.service.TestAuthService
 import kr.co.fitview.api.app.domain.chat.controller.ChatController
 import kr.co.fitview.api.app.domain.chat.service.*
+import kr.co.fitview.api.app.domain.dashboard.controller.AdminDashboardController
 import kr.co.fitview.api.app.domain.fcm.controller.FcmController
 import kr.co.fitview.api.app.domain.fcm.service.FcmService
 import kr.co.fitview.api.app.domain.image.controller.ImageController
@@ -22,6 +23,7 @@ import kr.co.fitview.api.app.domain.notification.service.NotificationService
 import kr.co.fitview.api.app.global.stomp.service.StompPublishService
 import kr.co.fitview.api.app.domain.oauth2.controller.OAuth2Controller
 import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
+import kr.co.fitview.api.app.domain.report.controller.ReportController
 import kr.co.fitview.api.app.domain.review.controller.ReviewController
 import kr.co.fitview.api.app.domain.review.service.ReviewQueryService
 import kr.co.fitview.api.app.domain.review.service.ReviewService
@@ -69,6 +71,8 @@ import org.springframework.test.web.servlet.MockMvc
     ReviewController::class,
     WorkoutHistoryController::class,
     NotificationController::class,
+    ReportController::class,
+    AdminDashboardController::class,
     GlobalExceptionHandler::class
 ],
 excludeFilters = [

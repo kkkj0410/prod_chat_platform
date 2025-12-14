@@ -66,4 +66,10 @@ include::api/workout_history/workoutHistory.adoc[]
 
 include::api/notification/notification.adoc[]
 
+[[REPORT]]
+== REPORT API
+
+include::api/report/report.adoc[]
+
+
 

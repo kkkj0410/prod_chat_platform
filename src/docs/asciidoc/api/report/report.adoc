@@ -1,0 +1,12 @@
+[[report-chat-add]]
+=== 채팅방 신고 API - FAKE
+
+==== HTTP Request
+include::{snippets}/report-chat-add/http-request.adoc[]
+// include::{snippets}/report-chat-add/request-headers.adoc[]
+// include::{snippets}/report-chat-add/query-parameters.adoc[]
+
+==== HTTP Response
+include::{snippets}/report-chat-add/http-response.adoc[]
+include::{snippets}/report-chat-add/response-fields.adoc[]
+
