@@ -8,8 +8,8 @@ data class ReportMemberCreateRequest(
     @field:NotNull(message = "memberId is required")
     val memberId : Long?,
 
-    @field:NotNull(message = "reasonType is required")
-    val reasonType : ReportReasonType?,
+    @field:NotNull(message = "reportReasonId is required")
+    val reportReasonId : Long?,
 
     val description : String?
 )

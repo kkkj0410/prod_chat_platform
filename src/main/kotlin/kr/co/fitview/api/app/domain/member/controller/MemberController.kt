@@ -6,6 +6,7 @@ import kr.co.fitview.api.app.domain.member.condition.MemberLocalCondition
 import kr.co.fitview.api.app.domain.address.dto.response.AddressResponse
 import kr.co.fitview.api.app.domain.member.condition.MemberReviewCondition
 import kr.co.fitview.api.app.domain.member.dto.request.MemberUpdateRequest
+import kr.co.fitview.api.app.domain.member.dto.request.MemberWithdrawRequest
 import kr.co.fitview.api.app.domain.member.dto.response.*
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.domain.member.service.MemberService
@@ -128,6 +129,49 @@ class MemberController(
             slice = response,
             timeExtractor = { it.postedAt }
         ))
+    }
+
+    @PostMapping("/withdraw")
+    fun memberWithdraw(
+        @RequestBody
+        request : MemberWithdrawRequest
+    ): ResponseEntity<ApiResponse<*>> {
+
+        return ResponseEntity.ok(ApiResponse.success("ok"))
+    }
+
+    @GetMapping("/withdraw")
+    fun memberWithdrawList(
+    ): ResponseEntity<ApiResponse<List<MemberWithdrawResponse>>> {
+
+        val responses = listOf(
+            MemberWithdrawResponse(
+                memberWithdrawReasonId = 1L,
+                displayText = "이미 운동 메이트를 찾았고, 만족스러운 관계를 유지하고 있어요."
+            ),
+            MemberWithdrawResponse(
+                memberWithdrawReasonId = 2L,
+                displayText = "원하는 지역/시간대에 맞는 운동 메이트를 찾기 어려웠어요."
+            ),
+            MemberWithdrawResponse(
+                memberWithdrawReasonId = 3L,
+                displayText = "메이트와의 소통/약속 관리가 불편했고, 신뢰하기 어려웠어요."
+            ),
+            MemberWithdrawResponse(
+                memberWithdrawReasonId = 4L,
+                displayText = "다른 운동 앱/커뮤니티를 사용하게 되었어요."
+            ),
+            MemberWithdrawResponse(
+                memberWithdrawReasonId = 5L,
+                displayText = "앱 사용에 전반적인 불편함(버그, 속도, UX 등)이 많았어요."
+            ),
+            MemberWithdrawResponse(
+                memberWithdrawReasonId = 6L,
+                displayText = "기타"
+            )
+        )
+
+        return ResponseEntity.ok(ApiResponse.success(responses))
     }
 
 

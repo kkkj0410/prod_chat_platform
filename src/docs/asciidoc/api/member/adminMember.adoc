@@ -1,0 +1,24 @@
+[[admin-member-get]]
+=== 회원 리스트 조회 API - FAKE
+
+==== HTTP Request
+include::{snippets}/admin-member-get/http-request.adoc[]
+include::{snippets}/admin-member-get/query-parameters.adoc[]
+include::{snippets}/admin-member-get/request-headers.adoc[]
+
+==== HTTP Response
+include::{snippets}/admin-member-get/http-response.adoc[]
+include::{snippets}/admin-member-get/response-fields.adoc[]
+
+[[admin-withdraw-member-get]]
+=== 탈퇴 회원 리스트 조회 API - FAKE
+
+==== HTTP Request
+include::{snippets}/admin-withdraw-member-get/http-request.adoc[]
+include::{snippets}/admin-withdraw-member-get/query-parameters.adoc[]
+include::{snippets}/admin-withdraw-member-get/request-headers.adoc[]
+
+==== HTTP Response
+include::{snippets}/admin-withdraw-member-get/http-response.adoc[]
+include::{snippets}/admin-withdraw-member-get/response-fields.adoc[]
+

@@ -1,0 +1,12 @@
+[[dashboard-get]]
+=== 대시보드 조회 API - FAKE
+
+==== HTTP Request
+include::{snippets}/dashboard-get/http-request.adoc[]
+include::{snippets}/dashboard-get/request-headers.adoc[]
+
+
+==== HTTP Response
+include::{snippets}/dashboard-get/http-response.adoc[]
+include::{snippets}/dashboard-get/response-fields.adoc[]
+

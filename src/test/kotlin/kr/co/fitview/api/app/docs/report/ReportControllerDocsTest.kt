@@ -13,6 +13,7 @@ import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
 import kr.co.fitview.api.app.domain.report.controller.ReportController
 import kr.co.fitview.api.app.domain.report.dto.request.ReportChatRoomCreateRequest
 import kr.co.fitview.api.app.domain.report.entity.enums.ReportReasonType
+import kr.co.fitview.api.app.domain.report.entity.enums.ReportTargetType
 import kr.co.fitview.api.app.domain.term.entity.enums.TermName
 import kr.co.fitview.api.app.global.entity.Gender
 import kr.co.fitview.api.app.global.entity.OAuth2Provider
@@ -29,7 +30,10 @@ import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document
 import org.springframework.restdocs.operation.preprocess.Preprocessors.*
 import org.springframework.restdocs.payload.JsonFieldType
 import org.springframework.restdocs.payload.PayloadDocumentation.*
+import org.springframework.restdocs.request.RequestDocumentation.parameterWithName
+import org.springframework.restdocs.request.RequestDocumentation.queryParameters
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.time.LocalDate
@@ -38,7 +42,7 @@ import java.time.LocalDate
 class ReportControllerDocsTest : RestDocsSupport() {
 
 
-    private val securityUtil : SecurityUtil = mock(SecurityUtil::class.java)
+    private val securityUtil: SecurityUtil = mock(SecurityUtil::class.java)
 
     override fun initController(): Any {
         return ReportController(securityUtil)
@@ -51,7 +55,7 @@ class ReportControllerDocsTest : RestDocsSupport() {
         // given
         val request = mapOf(
             "chatRoomId" to 123L,
-            "reasonType" to "RUDE_LANGUAGE",
+            "reportReasonId" to 100L,
             "description" to null
         )
 
@@ -64,34 +68,37 @@ class ReportControllerDocsTest : RestDocsSupport() {
         )
             .andDo(print())
             .andExpect(status().isOk())
-            .andDo(document("report-chat-add",
-                preprocessRequest(prettyPrint()),
-                preprocessResponse(prettyPrint()),
+            .andDo(
+                document(
+                    "report-chat-add",
+                    preprocessRequest(prettyPrint()),
+                    preprocessResponse(prettyPrint()),
 
-                requestHeaders(RestDocsHeaders.authorizationHeader(Role.USER)),
+                    requestHeaders(RestDocsHeaders.authorizationHeader(Role.USER)),
 
-                requestFields(
-                    fieldWithPath("chatRoomId").type(JsonFieldType.NUMBER)
-                        .description("신고할 채팅방 ID"),
-                    fieldWithPath("reasonType").type(JsonFieldType.STRING)
-                        .description("신고 사유 유형" + ReportReasonType.allDescription()),
-                    fieldWithPath("description").type(JsonFieldType.STRING)
-                        .optional()
-                        .description("신고 사유 상세 설명 (선택 사항)")
-                ),
+                    requestFields(
+                        fieldWithPath("chatRoomId").type(JsonFieldType.NUMBER)
+                            .description("신고할 채팅방 ID"),
+                        fieldWithPath("reportReasonId").type(JsonFieldType.NUMBER)
+                            .description("신고 사유 id - 별도 reportReason API 호출해서 신고 사유 id를 얻으면 넣을 수 있음"),
+                        fieldWithPath("description").type(JsonFieldType.STRING)
+                            .optional()
+                            .description("신고 사유 상세 설명 (선택 사항)")
+                    ),
 
 
-                responseFields(
-                    fieldWithPath("status").type(JsonFieldType.NUMBER)
-                        .description("상태"),
-                    fieldWithPath("code").type(JsonFieldType.STRING)
-                        .description("코드"),
-                    fieldWithPath("message").type(JsonFieldType.STRING)
-                        .description("에러 메시지"),
-                    fieldWithPath("data").type(JsonFieldType.STRING)
-                        .description("응답 데이터"),
+                    responseFields(
+                        fieldWithPath("status").type(JsonFieldType.NUMBER)
+                            .description("상태"),
+                        fieldWithPath("code").type(JsonFieldType.STRING)
+                            .description("코드"),
+                        fieldWithPath("message").type(JsonFieldType.STRING)
+                            .description("에러 메시지"),
+                        fieldWithPath("data").type(JsonFieldType.STRING)
+                            .description("응답 데이터"),
+                    )
                 )
-            ))
+            )
     }
 
     @DisplayName("회원 신고 API")
@@ -100,7 +107,7 @@ class ReportControllerDocsTest : RestDocsSupport() {
         // given
         val request = mapOf(
             "memberId" to 123L,
-            "reasonType" to "NO_SHOW",
+            "reportReasonId" to 100L,
             "description" to null
         )
 
@@ -114,36 +121,88 @@ class ReportControllerDocsTest : RestDocsSupport() {
         )
             .andDo(print())
             .andExpect(status().isOk())
-            .andDo(document("report-member-add",
-                preprocessRequest(prettyPrint()),
-                preprocessResponse(prettyPrint()),
+            .andDo(
+                document(
+                    "report-member-add",
+                    preprocessRequest(prettyPrint()),
+                    preprocessResponse(prettyPrint()),
 
-                requestHeaders(RestDocsHeaders.authorizationHeader(Role.USER)),
+                    requestHeaders(RestDocsHeaders.authorizationHeader(Role.USER)),
 
-                requestFields(
-                    fieldWithPath("memberId").type(JsonFieldType.NUMBER)
-                        .description("신고할 회원 ID"),
-                    fieldWithPath("reasonType").type(JsonFieldType.STRING)
-                        .description("신고 사유 유형" + ReportReasonType.allDescription()),
-                    fieldWithPath("description").type(JsonFieldType.STRING)
-                        .optional()
-                        .description("신고 사유 상세 설명 (선택 사항)")
-                ),
+                    requestFields(
+                        fieldWithPath("memberId").type(JsonFieldType.NUMBER)
+                            .description("신고할 회원 ID"),
+                        fieldWithPath("reportReasonId").type(JsonFieldType.NUMBER)
+                            .description("신고 사유 id - 별도 reportReason API 호출해서 신고 사유 id를 얻으면 넣을 수 있음"),
+                        fieldWithPath("description").type(JsonFieldType.STRING)
+                            .optional()
+                            .description("신고 사유 상세 설명 (선택 사항)")
+                    ),
 
 
-                responseFields(
-                    fieldWithPath("status").type(JsonFieldType.NUMBER)
-                        .description("상태"),
-                    fieldWithPath("code").type(JsonFieldType.STRING)
-                        .description("코드"),
-                    fieldWithPath("message").type(JsonFieldType.STRING)
-                        .description("에러 메시지"),
-                    fieldWithPath("data").type(JsonFieldType.STRING)
-                        .description("응답 데이터"),
+                    responseFields(
+                        fieldWithPath("status").type(JsonFieldType.NUMBER)
+                            .description("상태"),
+                        fieldWithPath("code").type(JsonFieldType.STRING)
+                            .description("코드"),
+                        fieldWithPath("message").type(JsonFieldType.STRING)
+                            .description("에러 메시지"),
+                        fieldWithPath("data").type(JsonFieldType.STRING)
+                            .description("응답 데이터"),
+                    )
                 )
-            ))
+            )
     }
 
+    @DisplayName("신고 사유 목록 조회 API")
+    @Test
+    fun reportReasonList() {
+        // given
+        val type = "MEMBER"
 
+        // when & then
+        mockMvc.perform(
+            get("/api/v1/reports/reasons")
+                .header("Authorization", "Bearer jwt-token")
+                .param("type", type)
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andDo(
+                document(
+                    "report-reason-list",
+                    preprocessRequest(prettyPrint()),
+                    preprocessResponse(prettyPrint()),
+
+                    requestHeaders(
+                        RestDocsHeaders.authorizationHeader(Role.USER)
+                    ),
+
+
+                    queryParameters(
+                        parameterWithName("type")
+                            .description("신고 대상 유형[기본값: MEMBER]" + ReportTargetType.allDescription())
+                            .optional()
+                    ),
+
+                    responseFields(
+                        fieldWithPath("status").type(JsonFieldType.NUMBER)
+                            .description("상태 코드"),
+                        fieldWithPath("code").type(JsonFieldType.STRING)
+                            .description("응답 코드"),
+                        fieldWithPath("message").type(JsonFieldType.STRING)
+                            .description("메시지"),
+
+                        fieldWithPath("data").type(JsonFieldType.ARRAY)
+                            .description("신고 사유 목록 데이터"),
+                        fieldWithPath("data[].reportReasonId").type(JsonFieldType.NUMBER)
+                            .description("신고 사유 ID (서버 전송용)"),
+                        fieldWithPath("data[].displayText").type(JsonFieldType.STRING)
+                            .description("화면 표시 텍스트 (사용자 노출용)")
+                    )
+                )
+            )
+    }
 
 }

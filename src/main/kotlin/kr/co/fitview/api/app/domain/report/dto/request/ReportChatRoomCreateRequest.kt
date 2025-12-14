@@ -8,8 +8,8 @@ data class ReportChatRoomCreateRequest(
     @field:NotNull(message = "chatRoomId is required")
     val chatRoomId : Long?,
 
-    @field:NotNull(message = "reasonType is required")
-    val reasonType : ReportReasonType?,
+    @field:NotNull(message = "reportReasonId is required")
+    val reportReasonId : Long?,
 
     val description : String?
 )

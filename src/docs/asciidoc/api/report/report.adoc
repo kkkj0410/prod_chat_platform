@@ -3,10 +3,35 @@
 
 ==== HTTP Request
 include::{snippets}/report-chat-add/http-request.adoc[]
-// include::{snippets}/report-chat-add/request-headers.adoc[]
-// include::{snippets}/report-chat-add/query-parameters.adoc[]
+include::{snippets}/report-chat-add/request-headers.adoc[]
+include::{snippets}/report-chat-add/request-fields.adoc[]
 
 ==== HTTP Response
 include::{snippets}/report-chat-add/http-response.adoc[]
 include::{snippets}/report-chat-add/response-fields.adoc[]
 
+
+[[report-member-add]]
+=== 회원 신고 API - FAKE
+
+==== HTTP Request
+include::{snippets}/report-member-add/http-request.adoc[]
+include::{snippets}/report-member-add/request-headers.adoc[]
+include::{snippets}/report-member-add/request-fields.adoc[]
+
+==== HTTP Response
+include::{snippets}/report-member-add/http-response.adoc[]
+include::{snippets}/report-member-add/response-fields.adoc[]
+
+
+[[report-reason-list]]
+=== 신고 사유 선택지 목록 조회 API - FAKE
+
+==== HTTP Request
+include::{snippets}/report-reason-list/http-request.adoc[]
+include::{snippets}/report-reason-list/request-headers.adoc[]
+include::{snippets}/report-reason-list/query-parameters.adoc[]
+
+==== HTTP Response
+include::{snippets}/report-reason-list/http-response.adoc[]
+include::{snippets}/report-reason-list/response-fields.adoc[]

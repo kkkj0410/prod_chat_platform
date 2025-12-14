@@ -110,3 +110,29 @@ include::{snippets}/member-review-get/query-parameters.adoc[]
 ==== HTTP Response
 include::{snippets}/member-review-get/http-response.adoc[]
 include::{snippets}/member-review-get/response-fields.adoc[]
+
+[[member-withdraw]]
+=== 회원 탈퇴 API - FAKE
+
+==== HTTP Request
+include::{snippets}/member-withdraw/http-request.adoc[]
+include::{snippets}/member-withdraw/request-headers.adoc[]
+include::{snippets}/member-withdraw/request-body.adoc[]
+include::{snippets}/member-withdraw/request-fields.adoc[]
+
+
+==== HTTP Response
+include::{snippets}/member-withdraw/http-response.adoc[]
+include::{snippets}/member-withdraw/response-fields.adoc[]
+
+
+[[member-withdraw-reason-list]]
+=== 회원 탈퇴 사유 선택지 조회 API - FAKE
+
+==== HTTP Request
+include::{snippets}/member-withdraw-reason-list/http-request.adoc[]
+include::{snippets}/member-withdraw-reason-list/request-headers.adoc[]
+
+==== HTTP Response
+include::{snippets}/member-withdraw-reason-list/http-response.adoc[]
+include::{snippets}/member-withdraw-reason-list/response-fields.adoc[]

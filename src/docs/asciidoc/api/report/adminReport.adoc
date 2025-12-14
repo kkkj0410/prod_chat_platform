@@ -1,0 +1,12 @@
+[[admin-report-list-get]]
+=== 신고 목록 조회 API - FAKE
+
+==== HTTP Request
+include::{snippets}/admin-report-list-get/http-request.adoc[]
+include::{snippets}/admin-report-list-get/request-headers.adoc[]
+include::{snippets}/admin-report-list-get/query-parameters.adoc[]
+
+==== HTTP Response
+include::{snippets}/admin-report-list-get/http-response.adoc[]
+include::{snippets}/admin-report-list-get/response-fields.adoc[]
+

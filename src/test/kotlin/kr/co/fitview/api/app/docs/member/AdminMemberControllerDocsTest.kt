@@ -23,6 +23,7 @@ import kr.co.fitview.api.app.domain.review.dto.response.ReviewTagCountResponse
 import kr.co.fitview.api.app.domain.review.service.ReviewQueryService
 import kr.co.fitview.api.app.domain.review.service.ReviewTagCountQueryService
 import kr.co.fitview.api.app.global.entity.Gender
+import kr.co.fitview.api.app.global.entity.OAuth2Provider
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.util.SecurityUtil
 import org.junit.jupiter.api.DisplayName
@@ -89,7 +90,11 @@ class AdminMemberControllerDocsTest : RestDocsSupport() {
 
                     queryParameters(
                         parameterWithName("size").description("(Optional - default 10)한 페이지에 조회할 회원 수. 기본 memberId가 작은 순 -> 큰 순으로 조회됨"),
-                        parameterWithName("memberId").description("(Optional - default 10)마지막으로 조회된 회원 ID. 해당 ID 이후 데이터 조회.")
+                        parameterWithName("memberId").description(
+                            "(Optional) 커서 기준 ID. " +
+                                    "처음에는 null이면 최신 데이터부터 size만큼 조회, " +
+                                    "이후에는 가장 작은 ID를 넣으면 그 ID보다 작은 데이터(과거 데이터)를 조회"
+                        )
                     ),
 
                     responseFields(
@@ -97,11 +102,15 @@ class AdminMemberControllerDocsTest : RestDocsSupport() {
                         fieldWithPath("code").type(JsonFieldType.STRING).description("응답 코드"),
                         fieldWithPath("message").type(JsonFieldType.STRING).description("응답 메시지"),
                         fieldWithPath("data.content").type(JsonFieldType.ARRAY).description("회원 리스트"),
-                        fieldWithPath("data.content[].memberId").type(JsonFieldType.NUMBER).description("회원 ID"),
-                        fieldWithPath("data.content[].email").type(JsonFieldType.STRING).description("회원 이메일"),
-                        fieldWithPath("data.content[].provider").type(JsonFieldType.STRING).description("OAuth2 제공자"),
+                        fieldWithPath("data.content[].memberId").type(JsonFieldType.NUMBER)
+                            .description("회원 ID"),
+                        fieldWithPath("data.content[].email").type(JsonFieldType.STRING)
+                            .description("회원 이메일"),
+                        fieldWithPath("data.content[].provider").type(JsonFieldType.STRING)
+                            .description("OAuth2 제공자" +  OAuth2Provider.allDescription()),
                         fieldWithPath("data.content[].nickname").type(JsonFieldType.STRING).description("닉네임"),
-                        fieldWithPath("data.content[].gender").type(JsonFieldType.STRING).description("성별"),
+                        fieldWithPath("data.content[].gender").type(JsonFieldType.STRING)
+                            .description("성별" + Gender.allDescription()),
                         fieldWithPath("data.content[].birthday").type(JsonFieldType.STRING).description("생년월일"),
                         fieldWithPath("data.content[].height").type(JsonFieldType.NUMBER).description("키"),
                         fieldWithPath("data.content[].weight").type(JsonFieldType.NUMBER).description("몸무게"),
@@ -113,6 +122,76 @@ class AdminMemberControllerDocsTest : RestDocsSupport() {
                         fieldWithPath("data.content[].reviewCount").type(JsonFieldType.NUMBER).description("리뷰 수"),
                         *RestDocsPagination.paginationByCursor()
 
+                    )
+                )
+            )
+    }
+
+    @DisplayName("탈퇴 회원 조회 API")
+    @Test
+    fun withdrawMemberList() {
+        // when & then
+        mockMvc.perform(
+            get("/api/v1/admins/members/withdraw")
+                .header("Authorization", "Bearer jwt-token")
+                .param("size", "10")
+                .param("memberId", "100")
+        )
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andDo(
+                document(
+                    "admin-withdraw-member-get",
+                    preprocessRequest(prettyPrint()),
+                    preprocessResponse(prettyPrint()),
+
+                    requestHeaders(
+                        RestDocsHeaders.authorizationHeader(Role.USER)
+                    ),
+
+                    queryParameters(
+                        parameterWithName("size")
+                            .description("(Optional - default 10) 한 페이지에 조회할 탈퇴 회원 수"),
+                        parameterWithName("memberId")
+                            .description(
+                                "(Optional) 커서 기준 ID. " +
+                                        "처음에는 null이면 최신 데이터부터 size만큼 조회, " +
+                                        "이후에는 가장 작은 ID를 넣으면 그 ID보다 작은 데이터(과거 데이터)를 조회"
+                            )
+                    ),
+
+                    responseFields(
+                        fieldWithPath("status").type(JsonFieldType.NUMBER)
+                            .description("상태 코드"),
+                        fieldWithPath("code").type(JsonFieldType.STRING)
+                            .description("응답 코드"),
+                        fieldWithPath("message").type(JsonFieldType.STRING)
+                            .description("응답 메시지"),
+
+                        fieldWithPath("data.content").type(JsonFieldType.ARRAY)
+                            .description("탈퇴 회원 목록"),
+
+                        fieldWithPath("data.content[].memberId").type(JsonFieldType.NUMBER)
+                            .description("회원 ID"),
+                        fieldWithPath("data.content[].email").type(JsonFieldType.STRING)
+                            .description("회원 이메일"),
+                        fieldWithPath("data.content[].provider").type(JsonFieldType.STRING)
+                            .description("OAuth2 제공자" + OAuth2Provider.allDescription()),
+                        fieldWithPath("data.content[].nickname").type(JsonFieldType.STRING)
+                            .description("닉네임"),
+                        fieldWithPath("data.content[].gender").type(JsonFieldType.STRING)
+                            .description("성별" + Gender.allDescription()),
+                        fieldWithPath("data.content[].birthday").type(JsonFieldType.STRING)
+                            .description("생년월일"),
+                        fieldWithPath("data.content[].workoutExperience").type(JsonFieldType.STRING)
+                            .description("운동 경력"),
+                        fieldWithPath("data.content[].deletedAt").type(JsonFieldType.STRING)
+                            .description("탈퇴 일시"),
+                        fieldWithPath("data.content[].memberWithdrawReasonDisplayText")
+                            .type(JsonFieldType.STRING)
+                            .description("탈퇴 사유"),
+
+                        *RestDocsPagination.paginationByCursor()
                     )
                 )
             )
