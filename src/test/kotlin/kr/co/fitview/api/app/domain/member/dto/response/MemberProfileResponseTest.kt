@@ -24,6 +24,7 @@ class MemberProfileResponseTest : IntegrationTestSupport(){
             memberId = 1L,
             nickname = "nickname",
             gender = Gender.MALE,
+            addressId = 123L,
             siDo = AddressSiDo.SEOUL,
             siGunGu = "강남구",
             eupMyeonDong = "역삼동",

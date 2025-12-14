@@ -1,0 +1,11 @@
+[[admin-review-list-get]]
+=== 리뷰 목록 조회 - FAKE
+
+==== HTTP Request
+include::{snippets}/admin-review-list-get/http-request.adoc[]
+include::{snippets}/admin-review-list-get/request-headers.adoc[]
+include::{snippets}/admin-review-list-get/query-parameters.adoc[]
+
+==== HTTP Response
+include::{snippets}/admin-review-list-get/http-response.adoc[]
+include::{snippets}/admin-review-list-get/response-fields.adoc[]

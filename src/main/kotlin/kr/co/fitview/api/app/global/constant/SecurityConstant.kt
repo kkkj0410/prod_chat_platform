@@ -8,7 +8,7 @@ object SecurityConstant {
     val WS_STOMP_URI = "/ws/stomp"
 
     val ADMIN_URIS: List<String> = listOf(
-        "$API_BASE/admin/**",
+        "$API_BASE/admins/**",
         "/webjars/**",
         "/docs/**"
     )
@@ -26,6 +26,7 @@ object SecurityConstant {
         "$API_BASE/fcm-tokens/**",
         "$API_BASE/reviews/**",
         "$API_BASE/notifications/**",
+        "$API_BASE/reports/**",
     )
 
     val PERMIT_ALL_URIS: List<String> = listOf(

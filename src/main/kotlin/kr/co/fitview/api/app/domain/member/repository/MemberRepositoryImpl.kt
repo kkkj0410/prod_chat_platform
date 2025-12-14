@@ -218,6 +218,7 @@ class MemberRepositoryImpl(
                     member.id,
                     member.nickname,
                     member.gender,
+                    address.id,
                     address.siDo,
                     address.siGunGu,
                     address.eupMyeonDong,

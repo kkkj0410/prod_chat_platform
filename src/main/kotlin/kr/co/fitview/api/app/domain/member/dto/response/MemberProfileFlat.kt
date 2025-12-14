@@ -15,6 +15,7 @@ data class MemberProfileFlat @QueryProjection constructor(
     val memberId: Long,
     val nickname: String,
     val gender: Gender,
+    val addressId : Long,
     val siDo: AddressSiDo,
     val siGunGu: String,
     val eupMyeonDong: String,

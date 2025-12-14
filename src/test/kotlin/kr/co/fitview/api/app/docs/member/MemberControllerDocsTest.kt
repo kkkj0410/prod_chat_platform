@@ -47,6 +47,7 @@ import org.springframework.restdocs.request.RequestDocumentation.queryParameters
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
@@ -86,6 +87,7 @@ class MemberControllerDocsTest : RestDocsSupport() {
                     nickname = "테스트닉네임",
                     gender = Gender.MALE,
 
+                    addressId = 123L,
                     siDo = AddressSiDo.SEOUL,
                     siGunGu = "강남구",
                     eupMyeonDong = "역삼동",
@@ -142,6 +144,8 @@ class MemberControllerDocsTest : RestDocsSupport() {
                             .description("닉네임"),
                         fieldWithPath("data.gender").type(JsonFieldType.STRING)
                             .description("성별"),
+                        fieldWithPath("data.addressId").type(JsonFieldType.NUMBER)
+                            .description("주소 id"),
                         fieldWithPath("data.siDo").type(JsonFieldType.STRING)
                             .description("시/도"),
                         fieldWithPath("data.siGunGu").type(JsonFieldType.STRING)
@@ -815,6 +819,91 @@ class MemberControllerDocsTest : RestDocsSupport() {
                         fieldWithPath("data.content[].profileImageUrl").description("회원 프로필 이미지"),
                         fieldWithPath("data.content[].postedAt").description("작성 시간"),
                         fieldWithPath("data.content[].content").description("리뷰 내용"),
+                    )
+                )
+            )
+    }
+
+    @DisplayName("회원 탈퇴 API")
+    @Test
+    fun memberWithdraw() {
+
+        val request = mapOf(
+            "memberWithdrawReasonId" to 1L,
+        )
+
+        mockMvc.perform(
+            post("/api/v1/members/withdraw")
+                .header("Authorization", "Bearer jwt-token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request))
+        )
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andDo(
+                document(
+                    "member-withdraw",
+                    preprocessRequest(prettyPrint()),
+                    preprocessResponse(prettyPrint()),
+
+                    requestHeaders(
+                        RestDocsHeaders.authorizationHeader(Role.USER)
+                    ),
+
+                    requestFields(
+                        fieldWithPath("memberWithdrawReasonId").type(JsonFieldType.NUMBER)
+                            .description("선택한 탈퇴 사유 ID"),
+                    ),
+
+                    responseFields(
+                        fieldWithPath("status").type(JsonFieldType.NUMBER)
+                            .description("상태"),
+                        fieldWithPath("code").type(JsonFieldType.STRING)
+                            .description("코드"),
+                        fieldWithPath("message").type(JsonFieldType.STRING)
+                            .description("메시지"),
+                        fieldWithPath("data").type(JsonFieldType.STRING)
+                            .description("응답 데이터")
+                    )
+                )
+            )
+    }
+
+    @DisplayName("회원 탈퇴 사유 목록 조회 API")
+    @Test
+    fun memberWithdrawReasonList() {
+
+        // when & then
+        mockMvc.perform(
+            get("/api/v1/members/withdraw")
+                .header("Authorization", "Bearer jwt-token")
+        )
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andDo(
+                document(
+                    "member-withdraw-reason-list",
+                    preprocessRequest(prettyPrint()),
+                    preprocessResponse(prettyPrint()),
+
+                    requestHeaders(
+                        RestDocsHeaders.authorizationHeader(Role.USER)
+                    ),
+
+                    responseFields(
+                        fieldWithPath("status").type(JsonFieldType.NUMBER)
+                            .description("상태"),
+                        fieldWithPath("code").type(JsonFieldType.STRING)
+                            .description("코드"),
+                        fieldWithPath("message").type(JsonFieldType.STRING)
+                            .description("메시지"),
+
+                        fieldWithPath("data").type(JsonFieldType.ARRAY)
+                            .description("회원 탈퇴 사유 목록"),
+                        fieldWithPath("data[].memberWithdrawReasonId").type(JsonFieldType.NUMBER)
+                            .description("탈퇴 사유 ID"),
+                        fieldWithPath("data[].displayText").type(JsonFieldType.STRING)
+                            .description("탈퇴 사유 표시 문구")
                     )
                 )
             )

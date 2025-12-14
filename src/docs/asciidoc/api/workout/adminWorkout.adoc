@@ -1,0 +1,26 @@
+[[workout-request-list-get]]
+=== 운동 약속 관리 조회 API - FAKE
+
+==== HTTP Request
+include::{snippets}/workout-request-list-get/http-request.adoc[]
+include::{snippets}/workout-request-list-get/query-parameters.adoc[]
+include::{snippets}/workout-request-list-get/request-body.adoc[]
+
+==== HTTP Response
+include::{snippets}/workout-request-list-get/http-response.adoc[]
+include::{snippets}/workout-request-list-get/response-fields.adoc[]
+
+[[workout-request-detail-get]]
+=== 운동 약속 관리 로그 조회 API - FAKE
+
+==== HTTP Request
+include::{snippets}/workout-request-detail-get/http-request.adoc[]
+include::{snippets}/workout-request-detail-get/request-body.adoc[]
+include::{snippets}/workout-request-detail-get/path-parameters.adoc[]
+
+==== HTTP Response
+include::{snippets}/workout-request-detail-get/http-response.adoc[]
+include::{snippets}/workout-request-detail-get/response-fields.adoc[]
+
+
+

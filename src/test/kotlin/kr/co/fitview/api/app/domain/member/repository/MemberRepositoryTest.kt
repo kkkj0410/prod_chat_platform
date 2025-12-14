@@ -231,6 +231,7 @@ class MemberRepositoryTest@Autowired constructor(
             assertThat(it.workoutGoal).isEqualTo(request.workoutGoal)
             assertThat(it.score).isEqualTo(savedMember.score!!.toInt())
 
+            assertThat(it.addressId).isNotNull()
             assertThat(it.siDo).isEqualTo(request.address.siDo)
             assertThat(it.siGunGu).isEqualTo(request.address.siGunGu)
             assertThat(it.eupMyeonDong).isEqualTo(request.address.eupMyeonDong)
