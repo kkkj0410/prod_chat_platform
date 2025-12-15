@@ -7,4 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository
 interface ReportReasonRepository : JpaRepository<ReportReason, Long> {
 
     fun findAllByTargetTypeAndDeletedAtIsNullOrderBySeqAsc(type: ReportTargetType): List<ReportReason>
+
+    fun findByIdAndDeletedAtIsNull(reportReasonId: Long): ReportReason?
 }

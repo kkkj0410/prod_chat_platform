@@ -115,4 +115,45 @@ class ReportReasonRepositoryTest @Autowired constructor(
         assertThat(response[0]).isEqualTo(chatReport2)
         assertThat(response[1]).isEqualTo(chatReport1)
     }
+
+    @DisplayName("고유 id로 해당 신고 사유 선택지를 조회한다.")
+    @Test
+    fun findByIdAndDeletedAtIsNull() {
+        // given
+        val memberReport1 = ReportReason(
+            targetType = ReportTargetType.MEMBER,
+            reasonType = ReportReasonType.OTHER,
+            displayText = "memberDisplay1",
+            seq = 100
+        )
+        val memberReport2 = ReportReason(
+            targetType = ReportTargetType.MEMBER,
+            reasonType = ReportReasonType.NO_SHOW,
+            displayText = "memberDisplay2",
+            seq = 200
+        )
+        val chatReport1 = ReportReason(
+            targetType = ReportTargetType.CHAT_ROOM,
+            reasonType = ReportReasonType.INAPPROPRIATE_REQUEST,
+            displayText = "chatDisplay1",
+            seq = 100
+        )
+        val chatReport2 = ReportReason(
+            targetType = ReportTargetType.CHAT_ROOM,
+            reasonType = ReportReasonType.FALSE_INFORMATION,
+            displayText = "chatDisplay2",
+            seq = 200
+        )
+
+        reportReasonRepository.save(memberReport1)
+        reportReasonRepository.save(memberReport2)
+        reportReasonRepository.save(chatReport1)
+        reportReasonRepository.save(chatReport2)
+
+        // when
+        val findReportReason = reportReasonRepository.findByIdAndDeletedAtIsNull(chatReport1.id!!)
+
+        // then
+        assertThat(findReportReason).isEqualTo(chatReport1)
+    }
 }

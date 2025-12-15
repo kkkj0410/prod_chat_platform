@@ -15,6 +15,7 @@ import kr.co.fitview.api.app.domain.report.dto.request.ReportChatRoomCreateReque
 import kr.co.fitview.api.app.domain.report.dto.response.ReportReasonResponse
 import kr.co.fitview.api.app.domain.report.entity.enums.ReportReasonType
 import kr.co.fitview.api.app.domain.report.entity.enums.ReportTargetType
+import kr.co.fitview.api.app.domain.report.service.ChatRoomReportService
 import kr.co.fitview.api.app.domain.report.service.ReportReasonQueryService
 import kr.co.fitview.api.app.domain.term.entity.enums.TermName
 import kr.co.fitview.api.app.global.entity.Gender
@@ -45,10 +46,11 @@ class ReportControllerDocsTest : RestDocsSupport() {
 
 
     private val reportReasonQueryService: ReportReasonQueryService = mock(ReportReasonQueryService::class.java)
+    private val chatRoomReportService: ChatRoomReportService = mock(ChatRoomReportService::class.java)
     private val securityUtil: SecurityUtil = mock(SecurityUtil::class.java)
 
     override fun initController(): Any {
-        return ReportController(reportReasonQueryService, securityUtil)
+        return ReportController(reportReasonQueryService, chatRoomReportService, securityUtil)
     }
 
 

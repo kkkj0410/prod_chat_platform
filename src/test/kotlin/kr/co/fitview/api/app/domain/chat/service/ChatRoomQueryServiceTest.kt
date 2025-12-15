@@ -182,4 +182,22 @@ class ChatRoomQueryServiceTest @Autowired constructor(
         // then
         assertThat(findChatRoom).isNull()
     }
+
+    @DisplayName("채팅방을 프록시로 조회한다.")
+    @Test
+    fun findChatRoomReferenceFrom() {
+        // given
+        val savedChatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+
+        em.flush()
+        em.clear()
+
+        // when
+        val findChatRoomProxy = chatRoomQueryService.findChatRoomReferenceFrom(savedChatRoom.id!!)
+
+        // then
+        assertThat(findChatRoomProxy).isInstanceOf(HibernateProxy::class.java)
+        assertThat(findChatRoomProxy::class.simpleName!!).contains("ChatRoom")
+        assertThat(findChatRoomProxy.type).isEqualTo(ChatRoomType.PRIVATE)
+    }
 }

@@ -1,6 +1,7 @@
 package kr.co.fitview.api.app.domain.report.service
 
 import kr.co.fitview.api.app.domain.report.dto.response.ReportReasonResponse
+import kr.co.fitview.api.app.domain.report.entity.ReportReason
 import kr.co.fitview.api.app.domain.report.entity.enums.ReportTargetType
 import kr.co.fitview.api.app.domain.report.repository.ReportReasonRepository
 import org.springframework.stereotype.Service
@@ -23,5 +24,13 @@ class ReportReasonQueryService(
             )
         }
         return response
+    }
+
+    fun findReportReasonFrom(reportReasonId : Long) : ReportReason?{
+        return reportReasonRepository.findByIdAndDeletedAtIsNull(reportReasonId)
+    }
+
+    fun findReportReasonReferenceFrom(reportReasonId: Long): ReportReason {
+        return reportReasonRepository.getReferenceById(reportReasonId)
     }
 }
