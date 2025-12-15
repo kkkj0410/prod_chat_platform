@@ -41,8 +41,8 @@ class AdminWorkoutController(
                 respondedAt = if (i % 2 == 0) LocalDateTime.now().minusDays((20 - i - 1).toLong()) else null,
                 scheduledAt = LocalDateTime.now().plusDays(i.toLong()),
                 location = "Location $i",
-                isFromMemberReview = i % 2 == 0,
-                isToMemberReview = i % 3 == 0
+                hasFromMemberReview = i % 2 == 0,
+                hasToMemberReview = i % 3 == 0
             )
         }.sortedByDescending { it.workoutRequestId } // 최신순
 
