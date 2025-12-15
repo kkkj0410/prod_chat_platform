@@ -36,9 +36,6 @@ abstract class IntegrationTestSupport {
     @MockitoBean
     lateinit var redisClient: RedisClient
 
-//    @MockitoBean
-//    lateinit var fcmPublisher: FcmPublisher
-
     @Autowired
     lateinit var events : ApplicationEvents
 

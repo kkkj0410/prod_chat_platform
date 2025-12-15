@@ -18,6 +18,7 @@ import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestQueryService
 import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestService
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.enums.Direction
+import kr.co.fitview.api.app.global.slice.SliceWithBefore
 import kr.co.fitview.api.app.global.util.SecurityUtil
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -490,7 +491,7 @@ class ChatControllerDocsTest : RestDocsSupport() {
                 content = "안녕하세요!"
             )
         )
-        val sliceChatMessages: Slice<LastChatMessage> = SliceImpl(chatMessages, PageRequest.of(0, 10), false)
+        val sliceChatMessages: SliceWithBefore<LastChatMessage> = SliceWithBefore(chatMessages, PageRequest.of(0, 10), false, false)
 
 
         given(chatMessageQueryService.findChatMessages(any(), any(), any())).willReturn(sliceChatMessages)
@@ -531,7 +532,7 @@ class ChatControllerDocsTest : RestDocsSupport() {
                         fieldWithPath("status").description("HTTP 상태 코드"),
                         fieldWithPath("code").description("응답 코드"),
                         fieldWithPath("message").description("응답 메시지"),
-                        *RestDocsPagination.paginationByCursorAt(),
+                        *RestDocsPagination.paginationByCursorAtWithBefore(),
 
                         fieldWithPath("data.content").type(JsonFieldType.ARRAY).description("채팅 메시지 리스트"),
                         fieldWithPath("data.content[].chatMessageId").description("메시지 ID"),
@@ -561,7 +562,7 @@ class ChatControllerDocsTest : RestDocsSupport() {
                 location = "헬스장 앞"
             )
         )
-        val sliceChatMessages: Slice<LastChatMessage> = SliceImpl(chatMessages, PageRequest.of(0, 10), false)
+        val sliceChatMessages: SliceWithBefore<LastChatMessage> = SliceWithBefore(chatMessages, PageRequest.of(0, 10), false, false)
 
         given(chatMessageQueryService.findChatMessages(any(), any(), any())).willReturn(sliceChatMessages)
 
@@ -593,7 +594,7 @@ class ChatControllerDocsTest : RestDocsSupport() {
                         fieldWithPath("status").description("HTTP 상태 코드"),
                         fieldWithPath("code").description("응답 코드"),
                         fieldWithPath("message").description("응답 메시지"),
-                        *RestDocsPagination.paginationByCursorAt(),
+                        *RestDocsPagination.paginationByCursorAtWithBefore(),
 
                         fieldWithPath("data.content").type(JsonFieldType.ARRAY).description("채팅 메시지 리스트"),
                         fieldWithPath("data.content[].chatMessageId").description("메시지 ID"),
@@ -627,7 +628,7 @@ class ChatControllerDocsTest : RestDocsSupport() {
                 content = ChatNoticeMessageType.WORKOUT_REQUEST_COMPLETE
             ),
         )
-        val sliceChatMessages: Slice<LastChatMessage> = SliceImpl(chatMessages, PageRequest.of(0, 10), false)
+        val sliceChatMessages: SliceWithBefore<LastChatMessage> = SliceWithBefore(chatMessages, PageRequest.of(0, 10), false, false)
 
 
         given(chatMessageQueryService.findChatMessages(any(), any(), any())).willReturn(sliceChatMessages)
@@ -661,7 +662,7 @@ class ChatControllerDocsTest : RestDocsSupport() {
                         fieldWithPath("status").description("HTTP 상태 코드"),
                         fieldWithPath("code").description("응답 코드"),
                         fieldWithPath("message").description("응답 메시지"),
-                        *RestDocsPagination.paginationByCursorAt(),
+                        *RestDocsPagination.paginationByCursorAtWithBefore(),
 
                         fieldWithPath("data.content").type(JsonFieldType.ARRAY).description("채팅 메시지 리스트"),
                         fieldWithPath("data.content[].chatMessageId").description("메시지 ID"),

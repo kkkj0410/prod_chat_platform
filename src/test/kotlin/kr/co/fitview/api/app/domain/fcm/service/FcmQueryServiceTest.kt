@@ -25,6 +25,17 @@ class FcmQueryServiceTest @Autowired constructor(
     private val time : Time,
 ) : IntegrationTestSupport(){
 
+//    @DisplayName("")
+//    @Test
+//    fun test() {
+//        // given
+//        fcmPublisher.send()
+//        // when
+//
+//        // then
+//
+//    }
+
 
     @DisplayName("운동 요청 푸시 알람을 보낸다.")
     @Test
@@ -62,6 +73,7 @@ class FcmQueryServiceTest @Autowired constructor(
             body = FcmMessage.WORKOUT_PARTNER_REQUEST.formatBody("nick"),
             platform = FcmTokenPlatform.ANDROID,
             data = mapOf(
+                "type" to "WORKOUT_PARTNER_REQUEST",
                 "deepLink" to deepLinkConstant.BASE_DOMAIN + FcmMessage.WORKOUT_PARTNER_REQUEST.formatDeepLinkPath(2)
             )
         )
@@ -101,6 +113,7 @@ class FcmQueryServiceTest @Autowired constructor(
             body = FcmMessage.WORKOUT_PARTNER_ACCEPT.body,
             platform = FcmTokenPlatform.ANDROID,
             data = mapOf(
+                "type" to "WORKOUT_PARTNER_ACCEPT",
                 "deepLink" to deepLinkConstant.BASE_DOMAIN + FcmMessage.WORKOUT_PARTNER_ACCEPT.formatDeepLinkPath(2L)
             )
         )
@@ -126,6 +139,7 @@ class FcmQueryServiceTest @Autowired constructor(
             body = FcmMessage.CHAT_MESSAGE.body,
             platform = FcmTokenPlatform.ANDROID,
             data = mapOf(
+                "type" to "CHAT_MESSAGE",
                 "deepLink" to deepLinkConstant.BASE_DOMAIN + FcmMessage.CHAT_MESSAGE.formatDeepLinkPath(1L),
                 "chatMessageId" to 2L
             )
@@ -154,6 +168,7 @@ class FcmQueryServiceTest @Autowired constructor(
             body = FcmMessage.WORKOUT_REQUEST.formatBody(scheduledAt.format(DateTimeFormatter.ofPattern("MM/dd HH:mm"))),
             platform = FcmTokenPlatform.ANDROID,
             data = mapOf(
+                "type" to "WORKOUT_REQUEST",
                 "deepLink" to deepLinkConstant.BASE_DOMAIN + FcmMessage.WORKOUT_REQUEST.formatDeepLinkPath(1L),
                 "chatMessageId" to 2L
             )
@@ -178,6 +193,7 @@ class FcmQueryServiceTest @Autowired constructor(
             body = FcmMessage.WORKOUT_REQUEST_ACCEPT.body,
             platform = FcmTokenPlatform.ANDROID,
             data = mapOf(
+                "type" to "WORKOUT_REQUEST_ACCEPT",
                 "deepLink" to deepLinkConstant.BASE_DOMAIN + FcmMessage.WORKOUT_REQUEST_ACCEPT.formatDeepLinkPath(1L),
                 "chatMessageId" to 2L
             )
@@ -203,6 +219,7 @@ class FcmQueryServiceTest @Autowired constructor(
             body = FcmMessage.WORKOUT_REQUEST_REJECT.body,
             platform = FcmTokenPlatform.ANDROID,
             data = mapOf(
+                "type" to "WORKOUT_REQUEST_REJECT",
                 "deepLink" to deepLinkConstant.BASE_DOMAIN + FcmMessage.WORKOUT_REQUEST_REJECT.formatDeepLinkPath(1L),
                 "chatMessageId" to 2L
             )
@@ -228,6 +245,7 @@ class FcmQueryServiceTest @Autowired constructor(
             body = FcmMessage.WORKOUT_COMPLETE.body,
             platform = FcmTokenPlatform.ANDROID,
             data = mapOf(
+                "type" to "WORKOUT_COMPLETE",
                 "deepLink" to deepLinkConstant.BASE_DOMAIN + FcmMessage.WORKOUT_COMPLETE.formatDeepLinkPath(1L),
                 "chatMessageId" to 2L
             )
@@ -251,6 +269,7 @@ class FcmQueryServiceTest @Autowired constructor(
             body = FcmMessage.REVIEW_RECEIVE.body,
             platform = FcmTokenPlatform.ANDROID,
             data = mapOf(
+                "type" to "REVIEW_RECEIVE",
                 "deepLink" to deepLinkConstant.BASE_DOMAIN + FcmMessage.REVIEW_RECEIVE.deepLinkPath
             )
         )
@@ -263,7 +282,6 @@ class FcmQueryServiceTest @Autowired constructor(
 
         val event = EventFcmReviewRequest(
             toMemberId = member.id!!,
-            chatRoomId = 1L,
             workoutHistoryId = 2L
         )
 
@@ -275,8 +293,8 @@ class FcmQueryServiceTest @Autowired constructor(
             body = FcmMessage.REVIEW_REQUEST.body,
             platform = FcmTokenPlatform.ANDROID,
             data = mapOf(
-                "deepLink" to deepLinkConstant.BASE_DOMAIN + FcmMessage.REVIEW_REQUEST.formatDeepLinkPath(1L),
-                "workoutHistoryId" to 2L
+                "type" to "REVIEW_REQUEST",
+                "deepLink" to deepLinkConstant.BASE_DOMAIN + FcmMessage.REVIEW_REQUEST.formatDeepLinkPath(2L),
             )
         )
     }

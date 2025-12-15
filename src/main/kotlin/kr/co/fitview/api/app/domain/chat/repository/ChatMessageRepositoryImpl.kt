@@ -18,10 +18,9 @@ import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestSta
 import kr.co.fitview.api.app.domain.workout.entity.QWorkoutRequest.workoutRequest
 import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
 import kr.co.fitview.api.app.global.enums.Direction
+import kr.co.fitview.api.app.global.slice.SliceWithBefore
 import kr.co.fitview.api.app.global.time.Time
 import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Slice
-import org.springframework.data.domain.SliceImpl
 import java.sql.Timestamp
 
 class ChatMessageRepositoryImpl(
@@ -166,7 +165,7 @@ class ChatMessageRepositoryImpl(
 
 
 
-    override fun findChatMessageByCondition(chatRoomId: Long, condition: ChatMessageCondition) : Slice<ChatMessageAndWorkoutRequest> {
+    override fun findChatMessageByCondition(chatRoomId: Long, condition: ChatMessageCondition) : SliceWithBefore<ChatMessageAndWorkoutRequest> {
 
         fun messagePredicate(): BooleanExpression? {
             val lastAt = condition.lastMessageAt()
@@ -218,6 +217,59 @@ class ChatMessageRepositoryImpl(
             .limit((condition.size!! + 1).toLong())
             .fetch()
 
+
+
+        fun reverseMessagePredicate(): BooleanExpression? {
+            val lastAt = condition.lastMessageAt()
+            val targetId = condition.targetChatMessageId
+
+            val predicates = mutableListOf<BooleanExpression>()
+
+            targetId?.let {
+                val targetPredicate = if (condition.direction == Direction.ASC) {
+                    chatMessage.id.lt(it)
+                } else {
+                    chatMessage.id.gt(it)
+                }
+                predicates.add(targetPredicate)
+            }
+
+            lastAt?.let {
+                val timePredicate = if (condition.direction == Direction.ASC) {
+                    chatMessage.sentAt.loe(it)
+                } else {
+                    chatMessage.sentAt.goe(it)
+                }
+                predicates.add(timePredicate)
+            }
+
+            return predicates.reduceOrNull { acc, expr -> acc.and(expr) }
+        }
+
+
+        val reverseOrderSpecifier = if (condition.direction == Direction.ASC) {
+            listOf(chatMessage.sentAt.desc().nullsLast(), chatMessage.id.desc())
+        } else {
+            listOf(chatMessage.sentAt.asc().nullsLast(), chatMessage.id.asc())
+        }
+
+        val hasBefore = queryFactory
+            .selectOne()
+            .from(chatMessage)
+            .join(chatRoom)
+            .on(
+                chatRoom.id.eq(chatMessage.chatRoom.id),
+                chatRoom.id.eq(chatRoomId)
+            )
+            .leftJoin(workoutRequest)
+            .on(workoutRequest.chatMessage.id.eq(chatMessage.id))
+            .leftJoin(chatNoticeMessage)
+            .on(chatNoticeMessage.chatMessage.id.eq(chatMessage.id))
+            .where(reverseMessagePredicate())
+            .orderBy(*reverseOrderSpecifier.toTypedArray())
+            .limit(1)
+            .fetchFirst() != null
+
         val hasNext = result.size > condition.size
         val content = if (hasNext) result.subList(0, condition.size) else result
 
@@ -229,7 +281,7 @@ class ChatMessageRepositoryImpl(
             )
         }
 
-        return SliceImpl(mappedEntity, PageRequest.of(0, condition.size), hasNext)
+        return SliceWithBefore(mappedEntity, PageRequest.of(0, condition.size), hasNext, hasBefore)
     }
 
     private fun isMe(targetMemberId: Long, memberId: Long) = targetMemberId == memberId

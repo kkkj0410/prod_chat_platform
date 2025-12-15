@@ -14,6 +14,7 @@ import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestQueryService
 import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestService
 import kr.co.fitview.api.app.global.dto.ApiResponse
 import kr.co.fitview.api.app.global.dto.SuccessCursorAtPagedResponse
+import kr.co.fitview.api.app.global.dto.SuccessCursorAtPagedResponseWithBefore
 import kr.co.fitview.api.app.global.util.SecurityUtil
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -62,11 +63,11 @@ class ChatController(
 
         @ModelAttribute
         condition : ChatMessageCondition
-    ) : ResponseEntity<ApiResponse<SuccessCursorAtPagedResponse<LastChatMessage>>> {
+    ) : ResponseEntity<ApiResponse<SuccessCursorAtPagedResponseWithBefore<LastChatMessage>>> {
 
         val response = chatMessageQueryService.findChatMessages(securityUtil.getMemberId(), chatRoomId, condition)
 
-        return ResponseEntity.ok(ApiResponse.successWithCursorAtPagination(
+        return ResponseEntity.ok(ApiResponse.successWithCursorAtPaginationWithBefore(
             slice = response,
             timeExtractor = { it.sentAt }
         ))

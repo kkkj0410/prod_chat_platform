@@ -23,6 +23,7 @@ import kr.co.fitview.api.app.domain.workout.repository.WorkoutRequestRepository
 import kr.co.fitview.api.app.global.entity.Gender
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.enums.Direction
+import kr.co.fitview.api.app.global.slice.SliceWithBefore
 import kr.co.fitview.api.app.global.time.Time
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
@@ -550,6 +551,83 @@ class ChatMessageRepositoryTest @Autowired constructor(
 
         // then
         assertThat(response).hasSize(1)
+        assertThat(response[0].chatMessage.id).isEqualTo(condition.targetChatMessageId)
+        assertThat(response[0].chatMessage).isEqualTo(chatMessage1)
+        assertThat(response[0].workoutRequest).isNull()
+    }
+
+    @DisplayName("채팅방의 메시지를 조회한다. 채팅 메시지 id를 지정하면 해당 지점에서 부터 조회한다.")
+    @Test
+    fun findChatMessageByConditionExistsTargetChatMessageIdAsc() {
+        //given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val other = Member(
+            email = "email2",
+            password = "password2",
+            role = Role.USER,
+        )
+
+        memberRepository.save(me)
+        memberRepository.save(other)
+
+        val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+
+        val chatParticipant1 = ChatParticipant(
+            chatRoom,
+            me
+        )
+        val chatParticipant2 = ChatParticipant(
+            chatRoom,
+            other
+        )
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+
+
+        val chatMessage1 = ChatMessage(
+            member = me,
+            chatRoom = chatRoom,
+            type = ChatMessageType.TEXT,
+            content = "content",
+            sentAt = time.nowLocalDateTime.minusHours(20)
+        )
+        chatMessageRepository.save(chatMessage1)
+
+        val chatMessage2 = ChatMessage(
+            member = me,
+            chatRoom = chatRoom,
+            type = ChatMessageType.WORKOUT_REQUEST,
+            sentAt = time.nowLocalDateTime.minusHours(10)
+        )
+        val workoutRequest = WorkoutRequest(
+            chatMessage = chatMessage2,
+            fromMember = other,
+            toMember = me,
+            status = WorkoutRequestStatus.PENDING,
+            scheduledAt = time.nowLocalDateTime.plusHours(24),
+            requestedAt = time.nowLocalDateTime.minusHours(10),
+            location = "location"
+        )
+        chatMessageRepository.save(chatMessage2)
+        workoutRequestRepository.save(workoutRequest)
+
+        val condition = ChatMessageCondition(
+            size = 10,
+            targetChatMessageId = chatMessage1.id!!,
+            direction = Direction.ASC
+        )
+
+        // when
+        val chatMessageAndWorkoutRequests = chatMessageRepository.findChatMessageByCondition(chatRoom.id!!, condition)
+        val response = chatMessageAndWorkoutRequests.content
+
+        // then
+        assertThat(response).hasSize(2)
+        assertThat(response[0].chatMessage.id).isEqualTo(condition.targetChatMessageId)
         assertThat(response[0].chatMessage).isEqualTo(chatMessage1)
         assertThat(response[0].workoutRequest).isNull()
     }
@@ -718,6 +796,79 @@ class ChatMessageRepositoryTest @Autowired constructor(
 
         assertThat(response[1].chatMessage).isEqualTo(chatMessage2)
         assertThat(response[1].workoutRequest).isNotNull()
+    }
+
+    @DisplayName("채팅방의 메시지 조회 시, 조회의 반대 방향에 메시지가 있는지 확인한다.")
+    @Test
+    fun findChatMessageByConditionHasBefore() {
+        //given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val other = Member(
+            email = "email2",
+            password = "password2",
+            role = Role.USER,
+        )
+
+        memberRepository.save(me)
+        memberRepository.save(other)
+
+        val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+
+        val chatParticipant1 = ChatParticipant(
+            chatRoom,
+            me
+        )
+        val chatParticipant2 = ChatParticipant(
+            chatRoom,
+            other
+        )
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+
+
+        val chatMessage1 = ChatMessage(
+            member = me,
+            chatRoom = chatRoom,
+            type = ChatMessageType.TEXT,
+            content = "content",
+            sentAt = time.nowLocalDateTime.minusHours(20)
+        )
+        chatMessageRepository.save(chatMessage1)
+
+        val chatMessage2 = ChatMessage(
+            member = me,
+            chatRoom = chatRoom,
+            type = ChatMessageType.WORKOUT_REQUEST,
+            sentAt = time.nowLocalDateTime.minusHours(10)
+        )
+        val workoutRequest = WorkoutRequest(
+            chatMessage = chatMessage2,
+            fromMember = other,
+            toMember = me,
+            status = WorkoutRequestStatus.PENDING,
+            scheduledAt = time.nowLocalDateTime.plusHours(24),
+            requestedAt = time.nowLocalDateTime.minusHours(10),
+            location = "location"
+        )
+        chatMessageRepository.save(chatMessage2)
+        workoutRequestRepository.save(workoutRequest)
+
+        val condition = ChatMessageCondition(
+            size = 10,
+            targetChatMessageId = chatMessage2.id!!,
+            direction = Direction.ASC
+        )
+
+        // when
+        val chatMessageAndWorkoutRequests = chatMessageRepository.findChatMessageByCondition(chatRoom.id!!, condition)
+
+
+        // then
+        assertThat(chatMessageAndWorkoutRequests.hasBefore).isEqualTo(true)
     }
 
 

@@ -12,6 +12,7 @@ import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestService
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.chat.ChatErrorCode
+import kr.co.fitview.api.app.global.slice.SliceWithBefore
 import kr.co.fitview.api.app.global.time.Time
 import org.springframework.data.domain.Slice
 import org.springframework.data.domain.SliceImpl
@@ -30,7 +31,7 @@ class ChatMessageQueryService(
         return chatMessageRepository.findRecentChatMessageByMemberIdAndIn(memberId, chatRoomIds)
     }
 
-    fun findChatMessages(memberId: Long, chatRoomId: Long, condition: ChatMessageCondition): Slice<LastChatMessage> {
+    fun findChatMessages(memberId: Long, chatRoomId: Long, condition: ChatMessageCondition): SliceWithBefore<LastChatMessage> {
         validateMemberInChatRoom(memberId, chatRoomId)
 
         val slice = chatMessageRepository.findChatMessageByCondition(chatRoomId, condition)
@@ -39,7 +40,7 @@ class ChatMessageQueryService(
         val responses =
             content.map { chatMessageAndWorkoutRequest -> mapChatMessage(chatMessageAndWorkoutRequest, memberId) }
 
-        return SliceImpl(responses, slice.pageable, slice.hasNext())
+        return SliceWithBefore(responses, slice.pageable, slice.hasNext(), slice.hasBefore)
     }
 
     private fun validateMemberInChatRoom(memberId: Long, chatRoomId: Long) {

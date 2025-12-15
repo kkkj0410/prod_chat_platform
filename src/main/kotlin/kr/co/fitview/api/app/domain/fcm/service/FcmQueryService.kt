@@ -26,6 +26,7 @@ class FcmQueryService(
 
         val deepLink = createDeepLink(FcmMessage.WORKOUT_PARTNER_REQUEST.formatDeepLinkPath(event.fromMemberId))
         val data = mutableMapOf<String, Any>(
+            "type" to FcmMessage.WORKOUT_PARTNER_REQUEST.name,
             "deepLink" to deepLink,
         )
 
@@ -45,6 +46,7 @@ class FcmQueryService(
 
         val deepLink = createDeepLink(FcmMessage.WORKOUT_PARTNER_ACCEPT.formatDeepLinkPath(event.fromMemberId))
         val data = mutableMapOf<String, Any>(
+            "type" to FcmMessage.WORKOUT_PARTNER_ACCEPT.name,
             "deepLink" to deepLink,
         )
 
@@ -64,6 +66,7 @@ class FcmQueryService(
 
         val deepLink = createDeepLink(FcmMessage.CHAT_MESSAGE.formatDeepLinkPath(event.chatRoomId))
         val data = mutableMapOf<String, Any>(
+            "type" to FcmMessage.CHAT_MESSAGE.name,
             "deepLink" to deepLink,
             "chatMessageId" to event.chatMessageId
         )
@@ -86,6 +89,7 @@ class FcmQueryService(
 
         val deepLink = createDeepLink(FcmMessage.WORKOUT_REQUEST.formatDeepLinkPath(event.chatRoomId))
         val data = mutableMapOf<String, Any>(
+            "type" to FcmMessage.WORKOUT_REQUEST.name,
             "deepLink" to deepLink,
             "chatMessageId" to event.chatMessageId,
         )
@@ -106,6 +110,7 @@ class FcmQueryService(
 
         val deepLink = createDeepLink(FcmMessage.WORKOUT_REQUEST_ACCEPT.formatDeepLinkPath(event.chatRoomId))
         val data = mutableMapOf<String, Any>(
+            "type" to FcmMessage.WORKOUT_REQUEST_ACCEPT.name,
             "deepLink" to deepLink,
             "chatMessageId" to event.chatMessageId
         )
@@ -126,6 +131,7 @@ class FcmQueryService(
 
         val deepLink = createDeepLink(FcmMessage.WORKOUT_REQUEST_REJECT.formatDeepLinkPath(event.chatRoomId))
         val data = mutableMapOf<String, Any>(
+            "type" to FcmMessage.WORKOUT_REQUEST_REJECT.name,
             "deepLink" to deepLink,
             "chatMessageId" to event.chatMessageId
         )
@@ -146,6 +152,7 @@ class FcmQueryService(
 
         val deepLink = createDeepLink(FcmMessage.WORKOUT_COMPLETE.formatDeepLinkPath(event.chatRoomId))
         val data = mutableMapOf<String, Any>(
+            "type" to FcmMessage.WORKOUT_COMPLETE.name,
             "deepLink" to deepLink,
             "chatMessageId" to event.chatMessageId
         )
@@ -166,6 +173,7 @@ class FcmQueryService(
 
         val deepLink = createDeepLink(FcmMessage.REVIEW_RECEIVE.deepLinkPath)
         val data = mutableMapOf<String, Any>(
+            "type" to FcmMessage.REVIEW_RECEIVE.name,
             "deepLink" to deepLink,
         )
 
@@ -183,10 +191,10 @@ class FcmQueryService(
         val title = FcmMessage.REVIEW_REQUEST.title
         val body = FcmMessage.REVIEW_REQUEST.body
 
-        val deepLink = createDeepLink(FcmMessage.REVIEW_REQUEST.formatDeepLinkPath(event.chatRoomId))
+        val deepLink = createDeepLink(FcmMessage.REVIEW_REQUEST.formatDeepLinkPath(event.workoutHistoryId))
         val data = mutableMapOf<String, Any>(
+            "type" to FcmMessage.REVIEW_REQUEST.name,
             "deepLink" to deepLink,
-            "workoutHistoryId" to event.workoutHistoryId
         )
 
         sendAllDevice(

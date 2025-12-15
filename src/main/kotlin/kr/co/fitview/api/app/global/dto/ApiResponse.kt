@@ -1,5 +1,6 @@
 package kr.co.fitview.api.app.global.dto
 
+import kr.co.fitview.api.app.global.slice.SliceWithBefore
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Slice
 import org.springframework.http.HttpStatus
@@ -65,6 +66,22 @@ data class ApiResponse<T>(
                 code = "ok",
                 message = HttpStatus.OK.reasonPhrase,
                 data = SuccessCursorAtPagedResponse(
+                    content = slice.content,
+                    pagination = pagination
+                )
+            )
+        }
+
+        fun <T> successWithCursorAtPaginationWithBefore(
+            slice: SliceWithBefore<T>,
+            timeExtractor: (T) -> LocalDateTime,
+        ): ApiResponse<SuccessCursorAtPagedResponseWithBefore<T>> {
+            val pagination = CursorAtPaginationWithBefore.from(slice, timeExtractor)
+            return ApiResponse(
+                status = HttpStatus.OK.value(),
+                code = "ok",
+                message = HttpStatus.OK.reasonPhrase,
+                data = SuccessCursorAtPagedResponseWithBefore(
                     content = slice.content,
                     pagination = pagination
                 )
@@ -165,3 +182,34 @@ data class CursorAtPagination(
         )
     }
 }
+
+
+data class CursorAtPaginationWithBefore(
+    val size: Int,
+    val cursorAt: Long?,
+    val hasNext: Boolean,
+    val hasBefore: Boolean
+) {
+    companion object {
+        fun <T> from(
+            slice: SliceWithBefore<T>,
+            timeExtractor: (T) -> LocalDateTime,
+        ) = CursorAtPaginationWithBefore(
+            size = slice.size,
+            cursorAt = slice.content.lastOrNull()
+                ?.let {
+                    timeExtractor(it)
+                        .atZone(ZoneId.systemDefault())
+                        .toInstant()
+                        .toEpochMilli()
+                },
+            hasNext = slice.hasNext(),
+            hasBefore = slice.hasBefore
+        )
+    }
+}
+
+data class SuccessCursorAtPagedResponseWithBefore<T>(
+    val content: List<T>,
+    val pagination: CursorAtPaginationWithBefore
+)
