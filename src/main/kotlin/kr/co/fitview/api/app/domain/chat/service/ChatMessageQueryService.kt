@@ -8,13 +8,10 @@ import kr.co.fitview.api.app.domain.chat.dto.response.ChatNoticeMessageResponse
 import kr.co.fitview.api.app.domain.chat.dto.response.LastChatMessage
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
 import kr.co.fitview.api.app.domain.chat.repository.ChatMessageRepository
-import kr.co.fitview.api.app.domain.member.service.MemberQueryService
-import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestService
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.chat.ChatErrorCode
+import kr.co.fitview.api.app.global.slice.SliceWithBefore
 import kr.co.fitview.api.app.global.time.Time
-import org.springframework.data.domain.Slice
-import org.springframework.data.domain.SliceImpl
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -30,7 +27,7 @@ class ChatMessageQueryService(
         return chatMessageRepository.findRecentChatMessageByMemberIdAndIn(memberId, chatRoomIds)
     }
 
-    fun findChatMessages(memberId: Long, chatRoomId: Long, condition: ChatMessageCondition): Slice<LastChatMessage> {
+    fun findChatMessages(memberId: Long, chatRoomId: Long, condition: ChatMessageCondition): SliceWithBefore<LastChatMessage> {
         validateMemberInChatRoom(memberId, chatRoomId)
 
         val slice = chatMessageRepository.findChatMessageByCondition(chatRoomId, condition)
@@ -39,11 +36,11 @@ class ChatMessageQueryService(
         val responses =
             content.map { chatMessageAndWorkoutRequest -> mapChatMessage(chatMessageAndWorkoutRequest, memberId) }
 
-        return SliceImpl(responses, slice.pageable, slice.hasNext())
+        return SliceWithBefore(responses, slice.pageable, slice.hasNext(), slice.hasBefore)
     }
 
     private fun validateMemberInChatRoom(memberId: Long, chatRoomId: Long) {
-        chatParticipantQueryService.findChatRoomFromMemberIdAndChatRoomId(memberId, chatRoomId)
+        chatParticipantQueryService.findChatParticipantFromMemberIdAndChatRoomId(memberId, chatRoomId)
             ?: throw GlobalException(ChatErrorCode.NOT_MEMBER_OF_CHAT_ROOM)
     }
 

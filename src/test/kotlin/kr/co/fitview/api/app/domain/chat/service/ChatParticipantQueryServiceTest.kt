@@ -3,8 +3,6 @@ package kr.co.fitview.api.app.domain.chat.service
 import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.chat.entity.ChatParticipant
 import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
-import kr.co.fitview.api.app.domain.chat.entity.QChatParticipant.chatParticipant
-import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatRoomType
 import kr.co.fitview.api.app.domain.chat.repository.ChatParticipantRepository
 import kr.co.fitview.api.app.domain.chat.repository.ChatRoomRepository
@@ -27,7 +25,7 @@ class ChatParticipantQueryServiceTest@Autowired constructor(
 
     @DisplayName("해당 회원이 타겟 채팅방을 사용하고 있는지 확인한다.")
     @Test
-    fun findChatRoomFromMemberIdAndChatRoomId() {
+    fun findChatParticipantFromMemberIdAndChatRoomId() {
         //given
         val member = Member(
             email = "email1",
@@ -46,7 +44,7 @@ class ChatParticipantQueryServiceTest@Autowired constructor(
         chatParticipantRepository.save(chatParticipant)
 
         // when
-        val findChatParticipant = chatParticipantQueryService.findChatRoomFromMemberIdAndChatRoomId(member.id!!, chatRoom.id!!)
+        val findChatParticipant = chatParticipantQueryService.findChatParticipantFromMemberIdAndChatRoomId(member.id!!, chatRoom.id!!)
 
         // then
         assertThat(findChatParticipant!!.id).isEqualTo(chatParticipant.id!!)

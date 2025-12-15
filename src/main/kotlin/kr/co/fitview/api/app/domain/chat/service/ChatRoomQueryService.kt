@@ -25,4 +25,8 @@ class ChatRoomQueryService(
         return chatRoomRepository.findPrivateChatRoomIdBetweenMemberIds(fromMemberId, toMemberId)
     }
 
+    fun findChatRoomReferenceFrom(chatRoomId: Long): ChatRoom {
+        return chatRoomRepository.getReferenceById(chatRoomId)
+    }
+
 }

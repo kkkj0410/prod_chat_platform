@@ -2,6 +2,7 @@ package kr.co.fitview.api.app.domain.report.dto.request
 
 import jakarta.validation.constraints.NotNull
 import kr.co.fitview.api.app.domain.report.entity.enums.ReportReasonType
+import kr.co.fitview.api.app.domain.review.dto.request.ReviewCreateServiceRequest
 
 data class ReportChatRoomCreateRequest(
 
@@ -12,4 +13,14 @@ data class ReportChatRoomCreateRequest(
     val reportReasonId : Long?,
 
     val description : String?
-)
+
+){
+
+    fun toServiceRequest() : ReportChatRoomCreateServiceRequest {
+        return ReportChatRoomCreateServiceRequest(
+            chatRoomId = chatRoomId!!,
+            reportReasonId = reportReasonId!!,
+            description = description,
+        )
+    }
+}

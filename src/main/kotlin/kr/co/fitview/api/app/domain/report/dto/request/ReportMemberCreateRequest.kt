@@ -12,4 +12,14 @@ data class ReportMemberCreateRequest(
     val reportReasonId : Long?,
 
     val description : String?
-)
+
+){
+
+    fun toServiceRequest() : ReportMemberCreateServiceRequest {
+        return ReportMemberCreateServiceRequest(
+            memberId = memberId!!,
+            reportReasonId = reportReasonId!!,
+            description = description,
+        )
+    }
+}

@@ -10,6 +10,7 @@ import kr.co.fitview.api.app.domain.member.dto.response.MemberChatRoomProfile
 import kr.co.fitview.api.app.domain.workout.dto.response.LastWorkoutRequestMessage
 import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusForResponse
 import kr.co.fitview.api.app.global.exception.error.request.RequestErrorCode
+import kr.co.fitview.api.app.global.slice.SliceWithBefore
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
@@ -263,7 +264,7 @@ class ChatControllerTest : ControllerTestSupport(){
                 location = "헬스장 앞"
             )
         )
-        val sliceChatMessages: Slice<LastChatMessage> = SliceImpl(messages, PageRequest.of(0, 10), false)
+        val sliceChatMessages: SliceWithBefore<LastChatMessage> = SliceWithBefore(messages, PageRequest.of(0, 10), false, false)
 
 
         given(chatMessageQueryService.findChatMessages(any(), any(), any())).willReturn(sliceChatMessages)
