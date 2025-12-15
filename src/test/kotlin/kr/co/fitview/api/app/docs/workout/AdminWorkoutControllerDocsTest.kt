@@ -142,9 +142,9 @@ class AdminWorkoutControllerDocsTest : RestDocsSupport() {
                             .description("운동 예정 시각"),
                         fieldWithPath("data.content[].location").type(JsonFieldType.STRING)
                             .description("운동 장소"),
-                        fieldWithPath("data.content[].isFromMemberReview").type(JsonFieldType.BOOLEAN)
+                        fieldWithPath("data.content[].hasFromMemberReview").type(JsonFieldType.BOOLEAN)
                             .description("요청 보낸 회원의 리뷰 작성 여부"),
-                        fieldWithPath("data.content[].isToMemberReview").type(JsonFieldType.BOOLEAN)
+                        fieldWithPath("data.content[].hasToMemberReview").type(JsonFieldType.BOOLEAN)
                             .description("요청 받은 회원의 리뷰 작성 여부"),
                         *RestDocsPagination.paginationByCursor(),
                     )

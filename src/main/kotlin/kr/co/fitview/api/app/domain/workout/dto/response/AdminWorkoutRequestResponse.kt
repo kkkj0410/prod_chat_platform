@@ -14,7 +14,7 @@ data class AdminWorkoutRequestResponse(
     val respondedAt : LocalDateTime?,
     val scheduledAt : LocalDateTime,
     val location : String,
-    val isFromMemberReview : Boolean,
-    val isToMemberReview : Boolean,
+    val hasFromMemberReview : Boolean,
+    val hasToMemberReview : Boolean,
 
-)
+    )

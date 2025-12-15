@@ -1,0 +1,32 @@
+[[REPORT_001]]
+=== REPORT_001
+
+==== HTTP Request
+include::{snippets}/REPORT_001/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/REPORT_001/http-response.adoc[]
+include::{snippets}/REPORT_001/response-fields.adoc[]
+
+
+[[REPORT_002]]
+=== REPORT_002
+
+==== HTTP Request
+include::{snippets}/REPORT_002/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/REPORT_002/http-response.adoc[]
+include::{snippets}/REPORT_002/response-fields.adoc[]
+
+
+[[REPORT_003]]
+=== REPORT_003
+
+==== HTTP Request
+include::{snippets}/REPORT_003/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/REPORT_003/http-response.adoc[]
+include::{snippets}/REPORT_003/response-fields.adoc[]
+

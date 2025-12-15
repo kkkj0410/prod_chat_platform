@@ -84,3 +84,9 @@ include::exception/workout_request/workoutRequestException.adoc[]
 == <REVIEW>
 
 include::exception/review/reviewException.adoc[]
+
+
+[[REPORT]]
+== <REPORT>
+
+include::exception/report/reportException.adoc[]
