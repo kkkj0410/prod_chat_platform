@@ -18,7 +18,13 @@ enum class ReportErrorCode(
         "002",
         "not a chat room participant",
         "해당 채팅방에 참여 중인 회원만 신고할 수 있습니다."
-    );
+    ),
+
+    TARGET_MEMBER_NOT_FOUND(
+        "003",
+        "target member not found",
+        "신고 대상 회원을 찾을 수 없습니다."
+    )
 
 
     ;
