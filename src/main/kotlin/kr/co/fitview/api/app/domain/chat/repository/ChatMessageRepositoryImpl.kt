@@ -22,6 +22,7 @@ import kr.co.fitview.api.app.global.slice.SliceWithBefore
 import kr.co.fitview.api.app.global.time.Time
 import org.springframework.data.domain.PageRequest
 import java.sql.Timestamp
+import java.time.LocalDateTime
 
 class ChatMessageRepositoryImpl(
     private val queryFactory : JPAQueryFactory,
@@ -166,6 +167,7 @@ class ChatMessageRepositoryImpl(
 
 
     override fun findChatMessageByCondition(chatRoomId: Long, condition: ChatMessageCondition) : SliceWithBefore<ChatMessageAndWorkoutRequest> {
+        val chatMessageAt :LocalDateTime = condition.lastMessageAt() ?: time.nowLocalDateTime
 
         fun messagePredicate(): BooleanExpression? {
             val lastAt = condition.lastMessageAt()
@@ -187,6 +189,22 @@ class ChatMessageRepositoryImpl(
                     chatMessage.sentAt.gt(it)
                 } else {
                     chatMessage.sentAt.lt(it)
+                }
+                predicates.add(timePredicate)
+            }
+//            val timePredicate =
+//                if (condition.direction == Direction.ASC) {
+//                    chatMessage.sentAt.gt(chatMessageAt)
+//                } else {
+//                    chatMessage.sentAt.lt(chatMessageAt)
+//                }
+//            predicates.add(timePredicate)
+
+            if (predicates.isEmpty()) {
+                val timePredicate = if (condition.direction == Direction.ASC) {
+                    chatMessage.sentAt.gt(time.nowLocalDateTime.minusYears(100))
+                } else {
+                    chatMessage.sentAt.lt(time.nowLocalDateTime.plusYears(100))
                 }
                 predicates.add(timePredicate)
             }
@@ -234,11 +252,31 @@ class ChatMessageRepositoryImpl(
                 predicates.add(targetPredicate)
             }
 
+//            val baseTime: LocalDateTime =
+//                lastAt ?: chatMessageAt
+
             lastAt?.let {
                 val timePredicate = if (condition.direction == Direction.ASC) {
                     chatMessage.sentAt.loe(it)
                 } else {
                     chatMessage.sentAt.goe(it)
+                }
+                predicates.add(timePredicate)
+            }
+
+//            val timePredicate =
+//                if (condition.direction == Direction.ASC) {
+//                    chatMessage.sentAt.gt(chatMessageAt)
+//                } else {
+//                    chatMessage.sentAt.lt(chatMessageAt)
+//                }
+//            predicates.add(timePredicate)
+
+            if (predicates.isEmpty()) {
+                val timePredicate = if (condition.direction == Direction.ASC) {
+                    chatMessage.sentAt.loe(time.nowLocalDateTime.minusYears(100))
+                } else {
+                    chatMessage.sentAt.goe(time.nowLocalDateTime.plusYears(100))
                 }
                 predicates.add(timePredicate)
             }
@@ -253,22 +291,20 @@ class ChatMessageRepositoryImpl(
             listOf(chatMessage.sentAt.asc().nullsLast(), chatMessage.id.asc())
         }
 
-        val hasBefore = queryFactory
-            .selectOne()
+        val beforeEntity = queryFactory
+            .select(chatMessage)
             .from(chatMessage)
             .join(chatRoom)
             .on(
                 chatRoom.id.eq(chatMessage.chatRoom.id),
                 chatRoom.id.eq(chatRoomId)
             )
-            .leftJoin(workoutRequest)
-            .on(workoutRequest.chatMessage.id.eq(chatMessage.id))
-            .leftJoin(chatNoticeMessage)
-            .on(chatNoticeMessage.chatMessage.id.eq(chatMessage.id))
             .where(reverseMessagePredicate())
             .orderBy(*reverseOrderSpecifier.toTypedArray())
             .limit(1)
-            .fetchFirst() != null
+            .fetchFirst()
+
+        val hasBefore = beforeEntity != null
 
         val hasNext = result.size > condition.size
         val content = if (hasNext) result.subList(0, condition.size) else result

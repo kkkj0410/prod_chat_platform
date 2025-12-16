@@ -186,26 +186,59 @@ data class CursorAtPagination(
 
 data class CursorAtPaginationWithBefore(
     val size: Int,
-    val cursorAt: Long?,
+    val firstCursorAt: Long?,
+    val lastCursorAt: Long?,
     val hasNext: Boolean,
     val hasBefore: Boolean
 ) {
+//    companion object {
+//        fun <T> from(
+//            slice: SliceWithBefore<T>,
+//            timeExtractor: (T) -> LocalDateTime,
+//        ) = CursorAtPaginationWithBefore(
+//            size = slice.size,
+//            cursorAt = slice.content.lastOrNull()
+//                ?.let {
+//                    timeExtractor(it)
+//                        .atZone(ZoneId.systemDefault())
+//                        .toInstant()
+//                        .toEpochMilli()
+//                },
+//            hasNext = slice.hasNext(),
+//            hasBefore = slice.hasBefore
+//        )
+//    }
+
     companion object {
         fun <T> from(
             slice: SliceWithBefore<T>,
             timeExtractor: (T) -> LocalDateTime,
-        ) = CursorAtPaginationWithBefore(
-            size = slice.size,
-            cursorAt = slice.content.lastOrNull()
+        ): CursorAtPaginationWithBefore {
+
+            val first = slice.content.firstOrNull()
                 ?.let {
                     timeExtractor(it)
                         .atZone(ZoneId.systemDefault())
                         .toInstant()
                         .toEpochMilli()
-                },
-            hasNext = slice.hasNext(),
-            hasBefore = slice.hasBefore
-        )
+                }
+
+            val last = slice.content.lastOrNull()
+                ?.let {
+                    timeExtractor(it)
+                        .atZone(ZoneId.systemDefault())
+                        .toInstant()
+                        .toEpochMilli()
+                }
+
+            return CursorAtPaginationWithBefore(
+                size = slice.size,
+                firstCursorAt = first,
+                lastCursorAt = last,
+                hasNext = slice.hasNext(),
+                hasBefore = slice.hasBefore
+            )
+        }
     }
 }
 

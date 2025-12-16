@@ -295,7 +295,8 @@ class ChatControllerTest : ControllerTestSupport(){
 
             .andExpect(jsonPath("$.data.pagination.size").value(10))
             .andExpect(jsonPath("$.data.pagination.hasNext").value(false))
-            .andExpect(jsonPath("$.data.pagination.cursorAt").exists())
+            .andExpect(jsonPath("$.data.pagination.firstCursorAt").exists())
+            .andExpect(jsonPath("$.data.pagination.lastCursorAt").exists())
     }
 
     @DisplayName("채팅방 마지막 운동 요청 조회 API")

@@ -17,4 +17,5 @@ data class ChatMessageCondition(
                 .atZone(ZoneId.systemDefault())
                 .toLocalDateTime()
         }
+
 }
