@@ -36,7 +36,12 @@ class ChatMessageQueryService(
         val responses =
             content.map { chatMessageAndWorkoutRequest -> mapChatMessage(chatMessageAndWorkoutRequest, memberId) }
 
-        return SliceWithBefore(responses, slice.pageable, slice.hasNext(), slice.hasBefore)
+        val sortedResponses = responses.sortedWith(
+            compareByDescending<LastChatMessage> { it.sentAt }
+                .thenByDescending { it.chatMessageId }
+        )
+
+        return SliceWithBefore(sortedResponses, slice.pageable, slice.hasNext(), slice.hasBefore)
     }
 
     private fun validateMemberInChatRoom(memberId: Long, chatRoomId: Long) {
