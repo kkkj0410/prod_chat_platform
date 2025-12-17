@@ -85,7 +85,7 @@ class AdminMemberControllerDocsTest : RestDocsSupport() {
                     preprocessResponse(prettyPrint()),
 
                     requestHeaders(
-                        RestDocsHeaders.authorizationHeader(Role.USER)
+                        RestDocsHeaders.authorizationHeader(Role.ADMIN)
                     ),
 
                     queryParameters(
@@ -146,7 +146,7 @@ class AdminMemberControllerDocsTest : RestDocsSupport() {
                     preprocessResponse(prettyPrint()),
 
                     requestHeaders(
-                        RestDocsHeaders.authorizationHeader(Role.USER)
+                        RestDocsHeaders.authorizationHeader(Role.ADMIN)
                     ),
 
                     queryParameters(

@@ -70,7 +70,7 @@ class AdminWorkoutPartnerControllerDocsTest : RestDocsSupport() {
                     preprocessResponse(prettyPrint()),
 
                     requestHeaders(
-                        RestDocsHeaders.authorizationHeader(Role.USER)
+                        RestDocsHeaders.authorizationHeader(Role.ADMIN)
                     ),
 
                     queryParameters(
