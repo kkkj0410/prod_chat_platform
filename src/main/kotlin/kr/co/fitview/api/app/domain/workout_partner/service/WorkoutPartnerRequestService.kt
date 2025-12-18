@@ -81,6 +81,8 @@ class WorkoutPartnerRequestService(
 
         validateAlreadyWorkoutPartner(findWorkoutPartnerRequest.getFromMemberId(), findWorkoutPartnerRequest.getToMemberId())
 
+        findWorkoutPartnerRequest.updateRespondedAt(time.nowLocalDateTime)
+
         if(isWorkoutPartnerAccept(request)){
 
             findWorkoutPartnerRequest.accept()

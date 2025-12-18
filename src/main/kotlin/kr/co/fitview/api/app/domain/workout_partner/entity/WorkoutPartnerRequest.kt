@@ -7,6 +7,7 @@ import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.workout_partner.entity.enums.WorkoutPartnerRequestContent
 import kr.co.fitview.api.app.domain.workout_partner.entity.enums.WorkoutPartnerRequestStatus
 import kr.co.fitview.api.app.global.entity.BaseSoftDeleteEntity
+import java.time.Instant
 import java.time.LocalDateTime
 
 @Entity
@@ -46,6 +47,9 @@ class WorkoutPartnerRequest(
     @Column(name = "workout_partner_request_id", nullable = false)
     var id: Long? = null
 
+    @Column(name = "responded_at")
+    var respondedAt: LocalDateTime? = null
+
     fun accept() : WorkoutPartnerRequest {
         this.status = WorkoutPartnerRequestStatus.ACCEPT
         return this
@@ -58,6 +62,11 @@ class WorkoutPartnerRequest(
 
     fun cancel() : WorkoutPartnerRequest {
         this.status = WorkoutPartnerRequestStatus.CANCEL
+        return this
+    }
+
+    fun updateRespondedAt(now : LocalDateTime) : WorkoutPartnerRequest{
+        this.respondedAt = now
         return this
     }
 

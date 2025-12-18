@@ -487,6 +487,55 @@ class WorkoutPartnerRequestServiceTest @Autowired constructor(
             .contains(savedFromMember, savedToMember, WorkoutPartnerRequestStatus.ACCEPT)
     }
 
+    @DisplayName("핏버디 요청을 상태 변경 시, 변경 시간을 기록한다.")
+    @Test
+    fun updateWorkoutPartnerRequestRespondedAt() {
+        // given
+        val fromMember = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+
+        val toMember = Member(
+            email = "email2",
+            password = "password2",
+            role = Role.USER,
+        )
+
+        val savedFromMember = memberService.addMember(fromMember)
+        val savedToMember = memberService.addMember(toMember)
+
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest1, toMember.id!!)
+
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest2, fromMember.id!!)
+
+        val workoutPartnerRequest = WorkoutPartnerRequest.of(
+            fromMember = savedFromMember,
+            toMember = savedToMember,
+            now = time.nowLocalDateTime,
+            content = WorkoutPartnerRequestContent.BURN
+        )
+        val savedWorkoutPartnerRequest = workoutPartnerRequestRepository.save(workoutPartnerRequest)
+
+        val request = WorkoutPartnerUpdateServiceRequest(
+            type = WorkoutPartnerRequestUpdateStatus.ACCEPT
+        )
+
+        // when
+        val updatedWorkoutPartnerRequest = workoutPartnerRequestService.updateWorkoutPartnerRequest(
+            memberId = savedToMember.id!!,
+            workoutPartnerRequestId = savedWorkoutPartnerRequest.id!!,
+            request
+        )
+
+        // then
+        assertThat(updatedWorkoutPartnerRequest.respondedAt).isEqualTo(time.nowLocalDateTime)
+    }
+
+
     @DisplayName("핏버디 요청을 수락 시, 요청을 양측에게 실시간 알람을 보낸다.")
     @Test
     fun updateWorkoutPartnerRequestAcceptStomp() {

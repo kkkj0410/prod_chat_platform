@@ -148,6 +148,37 @@ class WorkoutPartnerRequestTest @Autowired constructor(
             .contains(fromMember, toMember, time.nowLocalDateTime, WorkoutPartnerRequestStatus.CANCEL)
     }
 
+    @DisplayName("본인 or 상대의 요청 상태 변환 시, 응답 시간을 기록한다.")
+    @Test
+    fun updateRespondedAt() {
+        // given
+        val fromMember = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val toMember = Member(
+            email = "email2",
+            password = "password2",
+            role = Role.USER,
+        )
+        memberRepository.save(fromMember)
+        memberRepository.save(toMember)
+
+        val workoutPartnerRequest = WorkoutPartnerRequest.of(
+            fromMember = fromMember,
+            toMember = toMember,
+            now = time.nowLocalDateTime,
+            content = WorkoutPartnerRequestContent.BURN
+        )
+
+        // when
+        workoutPartnerRequest.updateRespondedAt(time.nowLocalDateTime)
+
+        // then
+        assertThat(workoutPartnerRequest.respondedAt).isEqualTo(time.nowLocalDateTime)
+    }
+
 
     @DisplayName("요청 회원의 id를 가져온다.")
     @Test
@@ -210,5 +241,7 @@ class WorkoutPartnerRequestTest @Autowired constructor(
         // then
         assertThat(toMemberId).isEqualTo(toMember.id!!)
     }
+
+
 
 }
