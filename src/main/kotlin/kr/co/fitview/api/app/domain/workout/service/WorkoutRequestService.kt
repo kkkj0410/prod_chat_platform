@@ -48,6 +48,7 @@ class WorkoutRequestService(
     private val messageReadStatusService : MessageReadStatusService,
     private val workoutRequestQueryService: WorkoutRequestQueryService,
     private val chatRoomQueryService : ChatRoomQueryService,
+    private val workoutRequestLogService : WorkoutRequestLogService,
     private val publisher: ApplicationEventPublisher,
     private val time: Time
 ) {
@@ -74,6 +75,11 @@ class WorkoutRequestService(
             requestedAt = now
         )
         workoutRequestRepository.save(workoutRequest)
+
+        workoutRequestLogService.addWorkoutRequestLog(
+            workoutRequestId = workoutRequest.id!!,
+            status = WorkoutRequestStatus.PENDING
+        )
 
         messageReadStatusService.saveMessageReadStatus(
             member = fromMember,
@@ -111,6 +117,11 @@ class WorkoutRequestService(
 
         workoutRequestRepository.updateExpireByIdIn(workoutRequestIds)
 
+        workoutRequestLogService.addAllWorkoutRequestLog(
+            workoutRequestIds = workoutRequestIds,
+            status = WorkoutRequestStatus.EXPIRE
+        )
+
         val expireResponse = response.map { it.copy(status = WorkoutRequestStatus.EXPIRE) }
 
         sendAllStompExpireWorkoutRequest(response)
@@ -128,6 +139,11 @@ class WorkoutRequestService(
         validateWorkoutRequestUpdate(request, findWorkoutRequest, memberId)
 
         findWorkoutRequest.updateStatus(request.status.toWorkoutRequestStatus())
+
+        workoutRequestLogService.addWorkoutRequestLog(
+            workoutRequestId = findWorkoutRequest.id!!,
+            status = findWorkoutRequest.status!!
+        )
 
         var workoutHistory : WorkoutHistory? = null
         if(isSuccessComplete(findWorkoutRequest)){

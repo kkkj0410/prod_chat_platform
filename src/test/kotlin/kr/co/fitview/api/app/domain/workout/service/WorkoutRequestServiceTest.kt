@@ -23,6 +23,7 @@ import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
 import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusForRequest
 import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequest
 import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
+import kr.co.fitview.api.app.domain.workout.repository.WorkoutRequestLogRepository
 import kr.co.fitview.api.app.domain.workout_history.repository.WorkoutHistoryRepository
 import kr.co.fitview.api.app.domain.workout.repository.WorkoutRequestRepository
 import kr.co.fitview.api.app.global.entity.Role
@@ -50,6 +51,7 @@ class WorkoutRequestServiceTest @Autowired constructor(
     val chatNoticeMessageRepository : ChatNoticeMessageRepository,
     val oAuth2Service : OAuth2Service,
     val messageReadStatusRepository: MessageReadStatusRepository,
+    val workoutRequestLogRepository : WorkoutRequestLogRepository,
     val time : Time
 ) : IntegrationTestSupport() {
 
@@ -524,6 +526,56 @@ class WorkoutRequestServiceTest @Autowired constructor(
             })
     }
 
+    @DisplayName("운동 요청 저장 시, 로그에 추가한다.")
+    @Test
+    fun saveChatWorkoutRequestMessageAddLog() {
+        // given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val other = Member(
+            email = "email2",
+            password = "password2",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+        memberRepository.save(other)
+
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest, me.id!!)
+
+        val savedChatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+
+        val chatParticipant1 = ChatParticipant(
+            savedChatRoom,
+            me
+        )
+        val chatParticipant2 = ChatParticipant(
+            savedChatRoom,
+            other
+        )
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+
+        val request = ChatWorkoutRequestMessageServiceRequest(
+            scheduledAt = time.nowLocalDateTime.plusHours(5),
+            location = "location"
+        )
+
+        // when
+        workoutRequestService.saveChatWorkoutRequestMessage(
+            fromMember = me,
+            chatRoom = savedChatRoom,
+            message = request
+        )
+
+        // then
+        val findWorkoutRequestLog = workoutRequestLogRepository.findAll()
+        assertThat(findWorkoutRequestLog).hasSize(1)
+    }
+
 
 
     @DisplayName("만료된 운동 요청을 전부 만료로 표시한다.")
@@ -601,6 +653,88 @@ class WorkoutRequestServiceTest @Autowired constructor(
             .containsExactlyInAnyOrder(
                 tuple(chatRoom.id!!, expireWorkoutRequest1.id!!, WorkoutRequestStatus.EXPIRE, me.id!!, other.id!!),
                 tuple(chatRoom.id!!, expireWorkoutRequest2.id!!, WorkoutRequestStatus.EXPIRE, me.id!!, other.id!!),
+            )
+    }
+
+    @DisplayName("만료된 운동 요청 만료 시, 로그를 생성한다.")
+    @Test
+    fun modifyAllWorkoutRequestExpireAddLog() {
+        // given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val other = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+        memberRepository.save(other)
+
+        val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+
+        val chatParticipant1 = ChatParticipant(
+            chatRoom,
+            me
+        )
+        val chatParticipant2 = ChatParticipant(
+            chatRoom,
+            other
+        )
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+
+        val chatMessage = ChatMessage.ofWorkoutRequest(
+            member = me,
+            chatRoom = chatRoom,
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessage)
+
+        val workoutRequest1 = WorkoutRequest.of(
+            chatMessage = chatMessage,
+            fromMember = me,
+            toMember = other,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime
+        )
+        val expireWorkoutRequest1 = WorkoutRequest.of(
+            chatMessage = chatMessage,
+            fromMember = me,
+            toMember = other,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime.minusHours(24)
+        )
+        val expireWorkoutRequest2 = WorkoutRequest.of(
+            chatMessage = chatMessage,
+            fromMember = me,
+            toMember = other,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.minusHours(3),
+            requestedAt = time.nowLocalDateTime
+        )
+        workoutRequestRepository.save(workoutRequest1)
+        workoutRequestRepository.save(expireWorkoutRequest1)
+        workoutRequestRepository.save(expireWorkoutRequest2)
+
+
+        // when
+        workoutRequestService.modifyAllWorkoutRequestExpire()
+
+        // then
+        val findWorkoutRequestLogs = workoutRequestLogRepository.findAll()
+
+        assertThat(findWorkoutRequestLogs).hasSize(2)
+
+        assertThat(findWorkoutRequestLogs)
+            .extracting("workoutRequest.id", "status")
+            .containsExactlyInAnyOrder(
+                tuple(expireWorkoutRequest1.id!!, WorkoutRequestStatus.EXPIRE),
+                tuple(expireWorkoutRequest2.id!!, WorkoutRequestStatus.EXPIRE),
             )
     }
 
@@ -747,6 +881,78 @@ class WorkoutRequestServiceTest @Autowired constructor(
                 other
             )
     }
+
+    @DisplayName("운동 요청 상태 변동 시, 로그 기록에 추가한다.")
+    @Test
+    fun modifyWorkoutRequestAddLog() {
+        // given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val other = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+        memberRepository.save(other)
+
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest, me.id!!)
+        oAuth2Service.signup(signupRequest, other.id!!)
+
+        val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+
+        val chatParticipant1 = ChatParticipant(
+            chatRoom,
+            me
+        )
+        val chatParticipant2 = ChatParticipant(
+            chatRoom,
+            other
+        )
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+
+        val chatMessage = ChatMessage.ofWorkoutRequest(
+            member = me,
+            chatRoom = chatRoom,
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessage)
+
+        val workoutRequest = WorkoutRequest.of(
+            chatMessage = chatMessage,
+            fromMember = me,
+            toMember = other,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime
+        )
+        workoutRequestRepository.save(workoutRequest)
+
+        val request = WorkoutRequestUpdateRequest(
+            workoutRequestId = workoutRequest.id!!,
+            status = WorkoutRequestStatusForRequest.ACCEPT
+        )
+
+        // when
+        workoutRequestService.modifyWorkoutRequest(other.id!!, request)
+
+        // then
+        val findWorkoutRequestLogs = workoutRequestLogRepository.findAll()
+
+        assertThat(findWorkoutRequestLogs).hasSize(1)
+
+        assertThat(findWorkoutRequestLogs)
+            .extracting("workoutRequest.id", "status")
+            .contains(
+                tuple(workoutRequest.id!!, WorkoutRequestStatus.ACCEPT),
+            )
+    }
+
 
     @DisplayName("운동 요청 변경 시, 실시간 알람을 양측에 보낸다.")
     @Test
