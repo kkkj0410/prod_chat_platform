@@ -19,6 +19,8 @@ class RedisStompService(
 )  : MessageListener {
 
 
+    // 해당 장소에서 redis 이벤트를 발생
+    // redisConfig의 redisMessageListenerContainer은 해당 이벤트를 읽고, messageListenerAdapter를 통해 onMessage 함수를 강제 실행
     fun publishStompEvent(event: Any) {
 
         val type = StompEventType.from(event::class.java)

@@ -43,6 +43,7 @@ class RedisConfig(
     }
 
     //sub 객체
+    // redis를 듣고있음
     @Bean
     fun redisMessageListenerContainer(
         @Qualifier("chatPubSub") redisConnectionFactory: RedisConnectionFactory,
@@ -55,6 +56,7 @@ class RedisConfig(
     }
 
     // redis에서 수신된 메시지를 처리하는 객체 생성
+    // redis에서 받은 메시지를 onMessage에서 처리하도록
     @Bean
     fun messageListenerAdapter(redisStompService : RedisStompService) : MessageListenerAdapter{
         // RedisClient의 특정 메서드가 수신된 메시지를 처리할 수 있도록 지정
