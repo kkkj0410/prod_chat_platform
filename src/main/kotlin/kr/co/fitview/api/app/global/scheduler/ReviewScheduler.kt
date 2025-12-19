@@ -8,10 +8,14 @@ import kr.co.fitview.api.app.domain.notification.dto.request.EventSender
 import kr.co.fitview.api.app.domain.review.service.ReviewReminderLogService
 import kr.co.fitview.api.app.domain.workout_history.entity.WorkoutHistory
 import kr.co.fitview.api.app.domain.workout_history.service.WorkoutHistoryQueryService
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock
+import org.hibernate.query.sqm.tree.SqmNode.log
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
+import java.net.InetAddress
+import java.time.LocalDateTime
 
 @Component
 class ReviewScheduler(
@@ -26,6 +30,11 @@ class ReviewScheduler(
     }
 
     @Scheduled(fixedRate = FIVE_MINUTES_IN_MILLIS)
+    @SchedulerLock(
+        name = "workout:history:review-reminder",
+        lockAtMostFor = "PT4M",
+        lockAtLeastFor = "PT30S"
+    )
     @Transactional
     fun sendReviewReminderForHistoriesExceeded24h() {
         val findWorkoutHistories = workoutHistoryQueryService.findAllWorkoutHistoryExceed24HoursWithoutReview()

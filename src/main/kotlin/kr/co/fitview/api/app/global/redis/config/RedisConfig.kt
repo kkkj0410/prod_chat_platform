@@ -11,6 +11,7 @@ import org.springframework.data.redis.connection.RedisConnectionFactory
 import org.springframework.data.redis.connection.RedisPassword
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory
+import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.data.redis.listener.PatternTopic
 import org.springframework.data.redis.listener.RedisMessageListenerContainer
@@ -31,6 +32,26 @@ class RedisConfig(
         configuration.port = port
         configuration.password = RedisPassword.of(password)
         return LettuceConnectionFactory(configuration)
+    }
+
+    @Bean
+    @Qualifier("shedLock")
+    fun shedLockRedisConnectionFactory(): RedisConnectionFactory {
+        val configuration = RedisStandaloneConfiguration()
+        configuration.hostName = host
+        configuration.port = port
+        configuration.password = RedisPassword.of(password)
+        return LettuceConnectionFactory(configuration)
+    }
+
+    @Bean
+    fun redisTemplate(
+        @Qualifier("chatPubSub") connectionFactory: RedisConnectionFactory
+    ): RedisTemplate<Any, Any> {
+        val template = RedisTemplate<Any, Any>()
+        template.connectionFactory = connectionFactory
+
+        return template
     }
 
     @Bean

@@ -100,6 +100,11 @@ dependencies {
 
 	//firebase
 	implementation ("com.google.firebase:firebase-admin:9.2.0")
+
+	//shed-lock
+	implementation("net.javacrumbs.shedlock:shedlock-spring:5.13.0")
+	implementation("net.javacrumbs.shedlock:shedlock-provider-redis-spring:5.13.0")
+	testImplementation("net.javacrumbs.shedlock:shedlock-provider-inmemory:7.2.1")
 }
 
 kotlin {

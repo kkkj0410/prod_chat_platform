@@ -5,6 +5,7 @@ import kr.co.fitview.api.app.global.stomp.service.StompPublisher
 import kr.co.fitview.api.app.global.config.TestJwtConfig
 import kr.co.fitview.api.app.global.network.NetworkService
 import kr.co.fitview.api.app.global.redis.service.RedisClient
+import kr.co.fitview.api.app.global.scheduler.config.TestShedLockConfig
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
@@ -17,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional
 
 @ActiveProfiles("test")
 @Import(
-    TestJwtConfig::class,
+    TestJwtConfig::class
 )
 @Transactional
 @RecordApplicationEvents
