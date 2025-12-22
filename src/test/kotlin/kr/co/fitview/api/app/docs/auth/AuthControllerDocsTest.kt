@@ -176,6 +176,7 @@ class AuthControllerDocsTest : RestDocsSupport() {
         // when // then
         mockMvc.perform(
             post("/api/v1/auth/refresh")
+                .header(AuthConstant.HEADER_CLIENT_TYPE, HeaderClientType.MOBILE.name)
                 .content(objectMapper.writeValueAsString(request))
                 .contentType(MediaType.APPLICATION_JSON)
         )
@@ -185,11 +186,15 @@ class AuthControllerDocsTest : RestDocsSupport() {
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
 
+                requestHeaders(
+                    headerWithName(AuthConstant.HEADER_CLIENT_TYPE)
+                        .description("클라이언트 타입. (default = MOBILE) MOBILE일때는 refreshToken은 body에 넣기. WEB일때는 cookie로 넣기(WEB일때는 body가 null이어도 됨)" + HeaderClientType.allDescription())
+                ),
 
                 requestFields(
                     fieldWithPath("refreshToken").type(JsonFieldType.STRING)
                         .optional()
-                        .description("로그인 refresh token - MOBILE일때는 refreshToken은 body에 넣기. WEB일때는 cookie로 넣기(WEB일때는 body가 null이어도 됨)"),
+                        .description("로그인 refresh token"),
                 ),
 
 

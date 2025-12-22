@@ -31,6 +31,7 @@ include::{snippets}/auth-login/response-cookies.adoc[]
 ==== HTTP Request
 include::{snippets}/auth-refresh/http-request.adoc[]
 include::{snippets}/auth-refresh/request-fields.adoc[]
+include::{snippets}/auth-refresh/request-headers.adoc[]
 
 ==== HTTP Response
 include::{snippets}/auth-refresh/http-response.adoc[]
