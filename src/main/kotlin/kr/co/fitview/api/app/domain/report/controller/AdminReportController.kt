@@ -87,7 +87,12 @@ class AdminReportController(
         }
 
         val page = filtered.take(size)
-        val hasNext = filtered.size > size
+
+        val filteredWithExtra = reports
+            .filter { cursor?.let { c -> it.reportId < c } ?: true }
+            .take(size + 1)
+
+        val hasNext = filteredWithExtra.size > size
 
         val slice: Slice<AdminReportResponse> =
             SliceImpl(page, Pageable.unpaged(), hasNext)

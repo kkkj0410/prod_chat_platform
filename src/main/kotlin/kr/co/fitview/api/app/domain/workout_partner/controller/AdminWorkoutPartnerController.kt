@@ -42,11 +42,21 @@ class AdminWorkoutPartnerController(
             .filter { condition.workoutPartnerRequestId?.let { lastId -> it.workoutPartnerRequestId < lastId } ?: true }
             .take(condition.size)
 
+        val filteredRequestsWithExtra = allRequests
+            .filter {
+                condition.workoutPartnerRequestId
+                    ?.let { lastId -> it.workoutPartnerRequestId < lastId }
+                    ?: true
+            }
+            .take(condition.size + 1)
+
+        val hasNext = filteredRequestsWithExtra.size > condition.size
+
         // Slice 생성
         val slice: Slice<AdminWorkoutPartnerRequestResponse> = SliceImpl(
             filteredRequests,
             PageRequest.of(0, condition.size),
-            allRequests.size > filteredRequests.size // hasNext 여부
+            hasNext
         )
 
         return ResponseEntity.ok(

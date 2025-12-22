@@ -121,7 +121,7 @@ class AuthControllerDocsTest : RestDocsSupport() {
 
             requestHeaders(
                 headerWithName(AuthConstant.HEADER_CLIENT_TYPE)
-                    .description("클라이언트 타입. 가능한 값: MOBILE, ADMIN")
+                    .description("클라이언트 타입." + HeaderClientType.allDescription())
             ),
 
             requestFields(

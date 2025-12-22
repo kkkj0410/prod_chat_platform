@@ -55,11 +55,17 @@ class AdminMemberController(
             .filter { condition.memberId?.let { lastId -> it.memberId < lastId } ?: true }
             .take(condition.size)
 
+        val filteredMembersWithExtra = allMembers
+            .filter { condition.memberId?.let { lastId -> it.memberId < lastId } ?: true }
+            .take(condition.size + 1)
+
+        val hasNext = filteredMembersWithExtra.size > condition.size
+
         // Slice 생성
         val slice: Slice<AdminMemberResponse> = SliceImpl(
             filteredMembers,
             PageRequest.of(0, condition.size),
-            allMembers.size > filteredMembers.size // 더 남은 데이터가 있으면 true
+            hasNext
         )
 
         return ResponseEntity.ok(
@@ -99,10 +105,17 @@ class AdminMemberController(
             .filter { condition.memberId?.let { lastId -> it.memberId < lastId } ?: true }
             .take(condition.size)
 
+        val filteredMembersWithExtra = allMembers
+            .filter { condition.memberId?.let { lastId -> it.memberId < lastId } ?: true }
+            .take(condition.size + 1)
+
+        val hasNext = filteredMembersWithExtra.size > condition.size
+
+
         val slice: Slice<AdminWithdrawMemberResponse> = SliceImpl(
             filteredMembers,
             PageRequest.of(0, condition.size),
-            allMembers.size > filteredMembers.size
+            hasNext
         )
 
         return ResponseEntity.ok(

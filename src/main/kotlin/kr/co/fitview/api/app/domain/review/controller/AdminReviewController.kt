@@ -63,11 +63,21 @@ class AdminReviewController(
             }
             .take(condition.size)
 
+        val filteredWithExtra = allReviews
+            .filter {
+                condition.reviewId?.let { lastId ->
+                    it.reviewId < lastId
+                } ?: true
+            }
+            .take(condition.size + 1)
+
+        val hasNext = filteredWithExtra.size > condition.size
+
         // 3. Slice 생성
         val slice: Slice<AdminReviewResponse> = SliceImpl(
             filteredReviews,
             PageRequest.of(0, condition.size),
-            allReviews.size > filteredReviews.size
+            hasNext
         )
 
         // 4. Cursor 기반 응답
