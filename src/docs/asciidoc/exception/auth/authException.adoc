@@ -8,4 +8,24 @@ include::{snippets}/AUTH_001/http-request.adoc[]
 include::{snippets}/AUTH_001/http-response.adoc[]
 include::{snippets}/AUTH_001/response-fields.adoc[]
 
+[[AUTH_002]]
+=== AUTH_002
+
+==== HTTP Request
+include::{snippets}/AUTH_002/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/AUTH_002/http-response.adoc[]
+include::{snippets}/AUTH_002/response-fields.adoc[]
+
+[[AUTH_003]]
+=== AUTH_003
+
+==== HTTP Request
+include::{snippets}/AUTH_003/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/AUTH_003/http-response.adoc[]
+include::{snippets}/AUTH_003/response-fields.adoc[]
+
 
