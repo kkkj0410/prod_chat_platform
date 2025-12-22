@@ -12,6 +12,17 @@ enum class AuthErrorCode(
 
     INVALID_PASSWORD("001", "Invalid password", "로그인 비밀번호 틀림"),
 
+    MOBILE_REFRESH_TOKEN_MISSING(
+        "002",
+        "Mobile refresh token missing",
+        "모바일 클라이언트에서 refresh 요청 시 body에 refresh token이 없음"
+    ),
+
+    WEB_REFRESH_TOKEN_MISSING(
+        "003",
+        "Web refresh token missing",
+        "웹 클라이언트에서 refresh 요청 시 쿠키에 refresh token이 없음"
+    );
 
     ;
 

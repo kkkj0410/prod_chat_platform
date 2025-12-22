@@ -123,12 +123,19 @@ tasks.withType<Test> {
 	useJUnitPlatform()
 }
 
+
 // 1. 전역 변수 (Groovy ext 대신 Kotlin val)
 val snippetsDir = file("build/generated-snippets")
 
 // 2. test task
 tasks.test {
 	outputs.dir(snippetsDir)
+
+	// 테스트 병렬 실행
+	maxParallelForks = 4
+
+	forkEvery = 100
+
 }
 
 // 3. asciidoctor task
