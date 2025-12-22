@@ -1,5 +1,6 @@
 package kr.co.fitview.api.app.domain.auth.controller
 
+import jakarta.servlet.http.Cookie
 import jakarta.validation.Valid
 import kr.co.fitview.api.app.ControllerTestSupport
 import kr.co.fitview.api.app.domain.auth.HeaderClientType
@@ -9,7 +10,9 @@ import kr.co.fitview.api.app.domain.auth.dto.request.MemberCreateRequest
 import kr.co.fitview.api.app.domain.auth.dto.request.MemberLoginRequest
 import kr.co.fitview.api.app.domain.auth.dto.request.MemberLogoutRequest
 import kr.co.fitview.api.app.domain.auth.dto.response.AccessTokenRefreshResponse
+import kr.co.fitview.api.app.global.constant.JwtConstant
 import kr.co.fitview.api.app.global.dto.ApiResponse
+import kr.co.fitview.api.app.global.exception.error.auth.AuthErrorCode
 import kr.co.fitview.api.app.global.exception.error.jwt.JwtErrorCode
 import kr.co.fitview.api.app.global.exception.error.request.RequestErrorCode
 import org.junit.jupiter.api.DisplayName
@@ -215,7 +218,7 @@ class AuthControllerTest : ControllerTestSupport(){
 
 
 
-    @DisplayName("리프레시 토큰을 요청하면 액세스 토큰을 재발급한다.")
+    @DisplayName("모바일에서 body로 리프레시 토큰을 요청하면 액세스 토큰을 재발급한다.")
     @Test
     fun accessTokenRefresh() {
         val request = AccessTokenRefreshRequest(
@@ -232,7 +235,25 @@ class AuthControllerTest : ControllerTestSupport(){
             .andExpect(status().isOk());
     }
 
-    @DisplayName("리프레시 토큰을 넣지 않으면 액세스 토큰을 재발급하지 못한다.")
+    @DisplayName("웹에서 쿠키로 리프레시 토큰을 요청하면 액세스 토큰을 재발급한다.")
+    @Test
+    fun accessTokenWebRefresh() {
+
+        val refreshCookie = Cookie(JwtConstant.REFRESH_TOKEN_COOKIE_NAME, "refreshTokenValue")
+
+        // when // then
+        mockMvc.perform(
+            post("/api/v1/auth/refresh")
+                .header("x-client-type", "WEB")
+                .content(objectMapper.writeValueAsString(null))
+                .contentType(MediaType.APPLICATION_JSON)
+                .cookie(refreshCookie)
+        )
+            .andDo(print())
+            .andExpect(status().isOk());
+    }
+
+    @DisplayName("모바일에서 body에 리프레시 토큰을 넣지 않으면 액세스 토큰을 재발급하지 못한다.")
     @Test
     fun accessTokenRefreshWithoutRefreshToken() {
         val request = AccessTokenRefreshRequest(
@@ -246,12 +267,33 @@ class AuthControllerTest : ControllerTestSupport(){
                 .contentType(MediaType.APPLICATION_JSON)
         )
             .andDo(print())
-            .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.code").value(RequestErrorCode.REQ_FIELD_NOT_VALID.code))
-            .andExpect(jsonPath("$.status").value("400"))
-            .andExpect(jsonPath("$.message").value("RefreshToken is required"))
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.code").value(AuthErrorCode.MOBILE_REFRESH_TOKEN_MISSING.code))
+            .andExpect(jsonPath("$.status").value("401"))
+            .andExpect(jsonPath("$.message").value(AuthErrorCode.MOBILE_REFRESH_TOKEN_MISSING.message))
             .andExpect(jsonPath("$.data").isEmpty())
     }
+
+    @DisplayName("웹에서 리프래시 토큰 발급 시, 리프레시 토큰이 있는 쿠키는 필수다")
+    @Test
+    fun accessTokenRefreshWebWithoutRefreshToken() {
+
+
+        // when // then
+        mockMvc.perform(
+            post("/api/v1/auth/refresh")
+                .header("x-client-type", "WEB")
+                .content(objectMapper.writeValueAsString(null))
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andDo(print())
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.code").value(AuthErrorCode.WEB_REFRESH_TOKEN_MISSING.code))
+            .andExpect(jsonPath("$.status").value("401"))
+            .andExpect(jsonPath("$.message").value(AuthErrorCode.WEB_REFRESH_TOKEN_MISSING.message))
+            .andExpect(jsonPath("$.data").isEmpty())
+    }
+
 
     @DisplayName("로그아웃하면 리프레시 토큰을 비활성화한다.")
     @Test

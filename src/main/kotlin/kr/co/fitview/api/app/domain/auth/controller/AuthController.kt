@@ -9,7 +9,10 @@ import kr.co.fitview.api.app.domain.auth.dto.response.MemberLoginResponse
 import kr.co.fitview.api.app.domain.auth.service.AuthService
 import kr.co.fitview.api.app.domain.auth.service.RefreshTokenService
 import kr.co.fitview.api.app.domain.auth.service.TestAuthService
+import kr.co.fitview.api.app.global.constant.JwtConstant
 import kr.co.fitview.api.app.global.dto.ApiResponse
+import kr.co.fitview.api.app.global.exception.GlobalException
+import kr.co.fitview.api.app.global.exception.error.auth.AuthErrorCode
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
@@ -79,15 +82,46 @@ class AuthController(
 
     @PostMapping("/refresh")
     fun accessTokenRefresh(
-        @Valid
-        @RequestBody
-        request: AccessTokenRefreshRequest
-    ): ResponseEntity<ApiResponse<AccessTokenRefreshResponse>> {
-        val response = authService.refreshAccessToken(request.toServiceRequest())
+        @RequestHeader(AuthConstant.HEADER_CLIENT_TYPE, required = false)
+        headerClientType : HeaderClientType = HeaderClientType.MOBILE,
 
-        return ResponseEntity.ok(ApiResponse.success(response))
+        @Valid
+        @RequestBody(required = false)
+        request: AccessTokenRefreshRequest?,
+
+        @CookieValue(name = JwtConstant.REFRESH_TOKEN_COOKIE_NAME, required = false)
+        refreshToken: String?
+    ): ResponseEntity<ApiResponse<AccessTokenRefreshResponse>> {
+
+        validateHasRefreshToken(headerClientType, request, refreshToken)
+
+        if(headerClientType == HeaderClientType.MOBILE){
+            val response = authService.refreshAccessToken(request!!.toServiceRequest())
+            return ResponseEntity.ok(ApiResponse.success(response))
+        }
+
+        else{
+            val response = authService.refreshAccessToken(AccessTokenRefreshServiceRequest(refreshToken!!))
+            return ResponseEntity.ok(ApiResponse.success(response))
+        }
+
     }
 
+    private fun validateHasRefreshToken(
+        headerClientType: HeaderClientType,
+        request: AccessTokenRefreshRequest?,
+        refreshToken: String?
+    ) {
+        if (headerClientType == HeaderClientType.MOBILE) {
+            if (request?.refreshToken == null) {
+                throw GlobalException(AuthErrorCode.MOBILE_REFRESH_TOKEN_MISSING)
+            }
+        } else if (headerClientType == HeaderClientType.WEB) {
+            if (refreshToken == null) {
+                throw GlobalException(AuthErrorCode.WEB_REFRESH_TOKEN_MISSING)
+            }
+        }
+    }
 
 
     private fun isMobile(headerClientType: HeaderClientType) =

@@ -188,7 +188,8 @@ class AuthControllerDocsTest : RestDocsSupport() {
 
                 requestFields(
                     fieldWithPath("refreshToken").type(JsonFieldType.STRING)
-                        .description("로그인 refresh token"),
+                        .optional()
+                        .description("로그인 refresh token - MOBILE일때는 refreshToken은 body에 넣기. WEB일때는 cookie로 넣기(WEB일때는 body가 null이어도 됨)"),
                 ),
 
 
