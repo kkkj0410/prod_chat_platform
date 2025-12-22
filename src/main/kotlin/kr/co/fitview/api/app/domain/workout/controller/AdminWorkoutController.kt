@@ -51,11 +51,21 @@ class AdminWorkoutController(
             .filter { condition.workoutRequestId?.let { lastId -> it.workoutRequestId < lastId } ?: true }
             .take(condition.size)
 
+        val filteredRequestsWithExtra = allRequests
+            .filter {
+                condition.workoutRequestId
+                    ?.let { lastId -> it.workoutRequestId < lastId }
+                    ?: true
+            }
+            .take(condition.size + 1)
+
+        val hasNext = filteredRequestsWithExtra.size > condition.size
+
         // 3. Slice 생성
         val slice: Slice<AdminWorkoutRequestResponse> = SliceImpl(
             filteredRequests,
             PageRequest.of(0, condition.size),
-            allRequests.size > filteredRequests.size // hasNext
+            hasNext
         )
 
         // 4. Cursor 기반 응답
