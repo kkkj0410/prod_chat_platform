@@ -1,8 +1,11 @@
 package kr.co.fitview.api.app.domain.workout.service
 
+import kr.co.fitview.api.app.domain.workout.condition.AdminWorkoutRequestCondition
+import kr.co.fitview.api.app.domain.workout.dto.response.AdminWorkoutRequestResponse
 import kr.co.fitview.api.app.domain.workout.dto.response.LastWorkoutRequestMessage
 import kr.co.fitview.api.app.domain.workout.repository.WorkoutRequestRepository
 import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequest
+import org.springframework.data.domain.Slice
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -28,6 +31,10 @@ class WorkoutRequestQueryService(
         return workoutRequestIds.map { id ->
             workoutRequestRepository.getReferenceById(id)
         }
+    }
+
+    fun findAllWorkoutRequestFrom(condition: AdminWorkoutRequestCondition) : Slice<AdminWorkoutRequestResponse> {
+        return workoutRequestRepository.findAllWorkoutRequestBy(condition)
     }
 
 }

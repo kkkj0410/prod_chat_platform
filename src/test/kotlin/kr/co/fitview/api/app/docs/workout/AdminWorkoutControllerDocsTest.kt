@@ -29,9 +29,11 @@ import kr.co.fitview.api.app.domain.review.dto.response.ReviewTagResponse
 import kr.co.fitview.api.app.domain.review.entity.enums.ReviewType
 import kr.co.fitview.api.app.domain.review.service.ReviewService
 import kr.co.fitview.api.app.domain.workout.controller.AdminWorkoutController
+import kr.co.fitview.api.app.domain.workout.dto.response.AdminWorkoutRequestResponse
 import kr.co.fitview.api.app.domain.workout.dto.response.LastWorkoutRequestMessage
 import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusForResponse
 import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
+import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestQueryService
 import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestService
 import kr.co.fitview.api.app.domain.workout_history.controller.WorkoutHistoryController
 import kr.co.fitview.api.app.domain.workout_history.dto.response.WorkoutHistoryReviewStatusResponse
@@ -69,17 +71,53 @@ import java.time.ZoneOffset
 
 class AdminWorkoutControllerDocsTest : RestDocsSupport() {
 
-
+    private val workoutRequestQueryService: WorkoutRequestQueryService = mock(WorkoutRequestQueryService::class.java)
 
     override fun initController(): Any {
-        return AdminWorkoutController()
+        return AdminWorkoutController(workoutRequestQueryService)
     }
 
     @DisplayName("운동 이력 조회 API")
     @Test
     fun workoutRequestList() {
         // given
+        val now = LocalDateTime.now()
 
+        val request1 = AdminWorkoutRequestResponse(
+            fromMemberId = 1L,
+            toMemberId = 1L,
+            workoutRequestId = 101L,
+            fromMemberNickname = "Alice",
+            toMemberNickname = "Bob",
+            workoutRequestStatus = WorkoutRequestStatus.PENDING,
+            requestedAt = now.minusDays(2),
+            scheduledAt = now.plusDays(1),
+            location = "Gym A",
+            hasFromMemberReview = true,
+            hasToMemberReview = false
+        )
+
+        val request2 = AdminWorkoutRequestResponse(
+            fromMemberId = 2L,
+            toMemberId = 2L,
+            workoutRequestId = 102L,
+            fromMemberNickname = "Charlie",
+            toMemberNickname = "David",
+            workoutRequestStatus = WorkoutRequestStatus.ACCEPT,
+            requestedAt = now.minusDays(1),
+            scheduledAt = now.plusDays(2),
+            location = "Gym B",
+            hasFromMemberReview = false,
+            hasToMemberReview = false
+        )
+
+        val content = listOf(request1, request2)
+
+        val pageRequest = PageRequest.of(0, 10)
+        val slice = SliceImpl(content, pageRequest, false)
+
+        given(workoutRequestQueryService.findAllWorkoutRequestFrom(any()))
+            .willReturn(slice)
 
         // when & then
         mockMvc.perform(
