@@ -19,6 +19,7 @@ import kr.co.fitview.api.app.domain.image.entity.QImage.image
 import kr.co.fitview.api.app.domain.image.entity.QMemberImage
 import kr.co.fitview.api.app.domain.image.entity.QMemberImage.memberImage
 import kr.co.fitview.api.app.domain.image.entity.enums.MemberImageType
+import kr.co.fitview.api.app.domain.member.condition.AdminMemberCondition
 import kr.co.fitview.api.app.domain.member.condition.MemberLocalCondition
 import kr.co.fitview.api.app.domain.member.dto.BoundingBox
 import kr.co.fitview.api.app.domain.member.dto.request.Age
@@ -30,7 +31,15 @@ import kr.co.fitview.api.app.domain.member.entity.QWorkoutTime.workoutTime
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutExperience
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutGoal
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutStyle
+import kr.co.fitview.api.app.domain.review.entity.QReview.review
+import kr.co.fitview.api.app.global.entity.Gender
+import kr.co.fitview.api.app.global.entity.OAuth2Provider
+import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.time.Time
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Slice
+import org.springframework.data.domain.SliceImpl
+import java.time.LocalDate
 
 
 class MemberRepositoryImpl(
@@ -706,5 +715,88 @@ class MemberRepositoryImpl(
             memberOne = profileMap[memberOneId],
             memberTwo = profileMap[memberTwoId]
         )
+    }
+
+    override fun findAllMemberBy(condition: AdminMemberCondition): Slice<AdminMemberResponse> {
+
+        val size = condition.size
+        val memberId = condition.memberId
+
+        val results = queryFactory
+            .select(
+                Projections.constructor(
+                    AdminMemberResponse::class.java,
+                    member.id,
+                    member.email,
+                    member.provider,
+                    member.nickname,
+                    member.gender,
+                    member.birthday,
+                    member.height,
+                    member.weight,
+                    member.workoutExperience,
+                    member.workoutStyle,
+                    member.workoutGoal,
+                    address.fullAddress,
+                )
+            )
+            .from(member)
+            .join(member.mutableAddresses, address)
+            .where(
+                member.isSignup.isTrue,
+                member.role.eq(Role.USER),
+                member.provider.isNotNull,
+                member.deletedAt.isNull,
+                address.deletedAt.isNull,
+                memberId?.let { member.id.lt(it) }
+            )
+            .orderBy(member.id.desc())
+            .limit(size.toLong() + 1)
+            .fetch()
+
+        val hasNext = results.size > size
+        val content = if (hasNext) results.dropLast(1) else results
+
+        val memberIds = content.map { it.memberId }
+
+        if (memberIds.isEmpty()) {
+            return SliceImpl(content, PageRequest.of(0, size), hasNext)
+        }
+
+        val reviewCountMap: Map<Long, Long> =
+            queryFactory
+                .select(review.toMember.id, review.count())
+                .from(review)
+                .where(
+                    review.toMember.id.`in`(memberIds),
+                    review.deletedAt.isNull
+                )
+                .groupBy(review.toMember.id)
+                .fetch()
+                .associate { it.get(0, Long::class.java)!! to it.get(1, Long::class.java)!! }
+
+
+        val memberIdsWithImage: Set<Long> =
+            queryFactory
+                .select(memberImage.member.id)
+                .from(memberImage)
+                .where(
+                    memberImage.member.id.`in`(memberIds),
+                    memberImage.type.eq(MemberImageType.WORKOUT),
+                    memberImage.image.id.isNotNull,
+                    memberImage.deletedAt.isNull,
+                )
+                .fetch()
+                .toSet()
+
+        // 4️⃣ 결과 조립
+        val finalContent = content.map {
+            it.copy(
+                reviewCount = reviewCountMap[it.memberId] ?: 0L,
+                hasWorkoutImageUrl = memberIdsWithImage.contains(it.memberId)
+            )
+        }
+
+        return SliceImpl(finalContent, PageRequest.of(0, size), hasNext)
     }
 }

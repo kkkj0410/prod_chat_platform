@@ -4,6 +4,7 @@ import kr.co.fitview.api.app.domain.address.constant.AddressConstant
 import kr.co.fitview.api.app.domain.address.entity.Address
 import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
 import kr.co.fitview.api.app.domain.address.service.AddressService
+import kr.co.fitview.api.app.domain.member.condition.AdminMemberCondition
 import kr.co.fitview.api.app.domain.member.condition.MemberLocalCondition
 import kr.co.fitview.api.app.domain.member.dto.BoundingBox
 import kr.co.fitview.api.app.domain.member.dto.response.*
@@ -20,6 +21,7 @@ import kr.co.fitview.api.app.global.redis.service.RedisService
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Slice
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import javax.management.Query.div
@@ -175,6 +177,10 @@ class MemberQueryService(
 
     fun findOtherMemberFrom(memberId : Long, chatRoomId : Long) : Member? {
         return memberRepository.findOtherMemberBy(memberId, chatRoomId)
+    }
+
+    fun findAllMemberFrom(condition: AdminMemberCondition) : Slice<AdminMemberResponse> {
+       return memberRepository.findAllMemberBy(condition)
     }
 
     private fun validateDuplicatedEmail(member: Member) {

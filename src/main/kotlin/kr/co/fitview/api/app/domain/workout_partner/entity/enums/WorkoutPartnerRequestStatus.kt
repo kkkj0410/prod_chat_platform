@@ -7,7 +7,10 @@ enum class WorkoutPartnerRequestStatus(val description : String) {
     PENDING("대기"),
     REJECT("거절"),
     CANCEL("취소"),
-    ACCEPT("수락");
+    ACCEPT("수락"),
+    EXPIRE("만료"),
+
+    ;
 
     override fun toString(): String {
         return "$name: $description"
@@ -15,7 +18,7 @@ enum class WorkoutPartnerRequestStatus(val description : String) {
 
     companion object {
         fun allDescription(): List<String> {
-            return WorkoutPartnerRequestUpdateStatus.entries.map { it.toString() }
+            return entries.map { it.toString() }
         }
     }
 }

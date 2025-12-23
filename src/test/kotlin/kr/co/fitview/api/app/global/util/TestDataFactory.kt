@@ -28,7 +28,7 @@ object TestDataFactory {
             WorkoutTimeName.WEEKDAY_EVENING
         ),
         workoutGoal: MemberWorkoutGoal = MemberWorkoutGoal.PERFORMANCE_GOAL,
-        workoutImageUrls: List<String> = listOf("imageUrl1", "imageUrl2"),
+        workoutImageUrls: List<String>? = listOf("imageUrl1", "imageUrl2"),
         intro: String = "intro",
         address: AddressCreateServiceRequest = AddressCreateServiceRequest(
             siDo = AddressSiDo.SEOUL,

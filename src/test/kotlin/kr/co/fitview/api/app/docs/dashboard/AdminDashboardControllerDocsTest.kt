@@ -3,11 +3,20 @@ package kr.co.fitview.api.app.docs.dashboard
 import kr.co.fitview.api.app.docs.RestDocsHeaders
 import kr.co.fitview.api.app.docs.RestDocsSupport
 import kr.co.fitview.api.app.domain.dashboard.controller.AdminDashboardController
+import kr.co.fitview.api.app.domain.dashboard.dto.response.AdminDashboardResponse
+import kr.co.fitview.api.app.domain.dashboard.dto.response.AdminDashboardToday
+import kr.co.fitview.api.app.domain.dashboard.dto.response.AdminDashboardTotal
+import kr.co.fitview.api.app.domain.dashboard.service.DashboardQueryService
 import kr.co.fitview.api.app.domain.fcm.dto.request.FcmTokenCreateRequest
 import kr.co.fitview.api.app.domain.fcm.entity.enums.FcmTokenPlatform
+import kr.co.fitview.api.app.domain.image.dto.response.S3UploadUrlResponse
 import kr.co.fitview.api.app.global.entity.Role
+import kr.co.fitview.api.app.global.exception.GlobalExceptionService
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.mockito.Mockito.mock
+import org.mockito.kotlin.any
+import org.mockito.kotlin.given
 import org.springframework.http.MediaType
 import org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document
@@ -22,14 +31,39 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 class AdminDashboardControllerDocsTest : RestDocsSupport() {
 
+    private val dashboardQueryService: DashboardQueryService = mock(DashboardQueryService::class.java)
+
     override fun initController(): Any {
-        return AdminDashboardController()
+        return AdminDashboardController(dashboardQueryService)
     }
 
     @DisplayName("어드민 대시보드 조회 API")
     @Test
     fun dashBoardDetail() {
         // given
+
+        val today = AdminDashboardToday(
+            memberCount = 5,
+            workoutPartnerCount = 2,
+            workoutHistoryCount = 12,
+            reviewCount = 3,
+            reportCount = 1
+        )
+
+        val total = AdminDashboardTotal(
+            memberCount = 120,
+            workoutPartnerCount = 45,
+            workoutHistoryCount = 200,
+            reviewCount = 50
+        )
+
+        given(dashboardQueryService.findDashboardComposite())
+            .willReturn(
+                AdminDashboardResponse(
+                    today = today,
+                    total = total
+            )
+        )
 
         // when & then
         mockMvc.perform(

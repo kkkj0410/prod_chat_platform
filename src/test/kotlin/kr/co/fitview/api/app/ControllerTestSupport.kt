@@ -10,10 +10,12 @@ import kr.co.fitview.api.app.domain.auth.service.TestAuthService
 import kr.co.fitview.api.app.domain.chat.controller.ChatController
 import kr.co.fitview.api.app.domain.chat.service.*
 import kr.co.fitview.api.app.domain.dashboard.controller.AdminDashboardController
+import kr.co.fitview.api.app.domain.dashboard.service.DashboardQueryService
 import kr.co.fitview.api.app.domain.fcm.controller.FcmController
 import kr.co.fitview.api.app.domain.fcm.service.FcmService
 import kr.co.fitview.api.app.domain.image.controller.ImageController
 import kr.co.fitview.api.app.domain.image.service.S3Service
+import kr.co.fitview.api.app.domain.member.controller.AdminMemberController
 import kr.co.fitview.api.app.domain.member.controller.MemberController
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.domain.member.service.MemberService
@@ -23,17 +25,21 @@ import kr.co.fitview.api.app.domain.notification.service.NotificationService
 import kr.co.fitview.api.app.global.stomp.service.StompPublishService
 import kr.co.fitview.api.app.domain.oauth2.controller.OAuth2Controller
 import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
+import kr.co.fitview.api.app.domain.report.controller.AdminReportController
 import kr.co.fitview.api.app.domain.report.controller.ReportController
 import kr.co.fitview.api.app.domain.report.service.ChatRoomReportService
 import kr.co.fitview.api.app.domain.report.service.ReportReasonQueryService
+import kr.co.fitview.api.app.domain.review.controller.AdminReviewController
 import kr.co.fitview.api.app.domain.review.controller.ReviewController
 import kr.co.fitview.api.app.domain.review.service.ReviewQueryService
 import kr.co.fitview.api.app.domain.review.service.ReviewService
 import kr.co.fitview.api.app.domain.review.service.ReviewTagCountQueryService
+import kr.co.fitview.api.app.domain.workout.controller.AdminWorkoutController
 import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestQueryService
 import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestService
 import kr.co.fitview.api.app.domain.workout_history.controller.WorkoutHistoryController
 import kr.co.fitview.api.app.domain.workout_history.service.WorkoutHistoryQueryService
+import kr.co.fitview.api.app.domain.workout_partner.controller.AdminWorkoutPartnerController
 import kr.co.fitview.api.app.domain.workout_partner.controller.WorkoutPartnerController
 import kr.co.fitview.api.app.domain.workout_partner.service.WorkoutPartnerRequestQueryService
 import kr.co.fitview.api.app.domain.workout_partner.service.WorkoutPartnerRequestService
@@ -75,7 +81,12 @@ import org.springframework.test.web.servlet.MockMvc
     NotificationController::class,
     ReportController::class,
     AdminDashboardController::class,
-    GlobalExceptionHandler::class
+    AdminMemberController::class,
+    AdminWorkoutPartnerController::class,
+    AdminWorkoutController::class,
+    AdminReviewController::class,
+    AdminReportController::class,
+    GlobalExceptionHandler::class,
 ],
 excludeFilters = [
     ComponentScan.Filter(
@@ -185,5 +196,8 @@ abstract class ControllerTestSupport {
 
     @MockitoBean
     protected lateinit var chatRoomReportService : ChatRoomReportService
+
+    @MockitoBean
+    protected lateinit var dashboardQueryService: DashboardQueryService
 
 }

@@ -6,11 +6,15 @@ import kr.co.fitview.api.app.domain.address.dto.request.AddressCreateServiceRequ
 import kr.co.fitview.api.app.domain.address.entity.Address
 import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
 import kr.co.fitview.api.app.domain.address.repository.AddressRepository
+import kr.co.fitview.api.app.domain.chat.entity.ChatMessage
 import kr.co.fitview.api.app.domain.chat.entity.ChatParticipant
 import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
+import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatRoomType
+import kr.co.fitview.api.app.domain.chat.repository.ChatMessageRepository
 import kr.co.fitview.api.app.domain.chat.repository.ChatParticipantRepository
 import kr.co.fitview.api.app.domain.chat.repository.ChatRoomRepository
+import kr.co.fitview.api.app.domain.member.condition.AdminMemberCondition
 import kr.co.fitview.api.app.domain.member.condition.MemberLocalCondition
 import kr.co.fitview.api.app.domain.member.dto.BoundingBox
 import kr.co.fitview.api.app.domain.member.dto.request.Age
@@ -21,6 +25,14 @@ import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutStyle
 import kr.co.fitview.api.app.domain.member.entity.enums.WorkoutTimeName
 import kr.co.fitview.api.app.domain.oauth2.dto.request.OAuth2SignupServiceRequest
 import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
+import kr.co.fitview.api.app.domain.review.entity.Review
+import kr.co.fitview.api.app.domain.review.entity.enums.ReviewType
+import kr.co.fitview.api.app.domain.review.repository.ReviewRepository
+import kr.co.fitview.api.app.domain.review.service.ReviewQueryService
+import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequest
+import kr.co.fitview.api.app.domain.workout.repository.WorkoutRequestRepository
+import kr.co.fitview.api.app.domain.workout_history.entity.WorkoutHistory
+import kr.co.fitview.api.app.domain.workout_history.repository.WorkoutHistoryRepository
 import kr.co.fitview.api.app.global.entity.Gender
 import kr.co.fitview.api.app.global.entity.OAuth2Provider
 import kr.co.fitview.api.app.global.entity.Role
@@ -41,6 +53,10 @@ class MemberRepositoryTest@Autowired constructor(
     val oAuth2Service : OAuth2Service,
     val chatRoomRepository : ChatRoomRepository,
     val chatParticipantRepository : ChatParticipantRepository,
+    val workoutHistoryRepository: WorkoutHistoryRepository,
+    val chatMessageRepository : ChatMessageRepository,
+    val workoutRequestRepository : WorkoutRequestRepository,
+    val reviewRepository: ReviewRepository,
     val time : Time
 ) : IntegrationTestSupport() {
 
@@ -2310,5 +2326,355 @@ class MemberRepositoryTest@Autowired constructor(
                 tuple(chatRoom.id!!, other.id!!, signupRequest2.nickname, signupRequest2.profileImageUrl),
             )
     }
+
+    @DisplayName("전체 회원을 조회한다.")
+    @Test
+    fun findAllMemberBy() {
+        // given
+        val member1 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+            provider = OAuth2Provider.APPLE
+        )
+        val member2 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+            provider = OAuth2Provider.GOOGLE
+        )
+        memberRepository.save(member1)
+        memberRepository.save(member2)
+
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest1, member1.id!!)
+
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            workoutImageUrls = null
+        )
+        oAuth2Service.signup(signupRequest2, member2.id!!)
+
+
+        val chatRoom = ChatRoom(ChatRoomType.PRIVATE)
+        chatRoomRepository.save(chatRoom)
+
+        val chatMessage = ChatMessage(
+            member = member1,
+            chatRoom = chatRoom,
+            type = ChatMessageType.WORKOUT_REQUEST,
+            content = "content",
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessage)
+
+        val workoutRequest = WorkoutRequest.of(
+            chatMessage = chatMessage,
+            fromMember = member1,
+            toMember = member2,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime
+        )
+        workoutRequestRepository.save(workoutRequest)
+
+        val workoutHistory = WorkoutHistory(
+            chatRoom = chatRoom,
+            workoutRequest = workoutRequest,
+            memberOne = member1,
+            memberTwo = member2,
+            completedAt = time.nowLocalDateTime
+        )
+        workoutHistoryRepository.save(workoutHistory)
+
+        val review = Review(
+            fromMember = member2,
+            toMember = member1,
+            workoutHistory = workoutHistory,
+            isPrivate = false,
+            type = ReviewType.GOOD,
+            score = 2.0,
+            content = "content",
+            postedAt = time.nowLocalDateTime
+        )
+        reviewRepository.save(review)
+
+
+        val condition = AdminMemberCondition()
+
+        // when
+        val response = memberRepository.findAllMemberBy(condition)
+
+
+        // then
+        assertThat(response)
+            .extracting("provider", "hasWorkoutImageUrl", "reviewCount")
+            .contains(
+                tuple(OAuth2Provider.APPLE, true, 1L),
+                tuple(OAuth2Provider.GOOGLE, false, 0L),
+            )
+
+        assertThat(response.hasNext()).isEqualTo(false)
+    }
+
+    @DisplayName("전체 회원을 조회 시, memberId를 조건으로 넣으면 memberId보다 낮은 회원만 조회한다.")
+    @Test
+    fun findAllMemberByExistsConditionMemberId() {
+        // given
+        val member1 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+            provider = OAuth2Provider.APPLE
+        )
+        val member2 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+            provider = OAuth2Provider.GOOGLE
+        )
+        memberRepository.save(member1)
+        memberRepository.save(member2)
+
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest1, member1.id!!)
+
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            workoutImageUrls = null
+        )
+        oAuth2Service.signup(signupRequest2, member2.id!!)
+
+
+        val chatRoom = ChatRoom(ChatRoomType.PRIVATE)
+        chatRoomRepository.save(chatRoom)
+
+        val chatMessage = ChatMessage(
+            member = member1,
+            chatRoom = chatRoom,
+            type = ChatMessageType.WORKOUT_REQUEST,
+            content = "content",
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessage)
+
+        val workoutRequest = WorkoutRequest.of(
+            chatMessage = chatMessage,
+            fromMember = member1,
+            toMember = member2,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime
+        )
+        workoutRequestRepository.save(workoutRequest)
+
+        val workoutHistory = WorkoutHistory(
+            chatRoom = chatRoom,
+            workoutRequest = workoutRequest,
+            memberOne = member1,
+            memberTwo = member2,
+            completedAt = time.nowLocalDateTime
+        )
+        workoutHistoryRepository.save(workoutHistory)
+
+        val review = Review(
+            fromMember = member2,
+            toMember = member1,
+            workoutHistory = workoutHistory,
+            isPrivate = false,
+            type = ReviewType.GOOD,
+            score = 2.0,
+            content = "content",
+            postedAt = time.nowLocalDateTime
+        )
+        reviewRepository.save(review)
+
+
+        val condition = AdminMemberCondition(
+            memberId = member2.id!!
+        )
+
+        // when
+        val response = memberRepository.findAllMemberBy(condition)
+
+
+        // then
+        assertThat(response)
+            .extracting("memberId", "provider", "hasWorkoutImageUrl", "reviewCount")
+            .contains(
+                tuple(member1.id!!, OAuth2Provider.APPLE, true, 1L),
+            )
+    }
+
+    @DisplayName("전체 회원을 조회 시, 어드민 계정은 조회하지 않는다")
+    @Test
+    fun findAllMemberByWithoutAdmin() {
+        // given
+        val member1 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+            provider = OAuth2Provider.APPLE
+        )
+        val member2 = Member(
+            email = "email",
+            password = "password",
+            role = Role.ADMIN,
+            provider = OAuth2Provider.GOOGLE
+        )
+        memberRepository.save(member1)
+        memberRepository.save(member2)
+
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest1, member1.id!!)
+
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            workoutImageUrls = null
+        )
+        oAuth2Service.signup(signupRequest2, member2.id!!)
+
+
+        val chatRoom = ChatRoom(ChatRoomType.PRIVATE)
+        chatRoomRepository.save(chatRoom)
+
+        val chatMessage = ChatMessage(
+            member = member1,
+            chatRoom = chatRoom,
+            type = ChatMessageType.WORKOUT_REQUEST,
+            content = "content",
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessage)
+
+        val workoutRequest = WorkoutRequest.of(
+            chatMessage = chatMessage,
+            fromMember = member1,
+            toMember = member2,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime
+        )
+        workoutRequestRepository.save(workoutRequest)
+
+        val workoutHistory = WorkoutHistory(
+            chatRoom = chatRoom,
+            workoutRequest = workoutRequest,
+            memberOne = member1,
+            memberTwo = member2,
+            completedAt = time.nowLocalDateTime
+        )
+        workoutHistoryRepository.save(workoutHistory)
+
+        val review = Review(
+            fromMember = member2,
+            toMember = member1,
+            workoutHistory = workoutHistory,
+            isPrivate = false,
+            type = ReviewType.GOOD,
+            score = 2.0,
+            content = "content",
+            postedAt = time.nowLocalDateTime
+        )
+        reviewRepository.save(review)
+
+
+        val condition = AdminMemberCondition()
+
+        // when
+        val response = memberRepository.findAllMemberBy(condition)
+
+
+        // then
+        assertThat(response)
+            .extracting("provider", "hasWorkoutImageUrl", "reviewCount")
+            .contains(
+                tuple(OAuth2Provider.APPLE, true, 1L),
+            )
+    }
+
+    @DisplayName("전체 회원을 조회 시, 로컬 계정은 조회하지 않는다")
+    @Test
+    fun findAllMemberByWithoutLocal() {
+        // given
+        val member1 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+            provider = OAuth2Provider.APPLE
+        )
+        val member2 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+            provider = null
+        )
+        memberRepository.save(member1)
+        memberRepository.save(member2)
+
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest1, member1.id!!)
+
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            workoutImageUrls = null
+        )
+        oAuth2Service.signup(signupRequest2, member2.id!!)
+
+
+        val chatRoom = ChatRoom(ChatRoomType.PRIVATE)
+        chatRoomRepository.save(chatRoom)
+
+        val chatMessage = ChatMessage(
+            member = member1,
+            chatRoom = chatRoom,
+            type = ChatMessageType.WORKOUT_REQUEST,
+            content = "content",
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessage)
+
+        val workoutRequest = WorkoutRequest.of(
+            chatMessage = chatMessage,
+            fromMember = member1,
+            toMember = member2,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime
+        )
+        workoutRequestRepository.save(workoutRequest)
+
+        val workoutHistory = WorkoutHistory(
+            chatRoom = chatRoom,
+            workoutRequest = workoutRequest,
+            memberOne = member1,
+            memberTwo = member2,
+            completedAt = time.nowLocalDateTime
+        )
+        workoutHistoryRepository.save(workoutHistory)
+
+        val review = Review(
+            fromMember = member2,
+            toMember = member1,
+            workoutHistory = workoutHistory,
+            isPrivate = false,
+            type = ReviewType.GOOD,
+            score = 2.0,
+            content = "content",
+            postedAt = time.nowLocalDateTime
+        )
+        reviewRepository.save(review)
+
+
+        val condition = AdminMemberCondition()
+
+        // when
+        val response = memberRepository.findAllMemberBy(condition)
+
+
+        // then
+        assertThat(response)
+            .extracting("provider", "hasWorkoutImageUrl", "reviewCount")
+            .contains(
+                tuple(OAuth2Provider.APPLE, true, 1L),
+            )
+    }
+
 
 }
