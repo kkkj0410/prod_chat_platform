@@ -13,6 +13,7 @@ import kr.co.fitview.api.app.domain.workout_partner.controller.WorkoutPartnerCon
 import kr.co.fitview.api.app.domain.workout_partner.dto.request.WorkoutPartnerUpdateRequest
 import kr.co.fitview.api.app.domain.workout_partner.dto.request.enums.WorkoutPartnerRequestType
 import kr.co.fitview.api.app.domain.workout_partner.dto.request.enums.WorkoutPartnerRequestUpdateStatus
+import kr.co.fitview.api.app.domain.workout_partner.dto.response.AdminWorkoutPartnerRequestResponse
 import kr.co.fitview.api.app.domain.workout_partner.dto.response.WorkoutPartnerRequestResponse
 import kr.co.fitview.api.app.domain.workout_partner.dto.response.enums.WorkoutPartnerRequestStatusForResponse
 import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartnerRequest
@@ -27,6 +28,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.any
 import org.mockito.kotlin.given
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Slice
 import org.springframework.data.domain.SliceImpl
 import org.springframework.http.MediaType
@@ -40,6 +42,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import java.time.LocalDateTime
 
 
 class AdminWorkoutPartnerControllerDocsTest : RestDocsSupport() {
@@ -55,6 +58,27 @@ class AdminWorkoutPartnerControllerDocsTest : RestDocsSupport() {
     @Test
     fun workoutPartnerRequestList() {
         // given
+        val response = (1..10).map { i ->
+            AdminWorkoutPartnerRequestResponse(
+                fromMemberId = 123L,
+                toMemberId = 234L,
+                workoutPartnerRequestId = i.toLong(),
+                fromMemberNickname = "FromUser$i",
+                toMemberNickname = "ToUser$i",
+                workoutPartnerRequestStatus = WorkoutPartnerRequestStatus.PENDING,
+                requestedAt = LocalDateTime.now().minusDays((20 - i).toLong()),
+                respondedAt = if (i % 2 == 0) LocalDateTime.now().minusDays((20 - i - 1).toLong()) else null,
+            )
+        }.sortedByDescending { it.workoutPartnerRequestId }
+
+        val slice: Slice<AdminWorkoutPartnerRequestResponse> = SliceImpl(
+            response,
+            PageRequest.of(0, 5),
+            false
+        )
+
+        given(workoutPartnerRequestQueryService.findAllWorkoutPartnerRequestFrom(any()))
+            .willReturn(slice)
 
         // when & then
         mockMvc.perform(

@@ -34,7 +34,7 @@ class WorkoutPartnerRequestQueryService(
     }
 
     fun findAllWorkoutPartnerRequestFrom(condition: AdminWorkoutPartnerRequestCondition): Slice<AdminWorkoutPartnerRequestResponse> {
-        TODO("Not yet implemented")
+        return workoutPartnerRequestRepository.findAllWorkoutPartnerRequestBy(condition)
     }
 
     private fun isNotExpire24Hour(workoutPartnerRequest: WorkoutPartnerRequest) =

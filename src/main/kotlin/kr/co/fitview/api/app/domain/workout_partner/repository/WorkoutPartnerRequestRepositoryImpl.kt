@@ -7,19 +7,24 @@ import com.querydsl.jpa.impl.JPAQueryFactory
 import jakarta.persistence.EntityManager
 import kr.co.fitview.api.app.domain.chat.entity.QChatMessage.chatMessage
 import kr.co.fitview.api.app.domain.chat.entity.QChatParticipant
+import kr.co.fitview.api.app.domain.chat.entity.QChatParticipant.chatParticipant
 import kr.co.fitview.api.app.domain.chat.entity.QChatRoom.chatRoom
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatRoomType
 import kr.co.fitview.api.app.domain.image.entity.QImage.image
 import kr.co.fitview.api.app.domain.image.entity.QMemberImage.memberImage
 import kr.co.fitview.api.app.domain.image.entity.enums.MemberImageType
+import kr.co.fitview.api.app.domain.member.entity.QMember
 import kr.co.fitview.api.app.domain.member.entity.QMember.member
 import kr.co.fitview.api.app.domain.workout.dto.response.WorkoutRequestUpdateResponse
 import kr.co.fitview.api.app.domain.workout.entity.QWorkoutRequest.workoutRequest
 import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
+import kr.co.fitview.api.app.domain.workout_history.entity.QWorkoutHistory.workoutHistory
+import kr.co.fitview.api.app.domain.workout_partner.condition.AdminWorkoutPartnerRequestCondition
 import kr.co.fitview.api.app.domain.workout_partner.condition.WorkoutPartnerRequestCondition
 import kr.co.fitview.api.app.domain.workout_partner.dto.WorkoutPartnerRequestResponseForChatRoom
 import kr.co.fitview.api.app.domain.workout_partner.dto.WorkoutPartnerRequestResponseForWorkoutPartner
 import kr.co.fitview.api.app.domain.workout_partner.dto.request.enums.WorkoutPartnerRequestType
+import kr.co.fitview.api.app.domain.workout_partner.dto.response.AdminWorkoutPartnerRequestResponse
 import kr.co.fitview.api.app.domain.workout_partner.dto.response.WorkoutImageMinResponse
 import kr.co.fitview.api.app.domain.workout_partner.dto.response.WorkoutPartnerRequestExpireResponse
 import kr.co.fitview.api.app.domain.workout_partner.dto.response.WorkoutPartnerRequestResponse
@@ -29,6 +34,7 @@ import kr.co.fitview.api.app.global.time.TimeHolder.time
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Slice
 import org.springframework.data.domain.SliceImpl
+import java.time.LocalDateTime
 
 class WorkoutPartnerRequestRepositoryImpl(
     private val queryFactory: JPAQueryFactory,
@@ -216,6 +222,114 @@ class WorkoutPartnerRequestRepositoryImpl(
 
         em.flush()
         em.clear()
+    }
+
+    override fun findAllWorkoutPartnerRequestBy(condition: AdminWorkoutPartnerRequestCondition): Slice<AdminWorkoutPartnerRequestResponse> {
+
+        val fromMember = QMember("fromMember")
+        val toMember = QMember("toMember")
+
+        val pageSize = condition.size.toLong()
+
+        val findWorkoutPartnerRequests = queryFactory
+            .select(
+                Projections.constructor(
+                    AdminWorkoutPartnerRequestResponse::class.java,
+                    workoutPartnerRequest.fromMember.id,
+                    workoutPartnerRequest.toMember.id,
+                    workoutPartnerRequest.id,
+                    fromMember.nickname,
+                    toMember.nickname,
+                    workoutPartnerRequest.status,
+                    workoutPartnerRequest.requestedAt,
+                    workoutPartnerRequest.respondedAt,
+                )
+            )
+            .from(workoutPartnerRequest)
+            .join(fromMember)
+                .on(fromMember.id.eq(workoutPartnerRequest.fromMember.id))
+            .join(toMember)
+                .on(toMember.id.eq(workoutPartnerRequest.toMember.id))
+            .where(
+                workoutPartnerRequest.deletedAt.isNull,
+                condition.workoutPartnerRequestId?.let { workoutPartnerRequest.id.lt(it) }
+            )
+            .orderBy(workoutPartnerRequest.id.desc())
+            .limit(pageSize + 1)
+            .fetch()
+
+        val hasNext = findWorkoutPartnerRequests.size > pageSize
+        val content = if (hasNext) findWorkoutPartnerRequests.subList(0, pageSize.toInt()) else findWorkoutPartnerRequests
+
+        val requestPairs = content.map { it.fromMemberId to it.toMemberId }
+
+        val fromMemberChatParticipant = QChatParticipant("fromMemberChatParticipant")
+        val toMemberChatParticipant = QChatParticipant("toMemberChatParticipant")
+
+        val chatRoomPairs =
+            queryFactory
+                .select(
+                    fromMemberChatParticipant.member.id,
+                    toMemberChatParticipant.member.id
+                )
+                .from(fromMemberChatParticipant)
+                .join(fromMemberChatParticipant.chatRoom, chatRoom)
+                .join(toMemberChatParticipant)
+                    .on(
+                        toMemberChatParticipant.chatRoom.eq(chatRoom)
+                    )
+                .where(
+                    fromMemberChatParticipant.member.id.`in`(requestPairs.map { it.first }),
+                    toMemberChatParticipant.member.id.`in`(requestPairs.map { it.second }),
+                    chatRoom.deletedAt.isNull
+                )
+                .fetch()
+                .map { tuple ->
+                    val fromId = tuple.get(fromMemberChatParticipant.member.id) as Long
+                    val toId = tuple.get(toMemberChatParticipant.member.id) as Long
+                    Pair(fromId, toId)
+                }
+                .toSet()
+
+        val memberPairs = content.map {
+            val small = minOf(it.fromMemberId, it.toMemberId)
+            val large = maxOf(it.fromMemberId, it.toMemberId)
+            small to large
+        }
+
+        val workoutHistoryCountMap: Map<Pair<Long, Long>, Long> =
+            queryFactory
+                .select(
+                    workoutHistory.memberOne.id,
+                    workoutHistory.memberTwo.id,
+                    workoutHistory.count()
+                )
+                .from(workoutHistory)
+                .where(
+                    workoutHistory.memberOne.id.`in`(memberPairs.map { it.first }),
+                    workoutHistory.memberTwo.id.`in`(memberPairs.map { it.second }),
+                    workoutHistory.deletedAt.isNull
+                )
+                .groupBy(workoutHistory.memberOne.id, workoutHistory.memberTwo.id)
+                .fetch()
+                .associate { tuple ->
+                    val m1 = tuple.get(workoutHistory.memberOne.id)!!
+                    val m2 = tuple.get(workoutHistory.memberTwo.id)!!
+                    val cnt = tuple.get(workoutHistory.count()) ?: 0L
+                    (m1 to m2) to cnt
+                }
+
+
+        val result = content.map {
+            val small = minOf(it.fromMemberId, it.toMemberId)
+            val large = maxOf(it.fromMemberId, it.toMemberId)
+            it.copy(
+                hasChatRoom = chatRoomPairs.contains(it.fromMemberId to it.toMemberId),
+                workoutHistoryCount = workoutHistoryCountMap[small to large] ?: 0L
+            )
+        }
+
+        return SliceImpl(result, PageRequest.of(0, pageSize.toInt()), hasNext)
     }
 
 }
