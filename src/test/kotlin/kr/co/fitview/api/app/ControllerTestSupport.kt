@@ -10,6 +10,7 @@ import kr.co.fitview.api.app.domain.auth.service.TestAuthService
 import kr.co.fitview.api.app.domain.chat.controller.ChatController
 import kr.co.fitview.api.app.domain.chat.service.*
 import kr.co.fitview.api.app.domain.dashboard.controller.AdminDashboardController
+import kr.co.fitview.api.app.domain.dashboard.service.DashboardQueryService
 import kr.co.fitview.api.app.domain.fcm.controller.FcmController
 import kr.co.fitview.api.app.domain.fcm.service.FcmService
 import kr.co.fitview.api.app.domain.image.controller.ImageController
@@ -185,5 +186,8 @@ abstract class ControllerTestSupport {
 
     @MockitoBean
     protected lateinit var chatRoomReportService : ChatRoomReportService
+
+    @MockitoBean
+    protected lateinit var dashboardQueryService: DashboardQueryService
 
 }
