@@ -27,6 +27,8 @@ class AdminDashboardController(
     fun dashBoardDetail(
     ): ResponseEntity<ApiResponse<AdminDashboardResponse>> {
 
+
+
         val today = AdminDashboardToday(
             memberCount = 5,
             workoutPartnerCount = 2,

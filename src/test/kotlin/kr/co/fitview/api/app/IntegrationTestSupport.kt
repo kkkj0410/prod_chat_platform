@@ -22,7 +22,7 @@ import org.springframework.transaction.annotation.Transactional
 @ActiveProfiles("test")
 @Import(
     TestJwtConfig::class,
-    TestRedisConfig::class
+    TestRedisConfig::class,
 )
 @Transactional
 @RecordApplicationEvents
