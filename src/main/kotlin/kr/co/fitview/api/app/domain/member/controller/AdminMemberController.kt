@@ -7,6 +7,7 @@ import kr.co.fitview.api.app.domain.member.dto.response.AdminWithdrawMemberRespo
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutExperience
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutGoal
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutStyle
+import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.global.dto.ApiResponse
 import kr.co.fitview.api.app.global.dto.SuccessCursorPagedResponse
 import kr.co.fitview.api.app.global.entity.Gender
@@ -23,6 +24,7 @@ import java.time.LocalDateTime
 @RestController
 @RequestMapping("/api/v1/admins/members")
 class AdminMemberController(
+    private val memberQueryService : MemberQueryService
 ) {
 
     @GetMapping("")
@@ -31,46 +33,11 @@ class AdminMemberController(
         condition : AdminMemberCondition,
     ) : ResponseEntity<ApiResponse<SuccessCursorPagedResponse<AdminMemberResponse>>>
     {
-        val allMembers = (1..100).map { i ->
-            AdminMemberResponse(
-                memberId = i.toLong(),
-                email = "testuser$i@example.com",
-                provider = OAuth2Provider.GOOGLE,
-                nickname = "TestUser$i",
-                gender = if (i % 2 == 0) Gender.MALE else Gender.FEMALE,
-                birthday = LocalDate.of(1990, (i % 12) + 1, (i % 28) + 1),
-                height = 160 + i,
-                weight = 55 + i,
-                workoutExperience = MemberWorkoutExperience.JUST_STARTED,
-                workoutStyle = MemberWorkoutStyle.STRENGTH,
-                workoutGoal = MemberWorkoutGoal.PERFORMANCE_GOAL,
-                hasWorkoutImageUrl = i % 2 == 0,
-                fullAddress = "서울 종로구 부암동 $i",
-                reviewCount = i.toLong()
-            )
-        }.sortedByDescending { it.memberId } // 최신순 정렬
-
-        // lastMemberId 적용 + size만큼 가져오기 (memberId < lastMemberId)
-        val filteredMembers = allMembers
-            .filter { condition.memberId?.let { lastId -> it.memberId < lastId } ?: true }
-            .take(condition.size)
-
-        val filteredMembersWithExtra = allMembers
-            .filter { condition.memberId?.let { lastId -> it.memberId < lastId } ?: true }
-            .take(condition.size + 1)
-
-        val hasNext = filteredMembersWithExtra.size > condition.size
-
-        // Slice 생성
-        val slice: Slice<AdminMemberResponse> = SliceImpl(
-            filteredMembers,
-            PageRequest.of(0, condition.size),
-            hasNext
-        )
+        val response = memberQueryService.findAllMemberFrom(condition)
 
         return ResponseEntity.ok(
             ApiResponse.successWithCursorPagination(
-                slice = slice,
+                slice = response,
                 idExtractor = { it.memberId },
             )
         )

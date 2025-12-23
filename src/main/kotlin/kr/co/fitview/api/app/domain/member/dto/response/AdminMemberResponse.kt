@@ -24,4 +24,34 @@ data class AdminMemberResponse(
     val hasWorkoutImageUrl : Boolean,
     val fullAddress : String,
     val reviewCount : Long
-)
+){
+    constructor(
+        memberId: Long,
+        email: String,
+        provider: OAuth2Provider,
+        nickname: String,
+        gender: Gender,
+        birthday: LocalDate,
+        height: Int,
+        weight: Int,
+        workoutExperience: MemberWorkoutExperience,
+        workoutStyle: MemberWorkoutStyle,
+        workoutGoal: MemberWorkoutGoal,
+        fullAddress: String
+    ) : this(
+        memberId,
+        email,
+        provider,
+        nickname,
+        gender,
+        birthday,
+        height,
+        weight,
+        workoutExperience,
+        workoutStyle,
+        workoutGoal,
+        false,          // hasWorkoutImageUrl
+        fullAddress,
+        0L              // reviewCount
+    )
+}

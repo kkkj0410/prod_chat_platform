@@ -15,6 +15,7 @@ import kr.co.fitview.api.app.domain.fcm.controller.FcmController
 import kr.co.fitview.api.app.domain.fcm.service.FcmService
 import kr.co.fitview.api.app.domain.image.controller.ImageController
 import kr.co.fitview.api.app.domain.image.service.S3Service
+import kr.co.fitview.api.app.domain.member.controller.AdminMemberController
 import kr.co.fitview.api.app.domain.member.controller.MemberController
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.domain.member.service.MemberService
@@ -76,7 +77,8 @@ import org.springframework.test.web.servlet.MockMvc
     NotificationController::class,
     ReportController::class,
     AdminDashboardController::class,
-    GlobalExceptionHandler::class
+    AdminMemberController::class,
+    GlobalExceptionHandler::class,
 ],
 excludeFilters = [
     ComponentScan.Filter(

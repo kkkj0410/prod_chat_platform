@@ -31,10 +31,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.any
 import org.mockito.kotlin.given
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageImpl
-import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.SliceImpl
+import org.springframework.data.domain.*
 import org.springframework.http.MediaType
 import org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document
@@ -58,15 +55,45 @@ import java.time.LocalDateTime
 
 class AdminMemberControllerDocsTest : RestDocsSupport() {
 
+    private val memberQueryService: MemberQueryService = mock(MemberQueryService::class.java)
 
     override fun initController(): Any {
-        return AdminMemberController()
+        return AdminMemberController(memberQueryService)
     }
 
     @DisplayName("사용자 조회 API")
     @Test
     fun memberList() {
         // given
+        val allMembers = (1..5).map { i ->
+            AdminMemberResponse(
+                memberId = i.toLong(),
+                email = "testuser$i@example.com",
+                provider = OAuth2Provider.GOOGLE,
+                nickname = "TestUser$i",
+                gender = if (i % 2 == 0) Gender.MALE else Gender.FEMALE,
+                birthday = LocalDate.of(1990, (i % 12) + 1, (i % 28) + 1),
+                height = 160 + i,
+                weight = 55 + i,
+                workoutExperience = MemberWorkoutExperience.JUST_STARTED,
+                workoutStyle = MemberWorkoutStyle.STRENGTH,
+                workoutGoal = MemberWorkoutGoal.PERFORMANCE_GOAL,
+                hasWorkoutImageUrl = i % 2 == 0,
+                fullAddress = "서울 종로구 부암동 $i",
+                reviewCount = i.toLong()
+            )
+        }.sortedByDescending { it.memberId } // 최신순 정렬
+
+
+        // Slice 생성
+        val slice: Slice<AdminMemberResponse> = SliceImpl(
+            allMembers,
+            PageRequest.of(0, 5),
+            false
+        )
+
+        given(memberQueryService.findAllMemberFrom(any()))
+            .willReturn(slice)
 
         // when & then
         mockMvc.perform(
