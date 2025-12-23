@@ -44,8 +44,11 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 class AdminWorkoutPartnerControllerDocsTest : RestDocsSupport() {
 
+    private val workoutPartnerRequestQueryService: WorkoutPartnerRequestQueryService =
+        mock(WorkoutPartnerRequestQueryService::class.java)
+
     override fun initController(): Any {
-        return AdminWorkoutPartnerController()
+        return AdminWorkoutPartnerController(workoutPartnerRequestQueryService)
     }
 
     @DisplayName("운동 파트너 신청 조회 API")

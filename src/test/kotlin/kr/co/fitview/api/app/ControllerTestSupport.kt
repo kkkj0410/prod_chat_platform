@@ -25,9 +25,11 @@ import kr.co.fitview.api.app.domain.notification.service.NotificationService
 import kr.co.fitview.api.app.global.stomp.service.StompPublishService
 import kr.co.fitview.api.app.domain.oauth2.controller.OAuth2Controller
 import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
+import kr.co.fitview.api.app.domain.report.controller.AdminReportController
 import kr.co.fitview.api.app.domain.report.controller.ReportController
 import kr.co.fitview.api.app.domain.report.service.ChatRoomReportService
 import kr.co.fitview.api.app.domain.report.service.ReportReasonQueryService
+import kr.co.fitview.api.app.domain.review.controller.AdminReviewController
 import kr.co.fitview.api.app.domain.review.controller.ReviewController
 import kr.co.fitview.api.app.domain.review.service.ReviewQueryService
 import kr.co.fitview.api.app.domain.review.service.ReviewService
@@ -36,6 +38,7 @@ import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestQueryService
 import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestService
 import kr.co.fitview.api.app.domain.workout_history.controller.WorkoutHistoryController
 import kr.co.fitview.api.app.domain.workout_history.service.WorkoutHistoryQueryService
+import kr.co.fitview.api.app.domain.workout_partner.controller.AdminWorkoutPartnerController
 import kr.co.fitview.api.app.domain.workout_partner.controller.WorkoutPartnerController
 import kr.co.fitview.api.app.domain.workout_partner.service.WorkoutPartnerRequestQueryService
 import kr.co.fitview.api.app.domain.workout_partner.service.WorkoutPartnerRequestService
@@ -78,6 +81,9 @@ import org.springframework.test.web.servlet.MockMvc
     ReportController::class,
     AdminDashboardController::class,
     AdminMemberController::class,
+    AdminWorkoutPartnerController::class,
+    AdminReviewController::class,
+    AdminReportController::class,
     GlobalExceptionHandler::class,
 ],
 excludeFilters = [

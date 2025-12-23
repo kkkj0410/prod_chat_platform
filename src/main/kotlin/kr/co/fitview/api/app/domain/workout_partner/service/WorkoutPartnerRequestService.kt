@@ -113,6 +113,16 @@ class WorkoutPartnerRequestService(
         return workoutPartnerRepository.save(workoutPartner)
     }
 
+    @Transactional
+    fun modifyAllWorkoutPartnerRequestExpire() {
+        val response = workoutPartnerRequestRepository.findAllPendingWorkoutPartnerRequestAlreadyExpire()
+
+        val workoutRequestIds = response.map { it.workoutPartnerRequestId }
+
+        workoutPartnerRequestRepository.updateExpireByIdIn(workoutRequestIds)
+    }
+
+
     private fun sendStompWorkoutPartnerRequest(
         workoutPartnerRequest: WorkoutPartnerRequest
     ) {

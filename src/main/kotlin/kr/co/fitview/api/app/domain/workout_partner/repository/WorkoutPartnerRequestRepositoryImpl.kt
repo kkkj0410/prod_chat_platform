@@ -4,6 +4,8 @@ import com.querydsl.core.types.Projections
 import com.querydsl.core.types.dsl.BooleanExpression
 import com.querydsl.core.types.dsl.Expressions
 import com.querydsl.jpa.impl.JPAQueryFactory
+import jakarta.persistence.EntityManager
+import kr.co.fitview.api.app.domain.chat.entity.QChatMessage.chatMessage
 import kr.co.fitview.api.app.domain.chat.entity.QChatParticipant
 import kr.co.fitview.api.app.domain.chat.entity.QChatRoom.chatRoom
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatRoomType
@@ -11,19 +13,26 @@ import kr.co.fitview.api.app.domain.image.entity.QImage.image
 import kr.co.fitview.api.app.domain.image.entity.QMemberImage.memberImage
 import kr.co.fitview.api.app.domain.image.entity.enums.MemberImageType
 import kr.co.fitview.api.app.domain.member.entity.QMember.member
+import kr.co.fitview.api.app.domain.workout.dto.response.WorkoutRequestUpdateResponse
+import kr.co.fitview.api.app.domain.workout.entity.QWorkoutRequest.workoutRequest
+import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
 import kr.co.fitview.api.app.domain.workout_partner.condition.WorkoutPartnerRequestCondition
 import kr.co.fitview.api.app.domain.workout_partner.dto.WorkoutPartnerRequestResponseForChatRoom
 import kr.co.fitview.api.app.domain.workout_partner.dto.WorkoutPartnerRequestResponseForWorkoutPartner
 import kr.co.fitview.api.app.domain.workout_partner.dto.request.enums.WorkoutPartnerRequestType
 import kr.co.fitview.api.app.domain.workout_partner.dto.response.WorkoutImageMinResponse
+import kr.co.fitview.api.app.domain.workout_partner.dto.response.WorkoutPartnerRequestExpireResponse
 import kr.co.fitview.api.app.domain.workout_partner.dto.response.WorkoutPartnerRequestResponse
 import kr.co.fitview.api.app.domain.workout_partner.entity.QWorkoutPartnerRequest.workoutPartnerRequest
+import kr.co.fitview.api.app.domain.workout_partner.entity.enums.WorkoutPartnerRequestStatus
+import kr.co.fitview.api.app.global.time.TimeHolder.time
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Slice
 import org.springframework.data.domain.SliceImpl
 
 class WorkoutPartnerRequestRepositoryImpl(
-    private val queryFactory: JPAQueryFactory
+    private val queryFactory: JPAQueryFactory,
+    private val em : EntityManager
 ) : WorkoutPartnerRequestRepositoryCustom {
 
     override fun findWorkoutPartnerByConditionAndDeletedAtIsNull(
@@ -176,6 +185,37 @@ class WorkoutPartnerRequestRepositoryImpl(
             .fetch()
 
         return chatRoomResponses
+    }
+
+    override fun findAllPendingWorkoutPartnerRequestAlreadyExpire(): List<WorkoutPartnerRequestExpireResponse> {
+
+        return queryFactory
+            .select(
+                Projections.constructor(
+                    WorkoutPartnerRequestExpireResponse::class.java,
+                    workoutPartnerRequest.id
+                )
+            )
+            .from(workoutPartnerRequest)
+            .where(
+                workoutPartnerRequest.status.eq(WorkoutPartnerRequestStatus.PENDING),
+                workoutPartnerRequest.deletedAt.isNull,
+                workoutPartnerRequest.requestedAt.loe(time.nowLocalDateTime.minusHours(24)),
+            )
+            .fetch()
+    }
+
+    override fun updateExpireByIdIn(workoutPartnerRequestIds: List<Long>) {
+        if (workoutPartnerRequestIds.isEmpty()) return
+
+        queryFactory
+            .update(workoutPartnerRequest)
+            .set(workoutPartnerRequest.status, WorkoutPartnerRequestStatus.EXPIRE)
+            .where(workoutPartnerRequest.id.`in`(workoutPartnerRequestIds))
+            .execute()
+
+        em.flush()
+        em.clear()
     }
 
 }

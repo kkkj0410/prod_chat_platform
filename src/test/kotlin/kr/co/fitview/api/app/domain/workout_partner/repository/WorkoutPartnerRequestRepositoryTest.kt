@@ -23,6 +23,7 @@ import kr.co.fitview.api.app.domain.workout_partner.dto.response.enums.WorkoutPa
 import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartner
 import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartnerRequest
 import kr.co.fitview.api.app.domain.workout_partner.entity.enums.WorkoutPartnerRequestContent
+import kr.co.fitview.api.app.domain.workout_partner.entity.enums.WorkoutPartnerRequestStatus
 import kr.co.fitview.api.app.global.entity.Gender
 import kr.co.fitview.api.app.global.entity.OAuth2Provider
 import kr.co.fitview.api.app.global.entity.Role
@@ -760,5 +761,117 @@ class WorkoutPartnerRequestRepositoryTest @Autowired constructor(
         assertThat(response1.workoutImageUrl).isNull()
 
         assertThat(slice.hasNext()).isFalse()
+    }
+
+    @DisplayName("24시간이 지나 만료된 운동 파트너 요청을 전체 조회한다.")
+    @Test
+    fun findAllPendingWorkoutPartnerRequestAlreadyExpire() {
+        // given
+        val me = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+            provider = OAuth2Provider.APPLE,
+            providerId = "providerId"
+        )
+        val otherMember = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+            provider = OAuth2Provider.APPLE,
+            providerId = "providerId"
+        )
+        memberRepository.save(me)
+        memberRepository.save(otherMember)
+
+        val signupMeRequest = createOAuth2SignupServiceRequest()
+        oAuth2Service.signup(signupMeRequest, me.id!!)
+
+        val signupOtherRequest = createOAuth2SignupServiceRequest(
+            workoutImageUrls = listOf()
+        )
+        oAuth2Service.signup(signupOtherRequest, otherMember.id!!)
+
+
+        val workoutPartnerRequest1 = WorkoutPartnerRequest.of(
+            fromMember = me,
+            toMember = otherMember,
+            now = time.nowLocalDateTime,
+            content = WorkoutPartnerRequestContent.BURN
+        )
+        workoutPartnerRequestRepository.save(workoutPartnerRequest1)
+
+        val workoutPartnerRequest2 = WorkoutPartnerRequest.of(
+            fromMember = me,
+            toMember = otherMember,
+            now = time.nowLocalDateTime.minusHours(24),
+            content = WorkoutPartnerRequestContent.BURN
+        )
+        workoutPartnerRequestRepository.save(workoutPartnerRequest2)
+
+        // when
+        val response = workoutPartnerRequestRepository.findAllPendingWorkoutPartnerRequestAlreadyExpire()
+
+        // then
+        assertThat(response).hasSize(1)
+        assertThat(response[0].workoutPartnerRequestId).isEqualTo(workoutPartnerRequest2.id!!)
+    }
+
+    @DisplayName("특정 대상들의 운동 파트너 요청 전체를 만료 처리한다.")
+    @Test
+    fun updateExpireByIdIn() {
+        // given
+        val me = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+            provider = OAuth2Provider.APPLE,
+            providerId = "providerId"
+        )
+        val otherMember = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+            provider = OAuth2Provider.APPLE,
+            providerId = "providerId"
+        )
+        memberRepository.save(me)
+        memberRepository.save(otherMember)
+
+        val signupMeRequest = createOAuth2SignupServiceRequest()
+        oAuth2Service.signup(signupMeRequest, me.id!!)
+
+        val signupOtherRequest = createOAuth2SignupServiceRequest(
+            workoutImageUrls = listOf()
+        )
+        oAuth2Service.signup(signupOtherRequest, otherMember.id!!)
+
+
+        val workoutPartnerRequest1 = WorkoutPartnerRequest.of(
+            fromMember = me,
+            toMember = otherMember,
+            now = time.nowLocalDateTime.minusHours(24),
+            content = WorkoutPartnerRequestContent.BURN
+        )
+        workoutPartnerRequestRepository.save(workoutPartnerRequest1)
+
+        val workoutPartnerRequest2 = WorkoutPartnerRequest.of(
+            fromMember = me,
+            toMember = otherMember,
+            now = time.nowLocalDateTime.minusHours(24),
+            content = WorkoutPartnerRequestContent.BURN
+        )
+        workoutPartnerRequestRepository.save(workoutPartnerRequest2)
+
+        val workoutPartnerRequestIds = listOf(workoutPartnerRequest1.id!!, workoutPartnerRequest2.id!!)
+
+        // when
+        workoutPartnerRequestRepository.updateExpireByIdIn(workoutPartnerRequestIds)
+
+        // then
+        val findWorkoutPartnerRequests = workoutPartnerRequestRepository.findAll()
+        assertThat(findWorkoutPartnerRequests).hasSize(2)
+        assertThat(findWorkoutPartnerRequests[0].status).isEqualTo(WorkoutPartnerRequestStatus.EXPIRE)
+        assertThat(findWorkoutPartnerRequests[1].status).isEqualTo(WorkoutPartnerRequestStatus.EXPIRE)
     }
 }
