@@ -28,6 +28,7 @@ import kr.co.fitview.api.app.domain.workout_history.entity.WorkoutHistory
 import kr.co.fitview.api.app.domain.workout_history.repository.WorkoutHistoryRepository
 import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartner
 import kr.co.fitview.api.app.domain.workout_partner.repository.WorkoutPartnerRepository
+import kr.co.fitview.api.app.global.entity.OAuth2Provider
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.time.Time
 import org.assertj.core.api.Assertions.assertThat
@@ -302,16 +303,19 @@ class DashboardRepositoryTest @Autowired constructor(
             email = "email1",
             password = "password1",
             role = Role.USER,
+            provider = OAuth2Provider.APPLE
         )
         val member2 = Member(
             email = "email2",
             password = "password2",
             role = Role.USER,
+            provider = OAuth2Provider.APPLE
         )
         val member3 = Member(
             email = "email2",
             password = "password2",
             role = Role.USER,
+            provider = OAuth2Provider.APPLE
         )
         memberRepository.save(member1)
         memberRepository.save(member2)
@@ -437,16 +441,19 @@ class DashboardRepositoryTest @Autowired constructor(
             email = "email1",
             password = "password1",
             role = Role.USER,
+            provider = OAuth2Provider.APPLE
         )
         val member2 = Member(
             email = "email2",
             password = "password2",
             role = Role.USER,
+            provider = OAuth2Provider.APPLE
         )
         val member3 = Member(
             email = "email2",
             password = "password2",
             role = Role.USER,
+            provider = OAuth2Provider.APPLE
         )
         memberRepository.save(member1)
         memberRepository.save(member2)
@@ -456,6 +463,7 @@ class DashboardRepositoryTest @Autowired constructor(
             email = "email3",
             password = "password3",
             role = Role.USER,
+            provider = OAuth2Provider.APPLE
         )
         memberRepository.save(notTimeMember)
 
@@ -485,6 +493,51 @@ class DashboardRepositoryTest @Autowired constructor(
             email = "email1",
             password = "password1",
             role = Role.USER,
+            provider = OAuth2Provider.APPLE
+        )
+        val member2 = Member(
+            email = "email2",
+            password = "password2",
+            role = Role.USER,
+            provider = OAuth2Provider.APPLE
+        )
+        val member3 = Member(
+            email = "email2",
+            password = "password2",
+            role = Role.USER,
+            provider = OAuth2Provider.APPLE
+        )
+        memberRepository.save(member1)
+        memberRepository.save(member2)
+        memberRepository.save(member3)
+
+        val notUserMember = Member(
+            email = "email3",
+            password = "password3",
+            role = Role.ADMIN,
+        )
+        memberRepository.save(notUserMember)
+
+        // when
+        val response = dashboardRepository.findDashboardByTotal()
+
+        // then
+        assertThat(response)
+            .extracting("memberCount", "workoutPartnerCount", "workoutHistoryCount", "reviewCount")
+            .contains(
+                3L, 0L, 0L, 0L
+            )
+    }
+
+    @DisplayName("전체 사용자 현황 조회 시, 로컬 로그인 회원은 제외한다..")
+    @Test
+    fun findDashboardByTotalNotLocal() {
+        // given
+        val member1 = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+            provider = OAuth2Provider.APPLE
         )
         val member2 = Member(
             email = "email2",
@@ -514,7 +567,7 @@ class DashboardRepositoryTest @Autowired constructor(
         assertThat(response)
             .extracting("memberCount", "workoutPartnerCount", "workoutHistoryCount", "reviewCount")
             .contains(
-                3L, 0L, 0L, 0L
+                1L, 0L, 0L, 0L
             )
     }
 

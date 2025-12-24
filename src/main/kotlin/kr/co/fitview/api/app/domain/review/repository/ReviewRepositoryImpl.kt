@@ -1,6 +1,7 @@
 package kr.co.fitview.api.app.domain.review.repository
 
 import com.querydsl.core.types.Projections
+import com.querydsl.core.types.dsl.Expressions
 import com.querydsl.jpa.impl.JPAQueryFactory
 import kr.co.fitview.api.app.domain.image.entity.QImage.image
 import kr.co.fitview.api.app.domain.image.entity.QMemberImage.memberImage
@@ -8,14 +9,20 @@ import kr.co.fitview.api.app.domain.image.entity.enums.MemberImageType
 import kr.co.fitview.api.app.domain.member.condition.MemberReviewCondition
 import kr.co.fitview.api.app.domain.member.entity.QMember
 import kr.co.fitview.api.app.domain.member.entity.QMember.member
+import kr.co.fitview.api.app.domain.review.condition.AdminReviewCondition
+import kr.co.fitview.api.app.domain.review.dto.response.AdminReviewResponse
 import kr.co.fitview.api.app.domain.review.dto.response.ReviewResponse
 import kr.co.fitview.api.app.domain.review.dto.response.ReviewTagCountResponse
 import kr.co.fitview.api.app.domain.review.entity.QReview.review
 import kr.co.fitview.api.app.domain.review.entity.QReviewTag.reviewTag
 import kr.co.fitview.api.app.domain.review.entity.QReviewTagCount.reviewTagCount
+import kr.co.fitview.api.app.domain.review.entity.QReviewTagRelation.reviewTagRelation
 import kr.co.fitview.api.app.domain.review.entity.Review
+import kr.co.fitview.api.app.domain.review.entity.enums.ReviewType
 import kr.co.fitview.api.app.domain.workout_history.entity.QWorkoutHistory.workoutHistory
+import kr.co.fitview.api.app.domain.workout_partner.entity.QWorkoutPartner.workoutPartner
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Slice
 import org.springframework.data.domain.SliceImpl
 import java.time.Instant
@@ -89,5 +96,156 @@ class ReviewRepositoryImpl(
             else results
 
         return SliceImpl(content, PageRequest.of(0, size), hasNext)
+    }
+
+    override fun findAllReviewBy(condition: AdminReviewCondition): Slice<AdminReviewResponse> {
+
+//        val reviewId : Long,
+//        val workoutPartnerId : Long,
+//        val workoutHistoryId : Long,
+//        val fromMemberNickname : String,
+//        val toMemberNickname : String,
+//        val reviewType : ReviewType,
+//        val reviewTagDisplayTexts : List<String>,
+//        val reviewContent : String?,
+//        val postedAt : LocalDateTime
+
+//        val fromMember = QMember("fromMember")
+//        val toMember = QMember("toMember")
+
+//        val reviews = queryFactory
+//            .select(
+//                Projections.constructor(
+//                    AdminReviewResponse::class.java,
+//                    review.id,
+//                    Expressions.constant(null),
+//                    review.workoutHistory.id,
+//                    review.fromMember.nickname,
+//                    review.toMember.nickname,
+//                    review.type,
+//                    Expressions.constant(emptyList<String>()),
+//                    review.content,
+//                    review.postedAt
+//                )
+//            )
+//            .from(review)
+//            .orderBy(review.postedAt.desc())
+//            .limit(condition.size.toLong() + 1)
+//            .fetch()
+//
+//        if (reviews.isEmpty()) {
+//            return SliceImpl(emptyList())
+//        }
+//
+//        val memberPairs = reviews.map {
+//            it.fromMemberNickname to it.toMemberNickname
+//        }
+//
+//        val workoutPartners = queryFactory
+//            .select(workoutPartner)
+//            .from(workoutPartner)
+//            .where(
+//                workoutPartner.memberOne.nickname.`in`(memberPairs.map { it.first })
+//                    .and(workoutPartner.memberTwo.nickname.`in`(memberPairs.map { it.second }))
+//                    .or(
+//                        workoutPartner.memberOne.nickname.`in`(memberPairs.map { it.second })
+//                            .and(workoutPartner.memberTwo.nickname.`in`(memberPairs.map { it.first }))
+//                    )
+//            )
+//            .fetch()
+//            .associateBy {
+//                setOf(it.memberOne.nickname, it.memberTwo.nickname)
+//            }
+
+        val fromMember = QMember("fromMember")
+        val toMember = QMember("toMember")
+
+        val baseResults = queryFactory
+            .select(
+                Projections.constructor(
+                    AdminReviewResponse::class.java,
+                    review.fromMember.id,
+                    review.toMember.id,
+                    review.id,
+                    review.workoutHistory.id,
+                    fromMember.nickname,
+                    toMember.nickname,
+                    review.type,
+                    review.content,
+                    review.postedAt
+                )
+            )
+            .from(review)
+            .join(review.fromMember, fromMember)
+            .join(review.toMember, toMember)
+            .where(
+                condition.reviewId?.let {
+                    review.id.lt(it)
+                }
+            )
+            .orderBy(review.postedAt.desc())
+            .limit(condition.size.toLong() + 1)
+            .fetch()
+
+        val hasNext = baseResults.size > condition.size
+        val slicedResults = if (hasNext) {
+            baseResults.dropLast(1)
+        } else {
+            baseResults
+        }
+
+        if (slicedResults.isEmpty()) {
+            return SliceImpl(emptyList())
+        }
+
+        val memberIdPairs = slicedResults
+            .map {
+                val minId = minOf(it.fromMemberId, it.toMemberId)
+                val maxId = maxOf(it.fromMemberId, it.toMemberId)
+                minId to maxId
+            }
+            .toSet()
+
+        val workoutPartnerMap = queryFactory
+            .select(workoutPartner)
+            .from(workoutPartner)
+            .where(
+                workoutPartner.memberOne.id.`in`(memberIdPairs.map { it.first })
+                    .and(workoutPartner.memberTwo.id.`in`(memberIdPairs.map { it.second }))
+            )
+            .fetch()
+            .associateBy {
+                it.memberOne!!.id to it.memberTwo!!.id
+            }
+
+        val reviewIds = slicedResults.map { it.reviewId }
+
+        val tagMap: Map<Long, List<String>> = queryFactory
+            .select(
+                reviewTagRelation.review.id,
+                reviewTagRelation.reviewTag.displayText
+            )
+            .from(reviewTagRelation)
+            .where(reviewTagRelation.review.id.`in`(reviewIds))
+            .fetch()
+            .groupBy(
+                { it.get(0, Long::class.java)!! },
+                { it.get(1, String::class.java)!! }
+            )
+
+
+        val content = slicedResults.map { r ->
+            val minId = minOf(r.fromMemberId, r.toMemberId)
+            val maxId = maxOf(r.fromMemberId, r.toMemberId)
+
+            val partnerId = workoutPartnerMap[minId to maxId]?.id ?: 0L
+
+            r.copy(
+                workoutPartnerId = partnerId,
+                reviewTagDisplayTexts = tagMap[r.reviewId] ?: emptyList()
+            )
+        }
+
+        return SliceImpl(content, Pageable.unpaged(), hasNext)
     }
 }

@@ -26,6 +26,7 @@ import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
 import kr.co.fitview.api.app.domain.workout.repository.WorkoutRequestRepository
 import kr.co.fitview.api.app.domain.workout_history.entity.WorkoutHistory
 import kr.co.fitview.api.app.domain.workout_history.repository.WorkoutHistoryRepository
+import kr.co.fitview.api.app.global.entity.OAuth2Provider
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.time.Time
 import org.assertj.core.api.Assertions.assertThat
@@ -202,16 +203,19 @@ class DashboardQueryServiceTest @Autowired constructor(
             email = "email1",
             password = "password1",
             role = Role.USER,
+            provider = OAuth2Provider.APPLE
         )
         val member2 = Member(
             email = "email2",
             password = "password2",
             role = Role.USER,
+            provider = OAuth2Provider.APPLE
         )
         val member3 = Member(
             email = "email2",
             password = "password2",
             role = Role.USER,
+            provider = OAuth2Provider.APPLE
         )
         memberRepository.save(member1)
         memberRepository.save(member2)
@@ -221,6 +225,7 @@ class DashboardQueryServiceTest @Autowired constructor(
             email = "email3",
             password = "password3",
             role = Role.USER,
+            provider = OAuth2Provider.APPLE
         )
         memberRepository.save(notTimeMember)
 
@@ -250,16 +255,19 @@ class DashboardQueryServiceTest @Autowired constructor(
             email = "email1",
             password = "password1",
             role = Role.USER,
+            provider = OAuth2Provider.APPLE
         )
         val member2 = Member(
             email = "email2",
             password = "password2",
             role = Role.USER,
+            provider = OAuth2Provider.APPLE
         )
         val member3 = Member(
             email = "email2",
             password = "password2",
             role = Role.USER,
+            provider = OAuth2Provider.APPLE
         )
         memberRepository.save(member1)
         memberRepository.save(member2)
@@ -269,6 +277,7 @@ class DashboardQueryServiceTest @Autowired constructor(
             email = "email3",
             password = "password3",
             role = Role.USER,
+            provider = OAuth2Provider.APPLE
         )
         memberRepository.save(notTimeMember)
 

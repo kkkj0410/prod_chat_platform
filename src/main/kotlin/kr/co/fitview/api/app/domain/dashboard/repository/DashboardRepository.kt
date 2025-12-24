@@ -80,7 +80,8 @@ class DashboardRepository(
                     JPAExpressions.select(member.count())
                         .from(member)
                         .where(
-                            member.role.eq(Role.USER)
+                            member.role.eq(Role.USER),
+                            member.provider.isNotNull
                         ),
                     JPAExpressions.select(workoutPartner.count())
                         .from(workoutPartner),

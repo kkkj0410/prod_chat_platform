@@ -7,7 +7,12 @@ import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutExperience
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutGoal
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutStyle
+import kr.co.fitview.api.app.domain.review.condition.AdminReviewCondition
 import kr.co.fitview.api.app.domain.review.controller.AdminReviewController
+import kr.co.fitview.api.app.domain.review.dto.response.AdminReviewResponse
+import kr.co.fitview.api.app.domain.review.entity.enums.ReviewType
+import kr.co.fitview.api.app.domain.review.service.ReviewQueryService
+import kr.co.fitview.api.app.domain.review.service.ReviewService
 import kr.co.fitview.api.app.domain.workout_partner.controller.AdminWorkoutPartnerController
 import kr.co.fitview.api.app.global.stomp.service.StompPublishService
 import kr.co.fitview.api.app.domain.workout_partner.controller.WorkoutPartnerController
@@ -28,6 +33,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.any
 import org.mockito.kotlin.given
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Slice
 import org.springframework.data.domain.SliceImpl
 import org.springframework.http.MediaType
@@ -41,18 +47,44 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import java.time.LocalDateTime
 
 
 class AdminReviewControllerDocsTest : RestDocsSupport() {
 
+    private val reviewQueryService: ReviewQueryService = mock(ReviewQueryService::class.java)
+
     override fun initController(): Any {
-        return AdminReviewController()
+        return AdminReviewController(reviewQueryService)
     }
 
     @DisplayName("리뷰 조회 API")
     @Test
     fun reviewList() {
         // given
+        val response = listOf(
+            AdminReviewResponse(
+                fromMemberId = 1L,
+                toMemberId = 101L,
+                reviewId = 99L,
+                workoutPartnerId = 10L,
+                workoutHistoryId = 990L,
+                fromMemberNickname = "FromUser99",
+                toMemberNickname = "ToUser99",
+                reviewType = ReviewType.NORMAL,
+                reviewTagDisplayTexts = listOf("친절해요", "운동 설명이 좋아요"),
+                reviewContent = null,
+                postedAt = LocalDateTime.now()
+            )
+        )
+
+        val pageable = PageRequest.of(0, 10)
+
+        val slice: Slice<AdminReviewResponse> =
+            SliceImpl(response, pageable, false)
+
+        given(reviewQueryService.findAllReviewFrom(any()))
+            .willReturn(slice)
 
         // when & then
         mockMvc.perform(
