@@ -8,6 +8,8 @@ import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutExperience
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutGoal
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutStyle
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
+import kr.co.fitview.api.app.domain.member.service.MemberWithdrawReasonQueryService
+import kr.co.fitview.api.app.domain.member.service.MemberWithdrawReasonService
 import kr.co.fitview.api.app.global.dto.ApiResponse
 import kr.co.fitview.api.app.global.dto.SuccessCursorPagedResponse
 import kr.co.fitview.api.app.global.entity.Gender
@@ -24,7 +26,9 @@ import java.time.LocalDateTime
 @RestController
 @RequestMapping("/api/v1/admins/members")
 class AdminMemberController(
-    private val memberQueryService : MemberQueryService
+    private val memberQueryService : MemberQueryService,
+    private val memberWithdrawReasonQueryService: MemberWithdrawReasonQueryService,
+    private val memberWithdrawReasonService : MemberWithdrawReasonService
 ) {
 
     @GetMapping("")
@@ -49,48 +53,25 @@ class AdminMemberController(
         condition: AdminWithdrawMemberCondition,
     ): ResponseEntity<ApiResponse<SuccessCursorPagedResponse<AdminWithdrawMemberResponse>>> {
 
-        val allMembers = (1..100).map { i ->
-            AdminWithdrawMemberResponse(
-                memberId = i.toLong(),
-                email = "withdraw$i@example.com",
-                provider = OAuth2Provider.GOOGLE,
-                nickname = "WithdrawUser$i",
-                gender = if (i % 2 == 0) Gender.MALE else Gender.FEMALE,
-                birthday = LocalDate.of(1990, (i % 12) + 1, (i % 28) + 1),
-                workoutExperience = MemberWorkoutExperience.JUST_STARTED,
-                deletedAt = LocalDateTime.now().minusDays(i.toLong()),
-                memberWithdrawReasonDisplayText = when (i % 4) {
-                    0 -> "서비스 이용 빈도 낮음"
-                    1 -> "원하는 기능 부족"
-                    2 -> "개인 사정"
-                    else -> "기타"
-                }
-            )
-        }.sortedByDescending { it.memberId }
-
-        val filteredMembers = allMembers
-            .filter { condition.memberId?.let { lastId -> it.memberId < lastId } ?: true }
-            .take(condition.size)
-
-        val filteredMembersWithExtra = allMembers
-            .filter { condition.memberId?.let { lastId -> it.memberId < lastId } ?: true }
-            .take(condition.size + 1)
-
-        val hasNext = filteredMembersWithExtra.size > condition.size
-
-
-        val slice: Slice<AdminWithdrawMemberResponse> = SliceImpl(
-            filteredMembers,
-            PageRequest.of(0, condition.size),
-            hasNext
-        )
+        val response = memberWithdrawReasonQueryService.findAllMemberWithdrawReasonFrom(condition)
 
         return ResponseEntity.ok(
             ApiResponse.successWithCursorPagination(
-                slice = slice,
+                slice = response,
                 idExtractor = { it.memberId },
             )
         )
+    }
+
+    @PostMapping("/{memberId}/restore")
+    fun memberRestore(
+        @PathVariable
+        memberId : Long
+    ): ResponseEntity<ApiResponse<*>> {
+
+        memberWithdrawReasonService.restoreMember(memberId)
+
+        return ResponseEntity.ok(ApiResponse.success("ok"))
     }
 
 }

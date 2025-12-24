@@ -2676,5 +2676,25 @@ class MemberRepositoryTest@Autowired constructor(
             )
     }
 
+    @DisplayName("삭제된 회원을 조회한다.")
+    @Test
+    fun findByIdAndDeletedAtIsNotNull() {
+        // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        member.delete(time.nowLocalDateTime)
+
+        memberRepository.save(member)
+
+        // when
+        val findMember = memberRepository.findByIdAndDeletedAtIsNotNull(member.id!!)
+
+        // then
+        assertThat(findMember!!.id!!).isEqualTo(member.id!!)
+        assertThat(findMember.deletedAt).isNotNull()
+    }
 
 }

@@ -29,6 +29,7 @@ import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.global.GlobalErrorCode
 import kr.co.fitview.api.app.global.exception.error.member.MemberErrorCode
 import kr.co.fitview.api.app.global.random.RandomCustom
+import kr.co.fitview.api.app.global.time.Time
 import kr.co.fitview.api.app.global.util.TestDataFactory
 import org.assertj.core.api.Assertions.*
 import org.assertj.core.api.ThrowingConsumer
@@ -48,7 +49,8 @@ class MemberQueryServiceTest @Autowired constructor(
     val chatParticipantRepository : ChatParticipantRepository,
     val em : EntityManager,
     val addressRepository: AddressRepository,
-    val randomCustom : RandomCustom
+    val randomCustom : RandomCustom,
+    val time : Time
 ) : IntegrationTestSupport(){
 
     @DisplayName("운동 파트너 요청에서 요청자의 프로필을 조회한다.")
@@ -1485,6 +1487,28 @@ class MemberQueryServiceTest @Autowired constructor(
                 tuple(notMatchMember1.id!!, "update4", "updateMember4Workout1"),
             )
     }
+
+    @DisplayName("삭제된 회원을 조회한다.")
+    @Test
+    fun findByIdAndDeletedAtIsNotNull() {
+        // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        member.delete(time.nowLocalDateTime)
+
+        memberRepository.save(member)
+
+        // when
+        val findMember = memberQueryService.findDeletedMemberFrom(member.id!!)
+
+        // then
+        assertThat(findMember!!.id!!).isEqualTo(member.id!!)
+        assertThat(findMember.deletedAt).isNotNull()
+    }
+
 
 
 }

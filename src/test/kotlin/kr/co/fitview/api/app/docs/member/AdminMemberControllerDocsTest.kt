@@ -18,6 +18,8 @@ import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutStyle
 import kr.co.fitview.api.app.domain.member.entity.enums.WorkoutTimeName
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.domain.member.service.MemberService
+import kr.co.fitview.api.app.domain.member.service.MemberWithdrawReasonQueryService
+import kr.co.fitview.api.app.domain.member.service.MemberWithdrawReasonService
 import kr.co.fitview.api.app.domain.review.dto.response.ReviewResponse
 import kr.co.fitview.api.app.domain.review.dto.response.ReviewTagCountResponse
 import kr.co.fitview.api.app.domain.review.service.ReviewQueryService
@@ -42,10 +44,8 @@ import org.springframework.restdocs.request.RequestDocumentation.parameterWithNa
 import org.springframework.restdocs.request.RequestDocumentation.pathParameters
 
 import org.springframework.restdocs.request.RequestDocumentation.queryParameters
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
@@ -56,9 +56,11 @@ import java.time.LocalDateTime
 class AdminMemberControllerDocsTest : RestDocsSupport() {
 
     private val memberQueryService: MemberQueryService = mock(MemberQueryService::class.java)
+    private val memberWithdrawReasonQueryService: MemberWithdrawReasonQueryService = mock(MemberWithdrawReasonQueryService::class.java)
+    private val memberWithdrawReasonService: MemberWithdrawReasonService = mock(MemberWithdrawReasonService::class.java)
 
     override fun initController(): Any {
-        return AdminMemberController(memberQueryService)
+        return AdminMemberController(memberQueryService, memberWithdrawReasonQueryService, memberWithdrawReasonService)
     }
 
     @DisplayName("사용자 조회 API")
@@ -157,6 +159,41 @@ class AdminMemberControllerDocsTest : RestDocsSupport() {
     @DisplayName("탈퇴 회원 조회 API")
     @Test
     fun withdrawMemberList() {
+        //given
+        val withdrawMember1 = AdminWithdrawMemberResponse(
+            memberId = 2L,
+            email = "withdraw2@example.com",
+            provider = OAuth2Provider.GOOGLE,
+            nickname = "WithdrawUser2",
+            gender = Gender.MALE,
+            birthday = LocalDate.of(1991, 2, 2),
+            workoutExperience = MemberWorkoutExperience.JUST_STARTED,
+            deletedAt = LocalDateTime.of(2025, 9, 20, 10, 0),
+            memberWithdrawReasonDisplayText = "이미 운동 메이트를 찾았고, 만족스러운 관계를 유지하고 있어요."
+        )
+
+        val withdrawMember2 = AdminWithdrawMemberResponse(
+            memberId = 1L,
+            email = "withdraw1@example.com",
+            provider = OAuth2Provider.GOOGLE,
+            nickname = "WithdrawUser1",
+            gender = Gender.FEMALE,
+            birthday = LocalDate.of(1990, 1, 1),
+            workoutExperience = MemberWorkoutExperience.JUST_STARTED,
+            deletedAt = LocalDateTime.of(2025, 9, 19, 10, 0),
+            memberWithdrawReasonDisplayText = "이미 운동 메이트를 찾았고, 만족스러운 관계를 유지하고 있어요."
+        )
+
+        val slice: Slice<AdminWithdrawMemberResponse> = SliceImpl(
+            listOf(withdrawMember1, withdrawMember2),
+            PageRequest.of(0, 5),
+            false
+        )
+
+        given(memberWithdrawReasonQueryService.findAllMemberWithdrawReasonFrom(any()))
+            .willReturn(slice)
+
+
         // when & then
         mockMvc.perform(
             get("/api/v1/admins/members/withdraw")
@@ -220,6 +257,49 @@ class AdminMemberControllerDocsTest : RestDocsSupport() {
 
                         *RestDocsPagination.paginationByCursor()
                     )
+                )
+            )
+    }
+
+    @DisplayName("회원 계정을 복구한다.")
+    @Test
+    fun memberRestore() {
+        //given
+
+
+        // when // then
+        mockMvc.perform(
+            post("/api/v1/admins/members/{memberId}/restore", 123L)
+                .header("Authorization", "Bearer jwt-token")
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andDo(
+                document(
+                    "admin-member-restore",
+                    preprocessRequest(prettyPrint()),
+                    preprocessResponse(prettyPrint()),
+
+                    pathParameters(
+                        parameterWithName("memberId").description("회원 ID")
+                    ),
+
+                    requestHeaders(
+                        RestDocsHeaders.authorizationHeader(Role.ADMIN)
+                    ),
+
+                    responseFields(
+                        fieldWithPath("status").type(JsonFieldType.NUMBER)
+                            .description("상태"),
+                        fieldWithPath("code").type(JsonFieldType.STRING)
+                            .description("코드"),
+                        fieldWithPath("message").type(JsonFieldType.STRING)
+                            .description("에러 메시지"),
+                        fieldWithPath("data").type(JsonFieldType.STRING)
+                            .description("응답 데이터"),
+                    )
+
                 )
             )
     }

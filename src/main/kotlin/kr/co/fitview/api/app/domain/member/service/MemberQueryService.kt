@@ -183,6 +183,10 @@ class MemberQueryService(
        return memberRepository.findAllMemberBy(condition)
     }
 
+    fun findDeletedMemberFrom(memberId : Long) : Member?{
+        return memberRepository.findByIdAndDeletedAtIsNotNull(memberId)
+    }
+
     private fun validateDuplicatedEmail(member: Member) {
         findMemberFromEmail(member.email!!)?.let {
             throw GlobalException(MemberErrorCode.MEMBER_DUPLICATE_EMAIL)

@@ -45,44 +45,7 @@ class AdminWorkoutController(
         workoutRequestId : Long
     ): ResponseEntity<ApiResponse<AdminDetailWorkoutRequestResponse>>
     {
-
-        val workoutLogs = listOf(
-            AdminDetailWorkoutRequestLogResponse(
-                workoutRequestStatus = WorkoutRequestStatus.PENDING,
-                loggedAt = LocalDateTime.now().minusDays(3),
-                fromMemberNickname = "FromUser",
-                toMemberNickname = "ToUser"
-            ),
-            AdminDetailWorkoutRequestLogResponse(
-                workoutRequestStatus = WorkoutRequestStatus.ACCEPT,
-                loggedAt = LocalDateTime.now().minusDays(2),
-                fromMemberNickname = "FromUser",
-                toMemberNickname = "ToUser"
-            ),
-            AdminDetailWorkoutRequestLogResponse(
-                workoutRequestStatus = WorkoutRequestStatus.COMPLETE,
-                loggedAt = LocalDateTime.now().minusDays(1),
-                fromMemberNickname = "FromUser",
-                toMemberNickname = "ToUser"
-            )
-        )
-
-        val reviews = (1..2).map { i ->
-            AdminDetailReviewResponse(
-                fromMemberNickname = "FromUser",
-                toMemberNickname = "ToUser",
-                postedAt = LocalDateTime.now().minusDays(2 - i.toLong()) // 1일 전, 2일 전 순
-            )
-        }.sortedBy { it.postedAt } // 안전하게 정렬
-
-        val response = AdminDetailWorkoutRequestResponse(
-            workoutPartnerId = 1L,
-            workoutRequestId = workoutRequestId,
-            scheduledAt = LocalDateTime.now().plusDays(3),
-            location = "서울 강남구 헬스장 101",
-            workoutRequestLogs = workoutLogs,
-            reviews = reviews
-        )
+        val response = workoutRequestQueryService.findWorkoutRequestDetail(workoutRequestId)
 
         return ResponseEntity.ok(ApiResponse.success(response))
     }

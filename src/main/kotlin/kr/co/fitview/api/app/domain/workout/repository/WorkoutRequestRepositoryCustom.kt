@@ -1,6 +1,7 @@
 package kr.co.fitview.api.app.domain.workout.repository
 
 import kr.co.fitview.api.app.domain.workout.condition.AdminWorkoutRequestCondition
+import kr.co.fitview.api.app.domain.workout.dto.response.AdminDetailWorkoutRequestResponse
 import kr.co.fitview.api.app.domain.workout.dto.response.AdminWorkoutRequestResponse
 import kr.co.fitview.api.app.domain.workout.dto.response.LastWorkoutRequestMessage
 import kr.co.fitview.api.app.domain.workout.dto.response.WorkoutRequestUpdateResponse
@@ -20,6 +21,8 @@ interface WorkoutRequestRepositoryCustom {
     fun findWorkoutRequestByIdAndDeletedAtIsNullWithChatMessage(workoutRequestId : Long) : WorkoutRequest?
 
     fun findAllWorkoutRequestBy(condition: AdminWorkoutRequestCondition): Slice<AdminWorkoutRequestResponse>
+
+    fun findWorkoutRequestDetailBy(workoutRequestId: Long): AdminDetailWorkoutRequestResponse
 
 
 }

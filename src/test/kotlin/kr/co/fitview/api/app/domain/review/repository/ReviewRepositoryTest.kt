@@ -11,16 +11,20 @@ import kr.co.fitview.api.app.domain.member.condition.MemberReviewCondition
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
+import kr.co.fitview.api.app.domain.review.condition.AdminReviewCondition
 import kr.co.fitview.api.app.domain.review.dto.request.ReviewCreateServiceRequest
 import kr.co.fitview.api.app.domain.review.entity.Review
 import kr.co.fitview.api.app.domain.review.entity.ReviewCategory
 import kr.co.fitview.api.app.domain.review.entity.ReviewTag
+import kr.co.fitview.api.app.domain.review.entity.ReviewTagRelation
 import kr.co.fitview.api.app.domain.review.entity.enums.ReviewType
 import kr.co.fitview.api.app.domain.review.service.ReviewService
 import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequest
 import kr.co.fitview.api.app.domain.workout.repository.WorkoutRequestRepository
 import kr.co.fitview.api.app.domain.workout_history.entity.WorkoutHistory
 import kr.co.fitview.api.app.domain.workout_history.repository.WorkoutHistoryRepository
+import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartner
+import kr.co.fitview.api.app.domain.workout_partner.repository.WorkoutPartnerRepository
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.time.Time
 import kr.co.fitview.api.app.global.util.TestDataFactory
@@ -41,6 +45,8 @@ class ReviewRepositoryTest @Autowired constructor(
     private val reviewRepository : ReviewRepository,
     private val chatMessageRepository : ChatMessageRepository,
     private val workoutRequestRepository : WorkoutRequestRepository,
+    private val workoutPartnerRepository : WorkoutPartnerRepository,
+    private val reviewTagRelationRepository : ReviewTagRelationRepository,
     private val oAuth2Service : OAuth2Service,
     private val time : Time
 ) : IntegrationTestSupport(){
@@ -757,4 +763,374 @@ class ReviewRepositoryTest @Autowired constructor(
             )
     }
 
+    @DisplayName("전체 리뷰를 조회한다.")
+    @Test
+    fun findAllReviewBy() {
+        // given
+        val member1 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        val member2 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(member1)
+        memberRepository.save(member2)
+
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nickname1",
+            profileImageUrl = "profile1"
+        )
+        oAuth2Service.signup(signupRequest1, member1.id!!)
+
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nickname2",
+            profileImageUrl = "profile2"
+        )
+        oAuth2Service.signup(signupRequest2, member2.id!!)
+
+        val workoutPartner = WorkoutPartner(
+            memberOne = member1,
+            memberTwo = member2
+        )
+        workoutPartnerRepository.save(workoutPartner)
+
+        val chatRoom = ChatRoom(ChatRoomType.PRIVATE)
+        chatRoomRepository.save(chatRoom)
+
+        val chatMessage = ChatMessage(
+            member = member1,
+            chatRoom = chatRoom,
+            type = ChatMessageType.WORKOUT_REQUEST,
+            content = "content",
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessage)
+
+        val workoutRequest = WorkoutRequest.of(
+            chatMessage = chatMessage,
+            fromMember = member1,
+            toMember = member2,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime
+        )
+        workoutRequestRepository.save(workoutRequest)
+
+        val workoutHistory = WorkoutHistory(
+            chatRoom = chatRoom,
+            workoutRequest = workoutRequest,
+            memberOne = member1,
+            memberTwo = member2,
+            completedAt = time.nowLocalDateTime
+        )
+        workoutHistoryRepository.save(workoutHistory)
+
+        val chatMessage2 = ChatMessage(
+            member = member1,
+            chatRoom = chatRoom,
+            type = ChatMessageType.WORKOUT_REQUEST,
+            content = "content",
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessage2)
+
+        val workoutRequest2 = WorkoutRequest.of(
+            chatMessage = chatMessage,
+            fromMember = member1,
+            toMember = member2,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime
+        )
+        workoutRequestRepository.save(workoutRequest2)
+
+        val workoutHistory2 = WorkoutHistory(
+            chatRoom = chatRoom,
+            workoutRequest = workoutRequest2,
+            memberOne = member1,
+            memberTwo = member2,
+            completedAt = time.nowLocalDateTime
+        )
+        workoutHistoryRepository.save(workoutHistory2)
+
+        val reviewCategory1 = ReviewCategory(
+            displayText = "displayText1",
+            seq = 100
+        )
+        val reviewCategory2 = ReviewCategory(
+            displayText = "displayText1",
+            seq = 200
+        )
+        reviewCategoryRepository.save(reviewCategory1)
+        reviewCategoryRepository.save(reviewCategory2)
+
+        val reviewTag1 = ReviewTag(
+            reviewCategory = reviewCategory1,
+            displayText = "tagText1",
+            seq = 100
+        )
+        val reviewTag2 = ReviewTag(
+            reviewCategory = reviewCategory1,
+            displayText = "tagText2",
+            seq = 200
+        )
+        val reviewTag3 = ReviewTag(
+            reviewCategory = reviewCategory2,
+            displayText = "tagText3",
+            seq = 100
+        )
+        reviewTagRepository.save(reviewTag1)
+        reviewTagRepository.save(reviewTag2)
+        reviewTagRepository.save(reviewTag3)
+
+
+        val review = Review(
+            fromMember = member1,
+            toMember = member2,
+            workoutHistory = workoutHistory,
+            isPrivate = false,
+            type = ReviewType.GOOD,
+            score = 2.0,
+            content = "content",
+            postedAt = time.nowLocalDateTime.minusDays(2)
+        )
+        reviewRepository.save(review)
+
+        val review2 = Review(
+            fromMember = member1,
+            toMember = member2,
+            workoutHistory = workoutHistory2,
+            isPrivate = true,
+            type = ReviewType.GOOD,
+            score = 2.0,
+            content = null,
+            postedAt = time.nowLocalDateTime
+        )
+        reviewRepository.save(review2)
+
+        val reviewTagRelation1 = ReviewTagRelation(
+            review = review,
+            reviewTag = reviewTag1,
+        )
+        val reviewTagRelation2 = ReviewTagRelation(
+            review = review,
+            reviewTag = reviewTag2,
+        )
+        val reviewTagRelation3 = ReviewTagRelation(
+            review = review2,
+            reviewTag = reviewTag3,
+        )
+
+        reviewTagRelationRepository.save(reviewTagRelation1)
+        reviewTagRelationRepository.save(reviewTagRelation2)
+        reviewTagRelationRepository.save(reviewTagRelation3)
+
+        val condition = AdminReviewCondition()
+
+        // when
+        val response = reviewRepository.findAllReviewBy(condition)
+
+        // then
+        assertThat(response)
+            .extracting("reviewId", "workoutPartnerId", "workoutHistoryId", "reviewType", "reviewTagDisplayTexts")
+            .containsExactly(
+                tuple(
+                    review2.id!!,
+                    workoutPartner.id!!,
+                    workoutHistory2.id!!,
+                    ReviewType.GOOD,
+                    listOf(reviewTag3.displayText)
+                ),
+                tuple(
+                    review.id!!,
+                    workoutPartner.id!!,
+                    workoutHistory.id!!,
+                    ReviewType.GOOD,
+                    listOf(reviewTag1.displayText, reviewTag2.displayText)
+                ),
+            )
+    }
+
+    @DisplayName("전체 리뷰를 조회 시, 조건에 id가 있으면 id보다 작은 리뷰를 조회한다.")
+    @Test
+    fun findAllReviewByExistsConditionReviewId() {
+        // given
+        val member1 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        val member2 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(member1)
+        memberRepository.save(member2)
+
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nickname1",
+            profileImageUrl = "profile1"
+        )
+        oAuth2Service.signup(signupRequest1, member1.id!!)
+
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nickname2",
+            profileImageUrl = "profile2"
+        )
+        oAuth2Service.signup(signupRequest2, member2.id!!)
+
+        val workoutPartner = WorkoutPartner(
+            memberOne = member1,
+            memberTwo = member2
+        )
+        workoutPartnerRepository.save(workoutPartner)
+
+        val chatRoom = ChatRoom(ChatRoomType.PRIVATE)
+        chatRoomRepository.save(chatRoom)
+
+        val chatMessage = ChatMessage(
+            member = member1,
+            chatRoom = chatRoom,
+            type = ChatMessageType.WORKOUT_REQUEST,
+            content = "content",
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessage)
+
+        val workoutRequest = WorkoutRequest.of(
+            chatMessage = chatMessage,
+            fromMember = member1,
+            toMember = member2,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime
+        )
+        workoutRequestRepository.save(workoutRequest)
+
+        val workoutHistory = WorkoutHistory(
+            chatRoom = chatRoom,
+            workoutRequest = workoutRequest,
+            memberOne = member1,
+            memberTwo = member2,
+            completedAt = time.nowLocalDateTime
+        )
+        workoutHistoryRepository.save(workoutHistory)
+
+        val chatMessage2 = ChatMessage(
+            member = member1,
+            chatRoom = chatRoom,
+            type = ChatMessageType.WORKOUT_REQUEST,
+            content = "content",
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessage2)
+
+        val workoutRequest2 = WorkoutRequest.of(
+            chatMessage = chatMessage,
+            fromMember = member1,
+            toMember = member2,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime
+        )
+        workoutRequestRepository.save(workoutRequest2)
+
+        val workoutHistory2 = WorkoutHistory(
+            chatRoom = chatRoom,
+            workoutRequest = workoutRequest2,
+            memberOne = member1,
+            memberTwo = member2,
+            completedAt = time.nowLocalDateTime
+        )
+        workoutHistoryRepository.save(workoutHistory2)
+
+        val reviewCategory1 = ReviewCategory(
+            displayText = "displayText1",
+            seq = 100
+        )
+        val reviewCategory2 = ReviewCategory(
+            displayText = "displayText1",
+            seq = 200
+        )
+        reviewCategoryRepository.save(reviewCategory1)
+        reviewCategoryRepository.save(reviewCategory2)
+
+        val reviewTag1 = ReviewTag(
+            reviewCategory = reviewCategory1,
+            displayText = "tagText1",
+            seq = 100
+        )
+        val reviewTag2 = ReviewTag(
+            reviewCategory = reviewCategory1,
+            displayText = "tagText2",
+            seq = 200
+        )
+        val reviewTag3 = ReviewTag(
+            reviewCategory = reviewCategory2,
+            displayText = "tagText3",
+            seq = 100
+        )
+        reviewTagRepository.save(reviewTag1)
+        reviewTagRepository.save(reviewTag2)
+        reviewTagRepository.save(reviewTag3)
+
+
+        val review = Review(
+            fromMember = member1,
+            toMember = member2,
+            workoutHistory = workoutHistory,
+            isPrivate = false,
+            type = ReviewType.GOOD,
+            score = 2.0,
+            content = "content",
+            postedAt = time.nowLocalDateTime.minusDays(2)
+        )
+        reviewRepository.save(review)
+
+        val review2 = Review(
+            fromMember = member1,
+            toMember = member2,
+            workoutHistory = workoutHistory2,
+            isPrivate = true,
+            type = ReviewType.GOOD,
+            score = 2.0,
+            content = null,
+            postedAt = time.nowLocalDateTime
+        )
+        reviewRepository.save(review2)
+
+        val reviewTagRelation1 = ReviewTagRelation(
+            review = review,
+            reviewTag = reviewTag1,
+        )
+        val reviewTagRelation2 = ReviewTagRelation(
+            review = review,
+            reviewTag = reviewTag2,
+        )
+        val reviewTagRelation3 = ReviewTagRelation(
+            review = review2,
+            reviewTag = reviewTag3,
+        )
+
+        reviewTagRelationRepository.save(reviewTagRelation1)
+        reviewTagRelationRepository.save(reviewTagRelation2)
+        reviewTagRelationRepository.save(reviewTagRelation3)
+
+        val condition = AdminReviewCondition(
+            reviewId = review2.id!!
+        )
+
+        // when
+        val response = reviewRepository.findAllReviewBy(condition)
+
+        // then
+        assertThat(response.content).hasSize(1)
+        assertThat(response.content[0].reviewId).isEqualTo(review.id!!)
+        assertThat(response.hasNext()).isEqualTo(false)
+    }
 }

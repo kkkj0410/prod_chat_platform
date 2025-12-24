@@ -1,6 +1,8 @@
 package kr.co.fitview.api.app.domain.review.service
 
 import kr.co.fitview.api.app.domain.member.condition.MemberReviewCondition
+import kr.co.fitview.api.app.domain.review.condition.AdminReviewCondition
+import kr.co.fitview.api.app.domain.review.dto.response.AdminReviewResponse
 import kr.co.fitview.api.app.domain.review.dto.response.ReviewResponse
 import kr.co.fitview.api.app.domain.review.entity.Review
 import kr.co.fitview.api.app.domain.review.repository.ReviewRepository
@@ -20,6 +22,10 @@ class ReviewQueryService(
 
     fun findReviewFromCondition(memberId : Long, condition : MemberReviewCondition) : Slice<ReviewResponse>{
         return reviewRepository.findAllPublicReviewByToMemberIdOrderByPostedAtDesc(memberId, condition)
+    }
+
+    fun findAllReviewFrom(condition: AdminReviewCondition) : Slice<AdminReviewResponse>{
+        return reviewRepository.findAllReviewBy(condition)
     }
 
 

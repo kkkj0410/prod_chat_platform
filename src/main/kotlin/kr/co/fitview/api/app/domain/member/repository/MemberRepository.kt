@@ -11,5 +11,7 @@ interface MemberRepository : JpaRepository<Member, Long>, MemberRepositoryCustom
 
     fun findByProviderIdAndDeletedAtIsNull(providerId : String) : Member?
 
+    fun findByIdAndDeletedAtIsNotNull(memberId: Long): Member?
+
 
 }

@@ -14,8 +14,7 @@ enum class MemberErrorCode(
     MEMBER_HEIGHT_OUT_OF_RANGE("004", "Height must be between 0 and 300 cm", "회원 키는 0~300cm 사이여야 함"),
     MEMBER_WEIGHT_OUT_OF_RANGE("005", "Weight must be between 0 and 200 kg", "회원 체중은 0~200kg 사이여야 함"),
     MEMBER_INTRO_TOO_LONG("006", "Intro cannot exceed 500 characters", "회원 소개는 0~500글자 사이여야 함"),
-    MEMBER_DUPLICATE_PROVIDER("007", "Provider ID already exists", "해당 소셜 회원의 OAuth2 고유 id는 이미 DB에 있는 회원이라 해당 회원을 새로 추가 못함")
-
+    MEMBER_DUPLICATE_PROVIDER("007", "Provider ID already exists", "해당 소셜 회원의 OAuth2 고유 id는 이미 DB에 있는 회원이라 해당 회원을 새로 추가 못함"),
 
 
 

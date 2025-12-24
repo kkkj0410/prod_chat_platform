@@ -454,4 +454,152 @@ class WorkoutRequestQueryServiceTest @Autowired constructor(
                 )
             )
     }
+
+    @DisplayName("운동 요청을 상세 조회한다.")
+    @Test
+    fun findWorkoutRequestDetailBy() {
+        // given
+        val member1 = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val member2 = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(member1)
+        memberRepository.save(member2)
+
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "member1"
+        )
+        oAuth2Service.signup(signupRequest1, member1.id!!)
+
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "member2"
+        )
+        oAuth2Service.signup(signupRequest2, member2.id!!)
+
+        val workoutPartner1 = WorkoutPartner(
+            memberOne = member1,
+            memberTwo = member2
+        )
+        workoutPartnerRepository.save(workoutPartner1)
+
+        val chatRoom1 = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+
+        val chatParticipant1 = ChatParticipant(
+            chatRoom1,
+            member1
+        )
+        val chatParticipant2 = ChatParticipant(
+            chatRoom1,
+            member2
+        )
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+
+        val chatMessage1 = ChatMessage.ofWorkoutRequest(
+            member = member1,
+            chatRoom = chatRoom1,
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessage1)
+
+        val workoutRequest1 = WorkoutRequest.of(
+            chatMessage = chatMessage1,
+            fromMember = member1,
+            toMember = member2,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime.minusHours(10)
+        )
+        workoutRequestRepository.save(workoutRequest1)
+
+        val log1 = WorkoutRequestLog(
+            workoutRequest = workoutRequest1,
+            status = WorkoutRequestStatus.PENDING,
+            loggedAt = time.nowLocalDateTime.minusHours(10)
+        )
+        val log2 = WorkoutRequestLog(
+            workoutRequest = workoutRequest1,
+            status = WorkoutRequestStatus.COMPLETE,
+            loggedAt = time.nowLocalDateTime.minusHours(5)
+        )
+        workoutRequestLogRepository.save(log1)
+        workoutRequestLogRepository.save(log2)
+
+        val workoutHistory = WorkoutHistory(
+            chatRoom = chatRoom1,
+            workoutRequest = workoutRequest1,
+            memberOne = member1,
+            memberTwo = member2,
+            completedAt = time.nowLocalDateTime
+        )
+        workoutHistoryRepository.save(workoutHistory)
+
+        val review1 = Review(
+            fromMember = member1,
+            toMember = member2,
+            workoutHistory = workoutHistory,
+            isPrivate = false,
+            type = ReviewType.GOOD,
+            score = 2.0,
+            postedAt = time.nowLocalDateTime.plusHours(5)
+        )
+        val review2 = Review(
+            fromMember = member2,
+            toMember = member1,
+            workoutHistory = workoutHistory,
+            isPrivate = false,
+            type = ReviewType.GOOD,
+            score = 2.0,
+            postedAt = time.nowLocalDateTime
+        )
+        reviewRepository.save(review1)
+        reviewRepository.save(review2)
+
+        // when
+        val response = workoutRequestQueryService.findWorkoutRequestDetail(workoutRequest1.id!!)
+
+        // then
+        assertThat(response.workoutPartnerId).isEqualTo(workoutPartner1.id!!)
+        assertThat(response.workoutRequestId).isEqualTo(workoutRequest1.id!!)
+        assertThat(response.scheduledAt).isEqualTo(workoutRequest1.scheduledAt!!)
+        assertThat(response.location).isEqualTo(workoutRequest1.location!!)
+
+        assertThat(response.workoutRequestLogs)
+            .extracting("workoutRequestStatus", "loggedAt", "fromMemberNickname", "toMemberNickname")
+            .containsExactly(
+                tuple(
+                    WorkoutRequestStatus.PENDING,
+                    log1.loggedAt,
+                    "member1",
+                    "member2"
+                ),
+                tuple(
+                    WorkoutRequestStatus.COMPLETE,
+                    log2.loggedAt,
+                    "member1",
+                    "member2"
+                ),
+            )
+
+        assertThat(response.reviews)
+            .extracting("fromMemberNickname", "toMemberNickname", "postedAt")
+            .containsExactly(
+                tuple(
+                    "member2",
+                    "member1",
+                    review2.postedAt
+                ),
+                tuple(
+                    "member1",
+                    "member2",
+                    review1.postedAt
+                ),
+            )
+    }
 }

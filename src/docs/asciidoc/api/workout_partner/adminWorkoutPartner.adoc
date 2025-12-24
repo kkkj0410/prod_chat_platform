@@ -1,5 +1,5 @@
 [[admin-workout-partner-request-list]]
-=== 핏버디 요청 목록 조회 API - FAKE
+=== 핏버디 요청 목록 조회 API
 
 ==== HTTP Request
 include::{snippets}/admin-workout-partner-request-list/http-request.adoc[]

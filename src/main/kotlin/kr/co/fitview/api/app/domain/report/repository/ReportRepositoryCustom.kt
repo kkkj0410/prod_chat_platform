@@ -2,9 +2,10 @@ package kr.co.fitview.api.app.domain.report.repository
 
 import kr.co.fitview.api.app.domain.report.condition.AdminReportCondition
 import kr.co.fitview.api.app.domain.report.dto.response.AdminReportResponse
-import kr.co.fitview.api.app.domain.report.entity.Report
 import org.springframework.data.domain.Slice
-import org.springframework.data.jpa.repository.JpaRepository
 
-interface ReportRepository : JpaRepository<Report, Long>, ReportRepositoryCustom {
+interface ReportRepositoryCustom {
+
+    fun findAllReportBy(condition: AdminReportCondition): Slice<AdminReportResponse>
+
 }
