@@ -5,5 +5,11 @@ import jakarta.validation.constraints.NotNull
 data class MemberWithdrawRequest(
 
     @field:NotNull(message = "memberWithdrawReasonId is required")
-    val memberWithdrawReasonId : Long,
-)
+    val memberWithdrawReasonId : Long?,
+){
+    fun toServiceRequest() : MemberWithdrawServiceRequest{
+        return MemberWithdrawServiceRequest(
+            memberWithdrawReasonId = memberWithdrawReasonId!!
+        )
+    }
+}

@@ -6,6 +6,7 @@ import kr.co.fitview.api.app.domain.address.dto.response.AddressResponse
 import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
 import kr.co.fitview.api.app.domain.member.dto.request.Age
 import kr.co.fitview.api.app.domain.member.dto.request.MemberUpdateRequest
+import kr.co.fitview.api.app.domain.member.dto.request.MemberWithdrawRequest
 import kr.co.fitview.api.app.domain.member.dto.response.*
 import kr.co.fitview.api.app.domain.member.dto.response.enums.ProfileWorkoutPartnerStatus
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutExperience
@@ -489,6 +490,54 @@ class MemberControllerTest : ControllerTestSupport() {
             .andExpect(jsonPath("$.data.content[1].content").value("내용2"))
 
     }
+
+    @DisplayName("회원 계정을 삭제한다.")
+    @Test
+    fun memberWithdraw() {
+        // given
+        val request = MemberWithdrawRequest(
+            memberWithdrawReasonId = 1L
+        )
+
+        // when // then
+        mockMvc.perform(
+            post("/api/v1/members/withdraw")
+                .header("Authorization", "Bearer jwt-token")
+                .content(objectMapper.writeValueAsString(request))
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andDo(print())
+            .andExpect(status().isOk())
+
+            .andExpect(jsonPath("$.status").exists())
+            .andExpect(jsonPath("$.code").value("ok"))
+            .andExpect(jsonPath("$.message").value("ok"))
+            .andExpect(jsonPath("$.data").value("ok"))
+    }
+
+    @DisplayName("회원 계정을 삭제 시, 선택 사유는 필수다.")
+    @Test
+    fun memberWithdrawRequiredId() {
+        // given
+        val request = MemberWithdrawRequest(
+            memberWithdrawReasonId = null
+        )
+
+        // when // then
+        mockMvc.perform(
+            post("/api/v1/members/withdraw")
+                .header("Authorization", "Bearer jwt-token")
+                .content(objectMapper.writeValueAsString(request))
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andDo(print())
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value(RequestErrorCode.REQ_FIELD_NOT_VALID.code))
+            .andExpect(jsonPath("$.status").value("400"))
+            .andExpect(jsonPath("$.message").value("memberWithdrawReasonId is required"))
+            .andExpect(jsonPath("$.data").isEmpty())
+    }
+
 
     @DisplayName("탈퇴 사유 선택지를 조회한다.")
     @Test
