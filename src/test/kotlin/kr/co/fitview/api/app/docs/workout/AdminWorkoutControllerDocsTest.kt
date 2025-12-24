@@ -29,8 +29,7 @@ import kr.co.fitview.api.app.domain.review.dto.response.ReviewTagResponse
 import kr.co.fitview.api.app.domain.review.entity.enums.ReviewType
 import kr.co.fitview.api.app.domain.review.service.ReviewService
 import kr.co.fitview.api.app.domain.workout.controller.AdminWorkoutController
-import kr.co.fitview.api.app.domain.workout.dto.response.AdminWorkoutRequestResponse
-import kr.co.fitview.api.app.domain.workout.dto.response.LastWorkoutRequestMessage
+import kr.co.fitview.api.app.domain.workout.dto.response.*
 import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusForResponse
 import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
 import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestQueryService
@@ -193,7 +192,49 @@ class AdminWorkoutControllerDocsTest : RestDocsSupport() {
     @DisplayName("운동 요청 상세 조회 API")
     @Test
     fun workoutRequestDetail() {
+        // given
         val workoutRequestId = 1L
+
+        val workoutLogs = listOf(
+            AdminDetailWorkoutRequestLogResponse(
+                workoutRequestStatus = WorkoutRequestStatus.PENDING,
+                loggedAt = LocalDateTime.now().minusDays(3),
+                fromMemberNickname = "FromUser",
+                toMemberNickname = "ToUser"
+            ),
+            AdminDetailWorkoutRequestLogResponse(
+                workoutRequestStatus = WorkoutRequestStatus.ACCEPT,
+                loggedAt = LocalDateTime.now().minusDays(2),
+                fromMemberNickname = "FromUser",
+                toMemberNickname = "ToUser"
+            ),
+            AdminDetailWorkoutRequestLogResponse(
+                workoutRequestStatus = WorkoutRequestStatus.COMPLETE,
+                loggedAt = LocalDateTime.now().minusDays(1),
+                fromMemberNickname = "FromUser",
+                toMemberNickname = "ToUser"
+            )
+        )
+
+        val reviews = (1..2).map { i ->
+            AdminDetailReviewResponse(
+                fromMemberNickname = "FromUser",
+                toMemberNickname = "ToUser",
+                postedAt = LocalDateTime.now().minusDays(2 - i.toLong())
+            )
+        }.sortedBy { it.postedAt }
+
+        val response = AdminDetailWorkoutRequestResponse(
+            workoutPartnerId = 1L,
+            workoutRequestId = workoutRequestId,
+            scheduledAt = LocalDateTime.now().plusDays(3),
+            location = "서울 강남구 헬스장 101",
+            workoutRequestLogs = workoutLogs,
+            reviews = reviews
+        )
+
+        given(workoutRequestQueryService.findWorkoutRequestDetail(any()))
+            .willReturn(response)
 
         mockMvc.perform(
             get("/api/v1/admins/workout-requests/{workoutRequestId}", workoutRequestId)

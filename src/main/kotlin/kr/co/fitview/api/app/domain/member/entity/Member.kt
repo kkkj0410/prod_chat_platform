@@ -129,4 +129,10 @@ class Member(
         return this
     }
 
+    fun restore() : Member {
+        this.deletedAt = null
+        this.memberWithdrawReason = null
+        return this
+    }
+
 }

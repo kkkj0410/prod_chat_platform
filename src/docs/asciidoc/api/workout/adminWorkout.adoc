@@ -1,5 +1,5 @@
 [[workout-request-list-get]]
-=== 운동 약속 관리 조회 API - FAKE
+=== 운동 약속 관리 조회 API
 
 ==== HTTP Request
 include::{snippets}/workout-request-list-get/http-request.adoc[]
@@ -11,7 +11,7 @@ include::{snippets}/workout-request-list-get/http-response.adoc[]
 include::{snippets}/workout-request-list-get/response-fields.adoc[]
 
 [[workout-request-detail-get]]
-=== 운동 약속 관리 로그 조회 API - FAKE
+=== 운동 약속 관리 로그 조회 API
 
 ==== HTTP Request
 include::{snippets}/workout-request-detail-get/http-request.adoc[]

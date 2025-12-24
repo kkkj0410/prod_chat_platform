@@ -40,5 +40,15 @@ class MemberWithdrawReasonService(
         return findMember
     }
 
+    @Transactional
+    fun restoreMember(memberId: Long): Member {
+        val findMember = memberQueryService.findDeletedMemberFrom(memberId)
+            ?: throw GlobalException(MemberErrorCode.MEMBER_NOT_FOUND)
+
+        findMember.restore()
+
+        return findMember
+    }
+
 
 }

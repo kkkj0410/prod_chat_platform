@@ -9,6 +9,7 @@ import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutGoal
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutStyle
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.domain.member.service.MemberWithdrawReasonQueryService
+import kr.co.fitview.api.app.domain.member.service.MemberWithdrawReasonService
 import kr.co.fitview.api.app.global.dto.ApiResponse
 import kr.co.fitview.api.app.global.dto.SuccessCursorPagedResponse
 import kr.co.fitview.api.app.global.entity.Gender
@@ -26,7 +27,8 @@ import java.time.LocalDateTime
 @RequestMapping("/api/v1/admins/members")
 class AdminMemberController(
     private val memberQueryService : MemberQueryService,
-    private val memberWithdrawReasonQueryService: MemberWithdrawReasonQueryService
+    private val memberWithdrawReasonQueryService: MemberWithdrawReasonQueryService,
+    private val memberWithdrawReasonService : MemberWithdrawReasonService
 ) {
 
     @GetMapping("")
@@ -59,6 +61,17 @@ class AdminMemberController(
                 idExtractor = { it.memberId },
             )
         )
+    }
+
+    @PostMapping("/{memberId}/restore")
+    fun memberRestore(
+        @PathVariable
+        memberId : Long
+    ): ResponseEntity<ApiResponse<*>> {
+
+        memberWithdrawReasonService.restoreMember(memberId)
+
+        return ResponseEntity.ok(ApiResponse.success("ok"))
     }
 
 }

@@ -111,4 +111,41 @@ class MemberWithdrawReasonServiceTest @Autowired constructor(
                     .isEqualTo(MemberErrorCode.MEMBER_NOT_FOUND)
             })
     }
+
+    @DisplayName("삭제된 회원 계정을 복구한다.")
+    @Test
+    fun restoreMember() {
+        // given
+        val member1 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+            provider = OAuth2Provider.APPLE
+        )
+        memberRepository.save(member1)
+
+
+        val reason1 = MemberWithdrawReason(
+            reasonType = MemberWithdrawReasonReasonType.APP_INCONVENIENCE,
+            displayText = MemberWithdrawReasonReasonType.APP_INCONVENIENCE.description,
+            seq = 100
+        )
+        memberWithdrawReasonRepository.save(reason1)
+
+        val request = MemberWithdrawServiceRequest(
+            memberWithdrawReasonId = reason1.id!!
+        )
+
+        memberWithdrawReasonService.deleteMember(
+            memberId = member1.id!!,
+            request = request
+        )
+
+        // when
+        val restoredMember = memberWithdrawReasonService.restoreMember(member1.id!!)
+
+        // then
+        assertThat(restoredMember.deletedAt).isNull()
+        assertThat(restoredMember.memberWithdrawReason).isNull()
+    }
 }

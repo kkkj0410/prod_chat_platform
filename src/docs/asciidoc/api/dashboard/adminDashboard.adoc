@@ -1,5 +1,5 @@
 [[dashboard-get]]
-=== 대시보드 조회 API - FAKE
+=== 대시보드 조회 API
 
 ==== HTTP Request
 include::{snippets}/dashboard-get/http-request.adoc[]

@@ -93,4 +93,33 @@ class MemberTest @Autowired constructor(
         assertThat(member.deletedAt).isEqualTo(time.nowLocalDateTime)
         assertThat(member.memberWithdrawReason).isEqualTo(reason)
     }
+
+    @DisplayName("삭제된 계정을 복구한다.")
+    @Test
+    fun restore() {
+        // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+
+        val reason = MemberWithdrawReason(
+            reasonType = MemberWithdrawReasonReasonType.APP_INCONVENIENCE,
+            displayText = MemberWithdrawReasonReasonType.APP_INCONVENIENCE.description,
+            seq = 100
+        )
+
+        member.delete(
+            now = time.nowLocalDateTime,
+            memberWithdrawReason = reason
+        )
+
+        // when
+        member.restore()
+
+        // then
+        assertThat(member.deletedAt).isNull()
+        assertThat(member.memberWithdrawReason).isNull()
+    }
 }

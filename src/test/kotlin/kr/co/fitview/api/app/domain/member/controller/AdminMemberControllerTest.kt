@@ -3,6 +3,7 @@ package kr.co.fitview.api.app.domain.member.controller
 import kr.co.fitview.api.app.ControllerTestSupport
 import kr.co.fitview.api.app.domain.address.dto.response.AddressResponse
 import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
+import kr.co.fitview.api.app.domain.member.dto.request.MemberWithdrawRequest
 import kr.co.fitview.api.app.domain.member.dto.response.AdminMemberResponse
 import kr.co.fitview.api.app.domain.member.dto.response.AdminWithdrawMemberResponse
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutExperience
@@ -18,10 +19,12 @@ import org.mockito.kotlin.given
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Slice
 import org.springframework.data.domain.SliceImpl
+import org.springframework.http.MediaType
 import org.springframework.restdocs.payload.JsonFieldType
 import org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath
 import org.springframework.restdocs.payload.PayloadDocumentation.responseFields
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
@@ -148,5 +151,26 @@ class AdminMemberControllerTest : ControllerTestSupport() {
             .andExpect(jsonPath("$.data.pagination.size").value(5))
             .andExpect(jsonPath("$.data.pagination.cursorId").value(1))
             .andExpect(jsonPath("$.data.pagination.hasNext").value(false))
+    }
+
+    @DisplayName("회원 계정을 복구한다.")
+    @Test
+    fun memberRestore() {
+        //given
+
+
+        // when // then
+        mockMvc.perform(
+            post("/api/v1/admins/members/{memberId}/restore", 123L)
+                .header("Authorization", "Bearer jwt-token")
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andDo(MockMvcResultHandlers.print())
+            .andExpect(status().isOk())
+
+            .andExpect(jsonPath("$.status").exists())
+            .andExpect(jsonPath("$.code").value("ok"))
+            .andExpect(jsonPath("$.message").value("ok"))
+            .andExpect(jsonPath("$.data").value("ok"))
     }
 }

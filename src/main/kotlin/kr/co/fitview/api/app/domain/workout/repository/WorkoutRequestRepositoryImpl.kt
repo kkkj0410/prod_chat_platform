@@ -1,16 +1,16 @@
 package kr.co.fitview.api.app.domain.workout.repository
 
 import com.querydsl.core.types.Projections
+import com.querydsl.core.types.dsl.Expressions
 import com.querydsl.jpa.impl.JPAQueryFactory
 import jakarta.persistence.EntityManager
 import kr.co.fitview.api.app.domain.chat.entity.QChatMessage.chatMessage
 import kr.co.fitview.api.app.domain.chat.entity.QChatRoom.chatRoom
 import kr.co.fitview.api.app.domain.member.entity.QMember
 import kr.co.fitview.api.app.domain.review.entity.QReview
+import kr.co.fitview.api.app.domain.review.entity.QReview.review
 import kr.co.fitview.api.app.domain.workout.condition.AdminWorkoutRequestCondition
-import kr.co.fitview.api.app.domain.workout.dto.response.AdminWorkoutRequestResponse
-import kr.co.fitview.api.app.domain.workout.dto.response.LastWorkoutRequestMessage
-import kr.co.fitview.api.app.domain.workout.dto.response.WorkoutRequestUpdateResponse
+import kr.co.fitview.api.app.domain.workout.dto.response.*
 import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusForResponse
 import kr.co.fitview.api.app.domain.workout.entity.QWorkoutRequest.workoutRequest
 import kr.co.fitview.api.app.domain.workout.entity.QWorkoutRequestLog.workoutRequestLog
@@ -18,6 +18,8 @@ import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequest
 import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
 import kr.co.fitview.api.app.domain.workout_history.entity.QWorkoutHistory.workoutHistory
 import kr.co.fitview.api.app.domain.workout_partner.entity.QWorkoutPartner.workoutPartner
+import kr.co.fitview.api.app.global.exception.GlobalException
+import kr.co.fitview.api.app.global.exception.error.global.GlobalErrorCode
 import kr.co.fitview.api.app.global.time.Time
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Slice
@@ -291,6 +293,7 @@ class WorkoutRequestRepositoryImpl(
         return SliceImpl(contentWithExtras, PageRequest.of(0, condition.size), hasNext)
     }
 
+
     override fun findWorkoutRequestByIdAndDeletedAtIsNullWithChatMessage(workoutRequestId: Long): WorkoutRequest? {
         return queryFactory
             .selectFrom(workoutRequest)
@@ -300,6 +303,91 @@ class WorkoutRequestRepositoryImpl(
                 workoutRequest.deletedAt.isNull
             )
             .fetchOne()
+    }
+
+    override fun findWorkoutRequestDetailBy(workoutRequestId: Long): AdminDetailWorkoutRequestResponse {
+        val baseRequest = queryFactory
+            .select(
+                workoutRequest.id,
+                workoutRequest.scheduledAt,
+                workoutRequest.location,
+                workoutRequest.fromMember.id,
+                workoutRequest.toMember.id
+            )
+            .from(workoutRequest)
+            .where(workoutRequest.id.eq(workoutRequestId))
+            .fetchOne()
+            ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
+
+        val fromMemberId = baseRequest.get(workoutRequest.fromMember.id)!!
+        val toMemberId = baseRequest.get(workoutRequest.toMember.id)!!
+
+        val minMemberId = minOf(fromMemberId, toMemberId)
+        val maxMemberId = maxOf(fromMemberId, toMemberId)
+
+        val workoutPartnerId = queryFactory
+            .select(workoutPartner.id)
+            .from(workoutPartner)
+            .where(
+                workoutPartner.memberOne.id.eq(minMemberId),
+                workoutPartner.memberTwo.id.eq(maxMemberId)
+            )
+            .fetchOne()
+            ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
+
+        val base = AdminDetailWorkoutRequestResponse(
+            workoutPartnerId = workoutPartnerId,
+            workoutRequestId = baseRequest.get(workoutRequest.id)!!,
+            scheduledAt = baseRequest.get(workoutRequest.scheduledAt)!!,
+            location = baseRequest.get(workoutRequest.location)!!
+        )
+
+        val fromMember = QMember("fromMember")
+        val toMember = QMember("toMember")
+
+        val logs = queryFactory
+            .select(
+                Projections.constructor(
+                    AdminDetailWorkoutRequestLogResponse::class.java,
+                    workoutRequestLog.status,
+                    workoutRequestLog.loggedAt,
+                    fromMember.nickname,
+                    toMember.nickname
+                )
+            )
+            .from(workoutRequestLog)
+            .join(workoutRequestLog.workoutRequest, workoutRequest)
+            .join(workoutRequest.fromMember, fromMember)
+            .join(workoutRequest.toMember, toMember)
+            .where(workoutRequest.id.eq(workoutRequestId))
+            .orderBy(workoutRequestLog.loggedAt.asc())
+            .fetch()
+
+        val reviewFrom = QMember("reviewFrom")
+        val reviewTo = QMember("reviewTo")
+
+        val reviews = queryFactory
+            .select(
+                Projections.constructor(
+                    AdminDetailReviewResponse::class.java,
+                    reviewFrom.nickname,
+                    reviewTo.nickname,
+                    review.postedAt
+                )
+            )
+            .from(review)
+            .join(review.fromMember, reviewFrom)
+            .join(review.toMember, reviewTo)
+            .join(review.workoutHistory, workoutHistory)
+            .join(workoutHistory.workoutRequest, workoutRequest)
+            .where(workoutRequest.id.eq(workoutRequestId))
+            .orderBy(review.postedAt.asc())
+            .fetch()
+
+        return base.copy(
+            workoutRequestLogs = logs,
+            reviews = reviews
+        )
     }
 
 

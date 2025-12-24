@@ -12,4 +12,19 @@ data class AdminDetailWorkoutRequestResponse(
 
     val workoutRequestLogs : List<AdminDetailWorkoutRequestLogResponse>,
     val reviews : List<AdminDetailReviewResponse>
-)
+){
+
+    constructor(
+        workoutPartnerId: Long,
+        workoutRequestId: Long,
+        scheduledAt: LocalDateTime,
+        location: String
+    ) : this(
+        workoutPartnerId = workoutPartnerId,
+        workoutRequestId = workoutRequestId,
+        scheduledAt = scheduledAt,
+        location = location,
+        workoutRequestLogs = emptyList(),
+        reviews = emptyList()
+    )
+}

@@ -1,5 +1,5 @@
 [[admin-report-list-get]]
-=== 신고 목록 조회 API - FAKE
+=== 신고 목록 조회 API
 
 ==== HTTP Request
 include::{snippets}/admin-report-list-get/http-request.adoc[]

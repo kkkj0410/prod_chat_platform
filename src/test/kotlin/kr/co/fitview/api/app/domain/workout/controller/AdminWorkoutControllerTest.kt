@@ -3,6 +3,9 @@ package kr.co.fitview.api.app.domain.workout.controller
 import kr.co.fitview.api.app.ControllerTestSupport
 import kr.co.fitview.api.app.domain.review.dto.response.ReviewCategoryResponse
 import kr.co.fitview.api.app.domain.review.dto.response.ReviewTagResponse
+import kr.co.fitview.api.app.domain.workout.dto.response.AdminDetailReviewResponse
+import kr.co.fitview.api.app.domain.workout.dto.response.AdminDetailWorkoutRequestLogResponse
+import kr.co.fitview.api.app.domain.workout.dto.response.AdminDetailWorkoutRequestResponse
 import kr.co.fitview.api.app.domain.workout.dto.response.AdminWorkoutRequestResponse
 import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
 import org.junit.jupiter.api.Assertions.*
@@ -85,6 +88,80 @@ class AdminWorkoutControllerTest  : ControllerTestSupport(){
             .andExpect(jsonPath("$.data.content[0].respondedAt").value(null))
             .andExpect(jsonPath("$.data.content[0].hasFromMemberReview").value(request1.hasFromMemberReview))
             .andExpect(jsonPath("$.data.content[0].hasToMemberReview").value(request1.hasToMemberReview))
+    }
+
+    @DisplayName("운동 신청을 상세 조회한다.")
+    @Test
+    fun workoutRequestDetail() {
+        // given
+        val workoutLogs = listOf(
+            AdminDetailWorkoutRequestLogResponse(
+                workoutRequestStatus = WorkoutRequestStatus.PENDING,
+                loggedAt = LocalDateTime.now().minusDays(3),
+                fromMemberNickname = "FromUser",
+                toMemberNickname = "ToUser"
+            ),
+            AdminDetailWorkoutRequestLogResponse(
+                workoutRequestStatus = WorkoutRequestStatus.ACCEPT,
+                loggedAt = LocalDateTime.now().minusDays(2),
+                fromMemberNickname = "FromUser",
+                toMemberNickname = "ToUser"
+            ),
+            AdminDetailWorkoutRequestLogResponse(
+                workoutRequestStatus = WorkoutRequestStatus.COMPLETE,
+                loggedAt = LocalDateTime.now().minusDays(1),
+                fromMemberNickname = "FromUser",
+                toMemberNickname = "ToUser"
+            )
+        )
+
+        val reviews = (1..2).map { i ->
+            AdminDetailReviewResponse(
+                fromMemberNickname = "FromUser",
+                toMemberNickname = "ToUser",
+                postedAt = LocalDateTime.now().minusDays(2 - i.toLong())
+            )
+        }.sortedBy { it.postedAt }
+
+        val response = AdminDetailWorkoutRequestResponse(
+            workoutPartnerId = 1L,
+            workoutRequestId = 123L,
+            scheduledAt = LocalDateTime.now().plusDays(3),
+            location = "서울 강남구 헬스장 101",
+            workoutRequestLogs = workoutLogs,
+            reviews = reviews
+        )
+
+        given(workoutRequestQueryService.findWorkoutRequestDetail(any()))
+            .willReturn(response)
+
+        // when // then
+        mockMvc.perform(
+            get("/api/v1/admins/workout-requests/{workoutRequestId}", 123L)
+                .header("Authorization", "Bearer jwt-token")
+        )
+            .andDo(MockMvcResultHandlers.print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").exists())
+            .andExpect(jsonPath("$.code").value("ok"))
+            .andExpect(jsonPath("$.message").value("ok"))
+
+            .andExpect(jsonPath("$.data.workoutPartnerId").value(1))
+            .andExpect(jsonPath("$.data.workoutRequestId").value(123))
+            .andExpect(jsonPath("$.data.scheduledAt").exists())
+            .andExpect(jsonPath("$.data.location").value("서울 강남구 헬스장 101"))
+            .andExpect(jsonPath("$.data.workoutRequestLogs").isArray())
+            .andExpect(jsonPath("$.data.workoutRequestLogs[0].workoutRequestStatus").value("PENDING"))
+            .andExpect(jsonPath("$.data.workoutRequestLogs[0].fromMemberNickname").value("FromUser"))
+            .andExpect(jsonPath("$.data.workoutRequestLogs[0].toMemberNickname").value("ToUser"))
+            .andExpect(jsonPath("$.data.workoutRequestLogs[0].loggedAt").exists())
+            .andExpect(jsonPath("$.data.reviews").isArray())
+            .andExpect(jsonPath("$.data.reviews[0].fromMemberNickname").value("FromUser"))
+            .andExpect(jsonPath("$.data.reviews[0].toMemberNickname").value("ToUser"))
+            .andExpect(jsonPath("$.data.reviews[0].postedAt").exists())
+            .andExpect(jsonPath("$.data.reviews[1].fromMemberNickname").value("FromUser"))
+            .andExpect(jsonPath("$.data.reviews[1].toMemberNickname").value("ToUser"))
+            .andExpect(jsonPath("$.data.reviews[1].postedAt").exists())
     }
 
 

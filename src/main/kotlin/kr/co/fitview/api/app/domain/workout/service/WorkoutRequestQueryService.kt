@@ -1,6 +1,7 @@
 package kr.co.fitview.api.app.domain.workout.service
 
 import kr.co.fitview.api.app.domain.workout.condition.AdminWorkoutRequestCondition
+import kr.co.fitview.api.app.domain.workout.dto.response.AdminDetailWorkoutRequestResponse
 import kr.co.fitview.api.app.domain.workout.dto.response.AdminWorkoutRequestResponse
 import kr.co.fitview.api.app.domain.workout.dto.response.LastWorkoutRequestMessage
 import kr.co.fitview.api.app.domain.workout.repository.WorkoutRequestRepository
@@ -35,6 +36,10 @@ class WorkoutRequestQueryService(
 
     fun findAllWorkoutRequestFrom(condition: AdminWorkoutRequestCondition) : Slice<AdminWorkoutRequestResponse> {
         return workoutRequestRepository.findAllWorkoutRequestBy(condition)
+    }
+
+    fun findWorkoutRequestDetail(workoutRequestId: Long) : AdminDetailWorkoutRequestResponse {
+        return workoutRequestRepository.findWorkoutRequestDetailBy(workoutRequestId)
     }
 
 }
