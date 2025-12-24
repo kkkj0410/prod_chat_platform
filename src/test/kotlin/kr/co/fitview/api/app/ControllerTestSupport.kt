@@ -19,6 +19,7 @@ import kr.co.fitview.api.app.domain.member.controller.AdminMemberController
 import kr.co.fitview.api.app.domain.member.controller.MemberController
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.domain.member.service.MemberService
+import kr.co.fitview.api.app.domain.member.service.MemberWithdrawReasonQueryService
 import kr.co.fitview.api.app.domain.notification.controller.NotificationController
 import kr.co.fitview.api.app.domain.notification.service.NotificationQueryService
 import kr.co.fitview.api.app.domain.notification.service.NotificationService
@@ -204,4 +205,6 @@ abstract class ControllerTestSupport {
     @MockitoBean
     protected lateinit var reportQueryService: ReportQueryService
 
+    @MockitoBean
+    protected lateinit var memberWithdrawReasonQueryService: MemberWithdrawReasonQueryService
 }

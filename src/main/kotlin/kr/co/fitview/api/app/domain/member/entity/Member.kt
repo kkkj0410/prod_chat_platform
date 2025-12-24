@@ -93,6 +93,10 @@ class Member(
     @Column(name = "member_id", nullable = false)
     var id: Long? = null
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_withdraw_reason_id")
+    var memberWithdrawReason: MemberWithdrawReason? = null
+
     @OneToMany(mappedBy = "member")
     var mutableMemberImages: MutableList<MemberImage> = mutableListOf()
     val memberImages: List<MemberImage>
@@ -111,6 +115,12 @@ class Member(
 
     fun delete(now : LocalDateTime) : Member{
         this.deletedAt = now
+        return this
+    }
+
+    fun delete(now : LocalDateTime, memberWithdrawReason: MemberWithdrawReason) : Member{
+        this.deletedAt = now
+        this.memberWithdrawReason = memberWithdrawReason
         return this
     }
 
