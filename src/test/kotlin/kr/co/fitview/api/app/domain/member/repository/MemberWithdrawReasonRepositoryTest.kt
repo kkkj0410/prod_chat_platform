@@ -233,4 +233,76 @@ class MemberWithdrawReasonRepositoryTest @Autowired constructor(
             )
         assertThat(response.hasNext()).isEqualTo(false)
     }
+
+    @DisplayName("탈퇴 사유 선택지를 전체 조회한다.")
+    @Test
+    fun findAllMemberWithdrawReason() {
+        // given
+        val reason1 = MemberWithdrawReason(
+            reasonType = MemberWithdrawReasonReasonType.APP_INCONVENIENCE,
+            displayText = MemberWithdrawReasonReasonType.APP_INCONVENIENCE.description,
+            seq = 100
+        )
+        val reason2 = MemberWithdrawReason(
+            reasonType = MemberWithdrawReasonReasonType.FOUND_MATE,
+            displayText = MemberWithdrawReasonReasonType.FOUND_MATE.description,
+            seq = 200
+        )
+        val reason3 = MemberWithdrawReason(
+            reasonType = MemberWithdrawReasonReasonType.NO_DESIRED_MATCH,
+            displayText = MemberWithdrawReasonReasonType.NO_DESIRED_MATCH.description,
+            seq = 300
+        )
+        memberWithdrawReasonRepository.save(reason1)
+        memberWithdrawReasonRepository.save(reason2)
+        memberWithdrawReasonRepository.save(reason3)
+
+        // when
+        val response = memberWithdrawReasonRepository.findAllByDeletedAtIsNullOrderBySeqAsc()
+
+        // then
+        assertThat(response)
+            .extracting("id", "displayText")
+            .containsExactly(
+                tuple(reason1.id!!, reason1.displayText!!),
+                tuple(reason2.id!!, reason2.displayText!!),
+                tuple(reason3.id!!, reason3.displayText!!)
+            )
+    }
+
+    @DisplayName("탈퇴 사유 선택지를 전체 조회 시, 순서 오름차순으로 조회한다.")
+    @Test
+    fun findAllMemberWithdrawReasonSeq() {
+        // given
+        val reason1 = MemberWithdrawReason(
+            reasonType = MemberWithdrawReasonReasonType.APP_INCONVENIENCE,
+            displayText = MemberWithdrawReasonReasonType.APP_INCONVENIENCE.description,
+            seq = 300
+        )
+        val reason2 = MemberWithdrawReason(
+            reasonType = MemberWithdrawReasonReasonType.FOUND_MATE,
+            displayText = MemberWithdrawReasonReasonType.FOUND_MATE.description,
+            seq = 200
+        )
+        val reason3 = MemberWithdrawReason(
+            reasonType = MemberWithdrawReasonReasonType.NO_DESIRED_MATCH,
+            displayText = MemberWithdrawReasonReasonType.NO_DESIRED_MATCH.description,
+            seq = 100
+        )
+        memberWithdrawReasonRepository.save(reason1)
+        memberWithdrawReasonRepository.save(reason2)
+        memberWithdrawReasonRepository.save(reason3)
+
+        // when
+        val response = memberWithdrawReasonRepository.findAllByDeletedAtIsNullOrderBySeqAsc()
+
+        // then
+        assertThat(response)
+            .extracting("id", "displayText")
+            .containsExactly(
+                tuple(reason3.id!!, reason3.displayText!!),
+                tuple(reason2.id!!, reason2.displayText!!),
+                tuple(reason1.id!!, reason1.displayText!!)
+            )
+    }
 }

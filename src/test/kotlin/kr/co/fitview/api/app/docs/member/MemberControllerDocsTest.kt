@@ -17,6 +17,8 @@ import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutStyle
 import kr.co.fitview.api.app.domain.member.entity.enums.WorkoutTimeName
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.domain.member.service.MemberService
+import kr.co.fitview.api.app.domain.member.service.MemberWithdrawReasonQueryService
+import kr.co.fitview.api.app.domain.member.service.MemberWithdrawReasonService
 import kr.co.fitview.api.app.domain.review.dto.response.ReviewResponse
 import kr.co.fitview.api.app.domain.review.dto.response.ReviewTagCountResponse
 import kr.co.fitview.api.app.domain.review.service.ReviewQueryService
@@ -59,6 +61,8 @@ class MemberControllerDocsTest : RestDocsSupport() {
 
     private val memberService: MemberService = mock(MemberService::class.java)
     private val memberQueryService: MemberQueryService = mock(MemberQueryService::class.java)
+    private val memberWithdrawReasonService: MemberWithdrawReasonService = mock(MemberWithdrawReasonService::class.java)
+    private val memberWithdrawReasonQueryService: MemberWithdrawReasonQueryService = mock(MemberWithdrawReasonQueryService::class.java)
     private val addressService: AddressService = mock(AddressService::class.java)
     private val reviewTagCountQueryService: ReviewTagCountQueryService = mock(ReviewTagCountQueryService::class.java)
     private val reviewQueryService: ReviewQueryService = mock(ReviewQueryService::class.java)
@@ -68,6 +72,8 @@ class MemberControllerDocsTest : RestDocsSupport() {
         return MemberController(
             memberService,
             memberQueryService,
+            memberWithdrawReasonService,
+            memberWithdrawReasonQueryService,
             addressService,
             reviewTagCountQueryService,
             reviewQueryService,
@@ -872,6 +878,37 @@ class MemberControllerDocsTest : RestDocsSupport() {
     @DisplayName("회원 탈퇴 사유 목록 조회 API")
     @Test
     fun memberWithdrawReasonList() {
+        //given
+        val response = listOf(
+            MemberWithdrawResponse(
+                memberWithdrawReasonId = 1L,
+                displayText = "이미 운동 메이트를 찾았고, 만족스러운 관계를 유지하고 있어요."
+            ),
+            MemberWithdrawResponse(
+                memberWithdrawReasonId = 2L,
+                displayText = "원하는 지역/시간대에 맞는 운동 메이트를 찾기 어려웠어요."
+            ),
+            MemberWithdrawResponse(
+                memberWithdrawReasonId = 3L,
+                displayText = "메이트와의 소통/약속 관리가 불편했고, 신뢰하기 어려웠어요."
+            ),
+            MemberWithdrawResponse(
+                memberWithdrawReasonId = 4L,
+                displayText = "다른 운동 앱/커뮤니티를 사용하게 되었어요."
+            ),
+            MemberWithdrawResponse(
+                memberWithdrawReasonId = 5L,
+                displayText = "앱 사용에 전반적인 불편함(버그, 속도, UX 등)이 많았어요."
+            ),
+            MemberWithdrawResponse(
+                memberWithdrawReasonId = 6L,
+                displayText = "기타"
+            )
+        )
+
+        given(memberWithdrawReasonQueryService.findAllMemberWithdrawReason())
+            .willReturn(response)
+
 
         // when & then
         mockMvc.perform(

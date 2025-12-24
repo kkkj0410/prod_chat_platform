@@ -489,4 +489,76 @@ class MemberControllerTest : ControllerTestSupport() {
             .andExpect(jsonPath("$.data.content[1].content").value("내용2"))
 
     }
+
+    @DisplayName("탈퇴 사유 선택지를 조회한다.")
+    @Test
+    fun memberWithdrawList() {
+        // given
+        val response = listOf(
+            MemberWithdrawResponse(
+                memberWithdrawReasonId = 1L,
+                displayText = "이미 운동 메이트를 찾았고, 만족스러운 관계를 유지하고 있어요."
+            ),
+            MemberWithdrawResponse(
+                memberWithdrawReasonId = 2L,
+                displayText = "원하는 지역/시간대에 맞는 운동 메이트를 찾기 어려웠어요."
+            ),
+            MemberWithdrawResponse(
+                memberWithdrawReasonId = 3L,
+                displayText = "메이트와의 소통/약속 관리가 불편했고, 신뢰하기 어려웠어요."
+            ),
+            MemberWithdrawResponse(
+                memberWithdrawReasonId = 4L,
+                displayText = "다른 운동 앱/커뮤니티를 사용하게 되었어요."
+            ),
+            MemberWithdrawResponse(
+                memberWithdrawReasonId = 5L,
+                displayText = "앱 사용에 전반적인 불편함(버그, 속도, UX 등)이 많았어요."
+            ),
+            MemberWithdrawResponse(
+                memberWithdrawReasonId = 6L,
+                displayText = "기타"
+            )
+        )
+
+        given(memberWithdrawReasonQueryService.findAllMemberWithdrawReason())
+            .willReturn(response)
+
+        // when // then
+        mockMvc.perform(
+            get("/api/v1/members/withdraw")
+                .header("Authorization", "Bearer jwt-token")
+        )
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").exists())
+            .andExpect(jsonPath("$.code").value("ok"))
+            .andExpect(jsonPath("$.message").value("ok"))
+
+            .andExpect(jsonPath("$.data").isArray())
+            .andExpect(jsonPath("$.data.length()").value(6))
+
+            .andExpect(jsonPath("$.data[0].memberWithdrawReasonId").value(1))
+            .andExpect(jsonPath("$.data[0].displayText")
+                .value("이미 운동 메이트를 찾았고, 만족스러운 관계를 유지하고 있어요."))
+
+            .andExpect(jsonPath("$.data[1].memberWithdrawReasonId").value(2))
+            .andExpect(jsonPath("$.data[1].displayText")
+                .value("원하는 지역/시간대에 맞는 운동 메이트를 찾기 어려웠어요."))
+
+            .andExpect(jsonPath("$.data[2].memberWithdrawReasonId").value(3))
+            .andExpect(jsonPath("$.data[2].displayText")
+                .value("메이트와의 소통/약속 관리가 불편했고, 신뢰하기 어려웠어요."))
+
+            .andExpect(jsonPath("$.data[3].memberWithdrawReasonId").value(4))
+            .andExpect(jsonPath("$.data[3].displayText")
+                .value("다른 운동 앱/커뮤니티를 사용하게 되었어요."))
+
+            .andExpect(jsonPath("$.data[4].memberWithdrawReasonId").value(5))
+            .andExpect(jsonPath("$.data[4].displayText")
+                .value("앱 사용에 전반적인 불편함(버그, 속도, UX 등)이 많았어요."))
+
+            .andExpect(jsonPath("$.data[5].memberWithdrawReasonId").value(6))
+            .andExpect(jsonPath("$.data[5].displayText").value("기타"))
+    }
 }
