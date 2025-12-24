@@ -13,8 +13,11 @@ import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
 import kr.co.fitview.api.app.domain.report.controller.AdminReportController
 import kr.co.fitview.api.app.domain.report.controller.ReportController
 import kr.co.fitview.api.app.domain.report.dto.request.ReportChatRoomCreateRequest
+import kr.co.fitview.api.app.domain.report.dto.response.AdminReportResponse
 import kr.co.fitview.api.app.domain.report.entity.enums.ReportReasonType
 import kr.co.fitview.api.app.domain.report.entity.enums.ReportTargetType
+import kr.co.fitview.api.app.domain.report.service.ReportQueryService
+import kr.co.fitview.api.app.domain.report.service.ReportReasonQueryService
 import kr.co.fitview.api.app.domain.term.entity.enums.TermName
 import kr.co.fitview.api.app.global.entity.Gender
 import kr.co.fitview.api.app.global.entity.OAuth2Provider
@@ -25,6 +28,9 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.any
 import org.mockito.kotlin.given
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Slice
+import org.springframework.data.domain.SliceImpl
 import org.springframework.http.MediaType
 import org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document
@@ -38,18 +44,40 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 
 class AdminReportControllerDocsTest : RestDocsSupport() {
 
+    private val reportQueryService: ReportQueryService = mock(ReportQueryService::class.java)
 
     override fun initController(): Any {
-        return AdminReportController()
+        return AdminReportController(reportQueryService)
     }
 
     @DisplayName("어드민 신고 목록 조회 API")
     @Test
     fun adminReportList() {
+
+        val response = (1L..5L).map { i ->
+            AdminReportResponse(
+                fromMemberId = i,
+                reportId = i,
+                fromMemberNickname = "fromUser$i",
+                toMemberNickname = "toUser$i",
+                reportReasonDisplayText = "부적절한 행동",
+                reportDescription = if (i % 2L == 0L) "상세 신고 내용 $i" else null,
+                reportedAt = LocalDateTime.now().minusDays(i),
+                reportTargetType = ReportTargetType.CHAT_ROOM
+            )
+        }
+
+        val pageable = PageRequest.of(0, 10)
+        val slice: Slice<AdminReportResponse> = SliceImpl(response, pageable, false)
+
+        given(reportQueryService.findAllReportFrom(any()))
+            .willReturn(slice)
+
         mockMvc.perform(
             get("/api/v1/admins/reports")
                 .header("Authorization", "Bearer jwt-token")

@@ -28,6 +28,7 @@ import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
 import kr.co.fitview.api.app.domain.report.controller.AdminReportController
 import kr.co.fitview.api.app.domain.report.controller.ReportController
 import kr.co.fitview.api.app.domain.report.service.ChatRoomReportService
+import kr.co.fitview.api.app.domain.report.service.ReportQueryService
 import kr.co.fitview.api.app.domain.report.service.ReportReasonQueryService
 import kr.co.fitview.api.app.domain.review.controller.AdminReviewController
 import kr.co.fitview.api.app.domain.review.controller.ReviewController
@@ -199,5 +200,8 @@ abstract class ControllerTestSupport {
 
     @MockitoBean
     protected lateinit var dashboardQueryService: DashboardQueryService
+
+    @MockitoBean
+    protected lateinit var reportQueryService: ReportQueryService
 
 }
