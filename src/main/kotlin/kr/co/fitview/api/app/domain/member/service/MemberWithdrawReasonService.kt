@@ -45,10 +45,31 @@ class MemberWithdrawReasonService(
         val findMember = memberQueryService.findDeletedMemberFrom(memberId)
             ?: throw GlobalException(MemberErrorCode.MEMBER_NOT_FOUND)
 
+        validateExistsMember(findMember)
+
         findMember.restore()
 
         return findMember
     }
+
+    private fun validateExistsMember(findMember: Member) {
+        if (isOAuth2Member(findMember)) {
+            val existing = memberQueryService.findMemberFromProviderId(findMember.providerId!!)
+            if (existing != null) {
+                throw GlobalException(MemberErrorCode.MEMBER_DUPLICATE_RECOVER)
+            }
+
+        } else if (isLocalMember(findMember)) {
+            val existing = memberQueryService.findMemberFromEmail(findMember.email!!)
+            if (existing != null) {
+                throw GlobalException(MemberErrorCode.MEMBER_DUPLICATE_RECOVER)
+            }
+        }
+    }
+
+    private fun isLocalMember(findMember: Member) = findMember.providerId == null && findMember.email != null
+
+    private fun isOAuth2Member(findMember: Member) = findMember.providerId != null
 
 
 }
