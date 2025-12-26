@@ -71,6 +71,54 @@ class RefreshTokenRepositoryTest@Autowired constructor(
             )
     }
 
+    @DisplayName("만료된 refreshToken 조회 시, 동일한 기기 id에 대해서 만료되지 않은 refreshToken이 사용중이면 조회하지 않는다.")
+    @Test
+    fun findAllExpiredRefreshTokenExistsOtherRefreshToken() {
+        // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(member)
+
+        val refreshToken1 = RefreshToken(
+            id = "id1",
+            member = member,
+            status = RefreshTokenStatus.ACTIVE,
+            expiresAt = time.nowLocalDateTime.minusSeconds(1),
+            deviceId = "deviceId1"
+        )
+        val refreshToken2 = RefreshToken(
+            id = "id2",
+            member = member,
+            status = RefreshTokenStatus.ACTIVE,
+            expiresAt = time.nowLocalDateTime.minusSeconds(1),
+            deviceId = "deviceId2"
+        )
+        val notExpireRefreshToken = RefreshToken(
+            id = "id3",
+            member = member,
+            status = RefreshTokenStatus.ACTIVE,
+            expiresAt = time.nowLocalDateTime,
+            deviceId = "deviceId1"
+        )
+        refreshTokenRepository.save(refreshToken1)
+        refreshTokenRepository.save(refreshToken2)
+        refreshTokenRepository.save(notExpireRefreshToken)
+
+        // when
+        val response = refreshTokenRepository.findAllExpiredRefreshToken()
+
+        // then
+        assertThat(response).hasSize(1)
+        assertThat(response)
+            .extracting("refreshTokenId", "deviceId")
+            .contains(
+                tuple(refreshToken2.id!!, refreshToken2.deviceId!!),
+            )
+    }
+
     @DisplayName("refreshToken을 비활성화한다.")
     @Test
     fun updateAllInactive() {
@@ -111,5 +159,6 @@ class RefreshTokenRepositoryTest@Autowired constructor(
         assertThat(refreshTokens[0].status).isEqualTo(RefreshTokenStatus.INACTIVE)
         assertThat(refreshTokens[1].status).isEqualTo(RefreshTokenStatus.INACTIVE)
     }
+
 
 }
