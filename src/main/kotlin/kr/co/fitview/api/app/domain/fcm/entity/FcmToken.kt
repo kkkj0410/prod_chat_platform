@@ -7,6 +7,7 @@ import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.fcm.entity.enums.FcmTokenPlatform
 import kr.co.fitview.api.app.global.entity.BaseSoftDeleteEntity
 import org.hibernate.annotations.ColumnDefault
+import java.time.LocalDateTime
 
 @Entity
 @Table(name = "fcm_token")
@@ -63,6 +64,11 @@ class FcmToken(
 
     fun updateToken(token : String) : FcmToken{
         this.token = token
+        return this
+    }
+
+    fun delete(now : LocalDateTime) : FcmToken{
+        this.deletedAt = now
         return this
     }
 

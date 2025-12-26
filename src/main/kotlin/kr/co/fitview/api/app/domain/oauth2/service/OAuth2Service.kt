@@ -53,7 +53,7 @@ class OAuth2Service(
         }
 
         val accessToken = jwtTokenProvider.createAccessToken(findMember!!.id!!, findMember.role!!)
-        val refreshToken = refreshTokenService.issueRefreshToken(findMember.id!!)
+        val refreshToken = refreshTokenService.issueMobileRefreshToken(findMember.id!!, request.deviceId)
 
         return OAuth2LoginResponse(accessToken, refreshToken, findMember.isSignup!!)
     }

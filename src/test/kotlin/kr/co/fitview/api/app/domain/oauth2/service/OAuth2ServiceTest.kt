@@ -101,7 +101,8 @@ class OAuth2ServiceTest @Autowired constructor(
 
         val request = OAuth2LoginServiceRequest(
             provider = OAuth2Provider.APPLE,
-            providerToken = "appleAuthCode"
+            providerToken = "appleAuthCode",
+            deviceId = "deviceId"
         )
 
         val usedRsaKey = RSAKeyGenerator(2048).keyID("TEST_KID").generate()
@@ -158,7 +159,8 @@ class OAuth2ServiceTest @Autowired constructor(
 
         val request = OAuth2LoginServiceRequest(
             provider = OAuth2Provider.KAKAO,
-            providerToken = "kakaoAccessToken"
+            providerToken = "kakaoAccessToken",
+            deviceId = "deviceId"
         )
 
         given(networkService.getByWebClient(any(), any()))
@@ -205,7 +207,8 @@ class OAuth2ServiceTest @Autowired constructor(
 
         val request = OAuth2LoginServiceRequest(
             provider = OAuth2Provider.GOOGLE,
-            providerToken = "googleAccessToken"
+            providerToken = "googleAccessToken",
+            deviceId = "deviceId"
         )
 
         given(networkService.postByWebClient(any(), any()))

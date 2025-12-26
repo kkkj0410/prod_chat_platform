@@ -10,7 +10,7 @@ class TestTime(
     private val localDateTime: LocalDateTime // 생성자에서 LocalDateTime 받음
 ) : Time {
 
-    private val zoneId: ZoneId = ZoneId.systemDefault()
+    override val zoneId: ZoneId = ZoneId.of("Asia/Seoul")
 
     override val nowInstant: Instant
         get() = localDateTime.atZone(zoneId).toInstant()

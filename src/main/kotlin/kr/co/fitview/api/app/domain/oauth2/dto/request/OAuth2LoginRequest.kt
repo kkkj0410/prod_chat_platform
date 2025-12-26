@@ -13,11 +13,15 @@ data class OAuth2LoginRequest(
     @field:NotBlank(message = "providerToken is required")
     val providerToken : String?,
 
+    @field:NotBlank(message = "deviceId is required")
+    val deviceId : String?
+
     ){
     fun toServiceRequest() : OAuth2LoginServiceRequest{
         return OAuth2LoginServiceRequest(
             provider = provider!!,
-            providerToken = providerToken!!
+            providerToken = providerToken!!,
+            deviceId = deviceId!!
         )
     }
 }

@@ -12,7 +12,7 @@ import java.time.format.DateTimeFormatter
 
 @Service
 @Transactional(readOnly = true)
-class FcmQueryService(
+class FcmTokenQueryService(
     private val fcmPublisher: FcmPublisher,
     private val fcmTokenRepository: FcmTokenRepository,
     private val deepLinkConstant : DeepLinkConstant
@@ -205,6 +205,9 @@ class FcmQueryService(
         )
     }
 
+    fun findAllFcmTokenByDeviceId(deviceId: String) : List<FcmToken> {
+        return fcmTokenRepository.findAllByDeviceIdAndDeletedAtIsNull(deviceId)
+    }
 
     private fun sendAllDevice(
         fcmTokens: List<FcmToken>,
@@ -225,4 +228,5 @@ class FcmQueryService(
 
     private fun createDeepLink(deepLinkPath: String) =
         deepLinkConstant.BASE_DOMAIN + deepLinkPath
+
 }

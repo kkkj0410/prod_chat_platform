@@ -11,12 +11,14 @@ import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.jwt.JwtErrorCode
 import kr.co.fitview.api.app.global.id.TestIdGenerator
 import kr.co.fitview.api.app.global.time.TestTime
+import kr.co.fitview.api.app.global.time.TimeHolder.time
 import org.assertj.core.api.Assertions.*
 import org.assertj.core.api.ThrowingConsumer
 import org.junit.jupiter.api.BeforeEach
 import java.time.LocalDateTime
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import java.time.Duration
 import java.util.*
 
 class JwtTokenProviderTest
@@ -321,6 +323,26 @@ class JwtTokenProviderTest
 
         // then
         assertThat(extractUuid).isEqualTo(testIdGenerator.createUuid())
+    }
+
+    @DisplayName("리프레시 토큰에서 만료시간을 추출한다.")
+    @Test
+    fun extractExpiresAt() {
+        // given
+        val jwtTokenProvider = createJwtTokenProvider(3000, 1, 1)
+        val time = jwtTokenProvider.time
+        val jwtConfig = jwtTokenProvider.jwtConfig
+
+        val memberId = 123L
+
+        val refreshToken = jwtTokenProvider.createRefreshToken(memberId)
+
+        // when
+        val expiresAt = jwtTokenProvider.extractExpirationFrom(refreshToken)
+
+        // then
+        val ms = jwtConfig.refreshTokenValidityInMs
+        assertThat(expiresAt).isEqualTo(time.nowLocalDateTime.plus(Duration.ofMillis(ms)))
     }
 
 

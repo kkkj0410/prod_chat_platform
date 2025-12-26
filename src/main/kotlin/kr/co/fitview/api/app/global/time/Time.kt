@@ -15,4 +15,6 @@ interface Time {
     val nowLocalDate : LocalDate
 
     val nowInstant : Instant
+
+    val zoneId: java.time.ZoneId
 }

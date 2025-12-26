@@ -26,7 +26,8 @@ class OAuth2ControllerTest : ControllerTestSupport(){
     fun oAuth2Login() {
         val request = OAuth2LoginRequest(
             provider = OAuth2Provider.APPLE,
-            providerToken = "appleAuthCode"
+            providerToken = "appleAuthCode",
+            deviceId = "deviceId"
         )
 
         // when // then
@@ -45,7 +46,8 @@ class OAuth2ControllerTest : ControllerTestSupport(){
         // given
         val request = OAuth2LoginRequest(
             provider = null,
-            providerToken = "providerToken"
+            providerToken = "providerToken",
+            deviceId = "deviceId"
         )
 
         // when // then
@@ -93,7 +95,8 @@ class OAuth2ControllerTest : ControllerTestSupport(){
         // given
         val request = OAuth2LoginRequest(
             provider = OAuth2Provider.APPLE,
-            providerToken = null
+            providerToken = null,
+            deviceId = "deviceId"
         )
 
         // when // then

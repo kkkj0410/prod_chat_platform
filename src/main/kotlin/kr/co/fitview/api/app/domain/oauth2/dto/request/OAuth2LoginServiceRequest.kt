@@ -9,6 +9,7 @@ data class OAuth2LoginServiceRequest(
 
     val provider : OAuth2Provider,
     val providerToken : String,
+    val deviceId : String
 
     ){
 

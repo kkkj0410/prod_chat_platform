@@ -10,12 +10,11 @@ import kr.co.fitview.api.app.global.cookie.CookieProvider
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.jwt.JwtErrorCode
-import kr.co.fitview.api.app.global.exception.error.jwt.SecurityAuthenticationException
 import kr.co.fitview.api.app.global.id.IdGenerator
 import kr.co.fitview.api.app.global.time.Time
 import org.springframework.http.ResponseCookie
 import org.springframework.stereotype.Component
-
+import java.time.LocalDateTime
 
 
 @Component
@@ -104,6 +103,12 @@ class JwtTokenProvider(
         return claims[JwtConstant.CLAIM_JTI] as String
     }
 
+    fun extractExpirationFrom(jwtToken: String): LocalDateTime {
+        val expiration = extractClaimsFrom(jwtToken).expiration
+        return expiration.toInstant()
+            .atZone(time.zoneId)
+            .toLocalDateTime()
+    }
 
     private fun extractClaimsFrom(jwtToken: String): Claims {
         try{

@@ -3,12 +3,13 @@ package kr.co.fitview.api.app.domain.auth.service
 import kr.co.fitview.api.app.domain.auth.entity.RefreshToken
 import kr.co.fitview.api.app.domain.auth.entity.RefreshTokenStatus
 import kr.co.fitview.api.app.domain.auth.repository.RefreshTokenRepository
+import kr.co.fitview.api.app.domain.fcm.service.FcmTokenQueryService
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
-import kr.co.fitview.api.app.domain.member.service.MemberService
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.jwt.JwtErrorCode
 import kr.co.fitview.api.app.global.jwt.JwtTokenProvider
+import kr.co.fitview.api.app.global.time.Time
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -19,16 +20,29 @@ import org.springframework.transaction.annotation.Transactional
 class RefreshTokenService(
     val refreshTokenRepository : RefreshTokenRepository,
     val jwtTokenProvider : JwtTokenProvider,
-    val memberQueryService : MemberQueryService
+    val memberQueryService : MemberQueryService,
+    val fcmTokenQueryService : FcmTokenQueryService,
+    val time : Time
 ) {
 
     @Transactional
-    fun issueRefreshToken(memberId : Long) : String{
+    fun issueMobileRefreshToken(memberId : Long, deviceId : String) : String{
         val findMember = memberQueryService.findMemberOrElseThrow(memberId)
 
         val refreshToken = jwtTokenProvider.createRefreshToken(findMember.id!!)
 
-        addRefreshToken(findMember, refreshToken)
+        addMobileRefreshToken(findMember, refreshToken, deviceId)
+
+        return refreshToken
+    }
+
+    @Transactional
+    fun issueWebRefreshToken(memberId : Long) : String{
+        val findMember = memberQueryService.findMemberOrElseThrow(memberId)
+
+        val refreshToken = jwtTokenProvider.createRefreshToken(findMember.id!!)
+
+        addWebRefreshToken(findMember, refreshToken)
 
         return refreshToken
     }
@@ -37,7 +51,16 @@ class RefreshTokenService(
     fun inactiveRefreshToken(refreshToken: String) : RefreshToken {
         val findRefreshTokenEntity = validateRefreshTokenFrom(refreshToken)
 
+        if (findRefreshTokenEntity.deviceId != null) {
+            deleteFcmToken(findRefreshTokenEntity.deviceId!!)
+        }
+
         return findRefreshTokenEntity.inactive()
+    }
+
+    @Transactional
+    fun modifyAllInactiveRefreshToken(refreshTokenIds : List<String>){
+        refreshTokenRepository.updateAllInactive(refreshTokenIds)
     }
 
     fun validateRefreshTokenFrom(refreshToken: String): RefreshToken {
@@ -51,10 +74,29 @@ class RefreshTokenService(
     }
 
 
-    private fun addRefreshToken(member : Member, refreshToken : String) : RefreshToken{
+    private fun addMobileRefreshToken(member : Member, refreshToken : String, deviceId : String) : RefreshToken{
         val uuid = jwtTokenProvider.extractUuidFrom(refreshToken)
+        val expire = jwtTokenProvider.extractExpirationFrom(refreshToken)
 
-        val refreshTokenEntity = RefreshToken(uuid, member, RefreshTokenStatus.ACTIVE)
+        val refreshTokenEntity = RefreshToken.ofMobile(
+            id = uuid,
+            member = member,
+            expiresAt = expire,
+            deviceId = deviceId
+        )
+
+        return refreshTokenRepository.save(refreshTokenEntity)
+    }
+
+    private fun addWebRefreshToken(member : Member, refreshToken : String) : RefreshToken{
+        val uuid = jwtTokenProvider.extractUuidFrom(refreshToken)
+        val expire = jwtTokenProvider.extractExpirationFrom(refreshToken)
+
+        val refreshTokenEntity = RefreshToken.ofWeb(
+            id = uuid,
+            member = member,
+            expiresAt = expire,
+        )
 
         return refreshTokenRepository.save(refreshTokenEntity)
     }
@@ -76,5 +118,11 @@ class RefreshTokenService(
     private fun isInactive(findRefreshTokenEntity: RefreshToken?) =
         findRefreshTokenEntity!!.status == RefreshTokenStatus.INACTIVE
 
+    private fun deleteFcmToken(deviceId : String) {
+        val findFcmTokens = fcmTokenQueryService.findAllFcmTokenByDeviceId(deviceId)
+        findFcmTokens.forEach {
+            it.delete(time.nowLocalDateTime)
+        }
+    }
 
 }
