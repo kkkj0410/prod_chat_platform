@@ -33,6 +33,7 @@ class RefreshTokenRepositoryImpl(
             )
             .from(refreshToken)
             .where(
+                refreshToken.deviceId.isNotNull,
                 refreshToken.expiresAt.lt(time.nowLocalDateTime),
                 refreshToken.status.eq(RefreshTokenStatus.ACTIVE),
                 refreshToken.deletedAt.isNull,
