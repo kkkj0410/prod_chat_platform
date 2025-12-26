@@ -4,10 +4,13 @@ import org.springframework.stereotype.Component
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.ZoneId
 import java.util.*
 
 @Component
 class TimeProvider() : Time{
+
+    override val zoneId: ZoneId = ZoneId.of("Asia/Seoul")
 
     override val nowDate: Date
         get() = Date()

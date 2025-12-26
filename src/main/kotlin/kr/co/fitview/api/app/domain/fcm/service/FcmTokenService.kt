@@ -1,10 +1,7 @@
 package kr.co.fitview.api.app.domain.fcm.service
 
-import kr.co.fitview.api.app.domain.fcm.dto.FcmSendEvent
 import kr.co.fitview.api.app.domain.fcm.dto.request.FcmTokenCreateServiceRequest
 import kr.co.fitview.api.app.domain.fcm.entity.FcmToken
-import kr.co.fitview.api.app.domain.fcm.entity.enums.FcmTokenPlatform
-import kr.co.fitview.api.app.domain.fcm.enums.FcmMessage
 import kr.co.fitview.api.app.domain.fcm.repository.FcmTokenRepository
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.global.exception.GlobalException
@@ -15,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional
 
 @Service
 @Transactional(readOnly = true)
-class FcmService(
+class FcmTokenService(
     private val fcmPublisher: FcmPublisher,
     private val fcmTokenRepository: FcmTokenRepository,
     private val memberQueryService: MemberQueryService
@@ -42,6 +39,11 @@ class FcmService(
         )
 
         return fcmTokenRepository.save(fcmToken)
+    }
+
+    @Transactional
+    fun modifyAllFcmTokenFrom(deviceIds: List<String>) {
+        fcmTokenRepository.deleteAllFcmTokenBy(deviceIds)
     }
 
     private fun isNotNull(value: Any?) = value != null

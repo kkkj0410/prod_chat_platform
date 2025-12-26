@@ -6,6 +6,8 @@ import kr.co.fitview.api.app.domain.fcm.entity.enums.FcmTokenPlatform
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.global.entity.Role
+import kr.co.fitview.api.app.global.time.Time
+import kr.co.fitview.api.app.global.time.TimeHolder.time
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.tuple
 import org.junit.jupiter.api.DisplayName
@@ -15,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired
 class FcmTokenRepositoryTest @Autowired constructor(
     private val memberRepository : MemberRepository,
     private val fcmTokenRepository : FcmTokenRepository,
+    private val time : Time
 ) : IntegrationTestSupport() {
 
     @DisplayName("회원이 가진 전체 FCM 토큰을 조회한다.")
@@ -139,5 +142,55 @@ class FcmTokenRepositoryTest @Autowired constructor(
                 member, "deviceId1", "token1", FcmTokenPlatform.ANDROID
             )
 
+    }
+
+    @DisplayName("기기의 fcm 토큰을 삭제한다.")
+    @Test
+    fun deleteAllFcmTokenBy() {
+        // given
+        val member = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(member)
+
+        val fcmToken1 = FcmToken.of(
+            member = member,
+            deviceId = "deviceId1",
+            token = "token1",
+            platform = FcmTokenPlatform.ANDROID
+        )
+        val fcmToken2 = FcmToken.of(
+            member = member,
+            deviceId = "deviceId2",
+            token = "token2",
+            platform = FcmTokenPlatform.IOS
+        )
+        val fcmToken3 = FcmToken.of(
+            member = member,
+            deviceId = "deviceId3",
+            token = "token2",
+            platform = FcmTokenPlatform.IOS
+        )
+        fcmTokenRepository.save(fcmToken1)
+        fcmTokenRepository.save(fcmToken2)
+        fcmTokenRepository.save(fcmToken3)
+
+        val deviceIds = listOf("deviceId1", "deviceId3")
+
+        // when
+        fcmTokenRepository.deleteAllFcmTokenBy(deviceIds)
+
+        // then
+        val findFcmTokens = fcmTokenRepository.findAll()
+
+        assertThat(findFcmTokens)
+            .extracting("id", "deviceId", "deletedAt")
+            .contains(
+                tuple(fcmToken1.id!!, fcmToken1.deviceId!!, time.nowLocalDateTime),
+                tuple(fcmToken2.id!!, fcmToken2.deviceId!!, null),
+                tuple(fcmToken3.id!!, fcmToken3.deviceId!!, time.nowLocalDateTime),
+            )
     }
 }

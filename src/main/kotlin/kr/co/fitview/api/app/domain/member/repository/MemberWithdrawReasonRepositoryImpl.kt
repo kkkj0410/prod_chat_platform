@@ -4,7 +4,6 @@ import com.querydsl.core.types.Projections
 import com.querydsl.jpa.impl.JPAQueryFactory
 import kr.co.fitview.api.app.domain.member.condition.AdminWithdrawMemberCondition
 import kr.co.fitview.api.app.domain.member.dto.response.AdminWithdrawMemberResponse
-import kr.co.fitview.api.app.domain.member.dto.response.MemberLocalResponse
 import kr.co.fitview.api.app.domain.member.entity.QMember.member
 import kr.co.fitview.api.app.domain.member.entity.QMemberWithdrawReason.memberWithdrawReason
 import org.springframework.data.domain.Pageable

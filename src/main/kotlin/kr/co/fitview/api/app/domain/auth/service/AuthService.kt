@@ -45,7 +45,7 @@ class AuthService(
         val findMember = findMember(request)
 
         val accessToken = jwtTokenProvider.createAccessToken(findMember.id!!, findMember.role!!)
-        val refreshToken = refreshTokenService.issueRefreshToken(findMember.id!!)
+        val refreshToken = refreshTokenService.issueWebRefreshToken(findMember.id!!)
 
         if(isMobile(headerClientType)){
             return MemberLoginResponse(accessToken, refreshToken, null)

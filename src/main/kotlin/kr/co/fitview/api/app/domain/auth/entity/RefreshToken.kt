@@ -6,6 +6,8 @@ import jakarta.validation.constraints.Size
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.global.entity.BaseSoftDeleteEntity
 import org.hibernate.annotations.ColumnDefault
+import java.time.Instant
+import java.time.LocalDateTime
 
 @Entity
 @Table(name = "refresh_token")
@@ -25,13 +27,42 @@ class RefreshToken(
     @Lob
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    var status: RefreshTokenStatus? = RefreshTokenStatus.ACTIVE
+    var status: RefreshTokenStatus? = RefreshTokenStatus.ACTIVE,
+
+    @Column(name = "expires_at", nullable = false)
+    var expiresAt: LocalDateTime? = null,
+
+    @Size(max = 100)
+    @Column(name = "device_id", length = 100)
+    var deviceId: String? = null
 
 ) : BaseSoftDeleteEntity() {
 
     fun inactive() : RefreshToken{
         this.status = RefreshTokenStatus.INACTIVE
         return this
+    }
+
+    companion object {
+
+        fun ofWeb(id: String, member: Member, expiresAt: LocalDateTime): RefreshToken {
+            return RefreshToken(
+                id = id,
+                member = member,
+                expiresAt = expiresAt,
+                status = RefreshTokenStatus.ACTIVE
+            )
+        }
+
+        fun ofMobile(id: String, member: Member, expiresAt: LocalDateTime, deviceId: String): RefreshToken {
+            return RefreshToken(
+                id = id,
+                member = member,
+                status = RefreshTokenStatus.ACTIVE,
+                expiresAt = expiresAt,
+                deviceId = deviceId
+            )
+        }
     }
 
 }

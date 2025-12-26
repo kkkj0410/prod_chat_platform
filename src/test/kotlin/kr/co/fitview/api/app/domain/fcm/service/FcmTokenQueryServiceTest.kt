@@ -11,14 +11,16 @@ import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.time.Time
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.tuple
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.then
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.format.DateTimeFormatter
 
-class FcmQueryServiceTest @Autowired constructor(
-    private val fcmQueryService : FcmQueryService,
+class FcmTokenQueryServiceTest @Autowired constructor(
+    private val fcmTokenQueryService : FcmTokenQueryService,
     private val fcmTokenRepository : FcmTokenRepository,
     private val memberRepository : MemberRepository,
     private val deepLinkConstant: DeepLinkConstant,
@@ -64,7 +66,7 @@ class FcmQueryServiceTest @Autowired constructor(
         )
 
         // when
-        fcmQueryService.sendWorkoutPartnerRequest(event)
+        fcmTokenQueryService.sendWorkoutPartnerRequest(event)
 
         // then
         then(fcmPublisher).should().send(
@@ -105,7 +107,7 @@ class FcmQueryServiceTest @Autowired constructor(
             fromMemberId = 2L
         )
 
-        fcmQueryService.sendWorkoutPartnerAccept(event)
+        fcmTokenQueryService.sendWorkoutPartnerAccept(event)
 
         then(fcmPublisher).should().send(
             token = "token",
@@ -131,7 +133,7 @@ class FcmQueryServiceTest @Autowired constructor(
             chatMessageId = 2L
         )
 
-        fcmQueryService.sendChatMessage(event)
+        fcmTokenQueryService.sendChatMessage(event)
 
         then(fcmPublisher).should().send(
             token = "token",
@@ -160,7 +162,7 @@ class FcmQueryServiceTest @Autowired constructor(
             scheduledAt = scheduledAt
         )
 
-        fcmQueryService.sendWorkoutRequest(event)
+        fcmTokenQueryService.sendWorkoutRequest(event)
 
         then(fcmPublisher).should().send(
             token = "token",
@@ -185,7 +187,7 @@ class FcmQueryServiceTest @Autowired constructor(
             chatMessageId = 2L
         )
 
-        fcmQueryService.sendWorkoutRequestAccept(event)
+        fcmTokenQueryService.sendWorkoutRequestAccept(event)
 
         then(fcmPublisher).should().send(
             token = "token",
@@ -211,7 +213,7 @@ class FcmQueryServiceTest @Autowired constructor(
             chatMessageId = 2L
         )
 
-        fcmQueryService.sendWorkoutRequestReject(event)
+        fcmTokenQueryService.sendWorkoutRequestReject(event)
 
         then(fcmPublisher).should().send(
             token = "token",
@@ -237,7 +239,7 @@ class FcmQueryServiceTest @Autowired constructor(
             chatMessageId = 2L
         )
 
-        fcmQueryService.sendWorkoutComplete(event)
+        fcmTokenQueryService.sendWorkoutComplete(event)
 
         then(fcmPublisher).should().send(
             token = "token",
@@ -261,7 +263,7 @@ class FcmQueryServiceTest @Autowired constructor(
             toMemberId = member.id!!
         )
 
-        fcmQueryService.sendReviewReceive(event)
+        fcmTokenQueryService.sendReviewReceive(event)
 
         then(fcmPublisher).should().send(
             token = "token",
@@ -285,7 +287,7 @@ class FcmQueryServiceTest @Autowired constructor(
             workoutHistoryId = 2L
         )
 
-        fcmQueryService.sendReviewRequest(event)
+        fcmTokenQueryService.sendReviewRequest(event)
 
         then(fcmPublisher).should().send(
             token = "token",
@@ -297,5 +299,55 @@ class FcmQueryServiceTest @Autowired constructor(
                 "deepLink" to deepLinkConstant.BASE_DOMAIN + FcmMessage.REVIEW_REQUEST.formatDeepLinkPath(2L),
             )
         )
+    }
+
+    @DisplayName("기기 id의 fcm 토큰을 전체 조회한다.")
+    @Test
+    fun findAllFcmTokenByDeviceId() {
+        // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(member)
+
+        val fcmToken1 = FcmToken(
+            member = member,
+            deviceId = "deviceId",
+            token = "token",
+            isActive = true,
+            platform = FcmTokenPlatform.ANDROID
+        )
+        val fcmToken2 = FcmToken(
+            member = member,
+            deviceId = "deviceId",
+            token = "token",
+            isActive = true,
+            platform = FcmTokenPlatform.ANDROID
+        )
+        val fcmToken3 = FcmToken(
+            member = member,
+            deviceId = "deviceId2",
+            token = "token",
+            isActive = true,
+            platform = FcmTokenPlatform.ANDROID
+        )
+        fcmTokenRepository.save(fcmToken1)
+        fcmTokenRepository.save(fcmToken2)
+        fcmTokenRepository.save(fcmToken3)
+
+        // when
+        val response = fcmTokenQueryService.findAllFcmTokenByDeviceId("deviceId")
+
+        // then
+        assertThat(response).hasSize(2)
+        assertThat(response)
+            .extracting("id", "deviceId")
+            .contains(
+                tuple(fcmToken1.id!!, fcmToken1.deviceId!!),
+                tuple(fcmToken2.id!!, fcmToken2.deviceId!!)
+            )
+
     }
 }

@@ -150,7 +150,8 @@ class OAuth2ControllerDocsTest : RestDocsSupport() {
         // given
         val request = OAuth2LoginRequest(
             provider = OAuth2Provider.APPLE,
-            providerToken = "appleAuthCode"
+            providerToken = "appleAuthCode",
+            deviceId = "deviceId"
         )
 
         given(oAuth2Service.loginWithAdd(any()))
@@ -178,7 +179,9 @@ class OAuth2ControllerDocsTest : RestDocsSupport() {
                     fieldWithPath("provider").type(JsonFieldType.STRING)
                         .description("플랫폼 - APPLE, KAKAO, GOOGLE"),
                     fieldWithPath("providerToken").type(JsonFieldType.STRING)
-                        .description("APPLE = authCode, KAKAO = accessToken, GOOGLE = authCode")
+                        .description("APPLE = authCode, KAKAO = accessToken, GOOGLE = authCode"),
+                    fieldWithPath("deviceId").type(JsonFieldType.STRING)
+                        .description("모바일 기기 고유 식별 번호. 로그아웃 상태 시, 푸시 알람 취소를 위함")
                 ),
 
 
