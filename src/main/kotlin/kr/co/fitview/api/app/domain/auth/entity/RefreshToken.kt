@@ -23,10 +23,8 @@ class RefreshToken(
     var member: Member? = null,
 
     @NotNull
-    @ColumnDefault("'ACTIVE'")
-    @Lob
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
+    @Column(name = "status", nullable = false, length = 40)
     var status: RefreshTokenStatus? = RefreshTokenStatus.ACTIVE,
 
     @Column(name = "expires_at", nullable = false)
