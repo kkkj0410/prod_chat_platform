@@ -5,6 +5,7 @@ import kr.co.fitview.api.app.domain.workout_partner.condition.WorkoutPartnerRequ
 import kr.co.fitview.api.app.domain.workout_partner.dto.response.AdminWorkoutPartnerRequestResponse
 import kr.co.fitview.api.app.domain.workout_partner.dto.response.WorkoutPartnerRequestResponse
 import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartnerRequest
+import kr.co.fitview.api.app.domain.workout_partner.entity.enums.WorkoutPartnerRequestStatus
 import kr.co.fitview.api.app.domain.workout_partner.repository.WorkoutPartnerRequestRepository
 import kr.co.fitview.api.app.global.time.Time
 import org.springframework.data.domain.Slice
@@ -27,6 +28,22 @@ class WorkoutPartnerRequestQueryService(
         }
 
         return null
+    }
+
+    fun findActiveRequests(meMemberId : Long, otherMemberIds : List<Long>) : List<WorkoutPartnerRequest>{
+        val latestRequests = workoutPartnerRequestRepository.findAllLatestWorkoutPartnerRequest(meMemberId, otherMemberIds)
+
+        val now = time.nowLocalDateTime
+
+        return latestRequests.filter { request ->
+            when (request.status) {
+                WorkoutPartnerRequestStatus.ACCEPT -> true
+
+                WorkoutPartnerRequestStatus.PENDING -> !request.requestedAt!!.isBefore(now.minusHours(24))
+
+                else -> false
+            }
+        }
     }
 
     fun findWorkoutPartnerFrom(memberId: Long, condition: WorkoutPartnerRequestCondition) : Slice<WorkoutPartnerRequestResponse> {

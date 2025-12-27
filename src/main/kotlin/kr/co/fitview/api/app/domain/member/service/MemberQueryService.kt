@@ -4,6 +4,7 @@ import kr.co.fitview.api.app.domain.address.constant.AddressConstant
 import kr.co.fitview.api.app.domain.address.entity.Address
 import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
 import kr.co.fitview.api.app.domain.address.service.AddressService
+import kr.co.fitview.api.app.domain.chat.service.ChatRoomQueryService
 import kr.co.fitview.api.app.domain.member.condition.AdminMemberCondition
 import kr.co.fitview.api.app.domain.member.condition.MemberLocalCondition
 import kr.co.fitview.api.app.domain.member.dto.BoundingBox
@@ -12,7 +13,9 @@ import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.entity.WorkoutTime
 import kr.co.fitview.api.app.domain.member.entity.enums.WorkoutTimeName
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
+import kr.co.fitview.api.app.domain.workout_partner.entity.enums.WorkoutPartnerRequestStatus
 import kr.co.fitview.api.app.domain.workout_partner.service.WorkoutPartnerQueryService
+import kr.co.fitview.api.app.domain.workout_partner.service.WorkoutPartnerRequestQueryService
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.global.GlobalErrorCode
 import kr.co.fitview.api.app.global.exception.error.member.MemberErrorCode
@@ -24,7 +27,6 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Slice
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import javax.management.Query.div
 import kotlin.math.cos
 
 
@@ -33,6 +35,8 @@ import kotlin.math.cos
 class MemberQueryService(
     private val memberRepository : MemberRepository,
     private val workoutPartnerQueryService : WorkoutPartnerQueryService,
+    private val workoutPartnerRequestQueryService : WorkoutPartnerRequestQueryService,
+    private val chatRoomQueryService : ChatRoomQueryService,
     private val addressService : AddressService,
     private val redisService : RedisService,
     private val randomCustom : RandomCustom
@@ -140,7 +144,46 @@ class MemberQueryService(
             shuffledMembers.addAll(shuffledSeoulMembers)
         }
 
-        return createProfilePage(condition, shuffledMembers)
+        val memberPage = createProfilePage(condition, shuffledMembers)
+        val otherMemberIds = memberPage.content.map { it.memberId }
+
+        val findWorkoutPartnerRequests = workoutPartnerRequestQueryService.findActiveRequests(
+            meMemberId = memberId,
+            otherMemberIds = otherMemberIds
+        )
+
+        val findChatRooms = chatRoomQueryService.findChatRoomFrom(memberId, otherMemberIds)
+
+        val requestMap = findWorkoutPartnerRequests.associateBy { request ->
+            if (request.getFromMemberId() == memberId) request.getToMemberId() else request.getFromMemberId()
+        }
+
+        val chatRoomMap = findChatRooms.associate {
+            it.otherMemberId to it.chatRoomId
+        }
+
+        return memberPage.map { member ->
+
+            val request = requestMap[member.memberId]
+
+            val lastWorkoutPartnerRequest = request?.let { req ->
+
+                val chatRoomId = if (req.status == WorkoutPartnerRequestStatus.ACCEPT) {
+                    chatRoomMap[member.memberId]
+                } else {
+                    null
+                }
+
+                LastWorkoutPartnerRequestResponse(
+                    workoutPartnerRequestId = req.id!!,
+                    status = req.status!!,
+                    isSentByMe = req.getFromMemberId() == memberId,
+                    chatRoomId = chatRoomId
+                )
+            }
+
+            member.copy(lastWorkoutPartnerRequest = lastWorkoutPartnerRequest)
+        }
     }
 
 
@@ -159,20 +202,64 @@ class MemberQueryService(
 
         val findMemberByRecommendations = memberRepository.findMemberWithinRecommendation(findMeMember, randomMemberId, size)
 
+        val response : List<MemberRecommendationResponse>
+
         if(findMemberByRecommendations.size == size){
-            return randomCustom.shuffled(seed, findMemberByRecommendations)
+            response = randomCustom.shuffled(seed, findMemberByRecommendations)
+        }
+        else{
+            val remain = size - findMemberByRecommendations.size
+            val memberIds = findMemberByRecommendations.map{it.memberId}
+
+            val findMemberInSeoul = memberRepository.findMemberByNotMemberIdsWithinRecommendationsAndSeoul(
+                memberId = memberId,
+                memberIds = memberIds,
+                size = remain
+            )
+
+            response = randomCustom.shuffled(seed, findMemberByRecommendations) + randomCustom.shuffled(seed, findMemberInSeoul)
         }
 
-        val remain = size - findMemberByRecommendations.size
-        val memberIds = findMemberByRecommendations.map{it.memberId}
+        val otherMemberIds = response.map { it.memberId }
 
-        val findMemberInSeoul = memberRepository.findMemberByNotMemberIdsWithinRecommendationsAndSeoul(
-            memberId = memberId,
-            memberIds = memberIds,
-            size = remain
+        val findWorkoutPartnerRequests = workoutPartnerRequestQueryService.findActiveRequests(
+            meMemberId = memberId,
+            otherMemberIds = otherMemberIds
         )
 
-        return randomCustom.shuffled(seed, findMemberByRecommendations) + randomCustom.shuffled(seed, findMemberInSeoul)
+        val findChatRooms = chatRoomQueryService.findChatRoomFrom(memberId, otherMemberIds)
+
+        val requestMap = findWorkoutPartnerRequests.associateBy { request ->
+            if (request.getFromMemberId() == memberId) request.getToMemberId() else request.getFromMemberId()
+        }
+
+        val chatRoomMap = findChatRooms.associate {
+            it.otherMemberId to it.chatRoomId
+        }
+
+        return response.map { member ->
+
+            val request = requestMap[member.memberId]
+
+            val lastWorkoutPartnerRequest = request?.let { req ->
+
+                val chatRoomId = if (req.status == WorkoutPartnerRequestStatus.ACCEPT) {
+                    chatRoomMap[member.memberId]
+                } else {
+                    null
+                }
+
+                LastWorkoutPartnerRequestResponse(
+                    workoutPartnerRequestId = req.id!!,
+                    status = req.status!!,
+                    isSentByMe = req.getFromMemberId() == memberId,
+                    chatRoomId = chatRoomId
+                )
+            }
+
+            member.copy(lastWorkoutPartnerRequest = lastWorkoutPartnerRequest)
+        }
+
     }
 
     fun findOtherMemberFrom(memberId : Long, chatRoomId : Long) : Member? {

@@ -23,7 +23,6 @@ class WorkoutPartnerController(
     private val workoutPartnerRequestService : WorkoutPartnerRequestService,
     private val workoutPartnerRequestQueryService : WorkoutPartnerRequestQueryService,
     private val securityUtil : SecurityUtil,
-    private val stompPublishService : StompPublishService
 ) {
 
     @PostMapping("/workout-partners")
@@ -34,10 +33,6 @@ class WorkoutPartnerController(
     ) : ResponseEntity<ApiResponse<*>> {
 
         workoutPartnerRequestService.addWorkoutPartnerRequest(securityUtil.getMemberId(), request.toServiceRequest())
-
-//        notificationStompService.sendWorkoutPartnerRequest(
-//            workoutPartnerRequest = savedWorkoutPartnerRequest
-//        )
 
         return ResponseEntity.ok(ApiResponse.success("ok"))
     }
@@ -53,12 +48,6 @@ class WorkoutPartnerController(
     ) : ResponseEntity<ApiResponse<*>> {
 
         workoutPartnerRequestService.updateWorkoutPartnerRequest(securityUtil.getMemberId(), workoutPartnerRequestId, request.toServiceRequest())
-
-//        if(isAccept(workoutPartnerRequest)){
-//            notificationStompService.sendWorkoutPartnerAccept(
-//                workoutPartnerRequest = workoutPartnerRequest
-//            )
-//        }
 
         return ResponseEntity.ok(ApiResponse.success("ok"))
     }
@@ -79,9 +68,6 @@ class WorkoutPartnerController(
             )
         )
     }
-
-    private fun isAccept(workoutPartnerRequest: WorkoutPartnerRequest): Boolean
-            =  workoutPartnerRequest.status == WorkoutPartnerRequestStatus.ACCEPT
 
 
 }

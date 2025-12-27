@@ -1,10 +1,8 @@
 package kr.co.fitview.api.app.domain.member.dto.response
 
-import com.querydsl.core.annotations.QueryProjection
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutExperience
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutGoal
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutStyle
-import kr.co.fitview.api.app.domain.workout_partner.dto.response.LastWorkoutPartnerRequestResponse
 
 data class MemberLocalResponse (
     val memberId : Long,
@@ -13,5 +11,22 @@ data class MemberLocalResponse (
     val workoutStyle: MemberWorkoutStyle,
     val workoutGoal: MemberWorkoutGoal,
     val profileImageUrl : String,
-//    val lastWorkoutPartnerRequest : LastWorkoutPartnerRequestResponse?
-)
+    val lastWorkoutPartnerRequest : LastWorkoutPartnerRequestResponse?
+){
+    constructor(
+        memberId: Long,
+        nickname: String,
+        workoutExperience: MemberWorkoutExperience,
+        workoutStyle: MemberWorkoutStyle,
+        workoutGoal: MemberWorkoutGoal,
+        profileImageUrl: String
+    ) : this(
+        memberId = memberId,
+        nickname = nickname,
+        workoutExperience = workoutExperience,
+        workoutStyle = workoutStyle,
+        workoutGoal = workoutGoal,
+        profileImageUrl = profileImageUrl,
+        lastWorkoutPartnerRequest = null
+    )
+}
