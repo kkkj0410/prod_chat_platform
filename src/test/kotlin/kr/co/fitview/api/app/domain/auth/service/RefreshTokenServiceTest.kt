@@ -24,7 +24,6 @@ import kr.co.fitview.api.app.global.exception.error.member.MemberErrorCode
 
 import kr.co.fitview.api.app.global.jwt.JwtTokenProvider
 import kr.co.fitview.api.app.global.time.Time
-import kr.co.fitview.api.app.global.time.TimeHolder.time
 import org.assertj.core.api.Assertions.*
 
 import org.assertj.core.api.ThrowingConsumer
@@ -73,9 +72,9 @@ class RefreshTokenServiceTest@Autowired constructor(
         val uuid = jwtTokenProvider.extractUuidFrom(savedRefreshToken)
         assertThat(uuid).isEqualTo(usedUuid)
 
-        val refreshTokenEntity = refreshTokenRepository.findById(usedUuid).orElseThrow()
+        val refreshTokenEntity = refreshTokenRepository.findByUidAndDeletedAtIsNull(usedUuid)
         assertThat(refreshTokenEntity)
-            .extracting("id", "status", "deviceId")
+            .extracting("uid", "status", "deviceId")
             .contains(usedUuid, RefreshTokenStatus.ACTIVE, "deviceId")
     }
 
@@ -121,9 +120,9 @@ class RefreshTokenServiceTest@Autowired constructor(
         val uuid = jwtTokenProvider.extractUuidFrom(savedRefreshToken)
         assertThat(uuid).isEqualTo(usedUuid)
 
-        val refreshTokenEntity = refreshTokenRepository.findById(usedUuid).orElseThrow()
+        val refreshTokenEntity = refreshTokenRepository.findByUidAndDeletedAtIsNull(usedUuid)
         assertThat(refreshTokenEntity)
-            .extracting("id", "status")
+            .extracting("uid", "status")
             .contains(usedUuid, RefreshTokenStatus.ACTIVE)
     }
 
@@ -153,7 +152,7 @@ class RefreshTokenServiceTest@Autowired constructor(
 
         // then
         assertThat(refreshTokenEntity)
-            .extracting("id", "status")
+            .extracting("uid", "status")
             .contains(usedUuid, RefreshTokenStatus.INACTIVE)
     }
 
@@ -263,8 +262,8 @@ class RefreshTokenServiceTest@Autowired constructor(
         val refreshToken = loginResponse.refreshToken
 
         val usedUuid = jwtTokenProvider.idGenerator.createUuid()
-        val refreshTokenEntity = refreshTokenRepository.findById(usedUuid).orElseThrow()
-        refreshTokenEntity.inactive()
+        val refreshTokenEntity = refreshTokenRepository.findByUidAndDeletedAtIsNull(usedUuid)
+        refreshTokenEntity!!.inactive()
 
 
         // when & then
@@ -299,7 +298,9 @@ class RefreshTokenServiceTest@Autowired constructor(
         val refreshToken = loginResponse.refreshToken
 
         val usedUuid = jwtTokenProvider.idGenerator.createUuid()
-        refreshTokenRepository.deleteById(usedUuid)
+//        refreshTokenRepository.deleteById(usedUuid)
+        val findRefreshToken = refreshTokenRepository.findByUidAndDeletedAtIsNull(usedUuid)
+        findRefreshToken!!.deletedAt = time.nowLocalDateTime
 
         // when & then
         assertThatThrownBy {
@@ -326,14 +327,14 @@ class RefreshTokenServiceTest@Autowired constructor(
         memberRepository.save(member)
 
         val refreshToken1 = RefreshToken(
-            id = "id1",
+            uid = "id1",
             member = member,
             status = RefreshTokenStatus.ACTIVE,
             expiresAt = time.nowLocalDateTime,
             deviceId = "deviceId1"
         )
         val refreshToken2 = RefreshToken(
-            id = "id2",
+            uid = "id2",
             member = member,
             status = RefreshTokenStatus.ACTIVE,
             expiresAt = time.nowLocalDateTime,
@@ -342,7 +343,7 @@ class RefreshTokenServiceTest@Autowired constructor(
         refreshTokenRepository.save(refreshToken1)
         refreshTokenRepository.save(refreshToken2)
 
-        val refreshTokenIds = listOf(refreshToken1.id!!, refreshToken2.id!!)
+        val refreshTokenIds = listOf(refreshToken1.uid, refreshToken2.uid)
 
         // when
         refreshTokenService.modifyAllInactiveRefreshToken(refreshTokenIds)

@@ -12,7 +12,6 @@ import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.address.dto.request.AddressCreateServiceRequest
 import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
 import kr.co.fitview.api.app.domain.address.repository.AddressRepository
-import kr.co.fitview.api.app.domain.auth.entity.RefreshToken
 import kr.co.fitview.api.app.domain.auth.repository.RefreshTokenRepository
 import kr.co.fitview.api.app.domain.image.entity.enums.MemberImageType
 import kr.co.fitview.api.app.domain.image.repository.MemberImageRepository
@@ -132,13 +131,13 @@ class OAuth2ServiceTest @Autowired constructor(
         val findMemberIdByRefreshToken = jwtTokenProvider.extractMemberIdFrom(response.refreshToken)
         val findRole = jwtTokenProvider.extractRoleFrom(response.accessToken)
         val findUuid = jwtTokenProvider.extractUuidFrom(response.refreshToken)
-        val findRefreshTokenEntity : RefreshToken = refreshTokenRepository.findById(findUuid).orElseThrow()
+        val findRefreshTokenEntity = refreshTokenRepository.findByUidAndDeletedAtIsNull(findUuid)
 
 
         assertThat(findMember)
             .extracting("id", "id", "role")
             .contains(findMemberIdByAccessToken, findMemberIdByRefreshToken, findRole)
-        assertThat(findRefreshTokenEntity.id).isEqualTo(findUuid)
+        assertThat(findRefreshTokenEntity!!.uid).isEqualTo(findUuid)
     }
 
     @DisplayName("카카오 소셜 로그인을 하면 jwt 토큰을 반환한다.")
@@ -181,12 +180,12 @@ class OAuth2ServiceTest @Autowired constructor(
         val findMemberIdByRefreshToken = jwtTokenProvider.extractMemberIdFrom(response.refreshToken)
         val findRole = jwtTokenProvider.extractRoleFrom(response.accessToken)
         val findUuid = jwtTokenProvider.extractUuidFrom(response.refreshToken)
-        val findRefreshTokenEntity : RefreshToken = refreshTokenRepository.findById(findUuid).orElseThrow()
+        val findRefreshTokenEntity = refreshTokenRepository.findByUidAndDeletedAtIsNull(findUuid)
 
         assertThat(savedMember)
             .extracting("id", "id", "role")
             .contains(findMemberIdByAccessToken, findMemberIdByRefreshToken, findRole)
-        assertThat(findRefreshTokenEntity.id).isEqualTo(findUuid)
+        assertThat(findRefreshTokenEntity!!.uid).isEqualTo(findUuid)
     }
 
     @DisplayName("구글 로그인을 하면 jwt 토큰을 반환한다.")
@@ -234,12 +233,12 @@ class OAuth2ServiceTest @Autowired constructor(
         val findMemberIdByRefreshToken = jwtTokenProvider.extractMemberIdFrom(response.refreshToken)
         val findRole = jwtTokenProvider.extractRoleFrom(response.accessToken)
         val findUuid = jwtTokenProvider.extractUuidFrom(response.refreshToken)
-        val findRefreshTokenEntity : RefreshToken = refreshTokenRepository.findById(findUuid).orElseThrow()
+        val findRefreshTokenEntity = refreshTokenRepository.findByUidAndDeletedAtIsNull(findUuid)
 
         assertThat(savedMember)
             .extracting("id", "id", "role")
             .contains(findMemberIdByAccessToken, findMemberIdByRefreshToken, findRole)
-        assertThat(findRefreshTokenEntity.id).isEqualTo(findUuid)
+        assertThat(findRefreshTokenEntity!!.uid).isEqualTo(findUuid)
 
     }
 

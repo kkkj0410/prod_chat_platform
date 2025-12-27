@@ -25,7 +25,7 @@ class RefreshTokenRepositoryImpl(
             .select(
                 Projections.constructor(
                     RefreshTokenResponse::class.java,
-                    refreshToken.id,
+                    refreshToken.uid,
                     refreshToken.deviceId
                 )
             )
@@ -50,12 +50,12 @@ class RefreshTokenRepositoryImpl(
         return expiredTokens
     }
 
-    override fun updateAllInactive(refreshTokenIds: List<String>) {
-        if (refreshTokenIds.isEmpty()) return
+    override fun updateAllInactive(tokenIds: List<String>) {
+        if (tokenIds.isEmpty()) return
 
         queryFactory.update(refreshToken)
             .set(refreshToken.status, RefreshTokenStatus.INACTIVE)
-            .where(refreshToken.id.`in`(refreshTokenIds))
+            .where(refreshToken.uid.`in`(tokenIds))
             .execute()
 
         em.flush()

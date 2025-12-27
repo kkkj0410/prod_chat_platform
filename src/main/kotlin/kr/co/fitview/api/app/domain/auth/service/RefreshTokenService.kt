@@ -10,7 +10,6 @@ import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.jwt.JwtErrorCode
 import kr.co.fitview.api.app.global.jwt.JwtTokenProvider
 import kr.co.fitview.api.app.global.time.Time
-import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -66,7 +65,7 @@ class RefreshTokenService(
     fun validateRefreshTokenFrom(refreshToken: String): RefreshToken {
         val refreshTokenUuid = jwtTokenProvider.extractUuidFrom(refreshToken)
 
-        val findRefreshTokenEntity = refreshTokenRepository.findByIdOrNull(refreshTokenUuid)
+        val findRefreshTokenEntity = refreshTokenRepository.findByUidAndDeletedAtIsNull(refreshTokenUuid)
 
         validateRefreshTokenFrom(findRefreshTokenEntity)
 

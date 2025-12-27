@@ -5,17 +5,16 @@ import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.global.entity.BaseSoftDeleteEntity
-import org.hibernate.annotations.ColumnDefault
-import java.time.Instant
 import java.time.LocalDateTime
 
 @Entity
 @Table(name = "refresh_token")
 class RefreshToken(
-    @Id
+
+    @NotNull
     @Size(max = 40)
-    @Column(name = "refresh_token_id", nullable = false, length = 40)
-    var id: String? = null,
+    @Column(name = "refresh_token_uid", nullable = false, length = 40, unique = true)
+    var uid: String,
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -23,10 +22,8 @@ class RefreshToken(
     var member: Member? = null,
 
     @NotNull
-    @ColumnDefault("'ACTIVE'")
-    @Lob
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
+    @Column(name = "status", nullable = false, length = 40)
     var status: RefreshTokenStatus? = RefreshTokenStatus.ACTIVE,
 
     @Column(name = "expires_at", nullable = false)
@@ -38,6 +35,11 @@ class RefreshToken(
 
 ) : BaseSoftDeleteEntity() {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "refresh_token_id", nullable = false)
+    var id: Long? = null
+
     fun inactive() : RefreshToken{
         this.status = RefreshTokenStatus.INACTIVE
         return this
@@ -47,7 +49,7 @@ class RefreshToken(
 
         fun ofWeb(id: String, member: Member, expiresAt: LocalDateTime): RefreshToken {
             return RefreshToken(
-                id = id,
+                uid = id,
                 member = member,
                 expiresAt = expiresAt,
                 status = RefreshTokenStatus.ACTIVE
@@ -56,7 +58,7 @@ class RefreshToken(
 
         fun ofMobile(id: String, member: Member, expiresAt: LocalDateTime, deviceId: String): RefreshToken {
             return RefreshToken(
-                id = id,
+                uid = id,
                 member = member,
                 status = RefreshTokenStatus.ACTIVE,
                 expiresAt = expiresAt,
