@@ -23,6 +23,7 @@ import kr.co.fitview.api.app.domain.review.dto.response.ReviewResponse
 import kr.co.fitview.api.app.domain.review.dto.response.ReviewTagCountResponse
 import kr.co.fitview.api.app.domain.review.service.ReviewQueryService
 import kr.co.fitview.api.app.domain.review.service.ReviewTagCountQueryService
+import kr.co.fitview.api.app.domain.workout_partner.entity.enums.WorkoutPartnerRequestStatus
 import kr.co.fitview.api.app.global.entity.Gender
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.util.SecurityUtil
@@ -368,7 +369,8 @@ class MemberControllerDocsTest : RestDocsSupport() {
                         workoutStyle = MemberWorkoutStyle.CARDIO,
                         workoutGoal = MemberWorkoutGoal.WEIGHT_LOSS,
                         profileImageUrl = "https://example.com/profile/1.jpg",
-                        workoutImageUrl = "https://example.com/workout/1.jpg"
+                        workoutImageUrl = "https://example.com/workout/1.jpg",
+                        lastWorkoutPartnerRequest = null
                     ),
                     MemberRecommendationResponse(
                         memberId = 2L,
@@ -377,7 +379,13 @@ class MemberControllerDocsTest : RestDocsSupport() {
                         workoutStyle = MemberWorkoutStyle.BALANCE,
                         workoutGoal = MemberWorkoutGoal.PERFORMANCE_GOAL,
                         profileImageUrl = "https://example.com/profile/2.jpg",
-                        workoutImageUrl = null
+                        workoutImageUrl = null,
+                        lastWorkoutPartnerRequest = LastWorkoutPartnerRequestResponse(
+                            workoutPartnerRequestId = 101L,
+                            status = WorkoutPartnerRequestStatus.PENDING,
+                            isSentByMe = true,
+                            chatRoomId = null
+                        )
                     )
                 )
             )
@@ -427,7 +435,24 @@ class MemberControllerDocsTest : RestDocsSupport() {
                             .description("조회 대상 회원 프로필 이미지"),
                         fieldWithPath("data[].workoutImageUrl").type(JsonFieldType.STRING).optional()
                             .description("조회 대상 회원 운동 사진"),
-                    )
+                        fieldWithPath("data[].lastWorkoutPartnerRequest").type(JsonFieldType.OBJECT)
+                            .optional()
+                            .description("본인 <-> 상대방 사이의 마지막 운동 요청. 조회 조건 : 1. 24시간 이내 데이터만 조회(ACCEPT는 해당 조건 없이 그냥 조회). 2. PENDING, ACCEPT 상태의 데이터만 조회(나머지는 다시 파트너 요청이 가능하므로 조회 데이터에서 제외)"),
+                        fieldWithPath("data[].lastWorkoutPartnerRequest.workoutPartnerRequestId")
+                            .type(JsonFieldType.NUMBER)
+                            .description("본인과 상대방 사이의 마지막 운동 파트너 요청 ID"),
+                        fieldWithPath("data[].lastWorkoutPartnerRequest.status")
+                            .type(JsonFieldType.STRING)
+                            .description("마지막 운동 파트너 요청 상태 (PENDING: 응답 대기, ACCEPT: 수락됨)"),
+                        fieldWithPath("data[].lastWorkoutPartnerRequest.isSentByMe")
+                            .type(JsonFieldType.BOOLEAN)
+                            .description("해당 운동 파트너 요청을 본인이 보냈는지 여부 (true: 본인 → 상대, false: 상대 → 본인)"),
+                        fieldWithPath("data[].lastWorkoutPartnerRequest.chatRoomId")
+                            .type(JsonFieldType.NUMBER)
+                            .optional()
+                            .description("운동 파트너 요청이 ACCEPT + 채팅방 존재 상태일 경우 생성된 채팅방 ID (PENDING 상태에서는 null)"),
+
+                        )
                 )
             )
     }
@@ -460,7 +485,13 @@ class MemberControllerDocsTest : RestDocsSupport() {
                 workoutExperience = MemberWorkoutExperience.FOUR_TO_SIX_YEARS,
                 workoutStyle = MemberWorkoutStyle.BALANCE,
                 workoutGoal = MemberWorkoutGoal.ENDURANCE,
-                profileImageUrl = "https://static.fitview.co.kr/member/profile/0cca097d-630a-46cb-9da6-685be5d3e1f2"
+                profileImageUrl = "https://static.fitview.co.kr/member/profile/0cca097d-630a-46cb-9da6-685be5d3e1f2",
+                lastWorkoutPartnerRequest = LastWorkoutPartnerRequestResponse(
+                    workoutPartnerRequestId = 101L,
+                    status = WorkoutPartnerRequestStatus.PENDING,
+                    isSentByMe = true,
+                    chatRoomId = null
+                )
             )
         )
 
@@ -556,6 +587,23 @@ class MemberControllerDocsTest : RestDocsSupport() {
                             .description("조회 대상 회원 운동 목표"),
                         fieldWithPath("data.content[].profileImageUrl").type(JsonFieldType.STRING)
                             .description("조회 대상 회원 프로필 이미지"),
+
+                        fieldWithPath("data.content[].lastWorkoutPartnerRequest").type(JsonFieldType.OBJECT)
+                            .optional()
+                            .description("본인 <-> 상대방 사이의 마지막 운동 요청. 조회 조건 : 1. 24시간 이내 데이터만 조회(ACCEPT는 해당 조건 없이 그냥 조회). 2. PENDING, ACCEPT 상태의 데이터만 조회(나머지는 다시 파트너 요청이 가능하므로 조회 데이터에서 제외)"),
+                        fieldWithPath("data.content[].lastWorkoutPartnerRequest.workoutPartnerRequestId")
+                            .type(JsonFieldType.NUMBER)
+                            .description("본인과 상대방 사이의 마지막 운동 파트너 요청 ID"),
+                        fieldWithPath("data.content[].lastWorkoutPartnerRequest.status")
+                            .type(JsonFieldType.STRING)
+                            .description("마지막 운동 파트너 요청 상태 (PENDING: 응답 대기, ACCEPT: 수락됨)"),
+                        fieldWithPath("data.content[].lastWorkoutPartnerRequest.isSentByMe")
+                            .type(JsonFieldType.BOOLEAN)
+                            .description("해당 운동 파트너 요청을 본인이 보냈는지 여부 (true: 본인 → 상대, false: 상대 → 본인)"),
+                        fieldWithPath("data.content[].lastWorkoutPartnerRequest.chatRoomId")
+                            .type(JsonFieldType.NUMBER)
+                            .optional()
+                            .description("운동 파트너 요청이 ACCEPT + 채팅방 존재 상태일 경우 생성된 채팅방 ID (PENDING 상태에서는 null)"),
 
                         *RestDocsPagination.paginationByPage()
                     )

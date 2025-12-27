@@ -2,12 +2,11 @@ package kr.co.fitview.api.app.domain.workout_partner.repository
 
 import com.querydsl.core.types.Projections
 import com.querydsl.core.types.dsl.BooleanExpression
+import com.querydsl.core.types.dsl.CaseBuilder
 import com.querydsl.core.types.dsl.Expressions
 import com.querydsl.jpa.impl.JPAQueryFactory
 import jakarta.persistence.EntityManager
-import kr.co.fitview.api.app.domain.chat.entity.QChatMessage.chatMessage
 import kr.co.fitview.api.app.domain.chat.entity.QChatParticipant
-import kr.co.fitview.api.app.domain.chat.entity.QChatParticipant.chatParticipant
 import kr.co.fitview.api.app.domain.chat.entity.QChatRoom.chatRoom
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatRoomType
 import kr.co.fitview.api.app.domain.image.entity.QImage.image
@@ -15,9 +14,6 @@ import kr.co.fitview.api.app.domain.image.entity.QMemberImage.memberImage
 import kr.co.fitview.api.app.domain.image.entity.enums.MemberImageType
 import kr.co.fitview.api.app.domain.member.entity.QMember
 import kr.co.fitview.api.app.domain.member.entity.QMember.member
-import kr.co.fitview.api.app.domain.workout.dto.response.WorkoutRequestUpdateResponse
-import kr.co.fitview.api.app.domain.workout.entity.QWorkoutRequest.workoutRequest
-import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
 import kr.co.fitview.api.app.domain.workout_history.entity.QWorkoutHistory.workoutHistory
 import kr.co.fitview.api.app.domain.workout_partner.condition.AdminWorkoutPartnerRequestCondition
 import kr.co.fitview.api.app.domain.workout_partner.condition.WorkoutPartnerRequestCondition
@@ -29,12 +25,12 @@ import kr.co.fitview.api.app.domain.workout_partner.dto.response.WorkoutImageMin
 import kr.co.fitview.api.app.domain.workout_partner.dto.response.WorkoutPartnerRequestExpireResponse
 import kr.co.fitview.api.app.domain.workout_partner.dto.response.WorkoutPartnerRequestResponse
 import kr.co.fitview.api.app.domain.workout_partner.entity.QWorkoutPartnerRequest.workoutPartnerRequest
+import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartnerRequest
 import kr.co.fitview.api.app.domain.workout_partner.entity.enums.WorkoutPartnerRequestStatus
 import kr.co.fitview.api.app.global.time.TimeHolder.time
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Slice
 import org.springframework.data.domain.SliceImpl
-import java.time.LocalDateTime
 
 class WorkoutPartnerRequestRepositoryImpl(
     private val queryFactory: JPAQueryFactory,
@@ -330,6 +326,35 @@ class WorkoutPartnerRequestRepositoryImpl(
         }
 
         return SliceImpl(result, PageRequest.of(0, pageSize.toInt()), hasNext)
+    }
+
+    override fun findAllLatestWorkoutPartnerRequest(meMemberId: Long, otherMemberIds: List<Long>) : List<WorkoutPartnerRequest>{
+        if (otherMemberIds.isEmpty()) {
+            return emptyList()
+        }
+
+        val ascOtherMemberRequest = CaseBuilder()
+            .`when`(workoutPartnerRequest.fromMember.id.eq(meMemberId)).then(1)
+            .otherwise(0)
+            .asc()
+
+        val allRequests = queryFactory
+            .selectFrom(workoutPartnerRequest)
+            .where(
+                (workoutPartnerRequest.fromMember.id.eq(meMemberId).and(workoutPartnerRequest.toMember.id.`in`(otherMemberIds)))
+                .or(
+                    (workoutPartnerRequest.toMember.id.eq(meMemberId).and(workoutPartnerRequest.fromMember.id.`in`(otherMemberIds)))
+                )
+            )
+            .orderBy(
+                workoutPartnerRequest.requestedAt.desc(),
+                ascOtherMemberRequest
+            )
+            .fetch()
+
+        return allRequests.distinctBy { request ->
+            if (request.getFromMemberId() == meMemberId) request.getToMemberId() else request.getFromMemberId()
+        }
     }
 
 }

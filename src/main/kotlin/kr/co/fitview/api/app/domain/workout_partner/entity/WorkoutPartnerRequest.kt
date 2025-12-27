@@ -65,6 +65,11 @@ class WorkoutPartnerRequest(
         return this
     }
 
+    fun expire() : WorkoutPartnerRequest {
+        this.status = WorkoutPartnerRequestStatus.EXPIRE
+        return this
+    }
+
     fun updateRespondedAt(now : LocalDateTime) : WorkoutPartnerRequest{
         this.respondedAt = now
         return this

@@ -19,6 +19,7 @@ import kr.co.fitview.api.app.domain.workout.repository.WorkoutRequestRepository
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.time.Time
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.tuple
 import org.hibernate.proxy.HibernateProxy
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
@@ -199,5 +200,76 @@ class ChatRoomQueryServiceTest @Autowired constructor(
         assertThat(findChatRoomProxy).isInstanceOf(HibernateProxy::class.java)
         assertThat(findChatRoomProxy::class.simpleName!!).contains("ChatRoom")
         assertThat(findChatRoomProxy.type).isEqualTo(ChatRoomType.PRIVATE)
+    }
+
+    @DisplayName("본인과 상대방 사이의 채팅방을 조회힌다.")
+    @Test
+    fun findChatRoomBetweenBy() {
+        // given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val other1 = Member(
+            email = "email2",
+            password = "password2",
+            role = Role.USER,
+        )
+        val other2 = Member(
+            email = "email2",
+            password = "password2",
+            role = Role.USER,
+        )
+        val other3 = Member(
+            email = "email2",
+            password = "password2",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+        memberRepository.save(other1)
+        memberRepository.save(other2)
+        memberRepository.save(other3)
+
+        val chatRoom1 = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+        val chatRoom2 = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+
+        val chatParticipant1 = ChatParticipant(
+            chatRoom1,
+            me
+        )
+        val chatParticipant2 = ChatParticipant(
+            chatRoom1,
+            other1
+        )
+        val chatParticipant3 = ChatParticipant(
+            chatRoom2,
+            me
+        )
+        val chatParticipant4 = ChatParticipant(
+            chatRoom2,
+            other2
+        )
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+        chatParticipantRepository.save(chatParticipant3)
+        chatParticipantRepository.save(chatParticipant4)
+
+        val otherMemberIds = listOf(other1.id!!, other2.id!!, other3.id!!)
+
+        // when
+        val response = chatRoomQueryService.findChatRoomFrom(
+            meMemberId = me.id!!,
+            otherMemberIds = otherMemberIds
+        )
+
+        // then
+        assertThat(response).hasSize(2)
+        assertThat(response)
+            .extracting("chatRoomId", "meMemberId", "otherMemberId")
+            .contains(
+                tuple(chatRoom1.id!!, me.id!!, other1.id!!),
+                tuple(chatRoom2.id!!, me.id!!, other2.id!!)
+            )
     }
 }

@@ -268,7 +268,8 @@ class MemberControllerTest : ControllerTestSupport() {
                         workoutStyle = MemberWorkoutStyle.CARDIO,
                         workoutGoal = MemberWorkoutGoal.WEIGHT_LOSS,
                         profileImageUrl = "https://example.com/profile/1.jpg",
-                        workoutImageUrl = "https://example.com/workout/1.jpg"
+                        workoutImageUrl = "https://example.com/workout/1.jpg",
+                        lastWorkoutPartnerRequest = null
                     ),
                     MemberRecommendationResponse(
                         memberId = 2L,
@@ -277,7 +278,8 @@ class MemberControllerTest : ControllerTestSupport() {
                         workoutStyle = MemberWorkoutStyle.BALANCE,
                         workoutGoal = MemberWorkoutGoal.PERFORMANCE_GOAL,
                         profileImageUrl = "https://example.com/profile/2.jpg",
-                        workoutImageUrl = null
+                        workoutImageUrl = null,
+                        lastWorkoutPartnerRequest = null
                     )
                 )
             )

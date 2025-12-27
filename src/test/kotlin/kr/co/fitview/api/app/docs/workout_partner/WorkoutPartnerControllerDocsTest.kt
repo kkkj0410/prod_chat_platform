@@ -48,10 +48,9 @@ class WorkoutPartnerControllerDocsTest : RestDocsSupport() {
     private val workoutPartnerRequestQueryService: WorkoutPartnerRequestQueryService =
         mock(WorkoutPartnerRequestQueryService::class.java)
     private val securityUtil: SecurityUtil = mock(SecurityUtil::class.java)
-    private val stompPublishService: StompPublishService = mock(StompPublishService::class.java)
 
     override fun initController(): Any {
-        return WorkoutPartnerController(workoutPartnerRequestService, workoutPartnerRequestQueryService, securityUtil, stompPublishService)
+        return WorkoutPartnerController(workoutPartnerRequestService, workoutPartnerRequestQueryService, securityUtil)
     }
 
     @DisplayName("핏버디 요청 API")

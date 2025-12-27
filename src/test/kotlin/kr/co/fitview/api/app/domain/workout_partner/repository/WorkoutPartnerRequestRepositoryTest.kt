@@ -41,7 +41,6 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
-import java.time.LocalDateTime
 
 class WorkoutPartnerRequestRepositoryTest @Autowired constructor(
     val workoutPartnerRequestRepository : WorkoutPartnerRequestRepository,
@@ -1093,5 +1092,175 @@ class WorkoutPartnerRequestRepositoryTest @Autowired constructor(
                 workoutPartnerRequest1.id!!
             )
         assertThat(response.hasNext()).isEqualTo(false)
+    }
+
+    @DisplayName("본인, 상대방 사이의 제일 최근 파트너 요청을 조회한다.")
+    @Test
+    fun findAllLatestWorkoutPartnerRequest() {
+        // given
+        val meMember = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        val otherMember1 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        val otherMember2 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        memberRepository.save(meMember)
+        memberRepository.save(otherMember1)
+        memberRepository.save(otherMember2)
+
+        val signupRequest = createOAuth2SignupServiceRequest()
+        oAuth2Service.signup(signupRequest, meMember.id!!)
+        oAuth2Service.signup(signupRequest, otherMember1.id!!)
+        oAuth2Service.signup(signupRequest, otherMember2.id!!)
+
+        val workoutPartnerRequest1 = WorkoutPartnerRequest.of(
+            fromMember = meMember,
+            toMember = otherMember1,
+            now = time.nowLocalDateTime,
+            content = WorkoutPartnerRequestContent.BURN
+        )
+        workoutPartnerRequestRepository.save(workoutPartnerRequest1)
+
+        val workoutPartnerRequest2 = WorkoutPartnerRequest.of(
+            fromMember = otherMember2,
+            toMember = meMember,
+            now = time.nowLocalDateTime,
+            content = WorkoutPartnerRequestContent.BURN
+        )
+        workoutPartnerRequestRepository.save(workoutPartnerRequest2)
+
+        val otherMemberIds = listOf(otherMember1.id!!, otherMember2.id!!)
+
+        // when
+        val response = workoutPartnerRequestRepository.findAllLatestWorkoutPartnerRequest(
+            meMemberId = meMember.id!!,
+            otherMemberIds = otherMemberIds
+        )
+
+        // then
+        assertThat(response).hasSize(2)
+        assertThat(response)
+            .extracting("id", "fromMember", "toMember")
+            .contains(
+                tuple(workoutPartnerRequest1.id!!, meMember, otherMember1),
+                tuple(workoutPartnerRequest2.id!!, otherMember2, meMember),
+            )
+    }
+
+    @DisplayName("제일 최근 파트너 요청 조회 시, 서로 간의 운동 파트너 요청이 여러개라면 제일 최근 것만 조회한다.")
+    @Test
+    fun findAllLatestWorkoutPartnerRequestDuplicated() {
+        // given
+        val meMember = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        val otherMember = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        memberRepository.save(meMember)
+        memberRepository.save(otherMember)
+
+        val signupRequest = createOAuth2SignupServiceRequest()
+        oAuth2Service.signup(signupRequest, meMember.id!!)
+        oAuth2Service.signup(signupRequest, otherMember.id!!)
+
+        val workoutPartnerRequest1 = WorkoutPartnerRequest.of(
+            fromMember = meMember,
+            toMember = otherMember,
+            now = time.nowLocalDateTime.minusSeconds(1),
+            content = WorkoutPartnerRequestContent.BURN
+        )
+        workoutPartnerRequestRepository.save(workoutPartnerRequest1)
+
+        val workoutPartnerRequest2 = WorkoutPartnerRequest.of(
+            fromMember = otherMember,
+            toMember = meMember,
+            now = time.nowLocalDateTime,
+            content = WorkoutPartnerRequestContent.BURN
+        )
+        workoutPartnerRequestRepository.save(workoutPartnerRequest2)
+
+        val otherMemberIds = listOf(otherMember.id!!)
+
+        // when
+        val response = workoutPartnerRequestRepository.findAllLatestWorkoutPartnerRequest(
+            meMemberId = meMember.id!!,
+            otherMemberIds = otherMemberIds
+        )
+
+        // then
+        assertThat(response).hasSize(1)
+        assertThat(response)
+            .extracting("id", "fromMember", "toMember")
+            .contains(
+                tuple(workoutPartnerRequest2.id!!, otherMember, meMember),
+            )
+    }
+
+    @DisplayName("제일 최근 파트너 요청 조회 시, 서로 간의 운동 파트너 요청 시간이 겹치면, 상대방이 보낸 운동 파트너 요청을 조회한다.")
+    @Test
+    fun findAllLatestWorkoutPartnerRequestDuplicated2() {
+        // given
+        val meMember = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        val otherMember = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        memberRepository.save(meMember)
+        memberRepository.save(otherMember)
+
+        val signupRequest = createOAuth2SignupServiceRequest()
+        oAuth2Service.signup(signupRequest, meMember.id!!)
+        oAuth2Service.signup(signupRequest, otherMember.id!!)
+
+        val workoutPartnerRequest1 = WorkoutPartnerRequest.of(
+            fromMember = meMember,
+            toMember = otherMember,
+            now = time.nowLocalDateTime,
+            content = WorkoutPartnerRequestContent.BURN
+        )
+        workoutPartnerRequestRepository.save(workoutPartnerRequest1)
+
+        val workoutPartnerRequest2 = WorkoutPartnerRequest.of(
+            fromMember = otherMember,
+            toMember = meMember,
+            now = time.nowLocalDateTime,
+            content = WorkoutPartnerRequestContent.BURN
+        )
+        workoutPartnerRequestRepository.save(workoutPartnerRequest2)
+
+        val otherMemberIds = listOf(otherMember.id!!)
+
+        // when
+        val response = workoutPartnerRequestRepository.findAllLatestWorkoutPartnerRequest(
+            meMemberId = meMember.id!!,
+            otherMemberIds = otherMemberIds
+        )
+
+        // then
+        assertThat(response).hasSize(1)
+        assertThat(response)
+            .extracting("id", "fromMember", "toMember")
+            .contains(
+                tuple(workoutPartnerRequest2.id!!, otherMember, meMember),
+            )
     }
 }

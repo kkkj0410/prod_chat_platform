@@ -8,8 +8,6 @@ import kr.co.fitview.api.app.domain.auth.dto.response.RefreshTokenResponse
 import kr.co.fitview.api.app.domain.auth.entity.QRefreshToken
 import kr.co.fitview.api.app.domain.auth.entity.QRefreshToken.refreshToken
 import kr.co.fitview.api.app.domain.auth.entity.RefreshTokenStatus
-import kr.co.fitview.api.app.domain.fcm.entity.QFcmToken
-import kr.co.fitview.api.app.domain.fcm.entity.QFcmToken.fcmToken
 import kr.co.fitview.api.app.global.time.Time
 
 class RefreshTokenRepositoryImpl(

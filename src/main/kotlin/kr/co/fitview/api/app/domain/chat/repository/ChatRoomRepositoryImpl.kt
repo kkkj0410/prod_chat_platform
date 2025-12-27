@@ -7,6 +7,7 @@ import com.querydsl.core.types.dsl.NumberTemplate
 import com.querydsl.jpa.JPAExpressions
 import com.querydsl.jpa.impl.JPAQueryFactory
 import kr.co.fitview.api.app.domain.chat.condition.ChatCondition
+import kr.co.fitview.api.app.domain.chat.dto.response.ChatRoomMemberResponse
 import kr.co.fitview.api.app.domain.chat.dto.response.ChatRoomResponseProfile
 import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
 import kr.co.fitview.api.app.domain.chat.entity.QChatMessage.chatMessage
@@ -183,6 +184,32 @@ class ChatRoomRepositoryImpl(
             .fetchOne()
     }
 
+    override fun findChatRoomBetweenBy(meMemberId: Long, otherMemberIds: List<Long>): List<ChatRoomMemberResponse> {
+        if (otherMemberIds.isEmpty()) return emptyList()
+
+        val me = QChatParticipant("me")
+        val partner = QChatParticipant("partner")
+
+        return queryFactory
+            .select(
+                Projections.constructor(
+                    ChatRoomMemberResponse::class.java,
+                    chatRoom.id,
+                    me.member.id,
+                    partner.member.id
+                )
+            )
+            .from(chatRoom)
+            .join(chatRoom.chatParticipants, me)
+            .join(chatRoom.chatParticipants, partner)
+            .where(
+                chatRoom.type.eq(ChatRoomType.PRIVATE),
+                me.member.id.eq(meMemberId),
+                partner.member.id.`in`(otherMemberIds),
+                chatRoom.deletedAt.isNull
+            )
+            .fetch()
+    }
 
 
 }

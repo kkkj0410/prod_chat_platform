@@ -12,8 +12,8 @@ data class MemberRecommendationResponse (
     val workoutStyle: MemberWorkoutStyle,
     val workoutGoal: MemberWorkoutGoal,
     val profileImageUrl : String,
-    val workoutImageUrl : String? = null
-//    val lastWorkoutPartnerRequest : LastWorkoutPartnerRequestResponse?
+    val workoutImageUrl : String? = null,
+    val lastWorkoutPartnerRequest : LastWorkoutPartnerRequestResponse?
 
 ){
     constructor(
@@ -23,5 +23,5 @@ data class MemberRecommendationResponse (
         workoutStyle: MemberWorkoutStyle,
         workoutGoal: MemberWorkoutGoal,
         profileImageUrl: String
-    ) : this(memberId, nickname, workoutExperience, workoutStyle, workoutGoal, profileImageUrl, null)
+    ) : this(memberId, nickname, workoutExperience, workoutStyle, workoutGoal, profileImageUrl, null, null)
 }

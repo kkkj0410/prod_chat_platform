@@ -22,6 +22,12 @@ import kr.co.fitview.api.app.domain.member.entity.enums.WorkoutTimeName
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.domain.oauth2.dto.request.OAuth2SignupServiceRequest
 import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
+import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartner
+import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartnerRequest
+import kr.co.fitview.api.app.domain.workout_partner.entity.enums.WorkoutPartnerRequestContent
+import kr.co.fitview.api.app.domain.workout_partner.entity.enums.WorkoutPartnerRequestStatus
+import kr.co.fitview.api.app.domain.workout_partner.repository.WorkoutPartnerRepository
+import kr.co.fitview.api.app.domain.workout_partner.repository.WorkoutPartnerRequestRepository
 import kr.co.fitview.api.app.global.entity.Gender
 import kr.co.fitview.api.app.global.entity.OAuth2Provider
 import kr.co.fitview.api.app.global.entity.Role
@@ -47,6 +53,8 @@ class MemberQueryServiceTest @Autowired constructor(
     val oAuth2Service : OAuth2Service,
     val chatRoomRepository : ChatRoomRepository,
     val chatParticipantRepository : ChatParticipantRepository,
+    val workoutPartnerRequestRepository : WorkoutPartnerRequestRepository,
+    val workoutPartnerRepository : WorkoutPartnerRepository,
     val em : EntityManager,
     val addressRepository: AddressRepository,
     val randomCustom : RandomCustom,
@@ -829,6 +837,364 @@ class MemberQueryServiceTest @Autowired constructor(
             )
     }
 
+    @DisplayName("현재 회원의 인근 회원 조회 시, 상대방과의 운동 파트너 요청 기록을 조회한다.")
+    @Test
+    fun findMemberWithinLocalExistsWorkoutPartnerRequest() {
+        // given
+        val baseMember = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        memberRepository.save(baseMember)
+        val address = Address(
+            member = baseMember,
+            siDo = AddressSiDo.SEOUL,
+            siGunGu = "siGunGu",
+            eupMyeonDong = "eupMyeonDong",
+            lat = 50.0,
+            lng = 50.0,
+            fullAddress = "fullAddress",
+        )
+        addressRepository.save(address)
+
+        val member1 = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(member1)
+        val inAddress1 = AddressCreateServiceRequest(
+            siDo = AddressSiDo.SEOUL,
+            siGunGu = "siGunGu",
+            eupMyeonDong = "eupMyeonDong",
+            lat = 49.91,
+            lng = 50.14,
+            fullAddress = "fullAddress"
+        )
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nickname1",
+            workoutExperience = MemberWorkoutExperience.JUST_STARTED,
+            workoutStyle = MemberWorkoutStyle.STRENGTH,
+            workoutGoal = MemberWorkoutGoal.HEALTH_MAINTENANCE,
+            profileImageUrl = "profileImageUrl1",
+            address = inAddress1
+        )
+        oAuth2Service.signup(signupRequest1, member1.id!!)
+
+
+        val member2 = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(member2)
+        val inAddress2 = AddressCreateServiceRequest(
+            siDo = AddressSiDo.SEOUL,
+            siGunGu = "siGunGu",
+            eupMyeonDong = "eupMyeonDong",
+            lat = 50.00,
+            lng = 50.00,
+            fullAddress = "fullAddress"
+        )
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nickname2",
+            workoutExperience = MemberWorkoutExperience.FOUR_TO_SIX_YEARS,
+            workoutStyle = MemberWorkoutStyle.PERFORMANCE,
+            workoutGoal = MemberWorkoutGoal.STRENGTH_GAIN,
+            profileImageUrl = "profileImageUrl2",
+            address = inAddress2
+        )
+        oAuth2Service.signup(signupRequest2, member2.id!!)
+
+
+        val member3 = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(member3)
+        println(member3.id!!)
+        val inAddress3 = AddressCreateServiceRequest(
+            siDo = AddressSiDo.SEOUL,
+            siGunGu = "siGunGu",
+            eupMyeonDong = "eupMyeonDong",
+            lat = 49.91,
+            lng = 49.86,
+            fullAddress = "fullAddress"
+        )
+        val signupRequest3 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nickname3",
+            workoutExperience = MemberWorkoutExperience.ONE_TO_THREE_YEARS,
+            workoutStyle = MemberWorkoutStyle.PARTNER,
+            workoutGoal = MemberWorkoutGoal.STRESS_RELIEF,
+            profileImageUrl = "profileImageUrl3",
+            address = inAddress3
+        )
+        oAuth2Service.signup(signupRequest3, member3.id!!)
+
+        val workoutPartnerRequest1 = WorkoutPartnerRequest(
+            fromMember = baseMember,
+            toMember = member1,
+            status = WorkoutPartnerRequestStatus.PENDING,
+            requestedAt = time.nowLocalDateTime,
+            content = WorkoutPartnerRequestContent.BURN,
+        )
+        val workoutPartnerRequest2 = WorkoutPartnerRequest(
+            fromMember = member2,
+            toMember = baseMember,
+            status = WorkoutPartnerRequestStatus.PENDING,
+            requestedAt = time.nowLocalDateTime,
+            content = WorkoutPartnerRequestContent.BURN,
+        )
+        val workoutPartnerRequest3 = WorkoutPartnerRequest(
+            fromMember = baseMember,
+            toMember = member3,
+            status = WorkoutPartnerRequestStatus.ACCEPT,
+            requestedAt = time.nowLocalDateTime,
+            content = WorkoutPartnerRequestContent.BURN,
+        )
+        workoutPartnerRequestRepository.save(workoutPartnerRequest1)
+        workoutPartnerRequestRepository.save(workoutPartnerRequest2)
+        workoutPartnerRequestRepository.save(workoutPartnerRequest3)
+
+        val workoutPartner = WorkoutPartner(
+            memberOne = baseMember,
+            memberTwo = member3,
+        )
+        workoutPartnerRepository.save(workoutPartner)
+
+        val chatRoom = ChatRoom(type = ChatRoomType.PRIVATE)
+        chatRoomRepository.save(chatRoom)
+
+        val chatParticipant1 = ChatParticipant(
+            chatRoom = chatRoom,
+            member = baseMember,
+        )
+        val chatParticipant2 = ChatParticipant(
+            chatRoom = chatRoom,
+            member = member3,
+        )
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+
+        val condition = MemberLocalCondition(
+            size = 10,
+            page = 1
+        )
+
+        // when
+        val response = memberQueryService.findRandomMemberWithinLocal(baseMember.id!!, condition, 123L)
+
+        // then
+        assertThat(response)
+            .extracting(
+                "memberId",
+                "lastWorkoutPartnerRequest.workoutPartnerRequestId",
+                "lastWorkoutPartnerRequest.status",
+                "lastWorkoutPartnerRequest.isSentByMe",
+                "lastWorkoutPartnerRequest.chatRoomId",
+            )
+            .containsExactlyInAnyOrder(
+                tuple(
+                    member3.id!!,
+                    workoutPartnerRequest3.id!!,
+                    workoutPartnerRequest3.status!!,
+                    true,
+                    chatRoom.id!!
+                ),
+                tuple(
+                    member2.id!!,
+                    workoutPartnerRequest2.id!!,
+                    workoutPartnerRequest2.status!!,
+                    false,
+                    null
+                ),
+                tuple(
+                    member1.id!!,
+                    workoutPartnerRequest1.id!!,
+                    workoutPartnerRequest1.status!!,
+                    true,
+                    null
+                ),
+            )
+    }
+
+    @DisplayName("현재 회원의 인근 회원 조회 시, 상대방과의 운동 파트너 요청 기록은 24시간 이내의 것만 조회한다. ACCEPT는 옛날 것도 조회")
+    @Test
+    fun findMemberWithinLocalExistsWorkoutPartnerRequestWithin24Hour() {
+        // given
+        val baseMember = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        memberRepository.save(baseMember)
+        val address = Address(
+            member = baseMember,
+            siDo = AddressSiDo.SEOUL,
+            siGunGu = "siGunGu",
+            eupMyeonDong = "eupMyeonDong",
+            lat = 50.0,
+            lng = 50.0,
+            fullAddress = "fullAddress",
+        )
+        addressRepository.save(address)
+
+        val member1 = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(member1)
+        val inAddress1 = AddressCreateServiceRequest(
+            siDo = AddressSiDo.SEOUL,
+            siGunGu = "siGunGu",
+            eupMyeonDong = "eupMyeonDong",
+            lat = 49.91,
+            lng = 50.14,
+            fullAddress = "fullAddress"
+        )
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nickname1",
+            workoutExperience = MemberWorkoutExperience.JUST_STARTED,
+            workoutStyle = MemberWorkoutStyle.STRENGTH,
+            workoutGoal = MemberWorkoutGoal.HEALTH_MAINTENANCE,
+            profileImageUrl = "profileImageUrl1",
+            address = inAddress1
+        )
+        oAuth2Service.signup(signupRequest1, member1.id!!)
+
+
+        val member2 = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(member2)
+        val inAddress2 = AddressCreateServiceRequest(
+            siDo = AddressSiDo.SEOUL,
+            siGunGu = "siGunGu",
+            eupMyeonDong = "eupMyeonDong",
+            lat = 50.00,
+            lng = 50.00,
+            fullAddress = "fullAddress"
+        )
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nickname2",
+            workoutExperience = MemberWorkoutExperience.FOUR_TO_SIX_YEARS,
+            workoutStyle = MemberWorkoutStyle.PERFORMANCE,
+            workoutGoal = MemberWorkoutGoal.STRENGTH_GAIN,
+            profileImageUrl = "profileImageUrl2",
+            address = inAddress2
+        )
+        oAuth2Service.signup(signupRequest2, member2.id!!)
+
+
+        val member3 = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(member3)
+        val inAddress3 = AddressCreateServiceRequest(
+            siDo = AddressSiDo.SEOUL,
+            siGunGu = "siGunGu",
+            eupMyeonDong = "eupMyeonDong",
+            lat = 49.91,
+            lng = 49.86,
+            fullAddress = "fullAddress"
+        )
+        val signupRequest3 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nickname3",
+            workoutExperience = MemberWorkoutExperience.ONE_TO_THREE_YEARS,
+            workoutStyle = MemberWorkoutStyle.PARTNER,
+            workoutGoal = MemberWorkoutGoal.STRESS_RELIEF,
+            profileImageUrl = "profileImageUrl3",
+            address = inAddress3
+        )
+        oAuth2Service.signup(signupRequest3, member3.id!!)
+
+
+        val workoutPartnerRequest1 = WorkoutPartnerRequest(
+            fromMember = baseMember,
+            toMember = member1,
+            status = WorkoutPartnerRequestStatus.PENDING,
+            requestedAt = time.nowLocalDateTime.minusHours(24).minusSeconds(1),
+            content = WorkoutPartnerRequestContent.BURN,
+        )
+        val workoutPartnerRequest3 = WorkoutPartnerRequest(
+            fromMember = baseMember,
+            toMember = member3,
+            status = WorkoutPartnerRequestStatus.ACCEPT,
+            requestedAt = time.nowLocalDateTime.minusHours(24).minusSeconds(1),
+            content = WorkoutPartnerRequestContent.BURN,
+        )
+        workoutPartnerRequestRepository.save(workoutPartnerRequest1)
+        workoutPartnerRequestRepository.save(workoutPartnerRequest3)
+
+        val workoutPartner = WorkoutPartner(
+            memberOne = baseMember,
+            memberTwo = member3,
+        )
+        workoutPartnerRepository.save(workoutPartner)
+
+        val chatRoom = ChatRoom(type = ChatRoomType.PRIVATE)
+        chatRoomRepository.save(chatRoom)
+
+        val chatParticipant1 = ChatParticipant(
+            chatRoom = chatRoom,
+            member = baseMember,
+        )
+        val chatParticipant2 = ChatParticipant(
+            chatRoom = chatRoom,
+            member = member3,
+        )
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+
+        val condition = MemberLocalCondition(
+            size = 10,
+            page = 1
+        )
+
+        // when
+        val response = memberQueryService.findRandomMemberWithinLocal(baseMember.id!!, condition, 123L)
+
+        // then
+        assertThat(response)
+            .extracting(
+                "memberId",
+                "lastWorkoutPartnerRequest.workoutPartnerRequestId",
+                "lastWorkoutPartnerRequest.status",
+                "lastWorkoutPartnerRequest.isSentByMe",
+                "lastWorkoutPartnerRequest.chatRoomId",
+            )
+            .containsExactlyInAnyOrder(
+                tuple(
+                    member3.id!!,
+                    workoutPartnerRequest3.id!!,
+                    workoutPartnerRequest3.status!!,
+                    true,
+                    chatRoom.id!!
+                ),
+                tuple(
+                    member2.id!!,
+                    null,
+                    null,
+                    null,
+                    null
+                ),
+                tuple(
+                    member1.id!!,
+                    null,
+                    null,
+                    null,
+                    null
+                ),
+            )
+    }
+
     @DisplayName("인근 회원 조회 시, seed 기반의 랜덤 셔플링을 해서 조회한다.")
     @Test
     fun findRandomMemberWithinLocalRandom() {
@@ -1380,6 +1746,158 @@ class MemberQueryServiceTest @Autowired constructor(
                 tuple(matchMember3.id!!, "update3", "updateMember3Workout1"),
             )
     }
+
+    @DisplayName("추천 핏버디 조회 시, 운동 파트너 요청 여부를 조회한다.")
+    @Test
+    fun findRandomMemberWithinRecommendationExistsWorkoutPartnerRequest() {
+        // given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+        val signupRequest = TestDataFactory.oAuth2SignupRequest(
+            workoutExperience = MemberWorkoutExperience.FOUR_TO_SIX_YEARS,
+            workoutStyle = MemberWorkoutStyle.PARTNER,
+            workoutGoal = MemberWorkoutGoal.STRENGTH_GAIN
+        )
+        oAuth2Service.signup(signupRequest, me.id!!)
+
+        val matchMember1 = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(matchMember1)
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "update1",
+            workoutExperience = MemberWorkoutExperience.JUST_STARTED,
+            workoutStyle = MemberWorkoutStyle.PARTNER,
+            workoutGoal = MemberWorkoutGoal.STRENGTH_GAIN,
+            workoutImageUrls = listOf("updateMember1Workout1", "updateMember1Workout2")
+        )
+        oAuth2Service.signup(signupRequest2, matchMember1.id!!)
+
+        val matchMember2 = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(matchMember2)
+        val signupRequest3 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "update2",
+            workoutExperience = MemberWorkoutExperience.FOUR_TO_SIX_YEARS,
+            workoutStyle = MemberWorkoutStyle.TENSION,
+            workoutGoal = MemberWorkoutGoal.STRENGTH_GAIN,
+            workoutImageUrls = listOf("updateMember2Workout1", "updateMember2Workout2")
+        )
+        oAuth2Service.signup(signupRequest3, matchMember2.id!!)
+
+        val matchMember3 = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(matchMember3)
+        val signupRequest4 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "update3",
+            workoutExperience = MemberWorkoutExperience.OVER_SEVEN_YEARS,
+            workoutStyle = MemberWorkoutStyle.PARTNER,
+            workoutGoal = MemberWorkoutGoal.STRENGTH_GAIN,
+            workoutImageUrls = listOf("updateMember3Workout1", "updateMember3Workout2")
+        )
+        oAuth2Service.signup(signupRequest4, matchMember3.id!!)
+
+
+        val workoutPartnerRequest1 = WorkoutPartnerRequest(
+            fromMember = me,
+            toMember = matchMember1,
+            status = WorkoutPartnerRequestStatus.PENDING,
+            requestedAt = time.nowLocalDateTime,
+            content = WorkoutPartnerRequestContent.BURN,
+        )
+        val workoutPartnerRequest2 = WorkoutPartnerRequest(
+            fromMember = matchMember2,
+            toMember = me,
+            status = WorkoutPartnerRequestStatus.PENDING,
+            requestedAt = time.nowLocalDateTime,
+            content = WorkoutPartnerRequestContent.BURN,
+        )
+        val workoutPartnerRequest3 = WorkoutPartnerRequest(
+            fromMember = me,
+            toMember = matchMember3,
+            status = WorkoutPartnerRequestStatus.ACCEPT,
+            requestedAt = time.nowLocalDateTime,
+            content = WorkoutPartnerRequestContent.BURN,
+        )
+        workoutPartnerRequestRepository.save(workoutPartnerRequest1)
+        workoutPartnerRequestRepository.save(workoutPartnerRequest2)
+        workoutPartnerRequestRepository.save(workoutPartnerRequest3)
+
+        val workoutPartner = WorkoutPartner(
+            memberOne = me,
+            memberTwo = matchMember3,
+        )
+        workoutPartnerRepository.save(workoutPartner)
+
+        val chatRoom = ChatRoom(type = ChatRoomType.PRIVATE)
+        chatRoomRepository.save(chatRoom)
+
+        val chatParticipant1 = ChatParticipant(
+            chatRoom = chatRoom,
+            member = me,
+        )
+        val chatParticipant2 = ChatParticipant(
+            chatRoom = chatRoom,
+            member = matchMember3,
+        )
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+
+        val seed = 123L
+
+        // when
+        val response = memberQueryService.findRandomMemberWithinRecommendation(
+            memberId = me.id!!,
+            size = 10,
+            seed = seed
+        )
+
+        // then
+        assertThat(response)
+            .extracting(
+                "memberId",
+                "lastWorkoutPartnerRequest.workoutPartnerRequestId",
+                "lastWorkoutPartnerRequest.status",
+                "lastWorkoutPartnerRequest.isSentByMe",
+                "lastWorkoutPartnerRequest.chatRoomId",
+            )
+            .contains(
+                tuple(
+                    matchMember3.id!!,
+                    workoutPartnerRequest3.id!!,
+                    workoutPartnerRequest3.status!!,
+                    true,
+                    chatRoom.id!!
+                ),
+                tuple(
+                    matchMember2.id!!,
+                    workoutPartnerRequest2.id!!,
+                    workoutPartnerRequest2.status!!,
+                    false,
+                    null
+                ),
+                tuple(
+                    matchMember1.id!!,
+                    workoutPartnerRequest1.id!!,
+                    workoutPartnerRequest1.status!!,
+                    true,
+                    null
+                ),
+            )
+    }
+
 
     @DisplayName("추천 핏버디 조회 시, 조회 개수가 못미치면 아무 서울 인원도 추가 조회한다.")
     @Test

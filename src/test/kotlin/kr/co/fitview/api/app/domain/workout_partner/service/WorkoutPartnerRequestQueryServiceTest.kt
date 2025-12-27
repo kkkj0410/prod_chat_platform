@@ -10,7 +10,6 @@ import kr.co.fitview.api.app.domain.chat.repository.ChatParticipantRepository
 import kr.co.fitview.api.app.domain.chat.repository.ChatRoomRepository
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
-import kr.co.fitview.api.app.domain.member.service.MemberService
 import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
 import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequest
 import kr.co.fitview.api.app.domain.workout.repository.WorkoutRequestRepository
@@ -20,6 +19,7 @@ import kr.co.fitview.api.app.domain.workout_partner.condition.AdminWorkoutPartne
 import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartner
 import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartnerRequest
 import kr.co.fitview.api.app.domain.workout_partner.entity.enums.WorkoutPartnerRequestContent
+import kr.co.fitview.api.app.domain.workout_partner.entity.enums.WorkoutPartnerRequestStatus
 import kr.co.fitview.api.app.domain.workout_partner.repository.WorkoutPartnerRepository
 import kr.co.fitview.api.app.domain.workout_partner.repository.WorkoutPartnerRequestRepository
 import kr.co.fitview.api.app.global.entity.Role
@@ -182,6 +182,258 @@ class WorkoutPartnerRequestQueryServiceTest @Autowired constructor(
                     0L
                 ),
             )
-
     }
+
+    @DisplayName("본인, 상대방 사이의 상호작용 가능한 파트너 요청을 조회한다.")
+    @Test
+    fun findActiveRequests() {
+        // given
+        val meMember = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        val otherMember1 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        val otherMember2 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        memberRepository.save(meMember)
+        memberRepository.save(otherMember1)
+        memberRepository.save(otherMember2)
+
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest, meMember.id!!)
+        oAuth2Service.signup(signupRequest, otherMember1.id!!)
+        oAuth2Service.signup(signupRequest, otherMember2.id!!)
+
+        val workoutPartnerRequest1 = WorkoutPartnerRequest.of(
+            fromMember = meMember,
+            toMember = otherMember1,
+            now = time.nowLocalDateTime,
+            content = WorkoutPartnerRequestContent.BURN
+        )
+        workoutPartnerRequestRepository.save(workoutPartnerRequest1)
+
+        val workoutPartnerRequest2 = WorkoutPartnerRequest.of(
+            fromMember = otherMember2,
+            toMember = meMember,
+            now = time.nowLocalDateTime,
+            content = WorkoutPartnerRequestContent.BURN
+        )
+        workoutPartnerRequestRepository.save(workoutPartnerRequest2)
+
+        val otherMemberIds = listOf(otherMember1.id!!, otherMember2.id!!)
+
+        // when
+        val response = workoutPartnerRequestQueryService.findActiveRequests(
+            meMemberId = meMember.id!!,
+            otherMemberIds = otherMemberIds
+        )
+
+        // then
+        assertThat(response).hasSize(2)
+        assertThat(response)
+            .extracting("id", "fromMember", "toMember")
+            .contains(
+                tuple(workoutPartnerRequest1.id!!, meMember, otherMember1),
+                tuple(workoutPartnerRequest2.id!!, otherMember2, meMember),
+            )
+    }
+
+    @DisplayName("상호작용 가능한 파트너 요청 조회 시, 상호작용이 불가능한 파트너 요청은 조회하지 않는다.")
+    @Test
+    fun findActiveRequestsExistsOtherStatus() {
+        // given
+        val meMember = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        val otherMember1 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        val otherMember2 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        val otherMember3 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        memberRepository.save(meMember)
+        memberRepository.save(otherMember1)
+        memberRepository.save(otherMember2)
+        memberRepository.save(otherMember3)
+
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest, meMember.id!!)
+        oAuth2Service.signup(signupRequest, otherMember1.id!!)
+        oAuth2Service.signup(signupRequest, otherMember2.id!!)
+
+        val workoutPartnerRequest1 = WorkoutPartnerRequest.of(
+            fromMember = meMember,
+            toMember = otherMember1,
+            now = time.nowLocalDateTime,
+            content = WorkoutPartnerRequestContent.BURN
+        )
+        workoutPartnerRequest1.cancel()
+        workoutPartnerRequestRepository.save(workoutPartnerRequest1)
+
+        val workoutPartnerRequest2 = WorkoutPartnerRequest.of(
+            fromMember = meMember,
+            toMember = otherMember2,
+            now = time.nowLocalDateTime,
+            content = WorkoutPartnerRequestContent.BURN
+        )
+        workoutPartnerRequest2.reject()
+        workoutPartnerRequestRepository.save(workoutPartnerRequest2)
+
+        val workoutPartnerRequest3 = WorkoutPartnerRequest.of(
+            fromMember = meMember,
+            toMember = otherMember3,
+            now = time.nowLocalDateTime,
+            content = WorkoutPartnerRequestContent.BURN
+        )
+        workoutPartnerRequest3.expire()
+        workoutPartnerRequestRepository.save(workoutPartnerRequest3)
+
+
+        val otherMemberIds = listOf(otherMember1.id!!, otherMember2.id!!)
+
+        // when
+        val response = workoutPartnerRequestQueryService.findActiveRequests(
+            meMemberId = meMember.id!!,
+            otherMemberIds = otherMemberIds
+        )
+
+        // then
+        assertThat(response).hasSize(0)
+    }
+
+    @DisplayName("상호작용 가능한 파트너 요청 조회 시, 수락된 파트너 요청은 조회된다.")
+    @Test
+    fun findActiveRequestsExistsAcceptStatus() {
+        // given
+        val meMember = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        val otherMember1 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        val otherMember2 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        memberRepository.save(meMember)
+        memberRepository.save(otherMember1)
+        memberRepository.save(otherMember2)
+
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest, meMember.id!!)
+        oAuth2Service.signup(signupRequest, otherMember1.id!!)
+        oAuth2Service.signup(signupRequest, otherMember2.id!!)
+
+        val workoutPartnerRequest1 = WorkoutPartnerRequest.of(
+            fromMember = meMember,
+            toMember = otherMember1,
+            now = time.nowLocalDateTime,
+            content = WorkoutPartnerRequestContent.BURN
+        )
+        workoutPartnerRequest1.accept()
+        workoutPartnerRequestRepository.save(workoutPartnerRequest1)
+
+        val otherMemberIds = listOf(otherMember1.id!!, otherMember2.id!!)
+
+        // when
+        val response = workoutPartnerRequestQueryService.findActiveRequests(
+            meMemberId = meMember.id!!,
+            otherMemberIds = otherMemberIds
+        )
+
+        // then
+        assertThat(response).hasSize(1)
+        assertThat(response[0].id).isEqualTo(workoutPartnerRequest1.id!!)
+        assertThat(response[0].status).isEqualTo(WorkoutPartnerRequestStatus.ACCEPT)
+    }
+
+    @DisplayName("상호작용 가능한 파트너 요청 조회 시, 운동 요청 대기중이라도 24시간이 지난 요청은 조회되지 않는다.")
+    @Test
+    fun findActiveRequestsExistsExpireRequest() {
+        // given
+        val meMember = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        val otherMember1 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        val otherMember2 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        val otherMember3 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        memberRepository.save(meMember)
+        memberRepository.save(otherMember1)
+        memberRepository.save(otherMember2)
+        memberRepository.save(otherMember3)
+
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest, meMember.id!!)
+        oAuth2Service.signup(signupRequest, otherMember1.id!!)
+        oAuth2Service.signup(signupRequest, otherMember2.id!!)
+
+        val workoutPartnerRequest1 = WorkoutPartnerRequest.of(
+            fromMember = meMember,
+            toMember = otherMember1,
+            now = time.nowLocalDateTime.minusHours(24).minusSeconds(1),
+            content = WorkoutPartnerRequestContent.BURN
+        )
+        workoutPartnerRequestRepository.save(workoutPartnerRequest1)
+
+        val workoutPartnerRequest2 = WorkoutPartnerRequest.of(
+            fromMember = meMember,
+            toMember = otherMember2,
+            now = time.nowLocalDateTime.minusHours(24),
+            content = WorkoutPartnerRequestContent.BURN
+        )
+        workoutPartnerRequestRepository.save(workoutPartnerRequest2)
+
+        val otherMemberIds = listOf(otherMember1.id!!, otherMember2.id!!)
+
+        // when
+        val response = workoutPartnerRequestQueryService.findActiveRequests(
+            meMemberId = meMember.id!!,
+            otherMemberIds = otherMemberIds
+        )
+
+        // then
+        assertThat(response).hasSize(1)
+        assertThat(response[0].id).isEqualTo(workoutPartnerRequest2.id!!)
+        assertThat(response[0].status).isEqualTo(WorkoutPartnerRequestStatus.PENDING)
+    }
+
+
 }

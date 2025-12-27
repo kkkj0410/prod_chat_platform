@@ -1,5 +1,6 @@
 package kr.co.fitview.api.app.domain.chat.service
 
+import kr.co.fitview.api.app.domain.chat.dto.response.ChatRoomMemberResponse
 import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
 import kr.co.fitview.api.app.domain.chat.repository.ChatRoomRepository
 import org.springframework.stereotype.Service
@@ -27,6 +28,10 @@ class ChatRoomQueryService(
 
     fun findChatRoomReferenceFrom(chatRoomId: Long): ChatRoom {
         return chatRoomRepository.getReferenceById(chatRoomId)
+    }
+
+    fun findChatRoomFrom(meMemberId: Long, otherMemberIds: List<Long>) : List<ChatRoomMemberResponse> {
+        return chatRoomRepository.findChatRoomBetweenBy(meMemberId, otherMemberIds)
     }
 
 }
