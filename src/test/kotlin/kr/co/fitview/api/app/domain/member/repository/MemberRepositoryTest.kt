@@ -1774,6 +1774,72 @@ class MemberRepositoryTest@Autowired constructor(
             )
     }
 
+    @DisplayName("추천 핏버디 조회 시, 본인은 조회되지 않는다.")
+    @Test
+    fun findMemberWithinRecommendationNotExistsMe() {
+        // given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+        val signupRequest = TestDataFactory.oAuth2SignupRequest(
+            workoutExperience = MemberWorkoutExperience.FOUR_TO_SIX_YEARS,
+            workoutStyle = MemberWorkoutStyle.PARTNER,
+            workoutGoal = MemberWorkoutGoal.STRENGTH_GAIN
+        )
+        oAuth2Service.signup(signupRequest, me.id!!)
+
+        val matchMember1 = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(matchMember1)
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "update1",
+            workoutExperience = MemberWorkoutExperience.JUST_STARTED,
+            workoutStyle = MemberWorkoutStyle.PARTNER,
+            workoutGoal = MemberWorkoutGoal.STRENGTH_GAIN,
+            workoutImageUrls = listOf("updateMember1Workout1", "updateMember1Workout2")
+        )
+        oAuth2Service.signup(signupRequest2, matchMember1.id!!)
+
+        val matchMember2 = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(matchMember2)
+        val signupRequest3 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "update2",
+            workoutExperience = MemberWorkoutExperience.FOUR_TO_SIX_YEARS,
+            workoutStyle = MemberWorkoutStyle.TENSION,
+            workoutGoal = MemberWorkoutGoal.STRENGTH_GAIN,
+            workoutImageUrls = listOf("updateMember2Workout1", "updateMember2Workout2")
+        )
+        oAuth2Service.signup(signupRequest3, matchMember2.id!!)
+
+
+        // when
+        val response = memberRepository.findMemberWithinRecommendation(
+            member = me,
+            randomMemberId = 1,
+            size = 10
+        )
+
+        // then
+        assertThat(response).hasSize(2)
+        assertThat(response)
+            .extracting("memberId", "nickname", "workoutImageUrl")
+            .containsExactlyInAnyOrder(
+                tuple(matchMember1.id!!, "update1", "updateMember1Workout1"),
+                tuple(matchMember2.id!!, "update2", "updateMember2Workout1"),
+            )
+    }
+
+
     @DisplayName("추천 핏버디 조회 시, 랜덤 시작 지점에서 size만큼 부족하면 처음부터 이어서 조회한다.")
     @Test
     fun findMemberWithinRecommendationRandomMemberIdMissSearch() {
@@ -2015,6 +2081,54 @@ class MemberRepositoryTest@Autowired constructor(
                 tuple(notMatchMember1.id!!, "update3", "updateMember3Workout1"),
             )
     }
+
+    @DisplayName("추천 핏버디에서 나머지 서울 인원 조회 시, 본인은 조회되지 않는다.")
+    @Test
+    fun findMemberByNotMemberIdsWithinRecommendationsAndSeoulNotExistsMe() {
+        // given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+        val signupRequest = TestDataFactory.oAuth2SignupRequest(
+            workoutExperience = MemberWorkoutExperience.FOUR_TO_SIX_YEARS,
+            workoutStyle = MemberWorkoutStyle.PARTNER,
+            workoutGoal = MemberWorkoutGoal.STRENGTH_GAIN
+        )
+        oAuth2Service.signup(signupRequest, me.id!!)
+
+        val matchMember1 = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(matchMember1)
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "update2",
+            workoutExperience = MemberWorkoutExperience.JUST_STARTED,
+            workoutStyle = MemberWorkoutStyle.PARTNER,
+            workoutGoal = MemberWorkoutGoal.STRENGTH_GAIN,
+            workoutImageUrls = listOf("updateMember1Workout1", "updateMember1Workout2")
+        )
+        oAuth2Service.signup(signupRequest2, matchMember1.id!!)
+
+        val memberIds = listOf(
+            matchMember1.id!!,
+        )
+
+        // when
+        val response = memberRepository.findMemberByNotMemberIdsWithinRecommendationsAndSeoul(
+            memberId = me.id!!,
+            memberIds = memberIds,
+            size = 10,
+        )
+
+        // then
+        assertThat(response).isEmpty()
+    }
+
 
     @DisplayName("추천 핏버디의 나머지 서울 인원 조회 시, 서울 인원이 아니면 조회하지않는다.")
     @Test
