@@ -190,7 +190,8 @@ class MemberQueryService(
     fun findRandomMemberWithinRecommendation(
         memberId: Long,
         size : Int,
-        seed: Long = System.currentTimeMillis()
+//        seed: Long = System.currentTimeMillis()
+        seed : Long = 123L
     ) : List<MemberRecommendationResponse>{
 
         val findMeMember = findMemberOrElseThrow(memberId)
