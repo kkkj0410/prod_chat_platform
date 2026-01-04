@@ -81,7 +81,7 @@ jobs:
       # gradlew 파일 실행
       # .jar 파일을 만듦(아래에서 추가 설명)
       - name: Build with Gradle (Run tests)
-        run: ./gradlew build -x test
+        run: ./gradlew build
 
       # 해당 프로젝트를 도커 이미지로 만듦
       - name: Build the Docker image
