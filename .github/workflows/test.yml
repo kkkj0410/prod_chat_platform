@@ -5,30 +5,87 @@ on:
     branches: [ "test" ]
 
 env:
+  SERVER_HOST: ${{ secrets.SERVER_HOST }}
+  SERVER_HOST_NAME : ubuntu
+  SERVER_SSH_PRIVATE_KEY: ${{ secrets.SERVER_SSH_PRIVATE_KEY }}
+
   DOCKER_IMAGE_NAME: fitview-be
-  DOCKER_IMAGE_VERSION: ci-test
+  DOCKER_IMAGE_VERSION: latest
+  DOCKER_NAME: ${{ secrets.DOCKER_NAME }}
+  DOCKER_HUB_TOKEN: ${{ secrets.DOCKER_HUB_TOKEN }}
+  DOCKER_CONTAINER_NAME: backend
+
+  APPLICATION_PROD: ${{ secrets.APPLICATION_PROD }}
+  APPLICATION_TEST: ${{ secrets.APPLICATION_TEST }}
+
+  FIREBASE_KEY: ${{ secrets.FIREBASE_KEY }}
+
+  FULL_GITHUB_SHA: ${{ github.sha }}
+  SHORT_GITHUB_SHA: 0
 
 jobs:
-  trivy-scan:
+  # jobs 이름
+  trivy:
+    # 해당 jobs의 실행환경
+    # (현재는 ubuntu 환경에서 실행할 것임)
     runs-on: ubuntu-latest
-
+    # jobs는 여러개의 step으로 구성됨
+    # 각각의 step에서 명령어를 넣으면 됨
     steps:
-      - uses: actions/checkout@v4
 
+      # 해당 step의 이름(Checkout)
+      - name: Checkout
+        # 현재 리포지토리 코드 가져오기
+        uses: actions/checkout@v4
+
+      # FULL_GITHUB_SHA의 7글자만 SHORT_GITHUB_SHA에 첨가
+      - name: Set SHORT_GITHUB_SHA
+        run: echo "SHORT_GITHUB_SHA=${FULL_GITHUB_SHA::7}" >> $GITHUB_ENV
+      # template로 실제 docker-compose.yml 생성
+      - name: Generate docker-compose.yml from template
+        run: envsubst < docker-compose.yml.template > docker-compose.yml
+        env:
+          DOCKER_NAME: ${{ env.DOCKER_NAME }}
+          DOCKER_IMAGE_NAME: ${{ env.DOCKER_IMAGE_NAME }}
+          DOCKER_CONTAINER_NAME: ${{ env.DOCKER_CONTAINER_NAME }}
+
+      # 자바 JDK 설치
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
+      # 해당 Spring의 application.yml 파일 넣기
+      # .yml 파일은 보안상 리포지토리에 노출 할 수가 없음
+      # 따라서, 깃허브의 secrets에 application.yml 선언 후, 이를 가져옴
+      - name: Set up application-prod.yml
+        run: echo "${{ env.APPLICATION_PROD }}" > ./src/main/resources/application.yml
+
+      - name: Set up application-test.yml
+        run: echo "${{ env.APPLICATION_TEST }}" > ./src/main/resources/application-test.yml
+
+      - name: Set up Firebase key
+        run: |
+          # firebase 디렉토리 생성 (존재하지 않는 경우)
+          mkdir -p ./src/main/resources/firebase/
+          # Firebase key 파일 생성
+          echo '${{ env.FIREBASE_KEY }}' > ./src/main/resources/firebase/firebase-key.json
+          # 파일이 올바르게 생성되었는지 확인
+          ls -la ./src/main/resources/firebase/
+
+      # 해당 프로젝트의 gradlew 파일 실행 권한 획득.
       - name: Grant execute permission for gradlew
-        run: chmod +x ./gradlew
+        run: sudo chmod +x ./gradlew  # gradlew에 실행 권한 부여
 
-      - name: Build jar (skip tests)
-        run: ./gradlew bootJar -x test
+      # gradlew 파일 실행
+      # .jar 파일을 만듦(아래에서 추가 설명)
+      - name: Build with Gradle (Run tests)
+        run: ./gradlew build -x test
 
-      - name: Build Docker image
-        run: docker build -t ${{ env.DOCKER_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_VERSION }} .
+      # 해당 프로젝트를 도커 이미지로 만듦
+      - name: Build the Docker image
+        run: docker build . --file Dockerfile --tag ${{ env.DOCKER_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_VERSION }}
 
       - name: Trivy scan Docker image
         uses: aquasecurity/trivy-action@master
