@@ -24,8 +24,8 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
 
-      - name: Build jar (no test)
-        run: ./gradlew bootJar
+      - name: Build jar (skip tests)
+        run: ./gradlew bootJar -x test
 
       - name: Build Docker image
         run: docker build -t ${{ env.DOCKER_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_VERSION }} .
