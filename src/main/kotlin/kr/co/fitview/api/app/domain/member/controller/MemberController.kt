@@ -84,37 +84,16 @@ class MemberController(
             LastWorkoutPartnerRequestResponse(
                 workoutPartnerRequestId = 123L,
                 status = WorkoutPartnerRequestStatus.PENDING,
-                isSentByMe = true,
-                chatRoomId = null
-            ),
-            LastWorkoutPartnerRequestResponse(
-                workoutPartnerRequestId = 123L,
-                status = WorkoutPartnerRequestStatus.PENDING,
-                isSentByMe = false,
                 chatRoomId = null
             ),
             LastWorkoutPartnerRequestResponse(
                 workoutPartnerRequestId = 123L,
                 status = WorkoutPartnerRequestStatus.ACCEPT,
-                isSentByMe = true,
                 chatRoomId = null
             ),
             LastWorkoutPartnerRequestResponse(
                 workoutPartnerRequestId = 123L,
                 status = WorkoutPartnerRequestStatus.ACCEPT,
-                isSentByMe = false,
-                chatRoomId = null
-            ),
-            LastWorkoutPartnerRequestResponse(
-                workoutPartnerRequestId = 123L,
-                status = WorkoutPartnerRequestStatus.ACCEPT,
-                isSentByMe = true,
-                chatRoomId = 123L
-            ),
-            LastWorkoutPartnerRequestResponse(
-                workoutPartnerRequestId = 123L,
-                status = WorkoutPartnerRequestStatus.ACCEPT,
-                isSentByMe = false,
                 chatRoomId = 123L
             ),
         )
@@ -145,37 +124,16 @@ class MemberController(
             LastWorkoutPartnerRequestResponse(
                 workoutPartnerRequestId = 123L,
                 status = WorkoutPartnerRequestStatus.PENDING,
-                isSentByMe = true,
-                chatRoomId = null
-            ),
-            LastWorkoutPartnerRequestResponse(
-                workoutPartnerRequestId = 123L,
-                status = WorkoutPartnerRequestStatus.PENDING,
-                isSentByMe = false,
                 chatRoomId = null
             ),
             LastWorkoutPartnerRequestResponse(
                 workoutPartnerRequestId = 123L,
                 status = WorkoutPartnerRequestStatus.ACCEPT,
-                isSentByMe = true,
                 chatRoomId = null
             ),
             LastWorkoutPartnerRequestResponse(
                 workoutPartnerRequestId = 123L,
                 status = WorkoutPartnerRequestStatus.ACCEPT,
-                isSentByMe = false,
-                chatRoomId = null
-            ),
-            LastWorkoutPartnerRequestResponse(
-                workoutPartnerRequestId = 123L,
-                status = WorkoutPartnerRequestStatus.ACCEPT,
-                isSentByMe = true,
-                chatRoomId = 123L
-            ),
-            LastWorkoutPartnerRequestResponse(
-                workoutPartnerRequestId = 123L,
-                status = WorkoutPartnerRequestStatus.ACCEPT,
-                isSentByMe = false,
                 chatRoomId = 123L
             ),
         )

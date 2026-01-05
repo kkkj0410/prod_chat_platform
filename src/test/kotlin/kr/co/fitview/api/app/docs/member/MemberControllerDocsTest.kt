@@ -383,7 +383,7 @@ class MemberControllerDocsTest : RestDocsSupport() {
                         lastWorkoutPartnerRequest = LastWorkoutPartnerRequestResponse(
                             workoutPartnerRequestId = 101L,
                             status = WorkoutPartnerRequestStatus.PENDING,
-                            isSentByMe = true,
+//                            isSentByMe = true,
                             chatRoomId = null
                         )
                     )
@@ -444,9 +444,9 @@ class MemberControllerDocsTest : RestDocsSupport() {
                         fieldWithPath("data[].lastWorkoutPartnerRequest.status")
                             .type(JsonFieldType.STRING)
                             .description("마지막 운동 파트너 요청 상태 (PENDING: 응답 대기, ACCEPT: 수락됨)"),
-                        fieldWithPath("data[].lastWorkoutPartnerRequest.isSentByMe")
-                            .type(JsonFieldType.BOOLEAN)
-                            .description("해당 운동 파트너 요청을 본인이 보냈는지 여부 (true: 본인 → 상대, false: 상대 → 본인)"),
+//                        fieldWithPath("data[].lastWorkoutPartnerRequest.isSentByMe")
+//                            .type(JsonFieldType.BOOLEAN)
+//                            .description("해당 운동 파트너 요청을 본인이 보냈는지 여부 (true: 본인 → 상대, false: 상대 → 본인)"),
                         fieldWithPath("data[].lastWorkoutPartnerRequest.chatRoomId")
                             .type(JsonFieldType.NUMBER)
                             .optional()
@@ -489,7 +489,7 @@ class MemberControllerDocsTest : RestDocsSupport() {
                 lastWorkoutPartnerRequest = LastWorkoutPartnerRequestResponse(
                     workoutPartnerRequestId = 101L,
                     status = WorkoutPartnerRequestStatus.PENDING,
-                    isSentByMe = true,
+//                    isSentByMe = true,
                     chatRoomId = null
                 )
             )
@@ -597,9 +597,9 @@ class MemberControllerDocsTest : RestDocsSupport() {
                         fieldWithPath("data.content[].lastWorkoutPartnerRequest.status")
                             .type(JsonFieldType.STRING)
                             .description("마지막 운동 파트너 요청 상태 (PENDING: 응답 대기, ACCEPT: 수락됨)"),
-                        fieldWithPath("data.content[].lastWorkoutPartnerRequest.isSentByMe")
-                            .type(JsonFieldType.BOOLEAN)
-                            .description("해당 운동 파트너 요청을 본인이 보냈는지 여부 (true: 본인 → 상대, false: 상대 → 본인)"),
+//                        fieldWithPath("data.content[].lastWorkoutPartnerRequest.isSentByMe")
+//                            .type(JsonFieldType.BOOLEAN)
+//                            .description("해당 운동 파트너 요청을 본인이 보냈는지 여부 (true: 본인 → 상대, false: 상대 → 본인)"),
                         fieldWithPath("data.content[].lastWorkoutPartnerRequest.chatRoomId")
                             .type(JsonFieldType.NUMBER)
                             .optional()
