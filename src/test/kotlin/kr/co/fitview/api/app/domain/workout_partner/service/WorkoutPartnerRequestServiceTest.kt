@@ -201,6 +201,37 @@ class WorkoutPartnerRequestServiceTest @Autowired constructor(
         assertThat(count).isEqualTo(1)
     }
 
+    @DisplayName("핏버디 요청 시, 본인이 본인에게 요청할 수 없다.")
+    @Test
+    fun addWorkoutPartnerRequestNotSelf() {
+        // given
+        val fromMember = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val savedFromMember = memberService.addMember(fromMember)
+
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest , savedFromMember.id!!)
+
+        val request = WorkoutPartnerCreateServiceRequest(
+            memberId = fromMember.id!!,
+            workoutPartnerRequestContentIndex = WorkoutPartnerRequestContent.BURN
+        )
+
+        // when & then
+        assertThatThrownBy {
+            workoutPartnerRequestService.addWorkoutPartnerRequest(savedFromMember.id!!, request)
+        }
+            .isInstanceOf(GlobalException::class.java)
+            .satisfies(ThrowingConsumer { ex ->
+                val globalEx = ex as GlobalException
+                assertThat(globalEx.errorCode)
+                    .isEqualTo(WorkoutPartnerErrorCode.SELF_PARTNER_REQUEST_NOT_ALLOWED)
+            })
+    }
+
 
     @DisplayName("핏버디 요청 시, 24시간 동안 본인이 상대방에게 요청을 보냈으면 요청 불가")
 //    @Test

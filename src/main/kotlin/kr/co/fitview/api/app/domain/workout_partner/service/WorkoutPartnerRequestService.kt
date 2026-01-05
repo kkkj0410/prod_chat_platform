@@ -42,6 +42,8 @@ class WorkoutPartnerRequestService(
 
     @Transactional
     fun addWorkoutPartnerRequest(memberId : Long, request: WorkoutPartnerCreateServiceRequest): WorkoutPartnerRequest {
+        validateNotSelfWorkoutPartnerRequest(memberId, request)
+
         validateAlreadyWorkoutPartner(memberId, request.memberId)
 
         // FE 편의상 validate 취소
@@ -70,6 +72,15 @@ class WorkoutPartnerRequestService(
         sendNotificationWorkoutPartnerRequest(memberId, request.memberId, savedWorkoutPartnerRequest.id!!)
 
         return savedWorkoutPartnerRequest
+    }
+
+    private fun validateNotSelfWorkoutPartnerRequest(
+        memberId: Long,
+        request: WorkoutPartnerCreateServiceRequest
+    ) {
+        if (memberId == request.memberId) {
+            throw GlobalException(WorkoutPartnerErrorCode.SELF_PARTNER_REQUEST_NOT_ALLOWED)
+        }
     }
 
     @Transactional

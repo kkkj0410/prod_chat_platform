@@ -122,6 +122,32 @@ class ChatServiceTest @Autowired constructor(
         assertThat(response.chatRoomId).isEqualTo(findChatRoom!!.id!!)
     }
 
+    @DisplayName("개인 채팅방 생성 시, 본인을 중복해서 채팅방에 넣을 수 없다.")
+    @Test
+    fun saveChatRoomDuplicatedMe() {
+        // given
+        val member1 = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val savedMember1 = memberRepository.save(member1)
+
+        val request = ChatRoomCreateServiceRequest(member1.id!!)
+
+        // when & then
+        assertThatThrownBy {
+            chatService.saveChatRoom(savedMember1.id!!, request)
+        }
+            .isInstanceOf(GlobalException::class.java)
+            .satisfies(ThrowingConsumer { ex ->
+                val globalEx = ex as GlobalException
+                assertThat(globalEx.errorCode)
+                    .isEqualTo(ChatErrorCode.DUPLICATE_CHAT_ROOM_MEMBER)
+            })
+    }
+
+
     @DisplayName("개인 채팅방을 생성하려는데 핏버디가 성사 되어있지 않으면 채팅방 생성을 하지 않는다.")
     @Test
     fun saveChatRoomNotWorkoutPartner() {

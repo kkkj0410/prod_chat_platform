@@ -177,7 +177,7 @@ class MemberQueryService(
                 LastWorkoutPartnerRequestResponse(
                     workoutPartnerRequestId = req.id!!,
                     status = req.status!!,
-                    isSentByMe = req.getFromMemberId() == memberId,
+//                    isSentByMe = req.getFromMemberId() == memberId,
                     chatRoomId = chatRoomId
                 )
             }
@@ -253,7 +253,7 @@ class MemberQueryService(
                 LastWorkoutPartnerRequestResponse(
                     workoutPartnerRequestId = req.id!!,
                     status = req.status!!,
-                    isSentByMe = req.getFromMemberId() == memberId,
+//                    isSentByMe = req.getFromMemberId() == memberId,
                     chatRoomId = chatRoomId
                 )
             }
