@@ -29,6 +29,8 @@ class ChatService(
 
     @Transactional
     fun saveChatRoom(memberId: Long, request: ChatRoomCreateServiceRequest): ChatRoomCreateResponse {
+        validateDuplicatedMember(memberId, request)
+
         if (isNotWorkoutPartner(memberId, request)) {
             throw GlobalException(ChatErrorCode.NOT_PARTNER)
         }
@@ -44,6 +46,15 @@ class ChatService(
         chatParticipantService.saveChatParticipants(savedChatRoom, memberId, request.toMemberId)
 
         return ChatRoomCreateResponse(savedChatRoom.id!!)
+    }
+
+    private fun validateDuplicatedMember(
+        memberId: Long,
+        request: ChatRoomCreateServiceRequest
+    ) {
+        if (memberId == request.toMemberId) {
+            throw GlobalException(ChatErrorCode.DUPLICATE_CHAT_ROOM_MEMBER)
+        }
     }
 
     @Transactional

@@ -11,7 +11,10 @@ enum class WorkoutPartnerErrorCode(
     PARTNER_REQUEST_COOLDOWN("001", "Workout partner request blocked", "24시간 내에 이미 파트너 요청을 보냈기 때문에 추가 요청이 불가능함(or 24시간 내에 상대방에게 취소를 당하지 않았기 때문에 핏버디 요청 불가)"),
     ALREADY_PARTNER_ACCEPTED("002", "Workout partner already accepted", "이미 해당 회원과 파트너 관계가 성립되어 있어 새로운 요청을 보내거나 응답하거나 할 수 없음"),
 
-    PARTNER_REQUEST_ALREADY_FINALIZED("003", "Workout partner request already finalized", "해당 파트너 요청은 이미 취소/거절/수락 등의 종료 상태이므로 요청을 처리할 수 없음")
+    PARTNER_REQUEST_ALREADY_FINALIZED("003", "Workout partner request already finalized", "해당 파트너 요청은 이미 취소/거절/수락 등의 종료 상태이므로 요청을 처리할 수 없음"),
+
+    SELF_PARTNER_REQUEST_NOT_ALLOWED("004", "Self workout partner request not allowed", "본인 스스로에게는 운동 파트너 요청을 할 수 없음"),
+
     ;
 
     override val prefix: String
