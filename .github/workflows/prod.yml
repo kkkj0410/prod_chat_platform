@@ -7,18 +7,22 @@ on:
 env:
   WAS_1_NAME: "prd-core-was-instance-01"
   WAS_2_NAME: "prd-core-was-instance-02"
+
+  PROD_BASTION_IP: ${{ secrets.PROD_BASTION_IP }}
+  PROD_BASTION_SSH_KEY: ${{ secrets.PROD_BASTION_SSH_KEY }}
+
   SERVER_USER: ubuntu
 
-  NCR_REGISTRY: ${{ secrets.NCR_REGISTRY }}
-  NCR_USER_ACCESS_KEY : ${{ secrets.NCR_USER_ACCESS_KEY }}
-  NCR_SECRET_ACCESS_KEY : ${{ secrets.NCR_SECRET_ACCESS_KEY }}
+  NCR_REGISTRY_PUBLIC_URI: ${{ secrets.NCR_REGISTRY_PUBLIC_URI }}
+  NHN_USER_ACCESS_KEY : ${{ secrets.NHN_USER_ACCESS_KEY }}
+  NHN_SECRET_ACCESS_KEY : ${{ secrets.NHN_SECRET_ACCESS_KEY }}
   PROD_NCR_IMAGE_NAME : ${{ secrets.PROD_NCR_IMAGE_NAME }}
   DOCKER_IMAGE_VERSION: latest
   DOCKER_CONTAINER_NAME: backend-prod
 
   NHN_API_TENANT_ID: ${{ secrets.NHN_API_TENANT_ID }}
-  NHN_API_USER_ID: ${{ secrets.NHN_API_TENANT_ID }}
-  NHN_API_PASSWORD: ${{ secrets.NHN_API_TENANT_ID }}
+  NHN_API_USER_ID: ${{ secrets.NHN_API_USER_ID }}
+  NHN_API_PASSWORD: ${{ secrets.NHN_API_PASSWORD }}
   NHN_REGION_NAME: ${{ secrets.NHN_REGION_NAME }}
 
   PROD_WAS_SSH_KEY: ${{ secrets.PROD_WAS_SSH_KEY }}
@@ -58,45 +62,44 @@ jobs:
 
       - name: Login to NCR
         run: |
-         echo "${{ env.NCR_SECRET_ACCESS_KEY }}" | docker login ${{ env.NCR_REGISTRY }} -u "${{ secrets.NCR_USER_ACCESS_KEY }}" --password-stdin
+          echo "${{ env.NHN_SECRET_ACCESS_KEY }}" | docker login ${{ env.NCR_REGISTRY_PUBLIC_URI }} -u "${{ secrets.NHN_USER_ACCESS_KEY }}" --password-stdin
 
       - name: Build Docker Image
         run: |
-          docker build . -t ${{ env.NCR_REGISTRY }}/${{ env.PROD_NCR_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_VERSION }}
+          docker build . -t ${{ env.NCR_REGISTRY_PUBLIC_URI }}/${{ env.PROD_NCR_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_VERSION }}
 
       - name: Push to NCR
         run: |
-          docker push ${{ env.NCR_REGISTRY }}/${{ env.PROD_NCR_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_VERSION }}
+          docker push ${{ env.NCR_REGISTRY_PUBLIC_URI }}/${{ env.PROD_NCR_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_VERSION }}
 
-      - name: Get WAS Public IPs
+      # OpenStack 클라이언트 설치 (IP 추출용)
+      - name: Install OpenStack Client
+        run: |
+          pip install python-openstackclient
+
+      - name: Get WAS Private IPs for Bastion Jump
         id: get-ip
         run: |
           export OS_AUTH_URL="https://api-identity-infrastructure.nhncloudservice.com/v3"
           export OS_IDENTITY_API_VERSION=3
-          
-          # 테넌트 ID
-          export OS_PROJECT_ID=${{ secrets.NHN_API_TENANT_ID }}
-          
-          # API 사용자 ID
-          export OS_USER_ID=${{ secrets.NHN_API_USER_ID }}
-          
-          # API 비밀번호
-          export OS_PASSWORD=${{ secrets.NHN_API_PASSWORD }}
-          
-          # 도메인 설정 (v3 필수)
+          export OS_PROJECT_ID=${{ env.NHN_API_TENANT_ID }}
+          export OS_USER_ID=${{ env.NHN_API_USER_ID }}
+          export OS_PASSWORD=${{ env.NHN_API_PASSWORD }}
           export OS_USER_DOMAIN_NAME="Default"
           export OS_PROJECT_DOMAIN_NAME="Default"
-          
-          # 리전 설정
-          export OS_REGION_NAME=${{ secrets.NHN_REGION_NAME }}
+          export OS_REGION_NAME=${{ env.NHN_REGION_NAME }}
           export OS_INTERFACE=public
           
-          # 2. IP 추출
           echo "Connecting to NHN Cloud to fetch IPs..."
-          IP1=$(openstack server show "${{ env.WAS_1_NAME }}" -f value -c addresses | grep -oP '\d+\.\d+\.\d+\.\d+' | head -n 1)
-          IP2=$(openstack server show "${{ env.WAS_2_NAME }}" -f value -c addresses | grep -oP '\d+\.\d+\.\d+\.\d+' | head -n 1)
           
-          # 3. 결과 출력 및 다음 스텝으로 전달
+          # Bastion을 타고 들어가므로, WAS의 Public IP가 있어도 '내부 사설 IP (10.x.x.x)'를 추출해야 통신이 빠르고 보안상 맞음
+          # 보통 grep -oP '\d+\.\d+\.\d+\.\d+' 하면 10.x 대역과 공인 IP가 같이 나오는데, 내부 IP를 타겟팅함
+          
+          IP1=$(openstack server show "${{ env.WAS_1_NAME }}" -f value -c addresses | grep -oP '10\.\d+\.\d+\.\d+' | head -n 1)
+          IP2=$(openstack server show "${{ env.WAS_2_NAME }}" -f value -c addresses | grep -oP '10\.\d+\.\d+\.\d+' | head -n 1)
+          
+          echo "Found IPs via Bastion: WAS1=$IP1, WAS2=$IP2"
+          
           echo "WAS_1_IP=$IP1" >> $GITHUB_OUTPUT
           echo "WAS_2_IP=$IP2" >> $GITHUB_OUTPUT
 
@@ -105,26 +108,38 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        # 추출된 IP 리스트를 바탕으로 병렬/순차 배포 수행
         server_ip: [ "${{ needs.build-and-push-ncr.outputs.WAS_1_IP }}", "${{ needs.build-and-push-ncr.outputs.WAS_2_IP }}" ]
 
     steps:
-      - name: Deploy to WAS
+      - name: Deploy to WAS via Bastion
         uses: appleboy/ssh-action@master
         with:
+          # 최종 목적지 (WAS) 정보
           host: ${{ matrix.server_ip }}
           username: ${{ env.SERVER_USER }}
           key: ${{ env.PROD_WAS_SSH_KEY }}
+
+          # 경유지 (Bastion) 정보 - ProxyJump
+          proxy_host: ${{ env.PROD_BASTION_IP }}
+          proxy_username: ${{ env.SERVER_USER }}
+          proxy_key: ${{ env.PROD_BASTION_SSH_KEY }}
+
+          # 타임아웃 넉넉하게 설정 (이미지 pull 시간 고려)
+          timeout: 60s
           script: |
+            echo "Connected to WAS via Bastion!"
+            
             # 1. NCR 로그인
-            echo "${{ env.NCR_SECRET_ACCESS_KEY }}" | sudo docker login ${{ env.NCR_REGISTRY }} -u "${{ secrets.NCR_USER_ACCESS_KEY }}" --password-stdin
+            echo "${{ env.NHN_SECRET_ACCESS_KEY }}" | sudo docker login ${{ env.NCR_REGISTRY_PUBLIC_URI }} -u "${{ secrets.NHN_USER_ACCESS_KEY }}" --password-stdin
             
             # 2. 이미지 Pull
-            sudo docker pull ${{ env.NCR_REGISTRY }}/${{ env.PROD_NCR_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_VERSION }}
+            sudo docker pull ${{ env.NCR_REGISTRY_PUBLIC_URI }}/${{ env.PROD_NCR_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_VERSION }}
             
             # 3. 기존 컨테이너 중지 및 삭제
-            sudo docker stop ${{ env.DOCKER_CONTAINER_NAME }} || true
-            sudo docker rm ${{ env.DOCKER_CONTAINER_NAME }} || true
+            if [ "$(sudo docker ps -q -f name=${{ env.DOCKER_CONTAINER_NAME }})" ]; then
+                sudo docker stop ${{ env.DOCKER_CONTAINER_NAME }}
+                sudo docker rm ${{ env.DOCKER_CONTAINER_NAME }}
+            fi
             
             # 4. 새 컨테이너 실행
             sudo docker run -d \
@@ -132,7 +147,7 @@ jobs:
               -p 8080:8080 \
               -e SPRING_PROFILES_ACTIVE=prod \
               -e TZ=Asia/Seoul \
-              ${{ env.NCR_REGISTRY }}/${{ env.PROD_NCR_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_VERSION }}
+              ${{ env.NCR_REGISTRY_PUBLIC_URI }}/${{ env.PROD_NCR_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_VERSION }}
             
-            # 5. 정리
+            # 5. 미사용 이미지 정리
             sudo docker image prune -f
