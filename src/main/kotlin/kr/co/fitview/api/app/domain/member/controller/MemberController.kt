@@ -79,31 +79,7 @@ class MemberController(
 
         val response = memberQueryService.findRandomMemberWithinRecommendation(securityUtil.getMemberId(), size)
 
-        val extras = listOf(
-            null,
-            LastWorkoutPartnerRequestResponse(
-                workoutPartnerRequestId = 123L,
-                status = WorkoutPartnerRequestStatus.PENDING,
-                chatRoomId = null
-            ),
-            LastWorkoutPartnerRequestResponse(
-                workoutPartnerRequestId = 123L,
-                status = WorkoutPartnerRequestStatus.ACCEPT,
-                chatRoomId = null
-            ),
-            LastWorkoutPartnerRequestResponse(
-                workoutPartnerRequestId = 123L,
-                status = WorkoutPartnerRequestStatus.ACCEPT,
-                chatRoomId = 123L
-            ),
-        )
-
-        val mergedResponse = response.mapIndexed { index, member ->
-            member.copy(
-                lastWorkoutPartnerRequest = extras[index % extras.size]
-            )
-        }
-        return ResponseEntity.ok(ApiResponse.success(mergedResponse))
+        return ResponseEntity.ok(ApiResponse.success(response))
     }
 
 
@@ -119,35 +95,7 @@ class MemberController(
 
         val response = memberQueryService.findRandomMemberWithinLocal(securityUtil.getMemberId(), condition, seed)
 
-        val extras = listOf(
-            null,
-            LastWorkoutPartnerRequestResponse(
-                workoutPartnerRequestId = 123L,
-                status = WorkoutPartnerRequestStatus.PENDING,
-                chatRoomId = null
-            ),
-            LastWorkoutPartnerRequestResponse(
-                workoutPartnerRequestId = 123L,
-                status = WorkoutPartnerRequestStatus.ACCEPT,
-                chatRoomId = null
-            ),
-            LastWorkoutPartnerRequestResponse(
-                workoutPartnerRequestId = 123L,
-                status = WorkoutPartnerRequestStatus.ACCEPT,
-                chatRoomId = 123L
-            ),
-        )
-
-        var i = 0
-        val mergedPage = response.map { member ->
-            val result = member.copy(
-                lastWorkoutPartnerRequest = extras[i % extras.size]
-            )
-            i++
-            result
-        }
-
-        return ResponseEntity.ok(ApiResponse.successWithPagination(mergedPage))
+        return ResponseEntity.ok(ApiResponse.successWithPagination(response))
     }
 
     @GetMapping("/{memberId}")
