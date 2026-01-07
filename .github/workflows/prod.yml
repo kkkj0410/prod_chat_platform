@@ -113,7 +113,7 @@ jobs:
           IP2=$(openstack server show "${{ env.WAS_2_NAME }}" -f value -c addresses | grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' | head -n 1)
           # 2. IP가 비어있는지 체크 (에러 방지)
           if [ -z "$IP1" ] || [ -z "$IP2" ]; then
-            echo "Error: Could not find private IPs for instances."
+            echo "Could not find private IPs for instances."
             exit 1
           fi
           
@@ -145,7 +145,7 @@ jobs:
           proxy_key: ${{ env.PROD_BASTION_SSH_KEY }}
 
           # 타임아웃 넉넉하게 설정 (이미지 pull 시간 고려)
-          timeout: "60s"
+          timeout: 60s
           script: |
             echo "Connected to WAS via Bastion!"
             
