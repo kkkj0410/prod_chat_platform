@@ -55,24 +55,10 @@ jobs:
           mkdir -p ./src/main/resources/firebase/
           echo '${{ env.FIREBASE_KEY }}' > ./src/main/resources/firebase/firebase-key.json
 
-      #      - name: Build with Gradle
-      #        run: |
-      #          chmod +x ./gradlew
-      #          ./gradlew bootJar -x test -x asciidoctor
-
       - name: Login to NCR
         run: |
           echo "${{ env.NHN_SECRET_ACCESS_KEY }}" | docker login ${{ env.NCR_REGISTRY_PUBLIC_URI }} -u "${{ secrets.NHN_USER_ACCESS_KEY }}" --password-stdin
 
-      #      - name: Build Docker Image
-      #        run: |
-      #          docker build . -t ${{ env.NCR_REGISTRY_PUBLIC_URI }}/${{ env.PROD_NCR_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_VERSION }}
-
-      #      - name: Push to NCR
-      #        run: |
-      #          docker push ${{ env.NCR_REGISTRY_PUBLIC_URI }}/${{ env.PROD_NCR_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_VERSION }}
-
-      # OpenStack 클라이언트 설치 (IP 추출용)
       - name: Install OpenStack Client
         run: |
           pip install python-openstackclient
@@ -80,93 +66,70 @@ jobs:
       - name: Get WAS Private IPs for Bastion Jump
         id: get-ip
         run: |
-               export OS_AUTH_URL="https://api-identity-infrastructure.nhncloudservice.com/v3"
-               export OS_IDENTITY_API_VERSION=3
-               export OS_PROJECT_ID=${{ env.NHN_API_TENANT_ID }}
-               export OS_USER_ID=${{ env.NHN_API_USER_ID }}
-               export OS_PASSWORD=${{ env.NHN_API_PASSWORD }}
-               export OS_USER_DOMAIN_NAME="Default"
-               export OS_PROJECT_DOMAIN_NAME="Default"
-               export OS_REGION_NAME=${{ env.NHN_REGION_NAME }}
-               export OS_INTERFACE=public
-               
-               echo "Connecting to NHN Cloud to fetch IPs..."
-          
-          #          echo "=== 1. [진단] NHN 연결 테스트 ==="
-          #          openstack server list --format value --column Name || echo "❌ 연결 실패! Secrets 아이디/비번을 확인하세요."
-          #
-          #          echo "=== 2. [진단] IP 원본 데이터 확인 ==="
-          #          # grep 필터 없이 원본을 찍어서 이름이 틀렸는지 확인
-          #          RAW_1=$(openstack server show "${{ env.WAS_1_NAME }}" -f value -c addresses 2>&1)
-          #          echo "WAS 1 응답결과: $RAW_1"
-          #
-          #          RAW_2=$(openstack server show "${{ env.WAS_2_NAME }}" -f value -c addresses 2>&1)
-          #          echo "WAS 2 응답결과: $RAW_2"
+          export OS_AUTH_URL="https://api-identity-infrastructure.nhncloudservice.com/v3"
+          export OS_IDENTITY_API_VERSION=3
+          export OS_PROJECT_ID=${{ env.NHN_API_TENANT_ID }}
+          export OS_USER_ID=${{ env.NHN_API_USER_ID }}
+          export OS_PASSWORD=${{ env.NHN_API_PASSWORD }}
+          export OS_USER_DOMAIN_NAME="Default"
+          export OS_PROJECT_DOMAIN_NAME="Default"
+          export OS_REGION_NAME=${{ env.NHN_REGION_NAME }}
+          export OS_INTERFACE=public
 
-          # Bastion을 타고 들어가므로, WAS의 Public IP가 있어도 '내부 사설 IP (10.x.x.x)'를 추출해야 통신이 빠르고 보안상 맞음
-          # 보통 grep -oP '\d+\.\d+\.\d+\.\d+' 하면 10.x 대역과 공인 IP가 같이 나오는데, 내부 IP를 타겟팅함
-          #          IP1=$(openstack server show "${{ env.WAS_1_NAME }}" -f value -c addresses | grep -oP '(\d{1,3}\.){3}\d{1,3}' | head -n 1)
-          #          IP2=$(openstack server show "${{ env.WAS_2_NAME }}" -f value -c addresses | grep -oP '(\d{1,3}\.){3}\d{1,3}' | head -n 1)
-               
-               
-               IP1=$(openstack server show "${{ env.WAS_1_NAME }}" -f value -c addresses | grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' | head -n 1)
-               IP2=$(openstack server show "${{ env.WAS_2_NAME }}" -f value -c addresses | grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' | head -n 1)
-          # 2. IP가 비어있는지 체크 (에러 방지)
-               if [ -z "$IP1" ] || [ -z "$IP2" ]; then
-               echo "Could not find private IPs for instances."
-               exit 1
-               fi
-               
-               echo "::add-mask::$IP1"
-               echo "::add-mask::$IP2"
-               
-               echo "WAS_1_IP=$IP1" >> $GITHUB_OUTPUT
-               echo "WAS_2_IP=$IP2" >> $GITHUB_OUTPUT
+          echo "Connecting to NHN Cloud to fetch IPs..."
+
+          IP1=$(openstack server show "${{ env.WAS_1_NAME }}" -f value -c addresses | grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' | head -n 1)
+          IP2=$(openstack server show "${{ env.WAS_2_NAME }}" -f value -c addresses | grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' | head -n 1)
+
+          if [ -z "$IP1" ] || [ -z "$IP2" ]; then
+            echo "Could not find private IPs for instances."
+            exit 1
+          fi
+
+          echo "::add-mask::$IP1"
+          echo "::add-mask::$IP2"
+
+          echo "WAS_1_IP=$IP1" >> $GITHUB_OUTPUT
+          echo "WAS_2_IP=$IP2" >> $GITHUB_OUTPUT
 
   deploy:
     needs: build-and-push-ncr
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        server_ip: [ "${{ needs.build-and-push-ncr.outputs.WAS_1_IP }}", "${{ needs.build-and-push-ncr.outputs.WAS_2_IP }}" ]
+        server_ip:
+          - ${{ needs.build-and-push-ncr.outputs.WAS_1_IP }}
+          - ${{ needs.build-and-push-ncr.outputs.WAS_2_IP }}
 
     steps:
       - name: Deploy to WAS via Bastion
         uses: appleboy/ssh-action@master
         with:
-          # 최종 목적지 (WAS) 정보
           host: ${{ matrix.server_ip }}
           username: ${{ env.SERVER_USER }}
           key: ${{ env.PROD_WAS_SSH_KEY }}
 
-          # 경유지 (Bastion) 정보 - ProxyJump
           proxy_host: ${{ env.PROD_BASTION_IP }}
           proxy_username: ${{ env.SERVER_USER }}
           proxy_key: ${{ env.PROD_BASTION_SSH_KEY }}
 
-          # 타임아웃 넉넉하게 설정 (이미지 pull 시간 고려)
           timeout: 60s
           script: |
             echo "Connected to WAS via Bastion!"
-            
-            # 1. NCR 로그인
+
             echo "${{ env.NHN_SECRET_ACCESS_KEY }}" | sudo docker login ${{ env.NCR_REGISTRY_PUBLIC_URI }} -u "${{ secrets.NHN_USER_ACCESS_KEY }}" --password-stdin
-            
-            # 2. 이미지 Pull
+
             sudo docker pull ${{ env.NCR_REGISTRY_PUBLIC_URI }}/${{ env.PROD_NCR_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_VERSION }}
-            
-            # 3. 기존 컨테이너 중지 및 삭제
+
             if [ "$(sudo docker ps -q -f name=${{ env.DOCKER_CONTAINER_NAME }})" ]; then
-                sudo docker stop ${{ env.DOCKER_CONTAINER_NAME }}
-                sudo docker rm ${{ env.DOCKER_CONTAINER_NAME }}
+              sudo docker stop ${{ env.DOCKER_CONTAINER_NAME }}
+              sudo docker rm ${{ env.DOCKER_CONTAINER_NAME }}
             fi
-            
-            # 4. 새 컨테이너 실행
+
             sudo docker run -d \
               --name ${{ env.DOCKER_CONTAINER_NAME }} \
               -p 8080:8080 \
               -e TZ=Asia/Seoul \
               ${{ env.NCR_REGISTRY_PUBLIC_URI }}/${{ env.PROD_NCR_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_VERSION }}
-            
-            # 5. 미사용 이미지 정리
+
             sudo docker image prune -f
