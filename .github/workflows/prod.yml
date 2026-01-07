@@ -14,9 +14,9 @@ env:
   SERVER_USER: ubuntu
 
   NCR_REGISTRY_PUBLIC_URI: ${{ secrets.NCR_REGISTRY_PUBLIC_URI }}
-  NHN_USER_ACCESS_KEY : ${{ secrets.NHN_USER_ACCESS_KEY }}
-  NHN_SECRET_ACCESS_KEY : ${{ secrets.NHN_SECRET_ACCESS_KEY }}
-  PROD_NCR_IMAGE_NAME : ${{ secrets.PROD_NCR_IMAGE_NAME }}
+  NHN_USER_ACCESS_KEY: ${{ secrets.NHN_USER_ACCESS_KEY }}
+  NHN_SECRET_ACCESS_KEY: ${{ secrets.NHN_SECRET_ACCESS_KEY }}
+  PROD_NCR_IMAGE_NAME: ${{ secrets.PROD_NCR_IMAGE_NAME }}
   DOCKER_IMAGE_VERSION: latest
   DOCKER_CONTAINER_NAME: backend-prod
 
@@ -145,7 +145,7 @@ jobs:
           proxy_key: ${{ env.PROD_BASTION_SSH_KEY }}
 
           # 타임아웃 넉넉하게 설정 (이미지 pull 시간 고려)
-          timeout: 60s
+          timeout: "60s"
           script: |
             echo "Connected to WAS via Bastion!"
             
