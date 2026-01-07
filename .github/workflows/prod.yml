@@ -55,22 +55,22 @@ jobs:
           mkdir -p ./src/main/resources/firebase/
           echo '${{ env.FIREBASE_KEY }}' > ./src/main/resources/firebase/firebase-key.json
 
-      - name: Build with Gradle
-        run: |
-          chmod +x ./gradlew
-          ./gradlew bootJar -x test -x asciidoctor
+#      - name: Build with Gradle
+#        run: |
+#          chmod +x ./gradlew
+#          ./gradlew bootJar -x test -x asciidoctor
 
       - name: Login to NCR
         run: |
           echo "${{ env.NHN_SECRET_ACCESS_KEY }}" | docker login ${{ env.NCR_REGISTRY_PUBLIC_URI }} -u "${{ secrets.NHN_USER_ACCESS_KEY }}" --password-stdin
 
-      - name: Build Docker Image
-        run: |
-          docker build . -t ${{ env.NCR_REGISTRY_PUBLIC_URI }}/${{ env.PROD_NCR_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_VERSION }}
-
-      - name: Push to NCR
-        run: |
-          docker push ${{ env.NCR_REGISTRY_PUBLIC_URI }}/${{ env.PROD_NCR_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_VERSION }}
+#      - name: Build Docker Image
+#        run: |
+#          docker build . -t ${{ env.NCR_REGISTRY_PUBLIC_URI }}/${{ env.PROD_NCR_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_VERSION }}
+#
+#      - name: Push to NCR
+#        run: |
+#          docker push ${{ env.NCR_REGISTRY_PUBLIC_URI }}/${{ env.PROD_NCR_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_VERSION }}
 
       # OpenStack 클라이언트 설치 (IP 추출용)
       - name: Install OpenStack Client
@@ -92,22 +92,25 @@ jobs:
           
           echo "Connecting to NHN Cloud to fetch IPs..."
           
-          echo "=== 1. [진단] NHN 연결 테스트 ==="
-          openstack server list --format value --column Name || echo "❌ 연결 실패! Secrets 아이디/비번을 확인하세요."
-          
-          echo "=== 2. [진단] IP 원본 데이터 확인 ==="
-          # grep 필터 없이 원본을 찍어서 이름이 틀렸는지 확인
-          RAW_1=$(openstack server show "${{ env.WAS_1_NAME }}" -f value -c addresses 2>&1)
-          echo "WAS 1 응답결과: $RAW_1"
-          
-          RAW_2=$(openstack server show "${{ env.WAS_2_NAME }}" -f value -c addresses 2>&1)
-          echo "WAS 2 응답결과: $RAW_2"
-          
-          # Bastion을 타고 들어가므로, WAS의 Public IP가 있어도 '내부 사설 IP (10.x.x.x)'를 추출해야 통신이 빠르고 보안상 맞음
-          # 보통 grep -oP '\d+\.\d+\.\d+\.\d+' 하면 10.x 대역과 공인 IP가 같이 나오는데, 내부 IP를 타겟팅함  
-          IP1=$(openstack server show "${{ env.WAS_1_NAME }}" -f value -c addresses | grep -oP '(\d{1,3}\.){3}\d{1,3}' | head -n 1)
-          IP2=$(openstack server show "${{ env.WAS_2_NAME }}" -f value -c addresses | grep -oP '(\d{1,3}\.){3}\d{1,3}' | head -n 1)
-          
+#          echo "=== 1. [진단] NHN 연결 테스트 ==="
+#          openstack server list --format value --column Name || echo "❌ 연결 실패! Secrets 아이디/비번을 확인하세요."
+#
+#          echo "=== 2. [진단] IP 원본 데이터 확인 ==="
+#          # grep 필터 없이 원본을 찍어서 이름이 틀렸는지 확인
+#          RAW_1=$(openstack server show "${{ env.WAS_1_NAME }}" -f value -c addresses 2>&1)
+#          echo "WAS 1 응답결과: $RAW_1"
+#
+#          RAW_2=$(openstack server show "${{ env.WAS_2_NAME }}" -f value -c addresses 2>&1)
+#          echo "WAS 2 응답결과: $RAW_2"
+#
+#          # Bastion을 타고 들어가므로, WAS의 Public IP가 있어도 '내부 사설 IP (10.x.x.x)'를 추출해야 통신이 빠르고 보안상 맞음
+#          # 보통 grep -oP '\d+\.\d+\.\d+\.\d+' 하면 10.x 대역과 공인 IP가 같이 나오는데, 내부 IP를 타겟팅함
+#          IP1=$(openstack server show "${{ env.WAS_1_NAME }}" -f value -c addresses | grep -oP '(\d{1,3}\.){3}\d{1,3}' | head -n 1)
+#          IP2=$(openstack server show "${{ env.WAS_2_NAME }}" -f value -c addresses | grep -oP '(\d{1,3}\.){3}\d{1,3}' | head -n 1)
+#
+
+          IP1=$(openstack server show "${{ env.WAS_1_NAME }}" -f value -c addresses | grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' | head -n 1)
+          IP2=$(openstack server show "${{ env.WAS_2_NAME }}" -f value -c addresses | grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' | head -n 1)
           # 2. IP가 비어있는지 체크 (에러 방지)
           if [ -z "$IP1" ] || [ -z "$IP2" ]; then
             echo "Error: Could not find private IPs for instances."
