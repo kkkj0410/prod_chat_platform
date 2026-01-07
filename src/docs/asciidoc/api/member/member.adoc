@@ -48,7 +48,6 @@ include::{snippets}/member-address-details/response-fields.adoc[]
 === 추천 핏버디 API
 홈 화면 - 추천 핏버디. 회원 좌표 인근 반경안에 있는 회원 조회(정책에 따라, 반경 안에 없는 회원도 조회될 수 있음. 최대 10개 조회)
 API 호출할때마다, 조회되는 회원은 랜덤으로 바뀜
-(FAKE = lastWorkoutPartnerRequest)
 
 ==== HTTP Request
 include::{snippets}/member-recommendation/http-request.adoc[]
@@ -62,7 +61,6 @@ include::{snippets}/member-recommendation/response-fields.adoc[]
 [[member-local]]
 === 우리 동네 핏버디 API
 홈 화면 - 우리 동네 핏버디. 회원 좌표 인근 반경안에 있는 회원 조회(정책에 따라, 반경 안에 없는 회원도 조회될 수 있음.)
-(FAKE = lastWorkoutPartnerRequest)
 
 ==== HTTP Request
 include::{snippets}/member-local/http-request.adoc[]
