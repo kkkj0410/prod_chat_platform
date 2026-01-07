@@ -74,7 +74,8 @@ jobs:
 
       # OpenStack 클라이언트 설치 (IP 추출용)
       - name: Install OpenStack Client
-        run: pip install python-openstackclient
+        run: |
+          pip install python-openstackclient
 
       - name: Get WAS Private IPs for Bastion Jump
         id: get-ip
