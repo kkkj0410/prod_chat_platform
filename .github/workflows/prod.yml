@@ -29,7 +29,7 @@ env:
 
   APPLICATION_PROD: ${{ secrets.PROD_APPLICATION_YML }}
   APPLICATION_TEST: ${{ secrets.TEST_APPLICATION_YML }}
-  FIREBASE_KEY: ${{ secrets.PROD_FIREBASE_KEY }}
+  FIREBASE_KEY: ${{ secrets.FIREBASE_KEY }}
 
 jobs:
   build-and-push-ncr:
@@ -98,7 +98,14 @@ jobs:
           IP1=$(openstack server show "${{ env.WAS_1_NAME }}" -f value -c addresses | grep -oP '10\.\d+\.\d+\.\d+' | head -n 1)
           IP2=$(openstack server show "${{ env.WAS_2_NAME }}" -f value -c addresses | grep -oP '10\.\d+\.\d+\.\d+' | head -n 1)
           
-          echo "Found IPs via Bastion: WAS1=$IP1, WAS2=$IP2"
+          # 2. IP가 비어있는지 체크 (에러 방지)
+          if [ -z "$IP1" ] || [ -z "$IP2" ]; then
+            echo "Error: Could not find private IPs for instances."
+            exit 1
+          fi
+          
+          echo "::add-mask::$IP1"
+          echo "::add-mask::$IP2"
           
           echo "WAS_1_IP=$IP1" >> $GITHUB_OUTPUT
           echo "WAS_2_IP=$IP2" >> $GITHUB_OUTPUT
