@@ -58,7 +58,7 @@ jobs:
       - name: Build with Gradle
         run: |
           chmod +x ./gradlew
-          ./gradlew build
+          ./gradlew bootJar -x test -x asciidoctor
 
       - name: Login to NCR
         run: |
