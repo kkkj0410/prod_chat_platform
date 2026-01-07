@@ -35,8 +35,8 @@ jobs:
   build-and-push-ncr:
     runs-on: ubuntu-latest
     outputs:
-      WAS_1_IP: ${{ steps.get-ip.outputs.WAS_1_IP }}
-      WAS_2_IP: ${{ steps.get-ip.outputs.WAS_2_IP }}
+      WAS_1_IP: ${{ steps.get_ip.outputs.WAS_1_IP }}
+      WAS_2_IP: ${{ steps.get_ip.outputs.WAS_2_IP }}
 
     steps:
       - name: Checkout
@@ -64,7 +64,7 @@ jobs:
           pip install python-openstackclient
 
       - name: Get WAS Private IPs for Bastion Jump
-        id: get-ip
+        id: get_ip
         run: |
           export OS_AUTH_URL="https://api-identity-infrastructure.nhncloudservice.com/v3"
           export OS_IDENTITY_API_VERSION=3
