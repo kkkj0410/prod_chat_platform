@@ -6,10 +6,6 @@ on:
 
 env:
   WAS_1_NAME: "prd-core-was-instance-01"
-  WAS_2_NAME: "prd-core-was-instance-02"
-
-  PROD_BASTION_IP: ${{ secrets.PROD_BASTION_IP }}
-  PROD_BASTION_SSH_KEY: ${{ secrets.PROD_BASTION_SSH_KEY }}
 
   SERVER_USER: ubuntu
 
@@ -53,10 +49,24 @@ jobs:
           mkdir -p ./src/main/resources/firebase
           echo '${{ env.FIREBASE_KEY }}' > ./src/main/resources/firebase/firebase-key.json
 
+      - name: Build with Gradle
+        run: |
+          chmod +x ./gradlew
+          ./gradlew bootJar -x test -x asciidoctor
+
       - name: Login to NCR
         run: |
           echo "${{ env.NHN_SECRET_ACCESS_KEY }}" | docker login ${{ env.NCR_REGISTRY_PUBLIC_URI }} \
             -u "${{ env.NHN_USER_ACCESS_KEY }}" --password-stdin
+
+      - name: Build Docker Image
+        run: |
+          docker build . -t ${{ env.NCR_REGISTRY_PUBLIC_URI }}/${{ env.PROD_NCR_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_VERSION }}
+
+      - name: Push to NCR
+        run: |
+          docker push ${{ env.NCR_REGISTRY_PUBLIC_URI }}/${{ env.PROD_NCR_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_VERSION }}
+
 
       - name: Install OpenStack Client
         run: pip install python-openstackclient
@@ -75,50 +85,40 @@ jobs:
           export OS_INTERFACE=public
 
           IP1=$(openstack server show "${{ env.WAS_1_NAME }}" -f value -c addresses | grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' | head -n 1)
-          IP2=$(openstack server show "${{ env.WAS_2_NAME }}" -f value -c addresses | grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' | head -n 1)
 
-          [ -z "$IP1" ] || [ -z "$IP2" ] && exit 1
+          [ -z "$IP1" ] && exit 1
 
           echo "WAS_1_IP=$IP1" >> $GITHUB_OUTPUT
-          echo "WAS_2_IP=$IP2" >> $GITHUB_OUTPUT
 
-  deploy:
-    needs: build-and-push-ncr
-    runs-on: ubuntu-latest
 
-    steps:
       - name: Deploy to WAS 1
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ needs.build-and-push-ncr.outputs.WAS_1_IP }}
+          host: ${{ steps.get_ip.outputs.WAS_1_IP }}
           username: ${{ env.SERVER_USER }}
           key: ${{ env.PROD_WAS_SSH_KEY }}
-          proxy_host: ${{ env.PROD_BASTION_IP }}
-          proxy_username: ${{ env.SERVER_USER }}
-          proxy_key: ${{ env.PROD_BASTION_SSH_KEY }}
           script: |
+            mkdir -p ~/firebase
+            echo "${{ env.APPLICATION_PROD }}" > ~/application.yml
+            echo '${{ env.FIREBASE_KEY }}' > ~/firebase/firebase-key.json
+            chmod 600 ~/application.yml ~/firebase/firebase-key.json
+            
             echo "${{ env.NHN_SECRET_ACCESS_KEY }}" | sudo docker login ${{ env.NCR_REGISTRY_PUBLIC_URI }} \
               -u "${{ env.NHN_USER_ACCESS_KEY }}" --password-stdin
             sudo docker pull ${{ env.NCR_REGISTRY_PUBLIC_URI }}/${{ env.PROD_NCR_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_VERSION }}
             sudo docker rm -f ${{ env.DOCKER_CONTAINER_NAME }} || true
-            sudo docker run -d --name ${{ env.DOCKER_CONTAINER_NAME }} -p 8080:8080 -e TZ=Asia/Seoul \
-              ${{ env.NCR_REGISTRY_PUBLIC_URI }}/${{ env.PROD_NCR_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_VERSION }}
+            
+            sudo docker create --name ${{ env.DOCKER_CONTAINER_NAME }} \
+            -p 8080:8080 -e TZ=Asia/Seoul \
+            ${{ env.NCR_REGISTRY_PUBLIC_URI }}/${{ env.PROD_NCR_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_VERSION }}
+          
+            sudo docker cp ~/application.yml ${{ env.DOCKER_CONTAINER_NAME }}:/app/resources/application.yml
+            sudo docker cp ~/firebase/firebase-key.json ${{ env.DOCKER_CONTAINER_NAME }}:/app/resources/firebase/firebase-key.json
+            
+            sudo docker start ${{ env.DOCKER_CONTAINER_NAME }}
+            
             sudo docker image prune -f
-
-      - name: Deploy to WAS 2
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ needs.build-and-push-ncr.outputs.WAS_2_IP }}
-          username: ${{ env.SERVER_USER }}
-          key: ${{ env.PROD_WAS_SSH_KEY }}
-          proxy_host: ${{ env.PROD_BASTION_IP }}
-          proxy_username: ${{ env.SERVER_USER }}
-          proxy_key: ${{ env.PROD_BASTION_SSH_KEY }}
-          script: |
-            echo "${{ env.NHN_SECRET_ACCESS_KEY }}" | sudo docker login ${{ env.NCR_REGISTRY_PUBLIC_URI }} \
-              -u "${{ env.NHN_USER_ACCESS_KEY }}" --password-stdin
-            sudo docker pull ${{ env.NCR_REGISTRY_PUBLIC_URI }}/${{ env.PROD_NCR_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_VERSION }}
-            sudo docker rm -f ${{ env.DOCKER_CONTAINER_NAME }} || true
-            sudo docker run -d --name ${{ env.DOCKER_CONTAINER_NAME }} -p 8080:8080 -e TZ=Asia/Seoul \
-              ${{ env.NCR_REGISTRY_PUBLIC_URI }}/${{ env.PROD_NCR_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_VERSION }}
-            sudo docker image prune -f
+            sudo docker logout ${{ env.NCR_REGISTRY_PUBLIC_URI }}
+            
+            rm ~/application.yml
+            rm -rf ~/firebase

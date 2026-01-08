@@ -39,7 +39,8 @@ class S3ServiceTest @Autowired constructor(
             domain = domain,
             maxImageByte = maxImageByte,
             maxImageCount = maxImageCount,
-            maxDurationMinute = maxDurationMinute
+            maxDurationMinute = maxDurationMinute,
+            endpoint = null
         )
     }
 

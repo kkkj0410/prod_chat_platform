@@ -51,6 +51,7 @@ import kr.co.fitview.api.app.global.config.SecurityConfig
 import kr.co.fitview.api.app.global.config.TestSecurityConfig
 import kr.co.fitview.api.app.global.exception.GlobalExceptionHandler
 import kr.co.fitview.api.app.global.filter.JwtAuthenticationFilter
+import kr.co.fitview.api.app.global.health.HealthController
 import kr.co.fitview.api.app.global.security.JwtAuthenticationEntryPoint
 import kr.co.fitview.api.app.global.util.SecurityUtil
 import org.springframework.beans.factory.annotation.Autowired
@@ -89,6 +90,7 @@ import org.springframework.test.web.servlet.MockMvc
     AdminWorkoutController::class,
     AdminReviewController::class,
     AdminReportController::class,
+    HealthController::class,
     GlobalExceptionHandler::class,
 ],
 excludeFilters = [

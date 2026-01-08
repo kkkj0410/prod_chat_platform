@@ -7,6 +7,7 @@ import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.S3Configuration
 import software.amazon.awssdk.services.s3.presigner.S3Presigner
 
 
@@ -27,6 +28,11 @@ class S3Config(
 
     @Value("\${cloud.s3.domain}")
     val domain: String,
+
+//    @Value("\${cloud.s3.endpoint}")
+//    val endpoint: String? = null,
+    @Value("\${cloud.s3.endpoint:#{null}}")
+    val endpoint: String?,
 
     @Value("\${cloud.s3.max-image-byte}")
     val maxImageByte : Long,
@@ -65,5 +71,43 @@ class S3Config(
             .build()
     }
 
+//    @Bean
+//    fun s3Client(): S3Client {
+//        val builder = S3Client.builder()
+//            .region(Region.of(region))
+//            .credentialsProvider(
+//                StaticCredentialsProvider.create(
+//                    AwsBasicCredentials.create(accessKey, secretKey)
+//                )
+//            )
+//
+//        endpoint?.let {
+//            builder.endpointOverride(java.net.URI.create(it))
+//            builder.forcePathStyle(true)
+//        }
+//
+//        return builder.build()
+//    }
+//
+//    @Bean
+//    fun s3Presigner(): S3Presigner {
+//        val builder = S3Presigner.builder()
+//            .region(Region.of(region))
+//            .credentialsProvider(
+//                StaticCredentialsProvider.create(
+//                    AwsBasicCredentials.create(accessKey, secretKey)
+//                )
+//            )
+//
+//        endpoint?.let {
+//            builder.endpointOverride(java.net.URI.create(it))
+//            builder.serviceConfiguration(
+//                S3Configuration.builder()
+//                .pathStyleAccessEnabled(true)
+//                .build())
+//        }
+//
+//        return builder.build()
+//    }
 
 }
