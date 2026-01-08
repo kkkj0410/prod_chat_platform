@@ -5,7 +5,7 @@ on:
     branches: [ "master" ]
 
 env:
-  WAS_1_NAME: "prod-core-was-instance-01"
+  PROD_CORE_WAS_INSTANCE_01_IP: ${{ secrets.PROD_CORE_WAS_INSTANCE_01_IP }}
 
   SERVER_USER: ubuntu
 
@@ -67,34 +67,10 @@ jobs:
 #        run: |
 #          docker push ${{ env.NCR_REGISTRY_PUBLIC_URI }}/${{ env.PROD_NCR_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_VERSION }}
 
-
-      - name: Install OpenStack Client
-        run: pip install python-openstackclient
-
-      - name: Get WAS Private IPs
-        id: get_ip
-        run: |
-          export OS_AUTH_URL="https://api-identity-infrastructure.nhncloudservice.com/v3"
-          export OS_IDENTITY_API_VERSION=3
-          export OS_PROJECT_ID=${{ env.NHN_API_TENANT_ID }}
-          export OS_USER_ID=${{ env.NHN_API_USER_ID }}
-          export OS_PASSWORD=${{ env.NHN_API_PASSWORD }}
-          export OS_USER_DOMAIN_NAME="Default"
-          export OS_PROJECT_DOMAIN_NAME="Default"
-          export OS_REGION_NAME=${{ env.NHN_REGION_NAME }}
-          export OS_INTERFACE=public
-
-          IP1=$(openstack server show "${{ env.WAS_1_NAME }}" -f value -c addresses | grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' | head -n 1)
-
-          [ -z "$IP1" ] && exit 1
-
-          echo "WAS_1_IP=$IP1" >> $GITHUB_OUTPUT
-
-
       - name: Deploy to WAS 1
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ steps.get_ip.outputs.WAS_1_IP }}
+          host: ${{ env.PROD_CORE_WAS_INSTANCE_01_IP }}
           username: ${{ env.SERVER_USER }}
           key: ${{ env.PROD_WAS_SSH_KEY }}
           script: |
