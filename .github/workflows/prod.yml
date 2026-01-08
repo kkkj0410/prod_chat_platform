@@ -5,7 +5,7 @@ on:
     branches: [ "master" ]
 
 env:
-  WAS_1_NAME: "prd-core-was-instance-01"
+  WAS_1_NAME: "prod-core-was-instance-01"
 
   SERVER_USER: ubuntu
 
@@ -49,23 +49,23 @@ jobs:
           mkdir -p ./src/main/resources/firebase
           echo '${{ env.FIREBASE_KEY }}' > ./src/main/resources/firebase/firebase-key.json
 
-      - name: Build with Gradle
-        run: |
-          chmod +x ./gradlew
-          ./gradlew bootJar -x test -x asciidoctor
+#      - name: Build with Gradle
+#        run: |
+#          chmod +x ./gradlew
+#          ./gradlew bootJar -x test -x asciidoctor
 
       - name: Login to NCR
         run: |
           echo "${{ env.NHN_SECRET_ACCESS_KEY }}" | docker login ${{ env.NCR_REGISTRY_PUBLIC_URI }} \
             -u "${{ env.NHN_USER_ACCESS_KEY }}" --password-stdin
 
-      - name: Build Docker Image
-        run: |
-          docker build . -t ${{ env.NCR_REGISTRY_PUBLIC_URI }}/${{ env.PROD_NCR_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_VERSION }}
-
-      - name: Push to NCR
-        run: |
-          docker push ${{ env.NCR_REGISTRY_PUBLIC_URI }}/${{ env.PROD_NCR_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_VERSION }}
+#      - name: Build Docker Image
+#        run: |
+#          docker build . -t ${{ env.NCR_REGISTRY_PUBLIC_URI }}/${{ env.PROD_NCR_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_VERSION }}
+#
+#      - name: Push to NCR
+#        run: |
+#          docker push ${{ env.NCR_REGISTRY_PUBLIC_URI }}/${{ env.PROD_NCR_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_VERSION }}
 
 
       - name: Install OpenStack Client
