@@ -36,6 +36,7 @@ object SecurityConstant {
         "$API_BASE/oauth2/login",
         "$API_BASE/test/**",
         "$WS_STOMP_URI/**",
+        "/health",
 
         "/css/**",
         "/js/**",

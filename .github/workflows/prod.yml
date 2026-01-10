@@ -5,50 +5,48 @@ on:
     branches: [ "master" ]
 
 env:
-  WAS_1_NAME: "prd-core-was-instance-01"
-  WAS_2_NAME: "prd-core-was-instance-02"
+  PROD_CORE_WAS_INSTANCE_01_IP: ${{ secrets.PROD_CORE_WAS_INSTANCE_01_IP }}
+
   SERVER_USER: ubuntu
 
-  NCR_REGISTRY: ${{ secrets.NCR_REGISTRY }}
-  NCR_USER_ACCESS_KEY : ${{ secrets.NCR_USER_ACCESS_KEY }}
-  NCR_SECRET_ACCESS_KEY : ${{ secrets.NCR_SECRET_ACCESS_KEY }}
-  PROD_NCR_IMAGE_NAME : ${{ secrets.PROD_NCR_IMAGE_NAME }}
+  NCR_REGISTRY_PUBLIC_URI: ${{ secrets.NCR_REGISTRY_PUBLIC_URI }}
+  NHN_USER_ACCESS_KEY: ${{ secrets.NHN_USER_ACCESS_KEY }}
+  NHN_SECRET_ACCESS_KEY: ${{ secrets.NHN_SECRET_ACCESS_KEY }}
+  PROD_NCR_IMAGE_NAME: ${{ secrets.PROD_NCR_IMAGE_NAME }}
   DOCKER_IMAGE_VERSION: latest
   DOCKER_CONTAINER_NAME: backend-prod
 
   NHN_API_TENANT_ID: ${{ secrets.NHN_API_TENANT_ID }}
-  NHN_API_USER_ID: ${{ secrets.NHN_API_TENANT_ID }}
-  NHN_API_PASSWORD: ${{ secrets.NHN_API_TENANT_ID }}
+  NHN_API_USER_ID: ${{ secrets.NHN_API_USER_ID }}
+  NHN_API_PASSWORD: ${{ secrets.NHN_API_PASSWORD }}
   NHN_REGION_NAME: ${{ secrets.NHN_REGION_NAME }}
 
   PROD_WAS_SSH_KEY: ${{ secrets.PROD_WAS_SSH_KEY }}
 
   APPLICATION_PROD: ${{ secrets.PROD_APPLICATION_YML }}
   APPLICATION_TEST: ${{ secrets.TEST_APPLICATION_YML }}
-  FIREBASE_KEY: ${{ secrets.PROD_FIREBASE_KEY }}
+  FIREBASE_KEY: ${{ secrets.FIREBASE_KEY }}
 
 jobs:
   build-and-push-ncr:
     runs-on: ubuntu-latest
     outputs:
-      WAS_1_IP: ${{ steps.get-ip.outputs.WAS_1_IP }}
-      WAS_2_IP: ${{ steps.get-ip.outputs.WAS_2_IP }}
+      WAS_1_IP: ${{ steps.get_ip.outputs.WAS_1_IP }}
+      WAS_2_IP: ${{ steps.get_ip.outputs.WAS_2_IP }}
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
+      - uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
       - name: Create Configuration Files
         run: |
-          echo "${{ env.APPLICATION_PROD }}" > ./src/main/resources/application-prod.yml
+          echo "${{ env.APPLICATION_PROD }}" > ./src/main/resources/application.yml
           echo "${{ env.APPLICATION_TEST }}" > ./src/main/resources/application-test.yml
-          mkdir -p ./src/main/resources/firebase/
+          mkdir -p ./src/main/resources/firebase
           echo '${{ env.FIREBASE_KEY }}' > ./src/main/resources/firebase/firebase-key.json
 
       - name: Build with Gradle
@@ -58,81 +56,45 @@ jobs:
 
       - name: Login to NCR
         run: |
-         echo "${{ env.NCR_SECRET_ACCESS_KEY }}" | docker login ${{ env.NCR_REGISTRY }} -u "${{ secrets.NCR_USER_ACCESS_KEY }}" --password-stdin
+          echo "${{ env.NHN_SECRET_ACCESS_KEY }}" | docker login ${{ env.NCR_REGISTRY_PUBLIC_URI }} \
+            -u "${{ env.NHN_USER_ACCESS_KEY }}" --password-stdin
 
       - name: Build Docker Image
         run: |
-          docker build . -t ${{ env.NCR_REGISTRY }}/${{ env.PROD_NCR_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_VERSION }}
+          docker build . -t ${{ env.NCR_REGISTRY_PUBLIC_URI }}/${{ env.PROD_NCR_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_VERSION }}
 
       - name: Push to NCR
         run: |
-          docker push ${{ env.NCR_REGISTRY }}/${{ env.PROD_NCR_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_VERSION }}
+          docker push ${{ env.NCR_REGISTRY_PUBLIC_URI }}/${{ env.PROD_NCR_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_VERSION }}
 
-      - name: Get WAS Public IPs
-        id: get-ip
-        run: |
-          export OS_AUTH_URL="https://api-identity-infrastructure.nhncloudservice.com/v3"
-          export OS_IDENTITY_API_VERSION=3
-          
-          # 테넌트 ID
-          export OS_PROJECT_ID=${{ secrets.NHN_API_TENANT_ID }}
-          
-          # API 사용자 ID
-          export OS_USER_ID=${{ secrets.NHN_API_USER_ID }}
-          
-          # API 비밀번호
-          export OS_PASSWORD=${{ secrets.NHN_API_PASSWORD }}
-          
-          # 도메인 설정 (v3 필수)
-          export OS_USER_DOMAIN_NAME="Default"
-          export OS_PROJECT_DOMAIN_NAME="Default"
-          
-          # 리전 설정
-          export OS_REGION_NAME=${{ secrets.NHN_REGION_NAME }}
-          export OS_INTERFACE=public
-          
-          # 2. IP 추출
-          echo "Connecting to NHN Cloud to fetch IPs..."
-          IP1=$(openstack server show "${{ env.WAS_1_NAME }}" -f value -c addresses | grep -oP '\d+\.\d+\.\d+\.\d+' | head -n 1)
-          IP2=$(openstack server show "${{ env.WAS_2_NAME }}" -f value -c addresses | grep -oP '\d+\.\d+\.\d+\.\d+' | head -n 1)
-          
-          # 3. 결과 출력 및 다음 스텝으로 전달
-          echo "WAS_1_IP=$IP1" >> $GITHUB_OUTPUT
-          echo "WAS_2_IP=$IP2" >> $GITHUB_OUTPUT
-
-  deploy:
-    needs: build-and-push-ncr
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        # 추출된 IP 리스트를 바탕으로 병렬/순차 배포 수행
-        server_ip: [ "${{ needs.build-and-push-ncr.outputs.WAS_1_IP }}", "${{ needs.build-and-push-ncr.outputs.WAS_2_IP }}" ]
-
-    steps:
-      - name: Deploy to WAS
+      - name: Deploy to WAS 1
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ matrix.server_ip }}
+          host: ${{ env.PROD_CORE_WAS_INSTANCE_01_IP }}
           username: ${{ env.SERVER_USER }}
           key: ${{ env.PROD_WAS_SSH_KEY }}
           script: |
-            # 1. NCR 로그인
-            echo "${{ env.NCR_SECRET_ACCESS_KEY }}" | sudo docker login ${{ env.NCR_REGISTRY }} -u "${{ secrets.NCR_USER_ACCESS_KEY }}" --password-stdin
+            mkdir -p ~/firebase
+            echo "${{ env.APPLICATION_PROD }}" > ~/application.yml
+            echo '${{ env.FIREBASE_KEY }}' > ~/firebase/firebase-key.json
+            chmod 600 ~/application.yml ~/firebase/firebase-key.json
             
-            # 2. 이미지 Pull
-            sudo docker pull ${{ env.NCR_REGISTRY }}/${{ env.PROD_NCR_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_VERSION }}
+            echo "${{ env.NHN_SECRET_ACCESS_KEY }}" | sudo docker login ${{ env.NCR_REGISTRY_PUBLIC_URI }} \
+              -u "${{ env.NHN_USER_ACCESS_KEY }}" --password-stdin
+            sudo docker pull ${{ env.NCR_REGISTRY_PUBLIC_URI }}/${{ env.PROD_NCR_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_VERSION }}
+            sudo docker rm -f ${{ env.DOCKER_CONTAINER_NAME }} || true
             
-            # 3. 기존 컨테이너 중지 및 삭제
-            sudo docker stop ${{ env.DOCKER_CONTAINER_NAME }} || true
-            sudo docker rm ${{ env.DOCKER_CONTAINER_NAME }} || true
+            sudo docker create --name ${{ env.DOCKER_CONTAINER_NAME }} \
+            -p 8080:8080 -e TZ=Asia/Seoul \
+            ${{ env.NCR_REGISTRY_PUBLIC_URI }}/${{ env.PROD_NCR_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_VERSION }}
+          
+            sudo docker cp ~/application.yml ${{ env.DOCKER_CONTAINER_NAME }}:/app/resources/application.yml
+            sudo docker cp ~/firebase/firebase-key.json ${{ env.DOCKER_CONTAINER_NAME }}:/app/resources/firebase/firebase-key.json
             
-            # 4. 새 컨테이너 실행
-            sudo docker run -d \
-              --name ${{ env.DOCKER_CONTAINER_NAME }} \
-              -p 8080:8080 \
-              -e SPRING_PROFILES_ACTIVE=prod \
-              -e TZ=Asia/Seoul \
-              ${{ env.NCR_REGISTRY }}/${{ env.PROD_NCR_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_VERSION }}
+            sudo docker start ${{ env.DOCKER_CONTAINER_NAME }}
             
-            # 5. 정리
             sudo docker image prune -f
+            sudo docker logout ${{ env.NCR_REGISTRY_PUBLIC_URI }}
+            
+            rm ~/application.yml
+            rm -rf ~/firebase
