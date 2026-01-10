@@ -29,8 +29,6 @@ class S3Config(
     @Value("\${cloud.s3.domain}")
     val domain: String,
 
-//    @Value("\${cloud.s3.endpoint}")
-//    val endpoint: String? = null,
     @Value("\${cloud.s3.endpoint:#{null}}")
     val endpoint: String?,
 
@@ -46,68 +44,68 @@ class S3Config(
 ) {
 
 
-    @Bean
-    fun s3Client(): S3Client {
-        return S3Client.builder()
-            .region(Region.of(region))
-            .credentialsProvider(
-                StaticCredentialsProvider.create(
-                    AwsBasicCredentials.create(accessKey, secretKey)
-                )
-            )
-            .build()
-    }
-
-
-    @Bean
-    fun s3Presigner(): S3Presigner {
-        return S3Presigner.builder()
-            .region(Region.of(region))
-            .credentialsProvider(
-                StaticCredentialsProvider.create(
-                    AwsBasicCredentials.create(accessKey, secretKey)
-                )
-            )
-            .build()
-    }
-
 //    @Bean
 //    fun s3Client(): S3Client {
-//        val builder = S3Client.builder()
+//        return S3Client.builder()
 //            .region(Region.of(region))
 //            .credentialsProvider(
 //                StaticCredentialsProvider.create(
 //                    AwsBasicCredentials.create(accessKey, secretKey)
 //                )
 //            )
-//
-//        endpoint?.let {
-//            builder.endpointOverride(java.net.URI.create(it))
-//            builder.forcePathStyle(true)
-//        }
-//
-//        return builder.build()
+//            .build()
 //    }
+//
 //
 //    @Bean
 //    fun s3Presigner(): S3Presigner {
-//        val builder = S3Presigner.builder()
+//        return S3Presigner.builder()
 //            .region(Region.of(region))
 //            .credentialsProvider(
 //                StaticCredentialsProvider.create(
 //                    AwsBasicCredentials.create(accessKey, secretKey)
 //                )
 //            )
-//
-//        endpoint?.let {
-//            builder.endpointOverride(java.net.URI.create(it))
-//            builder.serviceConfiguration(
-//                S3Configuration.builder()
-//                .pathStyleAccessEnabled(true)
-//                .build())
-//        }
-//
-//        return builder.build()
+//            .build()
 //    }
+
+    @Bean
+    fun s3Client(): S3Client {
+        val builder = S3Client.builder()
+            .region(Region.of(region))
+            .credentialsProvider(
+                StaticCredentialsProvider.create(
+                    AwsBasicCredentials.create(accessKey, secretKey)
+                )
+            )
+
+        endpoint?.let {
+            builder.endpointOverride(java.net.URI.create(it))
+            builder.forcePathStyle(true)
+        }
+
+        return builder.build()
+    }
+
+    @Bean
+    fun s3Presigner(): S3Presigner {
+        val builder = S3Presigner.builder()
+            .region(Region.of(region))
+            .credentialsProvider(
+                StaticCredentialsProvider.create(
+                    AwsBasicCredentials.create(accessKey, secretKey)
+                )
+            )
+
+        endpoint?.let {
+            builder.endpointOverride(java.net.URI.create(it))
+            builder.serviceConfiguration(
+                S3Configuration.builder()
+                .pathStyleAccessEnabled(true)
+                .build())
+        }
+
+        return builder.build()
+    }
 
 }
