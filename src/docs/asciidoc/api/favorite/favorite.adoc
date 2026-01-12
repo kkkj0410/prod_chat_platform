@@ -1,0 +1,37 @@
+[[favorite-members-list]]
+=== 찜 회원 조회 - FAKE
+
+==== HTTP Request
+include::{snippets}/favorite-members-list/http-request.adoc[]
+include::{snippets}/favorite-members-list/request-headers.adoc[]
+include::{snippets}/favorite-members-list/query-parameters.adoc[]
+
+==== HTTP Response
+include::{snippets}/favorite-members-list/http-response.adoc[]
+include::{snippets}/favorite-members-list/response-fields.adoc[]
+
+[[favorite-add]]
+=== 회원 찜 추가 - FAKE
+-> 이미 찜 상태 회원을 다시 찜할 경우, 에러 반환X(그냥 200 OK 내려줌)
+
+==== HTTP Request
+include::{snippets}/favorite-add/http-request.adoc[]
+include::{snippets}/favorite-add/request-headers.adoc[]
+include::{snippets}/favorite-add/path-parameters.adoc[]
+
+==== HTTP Response
+include::{snippets}/favorite-add/http-response.adoc[]
+include::{snippets}/favorite-add/response-fields.adoc[]
+
+[[favorite-delete]]
+=== 회원 찜 삭제 - FAKE
+-> 이미 찜 아닌 회원을 다시 찜 삭제할 경우, 에러 반환X(그냥 200 OK 내려줌)
+
+==== HTTP Request
+include::{snippets}/favorite-delete/http-request.adoc[]
+include::{snippets}/favorite-delete/request-headers.adoc[]
+include::{snippets}/favorite-delete/path-parameters.adoc[]
+
+==== HTTP Response
+include::{snippets}/favorite-delete/http-response.adoc[]
+include::{snippets}/favorite-delete/response-fields.adoc[]
