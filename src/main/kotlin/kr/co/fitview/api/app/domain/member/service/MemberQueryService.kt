@@ -28,6 +28,7 @@ import org.springframework.data.domain.Slice
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import kotlin.math.cos
+import kotlin.random.Random
 
 
 @Service
@@ -111,7 +112,7 @@ class MemberQueryService(
         val otherProfile = OtherMemberProfileResponse.fromMemberProfile(findProfile)
 
         val findWorkoutPartnerStatus : WorkoutPartnerStatusResponse = workoutPartnerQueryService.findWorkoutPartnerStatus(fromMemberId, toMemberId)
-        return MemberDetailResponse(otherProfile, findWorkoutPartnerStatus)
+        return MemberDetailResponse(otherProfile, findWorkoutPartnerStatus, Random.nextBoolean())
     }
 
     fun findRandomMemberWithinLocal(

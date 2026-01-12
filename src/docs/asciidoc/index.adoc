@@ -91,6 +91,11 @@ include::api/notification/notification.adoc[]
 
 include::api/report/report.adoc[]
 
+[[FAVORITE]]
+== FAVORITE API
+
+include::api/favorite/favorite.adoc[]
+
 [[Admin-Report]]
 == Admin-Report API
 

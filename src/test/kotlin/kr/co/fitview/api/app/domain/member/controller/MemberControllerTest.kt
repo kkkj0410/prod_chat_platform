@@ -164,7 +164,9 @@ class MemberControllerTest : ControllerTestSupport() {
                         status = ProfileWorkoutPartnerStatus.NONE,
                         workoutPartnerRequestId = null,
                         chatRoomId = null
-                    )
+                    ),
+
+                    isFavorite = false
                 )
             )
 
