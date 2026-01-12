@@ -5,6 +5,5 @@ import kr.co.fitview.api.app.domain.workout_partner.entity.enums.WorkoutPartnerR
 data class LastWorkoutPartnerRequestResponse(
     val workoutPartnerRequestId : Long,
     val status : WorkoutPartnerRequestStatus,
-//    val isSentByMe : Boolean,
     val chatRoomId : Long?
 )
