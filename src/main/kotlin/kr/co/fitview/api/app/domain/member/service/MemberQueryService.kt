@@ -5,6 +5,7 @@ import kr.co.fitview.api.app.domain.address.entity.Address
 import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
 import kr.co.fitview.api.app.domain.address.service.AddressService
 import kr.co.fitview.api.app.domain.chat.service.ChatRoomQueryService
+import kr.co.fitview.api.app.domain.favorite.service.FavoriteQueryService
 import kr.co.fitview.api.app.domain.member.condition.AdminMemberCondition
 import kr.co.fitview.api.app.domain.member.condition.MemberLocalCondition
 import kr.co.fitview.api.app.domain.member.dto.BoundingBox
@@ -40,6 +41,7 @@ class MemberQueryService(
     private val chatRoomQueryService : ChatRoomQueryService,
     private val addressService : AddressService,
     private val redisService : RedisService,
+    private val favoriteQueryService : FavoriteQueryService,
     private val randomCustom : RandomCustom
 ) {
 
@@ -112,7 +114,17 @@ class MemberQueryService(
         val otherProfile = OtherMemberProfileResponse.fromMemberProfile(findProfile)
 
         val findWorkoutPartnerStatus : WorkoutPartnerStatusResponse = workoutPartnerQueryService.findWorkoutPartnerStatus(fromMemberId, toMemberId)
-        return MemberDetailResponse(otherProfile, findWorkoutPartnerStatus, Random.nextBoolean())
+
+        val isFavorite = favoriteQueryService.findFavoriteFrom(
+            fromMemberId = fromMemberId,
+            toMemberId = toMemberId
+        ) != null
+
+        return MemberDetailResponse(
+            profile = otherProfile,
+            workoutPartner = findWorkoutPartnerStatus,
+            isFavorite = isFavorite
+        )
     }
 
     fun findRandomMemberWithinLocal(

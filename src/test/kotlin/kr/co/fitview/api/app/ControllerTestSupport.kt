@@ -11,6 +11,9 @@ import kr.co.fitview.api.app.domain.chat.controller.ChatController
 import kr.co.fitview.api.app.domain.chat.service.*
 import kr.co.fitview.api.app.domain.dashboard.controller.AdminDashboardController
 import kr.co.fitview.api.app.domain.dashboard.service.DashboardQueryService
+import kr.co.fitview.api.app.domain.favorite.controller.FavoriteController
+import kr.co.fitview.api.app.domain.favorite.service.FavoriteQueryService
+import kr.co.fitview.api.app.domain.favorite.service.FavoriteService
 import kr.co.fitview.api.app.domain.fcm.controller.FcmController
 import kr.co.fitview.api.app.domain.fcm.service.FcmTokenService
 import kr.co.fitview.api.app.domain.image.controller.ImageController
@@ -84,6 +87,7 @@ import org.springframework.test.web.servlet.MockMvc
     WorkoutHistoryController::class,
     NotificationController::class,
     ReportController::class,
+    FavoriteController::class,
     AdminDashboardController::class,
     AdminMemberController::class,
     AdminWorkoutPartnerController::class,
@@ -213,4 +217,10 @@ abstract class ControllerTestSupport {
 
     @MockitoBean
     protected lateinit var memberWithdrawReasonService : MemberWithdrawReasonService
+
+    @MockitoBean
+    protected lateinit var favoriteService : FavoriteService
+
+    @MockitoBean
+    protected lateinit var favoriteQueryService : FavoriteQueryService
 }
