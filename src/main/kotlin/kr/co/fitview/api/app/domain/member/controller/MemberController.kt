@@ -105,7 +105,6 @@ class MemberController(
     ): ResponseEntity<ApiResponse<MemberDetailResponse>> {
         val response = memberQueryService.findMemberDetail(securityUtil.getMemberId(), memberId)
 
-
         return ResponseEntity.ok(ApiResponse.success(response))
     }
 
