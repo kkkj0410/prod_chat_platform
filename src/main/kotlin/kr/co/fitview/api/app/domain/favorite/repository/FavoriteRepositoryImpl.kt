@@ -48,13 +48,15 @@ class FavoriteRepositoryImpl(
             )
             .from(favorite)
             .join(favorite.toMember, member)
-            .leftJoin(member.mutableMemberImages, memberImage)
-            .on(memberImage.type.eq(MemberImageType.PROFILE)
-                .and(memberImage.deletedAt.isNull))
-            .leftJoin(memberImage.image, image)
+            .join(member.mutableMemberImages, memberImage)
+                .on(memberImage.type.eq(MemberImageType.PROFILE))
+            .join(memberImage.image, image)
             .where(
                 favorite.fromMember.id.eq(memberId),
-                ltFavoriteId(condition.cursorFavoriteId)
+                ltFavoriteId(condition.cursorFavoriteId),
+                member.deletedAt.isNull,
+                memberImage.deletedAt.isNull,
+                image.deletedAt.isNull
             )
             .orderBy(favorite.id.desc())
             .limit((pageSize + 1).toLong())
