@@ -748,7 +748,6 @@ class MemberRepositoryImpl(
                 member.isSignup.isTrue,
                 member.role.eq(Role.USER),
                 member.provider.isNotNull,
-                member.deletedAt.isNull,
                 address.deletedAt.isNull,
                 memberId?.let { member.id.lt(it) }
             )

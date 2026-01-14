@@ -2619,6 +2619,90 @@ class MemberRepositoryTest@Autowired constructor(
         assertThat(response.hasNext()).isEqualTo(false)
     }
 
+
+    @DisplayName("전체 회원을 조회 시, 삭제 회원도 조회한다.")
+    @Test
+    fun findAllMemberByAddDeletedMember() {
+        // given
+        val member1 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+            provider = OAuth2Provider.APPLE
+        )
+        val member2 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+            provider = OAuth2Provider.GOOGLE
+        )
+        memberRepository.save(member1)
+        memberRepository.save(member2)
+
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest1, member1.id!!)
+
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            workoutImageUrls = null
+        )
+        oAuth2Service.signup(signupRequest2, member2.id!!)
+
+
+        val chatRoom = ChatRoom(ChatRoomType.PRIVATE)
+        chatRoomRepository.save(chatRoom)
+
+        val chatMessage = ChatMessage(
+            member = member1,
+            chatRoom = chatRoom,
+            type = ChatMessageType.WORKOUT_REQUEST,
+            content = "content",
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessage)
+
+        val workoutRequest = WorkoutRequest.of(
+            chatMessage = chatMessage,
+            fromMember = member1,
+            toMember = member2,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime
+        )
+        workoutRequestRepository.save(workoutRequest)
+
+        val workoutHistory = WorkoutHistory(
+            chatRoom = chatRoom,
+            workoutRequest = workoutRequest,
+            memberOne = member1,
+            memberTwo = member2,
+            completedAt = time.nowLocalDateTime
+        )
+        workoutHistoryRepository.save(workoutHistory)
+
+        val review = Review(
+            fromMember = member2,
+            toMember = member1,
+            workoutHistory = workoutHistory,
+            isPrivate = false,
+            type = ReviewType.GOOD,
+            score = 2.0,
+            content = "content",
+            postedAt = time.nowLocalDateTime
+        )
+        reviewRepository.save(review)
+
+
+        val condition = AdminMemberCondition()
+
+        member2.delete(time.nowLocalDateTime)
+
+        // when
+        val response = memberRepository.findAllMemberBy(condition)
+
+        // then
+        assertThat(response.content).hasSize(2)
+    }
+
     @DisplayName("전체 회원을 조회 시, memberId를 조건으로 넣으면 memberId보다 낮은 회원만 조회한다.")
     @Test
     fun findAllMemberByExistsConditionMemberId() {

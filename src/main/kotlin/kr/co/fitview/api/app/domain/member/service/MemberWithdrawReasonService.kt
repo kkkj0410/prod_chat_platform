@@ -1,5 +1,6 @@
 package kr.co.fitview.api.app.domain.member.service
 
+import kr.co.fitview.api.app.domain.fcm.service.FcmTokenService
 import kr.co.fitview.api.app.domain.member.condition.AdminWithdrawMemberCondition
 import kr.co.fitview.api.app.domain.member.dto.request.MemberWithdrawRequest
 import kr.co.fitview.api.app.domain.member.dto.request.MemberWithdrawServiceRequest
@@ -20,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional
 class MemberWithdrawReasonService(
     private val memberWithdrawReasonRepository: MemberWithdrawReasonRepository,
     private val memberQueryService : MemberQueryService,
+    private val fcmTokenService : FcmTokenService,
     private val time : Time
 ) {
 
@@ -37,7 +39,7 @@ class MemberWithdrawReasonService(
             memberWithdrawReason = findMemberWithdrawReason
         )
 
-        //FCM
+        fcmTokenService.deleteAllFcmFrom(memberId)
 
         return findMember
     }

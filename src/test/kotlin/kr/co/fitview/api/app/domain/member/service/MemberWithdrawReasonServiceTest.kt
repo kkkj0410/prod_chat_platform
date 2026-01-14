@@ -1,6 +1,9 @@
 package kr.co.fitview.api.app.domain.member.service
 
 import kr.co.fitview.api.app.IntegrationTestSupport
+import kr.co.fitview.api.app.domain.fcm.entity.FcmToken
+import kr.co.fitview.api.app.domain.fcm.entity.enums.FcmTokenPlatform
+import kr.co.fitview.api.app.domain.fcm.repository.FcmTokenRepository
 import kr.co.fitview.api.app.domain.member.dto.request.MemberWithdrawServiceRequest
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.entity.MemberWithdrawReason
@@ -25,6 +28,7 @@ class MemberWithdrawReasonServiceTest @Autowired constructor(
     val oAuth2Service : OAuth2Service,
     val memberWithdrawReasonRepository : MemberWithdrawReasonRepository,
     val memberWithdrawReasonService : MemberWithdrawReasonService,
+    val fcmTokenRepository : FcmTokenRepository,
     val time : Time
 ) : IntegrationTestSupport(){
 
@@ -63,6 +67,62 @@ class MemberWithdrawReasonServiceTest @Autowired constructor(
         assertThat(deletedMember.deletedAt).isNotNull()
         assertThat(deletedMember.memberWithdrawReason).isEqualTo(reason1)
     }
+
+    @DisplayName("회원 계정 삭제 시, 회원이 지닌 Fcm 토큰을 전체 삭제한다.")
+    @Test
+    fun deleteMemberDeleteFcm() {
+        // given
+        val member1 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+            provider = OAuth2Provider.APPLE
+        )
+        memberRepository.save(member1)
+
+        val reason1 = MemberWithdrawReason(
+            reasonType = MemberWithdrawReasonReasonType.APP_INCONVENIENCE,
+            displayText = MemberWithdrawReasonReasonType.APP_INCONVENIENCE.description,
+            seq = 100
+        )
+        memberWithdrawReasonRepository.save(reason1)
+
+        val request = MemberWithdrawServiceRequest(
+            memberWithdrawReasonId = reason1.id!!
+        )
+
+        val fcmToken1 = FcmToken(
+            member = member1,
+            deviceId = "deviceId1",
+            token = "token1",
+            isActive = true,
+            platform = FcmTokenPlatform.ANDROID
+        )
+        val fcmToken2 = FcmToken(
+            member = member1,
+            deviceId = "deviceId2",
+            token = "token2",
+            isActive = true,
+            platform = FcmTokenPlatform.IOS
+        )
+        fcmTokenRepository.save(fcmToken1)
+        fcmTokenRepository.save(fcmToken2)
+
+        // when
+        memberWithdrawReasonService.deleteMember(
+            memberId = member1.id!!,
+            request = request
+        )
+
+        // then
+        val fcmTokens = fcmTokenRepository.findAll()
+
+        assertThat(fcmTokens).hasSize(2)
+
+        assertThat(fcmTokens[0].deletedAt).isNotNull()
+        assertThat(fcmTokens[1].deletedAt).isNotNull()
+    }
+
 
     @DisplayName("회원 계정을 삭제시, 이미 삭제됐으면 다시 삭제할 수 없다.")
     @Test

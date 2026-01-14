@@ -6,8 +6,12 @@ import kr.co.fitview.api.app.domain.fcm.dto.request.FcmTokenCreateServiceRequest
 import kr.co.fitview.api.app.domain.fcm.entity.FcmToken
 import kr.co.fitview.api.app.domain.fcm.entity.enums.FcmTokenPlatform
 import kr.co.fitview.api.app.domain.fcm.repository.FcmTokenRepository
+import kr.co.fitview.api.app.domain.member.dto.request.MemberWithdrawServiceRequest
 import kr.co.fitview.api.app.domain.member.entity.Member
+import kr.co.fitview.api.app.domain.member.entity.MemberWithdrawReason
+import kr.co.fitview.api.app.domain.member.entity.enums.MemberWithdrawReasonReasonType
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
+import kr.co.fitview.api.app.global.entity.OAuth2Provider
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.time.TimeHolder.time
 import org.assertj.core.api.Assertions.assertThat
@@ -145,6 +149,50 @@ class FcmTokenServiceTest @Autowired constructor(
                 tuple(fcmToken3.id!!, fcmToken3.deviceId!!, time.nowLocalDateTime),
             )
     }
+
+    @DisplayName("회원이 지닌 Fcm 토큰을 전체 삭제한다.")
+    @Test
+    fun deleteAllFcmFrom() {
+        // given
+        val member1 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+            provider = OAuth2Provider.APPLE
+        )
+        memberRepository.save(member1)
+
+        val fcmToken1 = FcmToken(
+            member = member1,
+            deviceId = "deviceId1",
+            token = "token1",
+            isActive = true,
+            platform = FcmTokenPlatform.ANDROID
+        )
+        val fcmToken2 = FcmToken(
+            member = member1,
+            deviceId = "deviceId2",
+            token = "token2",
+            isActive = true,
+            platform = FcmTokenPlatform.IOS
+        )
+        fcmTokenRepository.save(fcmToken1)
+        fcmTokenRepository.save(fcmToken2)
+
+        // when
+        fcmTokenService.deleteAllFcmFrom(
+            memberId = member1.id!!,
+        )
+
+        // then
+        val fcmTokens = fcmTokenRepository.findAll()
+
+        assertThat(fcmTokens).hasSize(2)
+
+        assertThat(fcmTokens[0].deletedAt).isNotNull()
+        assertThat(fcmTokens[1].deletedAt).isNotNull()
+    }
+
 
 
 }

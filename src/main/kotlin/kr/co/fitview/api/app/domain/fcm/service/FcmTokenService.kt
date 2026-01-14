@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 @Transactional(readOnly = true)
 class FcmTokenService(
-    private val fcmPublisher: FcmPublisher,
     private val fcmTokenRepository: FcmTokenRepository,
     private val memberQueryService: MemberQueryService
 ) {
@@ -44,6 +43,11 @@ class FcmTokenService(
     @Transactional
     fun modifyAllFcmTokenFrom(deviceIds: List<String>) {
         fcmTokenRepository.deleteAllFcmTokenBy(deviceIds)
+    }
+
+    @Transactional
+    fun deleteAllFcmFrom(memberId: Long) {
+        fcmTokenRepository.deleteAllFcmTokenBy(memberId)
     }
 
     private fun isNotNull(value: Any?) = value != null
