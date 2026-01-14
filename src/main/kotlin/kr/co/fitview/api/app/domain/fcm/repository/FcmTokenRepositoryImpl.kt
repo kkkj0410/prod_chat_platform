@@ -27,5 +27,19 @@ class FcmTokenRepositoryImpl(
         em.clear()
     }
 
+    override fun deleteAllFcmTokenBy(memberId: Long) {
+
+        queryFactory.update(fcmToken)
+            .set(fcmToken.deletedAt, time.nowLocalDateTime)
+            .where(
+                fcmToken.member.id.eq(memberId),
+                fcmToken.deletedAt.isNull
+            )
+            .execute()
+
+        em.flush()
+        em.clear()
+    }
+
 
 }
