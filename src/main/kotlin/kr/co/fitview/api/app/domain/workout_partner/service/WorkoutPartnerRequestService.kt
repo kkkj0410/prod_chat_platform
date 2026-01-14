@@ -88,6 +88,8 @@ class WorkoutPartnerRequestService(
         val findWorkoutPartnerRequest = workoutPartnerRequestRepository.findByIdAndToMemberIdAndDeletedAtIsNull(workoutPartnerRequestId, memberId)
                 ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
 
+        validateDeletedOtherMember(findWorkoutPartnerRequest, memberId)
+
         validateUpdateWorkoutPartnerRequest(findWorkoutPartnerRequest)
 
         validateAlreadyWorkoutPartner(findWorkoutPartnerRequest.getFromMemberId(), findWorkoutPartnerRequest.getToMemberId())
@@ -114,6 +116,20 @@ class WorkoutPartnerRequestService(
         sendNotificationRejectWorkoutPartnerRequest(findWorkoutPartnerRequest)
 
         return findWorkoutPartnerRequest
+    }
+
+    private fun validateDeletedOtherMember(
+        workoutPartnerRequest: WorkoutPartnerRequest,
+        memberId: Long
+    ) {
+        val otherMemberId = if (workoutPartnerRequest.getFromMemberId() == memberId) {
+            workoutPartnerRequest.getToMemberId()
+        } else {
+            workoutPartnerRequest.getFromMemberId()
+        }
+
+        memberQueryService.findMemberFromId(otherMemberId)
+            ?: throw GlobalException(WorkoutPartnerErrorCode.PARTNER_WITHDRAWN)
     }
 
     @Transactional

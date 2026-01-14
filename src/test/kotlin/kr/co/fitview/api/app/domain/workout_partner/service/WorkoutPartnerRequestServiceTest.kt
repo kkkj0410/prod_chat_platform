@@ -518,6 +518,61 @@ class WorkoutPartnerRequestServiceTest @Autowired constructor(
             .contains(savedFromMember, savedToMember, WorkoutPartnerRequestStatus.ACCEPT)
     }
 
+    @DisplayName("핏버디 요청을 수정 시, 핏버디 요청 상대방이 계정 탈퇴 시, 수정이 불가하다.")
+    @Test
+    fun updateWorkoutPartnerRequestNotDeletedMember() {
+        // given
+        val fromMember = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+
+        val toMember = Member(
+            email = "email2",
+            password = "password2",
+            role = Role.USER,
+        )
+
+        val savedFromMember = memberService.addMember(fromMember)
+        val savedToMember = memberService.addMember(toMember)
+
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest1, toMember.id!!)
+
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest2, fromMember.id!!)
+
+        val workoutPartnerRequest = WorkoutPartnerRequest.of(
+            fromMember = savedFromMember,
+            toMember = savedToMember,
+            now = time.nowLocalDateTime,
+            content = WorkoutPartnerRequestContent.BURN
+        )
+        val savedWorkoutPartnerRequest = workoutPartnerRequestRepository.save(workoutPartnerRequest)
+
+        val request = WorkoutPartnerUpdateServiceRequest(
+            type = WorkoutPartnerRequestUpdateStatus.ACCEPT
+        )
+
+        savedFromMember.delete(time.nowLocalDateTime)
+
+        // when & then
+        assertThatThrownBy {
+            workoutPartnerRequestService.updateWorkoutPartnerRequest(
+                memberId = savedToMember.id!!,
+                workoutPartnerRequestId = savedWorkoutPartnerRequest.id!!,
+                request
+            )
+        }
+            .isInstanceOf(GlobalException::class.java)
+            .satisfies(ThrowingConsumer { ex ->
+                val globalEx = ex as GlobalException
+                assertThat(globalEx.errorCode)
+                    .isEqualTo(WorkoutPartnerErrorCode.PARTNER_WITHDRAWN)
+            })
+    }
+
     @DisplayName("핏버디 요청을 상태 변경 시, 변경 시간을 기록한다.")
     @Test
     fun updateWorkoutPartnerRequestRespondedAt() {

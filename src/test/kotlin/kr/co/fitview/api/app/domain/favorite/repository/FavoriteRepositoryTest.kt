@@ -149,6 +149,49 @@ class FavoriteRepositoryTest @Autowired constructor(
             )
     }
 
+    @DisplayName("찜 대상 회원 조회 시, 삭제된 계정은 조회하지 않는다.")
+    @Test
+    fun findFavoriteMembersNotDeletedMember() {
+        // given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val other1 = Member(
+            email = "email2",
+            password = "password2",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+        memberRepository.save(other1)
+
+        val other1SignupData = TestDataFactory.oAuth2SignupRequest(
+            workoutImageUrls = null
+        )
+        oAuth2Service.signup(other1SignupData, other1.id!!)
+
+        val favorite1 = Favorite(
+            fromMember = me,
+            toMember = other1
+        )
+        favoriteRepository.save(favorite1)
+
+        other1.delete(time.nowLocalDateTime)
+
+        val condition = FavoriteMemberCondition()
+
+        // when
+        val response = favoriteRepository.findFavoriteMembers(
+            memberId = me.id!!,
+            condition = condition
+        )
+
+        // then
+        assertThat(response.content).hasSize(0)
+    }
+
+
     @DisplayName("찜 대상 회원들을 조회 시, favoriteId 지정값 보다 더 낮은 대상 찜만 조회한다")
     @Test
     fun findFavoriteMembersExistsCursor() {

@@ -53,13 +53,6 @@ class ReviewRepositoryImpl(
             review.postedAt.lt(cursorTime)
         }
 
-//        val reviewId : Long,
-//        val memberId : Long,
-//        val nickname : String,
-//        val profileImageUrl : String,
-//        val postedAt : LocalDateTime,
-//        val content : String
-
         val results = queryFactory
             .select(
                 Projections.constructor(
@@ -80,6 +73,7 @@ class ReviewRepositoryImpl(
                 review.toMember.id.eq(memberId),
                 review.isPrivate.isFalse,
                 review.content.isNotNull,
+                member.deletedAt.isNull,
                 memberImage.type.eq(MemberImageType.PROFILE),
                 memberImage.deletedAt.isNull,
                 image.deletedAt.isNull,
