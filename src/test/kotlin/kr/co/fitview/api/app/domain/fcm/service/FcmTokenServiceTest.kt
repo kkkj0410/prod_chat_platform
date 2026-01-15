@@ -24,32 +24,7 @@ class FcmTokenServiceTest @Autowired constructor(
     private val fcmTokenService: FcmTokenService,
     private val fcmTokenRepository : FcmTokenRepository,
     private val memberRepository : MemberRepository,
-    private val em : EntityManager,
-    private val fcmPublisher : FcmPublisher
 ) : IntegrationTestSupport(){
-
-    @DisplayName("")
-    @Test
-    fun test() {
-        // given
-
-        val map = mapOf(
-            "type" to "CHAT_MESSAGE",
-            "deepLink" to "myapp://chat/room_1234"
-        )
-
-        fcmPublisher.send(
-            token = "eLwnjbKiQ5qAg4-Gth-CoK:APA91bGI0LzyPLtWMc4iQEGaL37wtzjsnXhdRDX3ThtdtWQXp3GNzGzlgrtYC8teSwJDKAshlmwlClP0OGwUlyAcQiw1Am6Pb1b7DpqQrCHACuNcxaskLds",
-            title = "hello2",
-            body = "body2",
-            platform = FcmTokenPlatform.ANDROID,
-            data = map
-        )
-        // when
-
-        // then
-
-    }
 
 
     @DisplayName("회원 단말기의 fcm 토큰을 저장한다.")
