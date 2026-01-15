@@ -18,10 +18,8 @@ import java.security.Principal
 @RestController
 class StompController(
     private val messageTemplate : SimpMessageSendingOperations,
-    private val simpUserRegistry: SimpUserRegistry,
     private val chatService : ChatService,
     private val workoutRequestService : WorkoutRequestService,
-    private val stompPublishService : StompPublishService
 ) {
 
 
@@ -87,11 +85,11 @@ class StompController(
         workoutRequestService.modifyWorkoutRequest(senderId.toLong(), request)
     }
 
-    fun isMemberConnected(memberId: String): Boolean {
-
-        // 2. getUser() 함수를 사용하여 해당 Principal(memberId)의 존재 여부 확인
-        // memberId는 STOMP 연결 시 설정한 Principal.name과 동일합니다.
-        return simpUserRegistry.getUser(memberId) != null
-    }
+//    fun isMemberConnected(memberId: String): Boolean {
+//
+//        // 2. getUser() 함수를 사용하여 해당 Principal(memberId)의 존재 여부 확인
+//        // memberId는 STOMP 연결 시 설정한 Principal.name과 동일합니다.
+//        return simpUserRegistry.getUser(memberId) != null
+//    }
 
 }

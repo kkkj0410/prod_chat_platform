@@ -18,14 +18,12 @@ import org.springframework.restdocs.payload.PayloadDocumentation.*
 class StompControllerDocsTest : RestDocsSupport(){
 
     private val simpMessageSendingOperations: SimpMessageSendingOperations = mock(SimpMessageSendingOperations::class.java)
-    private val simpUserRegistry: SimpUserRegistry = mock(SimpUserRegistry::class.java)
     private val chatService : ChatService = mock(ChatService::class.java)
     private val workoutRequestService : WorkoutRequestService = mock(WorkoutRequestService::class.java)
-    private val stompPublishService : StompPublishService = mock(StompPublishService::class.java)
 
 
     override fun initController(): Any {
-        return StompController(simpMessageSendingOperations, simpUserRegistry, chatService, workoutRequestService, stompPublishService)
+        return StompController(simpMessageSendingOperations, chatService, workoutRequestService)
     }
 
     @DisplayName("사용자 회원가입 API")
