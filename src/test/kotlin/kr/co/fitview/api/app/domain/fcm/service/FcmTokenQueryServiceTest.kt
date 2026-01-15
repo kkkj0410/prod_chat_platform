@@ -24,20 +24,8 @@ class FcmTokenQueryServiceTest @Autowired constructor(
     private val fcmTokenRepository : FcmTokenRepository,
     private val memberRepository : MemberRepository,
     private val deepLinkConstant: DeepLinkConstant,
-    private val fcmPublisher: FcmPublisher,
     private val time : Time,
 ) : IntegrationTestSupport(){
-
-//    @DisplayName("")
-//    @Test
-//    fun test() {
-//        // given
-//        fcmPublisher.send()
-//        // when
-//
-//        // then
-//
-//    }
 
 
     @DisplayName("운동 요청 푸시 알람을 보낸다.")
