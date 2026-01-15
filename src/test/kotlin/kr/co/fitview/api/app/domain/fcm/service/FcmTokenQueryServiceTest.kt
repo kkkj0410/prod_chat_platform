@@ -24,6 +24,7 @@ class FcmTokenQueryServiceTest @Autowired constructor(
     private val fcmTokenRepository : FcmTokenRepository,
     private val memberRepository : MemberRepository,
     private val deepLinkConstant: DeepLinkConstant,
+    private val fcmPublisher: FcmPublisher,
     private val time : Time,
 ) : IntegrationTestSupport(){
 

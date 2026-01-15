@@ -42,12 +42,18 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+#      - name: Create Configuration Files
+#        run: |
+#          echo "${{ env.APPLICATION_PROD }}" > ./src/main/resources/application.yml
+#          echo "${{ env.APPLICATION_TEST }}" > ./src/main/resources/application-test.yml
+#          mkdir -p ./src/main/resources/firebase
+#          echo '${{ env.FIREBASE_KEY }}' > ./src/main/resources/firebase/firebase-key.json
       - name: Create Configuration Files
         run: |
-          echo "${{ env.APPLICATION_PROD }}" > ./src/main/resources/application.yml
-          echo "${{ env.APPLICATION_TEST }}" > ./src/main/resources/application-test.yml
+          echo "$APPLICATION_PROD" > ./src/main/resources/application.yml
+          echo "$APPLICATION_TEST" > ./src/main/resources/application-test.yml
           mkdir -p ./src/main/resources/firebase
-          echo '${{ env.FIREBASE_KEY }}' > ./src/main/resources/firebase/firebase-key.json
+          echo "$FIREBASE_KEY" > ./src/main/resources/firebase/firebase-key.json
 
       - name: Build with Gradle
         run: |

@@ -105,6 +105,10 @@ dependencies {
 	implementation("net.javacrumbs.shedlock:shedlock-spring:5.13.0")
 	implementation("net.javacrumbs.shedlock:shedlock-provider-redis-spring:5.13.0")
 	testImplementation("net.javacrumbs.shedlock:shedlock-provider-inmemory:7.2.1")
+
+	//프로메테우스
+	implementation ("org.springframework.boot:spring-boot-starter-actuator")
+	implementation ("io.micrometer:micrometer-registry-prometheus")
 }
 
 kotlin {
