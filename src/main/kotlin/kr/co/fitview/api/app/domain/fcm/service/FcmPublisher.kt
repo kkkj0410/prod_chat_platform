@@ -14,27 +14,6 @@ class FcmPublisher(
     private val firebaseMessaging : FirebaseMessaging,
 ) {
 
-//    fun send(
-//
-//    ){
-//        val message = buildIosMessage(
-//            token = "f8KlaoMybkjlpgWXeKTV-R:APA91bEUh6WZfu3Pn1TQ0nauAlAfV4yUGL3H23k2xwKtWqGMpocIpw_NUCpRrguhb0L_8Ews3IU7kSwQvj6JOesvZoyUNe_PDThcCYfKqiVAAX7yng5dIxY",
-//            title = "hello",
-//            body = "body",
-//            data = mapOf()
-//        )
-//
-//        val message2 = buildAndroidMessage(
-//            token = "eLwnjbKiQ5qAg4-Gth-CoK:APA91bGI0LzyPLtWMc4iQEGaL37wtzjsnXhdRDX3ThtdtWQXp3GNzGzlgrtYC8teSwJDKAshlmwlClP0OGwUlyAcQiw1Am6Pb1b7DpqQrCHACuNcxaskLds",
-//            title = "aaa",
-//            body = "body",
-//            data = mapOf()
-//        )
-//
-//        firebaseMessaging.send(message)
-//        firebaseMessaging.send(message2)
-//    }
-
     fun send(
         token : String,
         title : String,
@@ -59,6 +38,7 @@ class FcmPublisher(
 
         val stringData = data.mapValues { (_, v) -> v.toString() }
 
+        //AndroidNotification.builder().setTag -> 덮어쓰기
         return Message.builder()
             .setAndroidConfig(
                 AndroidConfig.builder()
@@ -79,6 +59,7 @@ class FcmPublisher(
 
     private fun buildIosMessage(token: String, title: String, body: String, data: Map<String, Any>): Message {
 
+        //Aps.builder().setThreadId() -> 그룹화
         return Message.builder()
             .setApnsConfig(
                 ApnsConfig.builder()
