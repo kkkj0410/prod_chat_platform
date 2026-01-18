@@ -5,6 +5,7 @@ import kr.co.fitview.api.app.domain.fcm.entity.FcmToken
 import kr.co.fitview.api.app.domain.fcm.repository.FcmTokenRepository
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.global.exception.GlobalException
+import kr.co.fitview.api.app.global.exception.error.fcm.FcmErrorCode
 import kr.co.fitview.api.app.global.exception.error.member.MemberErrorCode
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -20,6 +21,8 @@ class FcmTokenService(
 
     @Transactional
     fun saveFcmToken(memberId: Long, request: FcmTokenCreateServiceRequest): FcmToken {
+        validateAlreadyExistsFcmToken(request.token)
+
         val findMember =
             memberQueryService.findMemberFromId(memberId) ?: throw GlobalException(MemberErrorCode.MEMBER_NOT_FOUND)
 
@@ -38,6 +41,12 @@ class FcmTokenService(
         )
 
         return fcmTokenRepository.save(fcmToken)
+    }
+
+    private fun validateAlreadyExistsFcmToken(fcmToken : String) {
+        fcmTokenRepository.findByActiveFcmToken(fcmToken)?.let {
+            throw GlobalException(FcmErrorCode.FCM_TOKEN_CONFLICT)
+        }
     }
 
     @Transactional

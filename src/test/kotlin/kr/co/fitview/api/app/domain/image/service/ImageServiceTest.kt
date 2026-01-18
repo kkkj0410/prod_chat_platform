@@ -9,9 +9,11 @@ import kr.co.fitview.api.app.domain.image.repository.ImageRepository
 import kr.co.fitview.api.app.domain.image.repository.MemberImageRepository
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
+import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.image.ImageErrorCode
+import kr.co.fitview.api.app.global.util.TestDataFactory
 import org.assertj.core.api.Assertions.*
 import org.assertj.core.api.ThrowingConsumer
 import org.junit.jupiter.api.DisplayName
@@ -22,7 +24,8 @@ class ImageServiceTest @Autowired constructor(
     val imageService: ImageService,
     val imageRepository: ImageRepository,
     val memberImageRepository : MemberImageRepository,
-    val memberRepository : MemberRepository
+    val memberRepository : MemberRepository,
+    val oAuth2Service : OAuth2Service
 ) : IntegrationTestSupport(){
 
     @DisplayName("회원 프로필 이미지를 저장한다.")
@@ -122,6 +125,36 @@ class ImageServiceTest @Autowired constructor(
                 tuple(savedMember, MemberImageType.WORKOUT, 200, imageUrl2),
             )
     }
+
+    @DisplayName("회원 운동 사진을 저장 시, 운동 사진이 비었으면 기존 운동 사진을 삭제하고 끝낸다.")
+    @Test
+    fun saveMemberImageWorkoutEmptyList() {
+        // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        memberRepository.save(member)
+
+        val request = TestDataFactory.oAuth2SignupRequest(
+            workoutImageUrls = listOf("one", "two")
+        )
+        oAuth2Service.signup(request, member.id!!)
+
+        val requests = listOf<String>()
+
+        // when
+        imageService.saveMemberImageWorkouts(
+            member = member,
+            imageUrls = requests
+        )
+
+        // then
+        val findImages = memberImageRepository.findWithImageByMemberIdAndWorkoutAndDeletedAtIsNull(member.id!!)
+        assertThat(findImages).hasSize(0)
+    }
+
 
     @DisplayName("회원 운동 사진 개수가 3개를 초과하면 저장하지 않는다.")
     @Test

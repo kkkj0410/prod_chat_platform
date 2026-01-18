@@ -8,7 +8,6 @@ import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.global.entity.OAuth2Provider
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.time.Time
-import kr.co.fitview.api.app.global.time.TimeHolder.time
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.tuple
 import org.junit.jupiter.api.DisplayName
@@ -238,4 +237,33 @@ class FcmTokenRepositoryTest @Autowired constructor(
         assertThat(fcmTokens[1].deletedAt).isNotNull()
     }
 
+    @DisplayName("해당 fcm 토큰을 활성화한 단말기를 찾는다.")
+    @Test
+    fun findByActiveFcmToken() {
+        // given
+        val member1 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+            provider = OAuth2Provider.APPLE
+        )
+        memberRepository.save(member1)
+
+        val fcmToken = "token"
+
+        val fcmTokenEntity = FcmToken(
+            member = member1,
+            deviceId = "deviceId1",
+            token = fcmToken,
+            isActive = true,
+            platform = FcmTokenPlatform.ANDROID
+        )
+        fcmTokenRepository.save(fcmTokenEntity)
+
+        // when
+        val findFcmTokenEntity = fcmTokenRepository.findByActiveFcmToken(fcmToken)
+
+        // then
+        assertThat(findFcmTokenEntity!!.id).isEqualTo(fcmTokenEntity.id!!)
+    }
 }

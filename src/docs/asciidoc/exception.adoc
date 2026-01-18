@@ -90,3 +90,8 @@ include::exception/review/reviewException.adoc[]
 == <REPORT>
 
 include::exception/report/reportException.adoc[]
+
+[[FCM]]
+== <FCM>
+
+include::exception/fcm/fcmException.adoc[]
