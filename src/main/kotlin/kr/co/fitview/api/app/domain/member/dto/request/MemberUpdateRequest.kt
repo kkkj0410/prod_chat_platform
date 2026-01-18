@@ -25,7 +25,6 @@ data class MemberUpdateRequest(
 
     val profileImageUrl: String? = null,
 
-    @field:Size(min = 1, message = "workoutImageUrls cannot be empty")
     val workoutImageUrls: List<String>? = null,
 ) {
     fun toServiceRequest(): MemberUpdateServiceRequest {

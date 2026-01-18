@@ -234,29 +234,6 @@ class MemberControllerTest : ControllerTestSupport() {
             .andExpect(jsonPath("$.data").isEmpty())
     }
 
-
-    @DisplayName("본인 프로필 수정 시, 운동 사진 배열이 비어서는 안된다.")
-    @Test
-    fun memberModifyEmptyWorkoutImageUrls() {
-        // given
-        val request = MemberUpdateRequest(
-            workoutImageUrls = listOf()
-        )
-
-        // when // then
-        mockMvc.perform(
-            patch("/api/v1/members/me")
-                .content(objectMapper.writeValueAsString(request))
-                .contentType(MediaType.APPLICATION_JSON)
-        )
-            .andDo(print())
-            .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.code").value(RequestErrorCode.REQ_FIELD_NOT_VALID.code))
-            .andExpect(jsonPath("$.status").value("400"))
-            .andExpect(jsonPath("$.message").value("workoutImageUrls cannot be empty"))
-            .andExpect(jsonPath("$.data").isEmpty())
-    }
-
     @DisplayName("추천 핏버디(운동 경력/스타일/목적이 2개 이상 일치) 회원을 조회한다. ")
     @Test
     fun memberRecommendationList() {
