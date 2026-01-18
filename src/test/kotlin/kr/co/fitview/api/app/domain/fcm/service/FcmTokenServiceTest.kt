@@ -1,21 +1,20 @@
 package kr.co.fitview.api.app.domain.fcm.service
 
-import jakarta.persistence.EntityManager
 import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.fcm.dto.request.FcmTokenCreateServiceRequest
 import kr.co.fitview.api.app.domain.fcm.entity.FcmToken
 import kr.co.fitview.api.app.domain.fcm.entity.enums.FcmTokenPlatform
 import kr.co.fitview.api.app.domain.fcm.repository.FcmTokenRepository
-import kr.co.fitview.api.app.domain.member.dto.request.MemberWithdrawServiceRequest
 import kr.co.fitview.api.app.domain.member.entity.Member
-import kr.co.fitview.api.app.domain.member.entity.MemberWithdrawReason
-import kr.co.fitview.api.app.domain.member.entity.enums.MemberWithdrawReasonReasonType
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.global.entity.OAuth2Provider
 import kr.co.fitview.api.app.global.entity.Role
+import kr.co.fitview.api.app.global.exception.GlobalException
+import kr.co.fitview.api.app.global.exception.error.fcm.FcmErrorCode
+import kr.co.fitview.api.app.global.exception.error.oauth2.OAuth2ErrorCode
 import kr.co.fitview.api.app.global.time.TimeHolder.time
-import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.tuple
+import org.assertj.core.api.Assertions.*
+import org.assertj.core.api.ThrowingConsumer
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -57,6 +56,47 @@ class FcmTokenServiceTest @Autowired constructor(
         assertThat(findFcmToken)
             .extracting("member", "deviceId", "token", "platform")
             .contains(findMember, "deviceId", "token", FcmTokenPlatform.ANDROID)
+    }
+
+    @DisplayName("Fcm 토큰 저장 시, 이미 동일한 Fcm 토큰이 쓰이고 있다면 저장을 거부한다.")
+    @Test
+    fun saveFcmTokenIsActiveFcmToken() {
+        // given
+        val member = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(member)
+
+        val duplicatedFcmTokenString = "token"
+
+        val fcmTokenEntity = FcmToken(
+            member = member,
+            deviceId = "deviceId1",
+            token = duplicatedFcmTokenString,
+            isActive = true,
+            platform = FcmTokenPlatform.ANDROID
+        )
+        fcmTokenRepository.save(fcmTokenEntity)
+
+        val request = FcmTokenCreateServiceRequest(
+            deviceId = "deviceId2",
+            token = duplicatedFcmTokenString,
+            platform = FcmTokenPlatform.ANDROID
+        )
+
+        // when & then
+        assertThatThrownBy {
+            fcmTokenService.saveFcmToken(member.id!!, request)
+        }
+            .isInstanceOf(GlobalException::class.java)
+            .satisfies(ThrowingConsumer { ex ->
+                val globalEx = ex as GlobalException
+                assertThat(globalEx.errorCode)
+                    .isEqualTo(FcmErrorCode.FCM_TOKEN_CONFLICT)
+            })
+
     }
 
     @DisplayName("fcm 토큰 저장 시, deviceId가 DB에 동일한게 있다면 해당 fcm 토큰을 업데이트한다.")
@@ -191,6 +231,7 @@ class FcmTokenServiceTest @Autowired constructor(
         assertThat(fcmTokens[0].deletedAt).isNotNull()
         assertThat(fcmTokens[1].deletedAt).isNotNull()
     }
+
 
 
 

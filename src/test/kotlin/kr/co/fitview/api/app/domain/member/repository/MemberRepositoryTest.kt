@@ -2984,4 +2984,57 @@ class MemberRepositoryTest@Autowired constructor(
         assertThat(findMember.deletedAt).isNotNull()
     }
 
+
+    @DisplayName("채팅방의 다른 회원을 조회한다.")
+    @Test
+    fun findOtherMemberBy() {
+        // given
+        val member1 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+            provider = OAuth2Provider.APPLE
+        )
+        val member2 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+            provider = null
+        )
+        memberRepository.save(member1)
+        memberRepository.save(member2)
+
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest1, member1.id!!)
+
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            workoutImageUrls = null
+        )
+        oAuth2Service.signup(signupRequest2, member2.id!!)
+
+        val chatRoom = ChatRoom(ChatRoomType.PRIVATE)
+        chatRoomRepository.save(chatRoom)
+
+        val chatParticipant1 = ChatParticipant(
+            chatRoom = chatRoom,
+            member = member1
+        )
+        val chatParticipant2 = ChatParticipant(
+            chatRoom = chatRoom,
+            member = member2
+        )
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+
+        // when
+        val findMember = memberRepository.findOtherMemberBy(
+            memberId = member1.id!!,
+            chatRoomId = chatRoom.id!!
+        )
+
+
+        // then
+        assertThat(findMember!!.id).isEqualTo(member2.id!!)
+    }
+
 }
