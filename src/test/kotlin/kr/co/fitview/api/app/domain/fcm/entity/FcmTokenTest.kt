@@ -21,6 +21,12 @@ class FcmTokenTest : IntegrationTestSupport(){
             role = Role.USER,
         )
 
+        val otherMember = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+
         val fcmToken = FcmToken.of(
             member = member,
             deviceId = "deviceId",
@@ -28,10 +34,11 @@ class FcmTokenTest : IntegrationTestSupport(){
             platform = FcmTokenPlatform.ANDROID
         )
         // when
-        fcmToken.updateToken("updateToken")
+        fcmToken.updateToken(otherMember, "updateToken")
 
         // then
         assertThat(fcmToken.token).isEqualTo("updateToken")
+        assertThat(fcmToken.member).isEqualTo(otherMember)
 
     }
 }

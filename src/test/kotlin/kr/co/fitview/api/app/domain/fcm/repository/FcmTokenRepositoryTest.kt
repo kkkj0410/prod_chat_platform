@@ -237,7 +237,7 @@ class FcmTokenRepositoryTest @Autowired constructor(
         assertThat(fcmTokens[1].deletedAt).isNotNull()
     }
 
-    @DisplayName("다른 단말기에서 활성화된 fcm 토큰을 찾는다.")
+    @DisplayName("다른 단말기에서 활성화된 동일한 fcm 토큰을 모두 찾는다.")
     @Test
     fun findByActiveFcmTokenAndOtherDeviceId() {
         // given
@@ -260,11 +260,23 @@ class FcmTokenRepositoryTest @Autowired constructor(
         )
         fcmTokenRepository.save(fcmTokenEntity)
 
+        val fcmTokenEntity2 = FcmToken(
+            member = member1,
+            deviceId = "otherDeviceId2",
+            token = fcmToken,
+            isActive = true,
+            platform = FcmTokenPlatform.ANDROID
+        )
+        fcmTokenRepository.save(fcmTokenEntity2)
+
         // when
-        val findFcmTokenEntity = fcmTokenRepository.findByActiveFcmTokenAndOtherDeviceId("deviceId", fcmToken)
+        val findFcmTokens = fcmTokenRepository.findByActiveFcmTokenAndOtherDeviceId("deviceId", fcmToken)
 
         // then
-        assertThat(findFcmTokenEntity!!.id).isEqualTo(fcmTokenEntity.id!!)
+        assertThat(findFcmTokens).hasSize(2)
+
+        assertThat(findFcmTokens[0].id).isEqualTo(fcmTokenEntity.id!!)
+        assertThat(findFcmTokens[1].id).isEqualTo(fcmTokenEntity2.id!!)
     }
 
     @DisplayName("다른 단말기에서 활성화된 fcm 토큰을 찾을 시, 본인 단말기에서 활성화된 fcm 토큰을 찾지 않는다.")
@@ -294,6 +306,6 @@ class FcmTokenRepositoryTest @Autowired constructor(
         val findFcmTokenEntity = fcmTokenRepository.findByActiveFcmTokenAndOtherDeviceId("deviceId", fcmToken)
 
         // then
-        assertThat(findFcmTokenEntity).isNull()
+        assertThat(findFcmTokenEntity).hasSize(0)
     }
 }
