@@ -42,10 +42,11 @@ class FcmTokenRepositoryImpl(
         em.clear()
     }
 
-    override fun findByActiveFcmToken(fcmTokenString: String) : FcmToken?{
+    override fun findByActiveFcmTokenAndOtherDeviceId(deviceId : String, fcmTokenString: String) : FcmToken?{
         return queryFactory
             .selectFrom(fcmToken)
             .where(
+                fcmToken.deviceId.ne(deviceId),
                 fcmToken.token.eq(fcmTokenString),
                 fcmToken.deletedAt.isNull,
                 fcmToken.isActive.isTrue
