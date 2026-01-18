@@ -1,5 +1,7 @@
 [[fcm-token-add]]
 === FCM 토큰 저장 API
+- 다른 디바이스로 똑같은 fcm 토큰을 사용하고 있을 시, 기존 정보는 삭제.
+- 그리고 요청값대로 데이터 새로 제작
 
 ==== HTTP Request
 include::{snippets}/fcm-token-add/http-request.adoc[]
