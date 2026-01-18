@@ -62,7 +62,8 @@ class FcmToken(
         }
     }
 
-    fun updateToken(token : String) : FcmToken{
+    fun updateToken(member : Member, token : String) : FcmToken{
+        this.member = member
         this.token = token
         return this
     }

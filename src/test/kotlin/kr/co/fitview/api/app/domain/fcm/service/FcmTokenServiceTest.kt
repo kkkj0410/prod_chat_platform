@@ -10,8 +10,8 @@ import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.global.entity.OAuth2Provider
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.exception.GlobalException
-import kr.co.fitview.api.app.global.exception.error.fcm.FcmErrorCode
 import kr.co.fitview.api.app.global.exception.error.oauth2.OAuth2ErrorCode
+import kr.co.fitview.api.app.global.time.Time
 import kr.co.fitview.api.app.global.time.TimeHolder.time
 import org.assertj.core.api.Assertions.*
 import org.assertj.core.api.ThrowingConsumer
@@ -23,6 +23,7 @@ class FcmTokenServiceTest @Autowired constructor(
     private val fcmTokenService: FcmTokenService,
     private val fcmTokenRepository : FcmTokenRepository,
     private val memberRepository : MemberRepository,
+    private val time : Time
 ) : IntegrationTestSupport(){
 
 
@@ -58,9 +59,9 @@ class FcmTokenServiceTest @Autowired constructor(
             .contains(findMember, "deviceId", "token", FcmTokenPlatform.ANDROID)
     }
 
-    @DisplayName("Fcm 토큰 저장 시, 이미 동일한 Fcm 토큰이 쓰이고 있다면 저장을 거부한다.")
+    @DisplayName("Fcm 토큰 저장 시, 이미 동일한 fcm 토큰이 다른 device에서 쓰이고 있다면 해당 토큰들을 삭제한다.")
     @Test
-    fun saveFcmTokenIsActiveFcmToken() {
+    fun saveFcmTokenDeleteDuplicatedFcmToken() {
         // given
         val member = Member(
             email = "email1",
@@ -80,23 +81,36 @@ class FcmTokenServiceTest @Autowired constructor(
         )
         fcmTokenRepository.save(fcmTokenEntity)
 
-        val request = FcmTokenCreateServiceRequest(
+        val fcmTokenEntity2 = FcmToken(
+            member = member,
             deviceId = "deviceId2",
+            token = duplicatedFcmTokenString,
+            isActive = true,
+            platform = FcmTokenPlatform.ANDROID
+        )
+        fcmTokenRepository.save(fcmTokenEntity2)
+
+        val request = FcmTokenCreateServiceRequest(
+            deviceId = "deviceId3",
             token = duplicatedFcmTokenString,
             platform = FcmTokenPlatform.ANDROID
         )
 
-        // when & then
-        assertThatThrownBy {
-            fcmTokenService.saveFcmToken(member.id!!, request)
-        }
-            .isInstanceOf(GlobalException::class.java)
-            .satisfies(ThrowingConsumer { ex ->
-                val globalEx = ex as GlobalException
-                assertThat(globalEx.errorCode)
-                    .isEqualTo(FcmErrorCode.FCM_TOKEN_CONFLICT)
-            })
+        // when
+        fcmTokenService.saveFcmToken(
+            memberId = member.id!!,
+            request = request
+        )
 
+        // then
+        val findFcmTokens = fcmTokenRepository.findAll()
+        assertThat(findFcmTokens)
+            .extracting("deviceId", "token", "deletedAt")
+            .contains(
+                tuple(fcmTokenEntity.deviceId, fcmTokenEntity.token, time.nowLocalDateTime),
+                tuple(fcmTokenEntity2.deviceId, fcmTokenEntity2.token, time.nowLocalDateTime),
+                tuple(request.deviceId, request.token, null)
+            )
     }
 
     @DisplayName("fcm 토큰 저장 시, deviceId가 DB에 동일한게 있다면 해당 fcm 토큰을 업데이트한다.")
@@ -138,6 +152,54 @@ class FcmTokenServiceTest @Autowired constructor(
             .extracting("member", "deviceId", "token", "platform")
             .contains(findMember, "deviceId", "updateToken", FcmTokenPlatform.ANDROID)
     }
+
+    @DisplayName("fcm 토큰 저장 시, 동일한 디바이스로 다른 계정 접속을 할 시, fcm 토큰 소유자를 해당 다른 계정으로 옮긴다.")
+    @Test
+    fun saveFcmTokenDuplicatedDeviceIdOtherMemberId() {
+        // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        memberRepository.save(member)
+
+        val otherMember = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        memberRepository.save(otherMember)
+
+        val fcmToken = FcmToken.of(
+            member = member,
+            deviceId = "deviceId",
+            token = "token",
+            platform = FcmTokenPlatform.ANDROID
+        )
+        fcmTokenRepository.save(fcmToken)
+
+        val request = FcmTokenCreateServiceRequest(
+            deviceId = "deviceId",
+            token = "updateToken",
+            platform = FcmTokenPlatform.ANDROID
+        )
+
+        // when
+        fcmTokenService.saveFcmToken(otherMember.id!!, request)
+
+        // then
+        val findFcmTokens = fcmTokenRepository.findAll()
+        val findFcmToken = findFcmTokens[0]
+
+        val findMember = memberRepository.findById(otherMember.id!!).orElseThrow()
+
+        assertThat(findFcmTokens).hasSize(1)
+        assertThat(findFcmToken)
+            .extracting("member", "deviceId", "token", "platform")
+            .contains(findMember, "deviceId", "updateToken", FcmTokenPlatform.ANDROID)
+    }
+
 
     @DisplayName("기기의 fcm 토큰을 삭제한다.")
     @Test
