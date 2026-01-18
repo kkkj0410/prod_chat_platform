@@ -21,7 +21,7 @@ class FcmTokenService(
 
     @Transactional
     fun saveFcmToken(memberId: Long, request: FcmTokenCreateServiceRequest): FcmToken {
-        validateAlreadyExistsFcmToken(request.token)
+        validateAlreadyExistsFcmToken(request.deviceId, request.token)
 
         val findMember =
             memberQueryService.findMemberFromId(memberId) ?: throw GlobalException(MemberErrorCode.MEMBER_NOT_FOUND)
@@ -43,8 +43,11 @@ class FcmTokenService(
         return fcmTokenRepository.save(fcmToken)
     }
 
-    private fun validateAlreadyExistsFcmToken(fcmToken : String) {
-        fcmTokenRepository.findByActiveFcmToken(fcmToken)?.let {
+    private fun validateAlreadyExistsFcmToken(deviceId : String, fcmToken : String) {
+        fcmTokenRepository.findByActiveFcmTokenAndOtherDeviceId(
+            deviceId = deviceId,
+            fcmTokenString = fcmToken
+        )?.let {
             throw GlobalException(FcmErrorCode.FCM_TOKEN_CONFLICT)
         }
     }

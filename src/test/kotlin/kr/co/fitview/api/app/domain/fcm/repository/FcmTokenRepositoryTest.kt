@@ -237,9 +237,9 @@ class FcmTokenRepositoryTest @Autowired constructor(
         assertThat(fcmTokens[1].deletedAt).isNotNull()
     }
 
-    @DisplayName("해당 fcm 토큰을 활성화한 단말기를 찾는다.")
+    @DisplayName("다른 단말기에서 활성화된 fcm 토큰을 찾는다.")
     @Test
-    fun findByActiveFcmToken() {
+    fun findByActiveFcmTokenAndOtherDeviceId() {
         // given
         val member1 = Member(
             email = "email",
@@ -253,7 +253,7 @@ class FcmTokenRepositoryTest @Autowired constructor(
 
         val fcmTokenEntity = FcmToken(
             member = member1,
-            deviceId = "deviceId1",
+            deviceId = "otherDeviceId",
             token = fcmToken,
             isActive = true,
             platform = FcmTokenPlatform.ANDROID
@@ -261,9 +261,39 @@ class FcmTokenRepositoryTest @Autowired constructor(
         fcmTokenRepository.save(fcmTokenEntity)
 
         // when
-        val findFcmTokenEntity = fcmTokenRepository.findByActiveFcmToken(fcmToken)
+        val findFcmTokenEntity = fcmTokenRepository.findByActiveFcmTokenAndOtherDeviceId("deviceId", fcmToken)
 
         // then
         assertThat(findFcmTokenEntity!!.id).isEqualTo(fcmTokenEntity.id!!)
+    }
+
+    @DisplayName("다른 단말기에서 활성화된 fcm 토큰을 찾을 시, 본인 단말기에서 활성화된 fcm 토큰을 찾지 않는다.")
+    @Test
+    fun findByActiveFcmTokenAndOtherDeviceIdMeDeviceId() {
+        // given
+        val member1 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+            provider = OAuth2Provider.APPLE
+        )
+        memberRepository.save(member1)
+
+        val fcmToken = "token"
+
+        val fcmTokenEntity = FcmToken(
+            member = member1,
+            deviceId = "deviceId",
+            token = fcmToken,
+            isActive = true,
+            platform = FcmTokenPlatform.ANDROID
+        )
+        fcmTokenRepository.save(fcmTokenEntity)
+
+        // when
+        val findFcmTokenEntity = fcmTokenRepository.findByActiveFcmTokenAndOtherDeviceId("deviceId", fcmToken)
+
+        // then
+        assertThat(findFcmTokenEntity).isNull()
     }
 }
