@@ -9,7 +9,6 @@ import kr.co.fitview.api.app.global.exception.error.ErrorCode
 import kr.co.fitview.api.app.global.exception.error.address.AddressErrorCode
 import kr.co.fitview.api.app.global.exception.error.auth.AuthErrorCode
 import kr.co.fitview.api.app.global.exception.error.chat.ChatErrorCode
-import kr.co.fitview.api.app.global.exception.error.fcm.FcmErrorCode
 import kr.co.fitview.api.app.global.exception.error.global.GlobalErrorCode
 import kr.co.fitview.api.app.global.exception.error.image.ImageErrorCode
 import kr.co.fitview.api.app.global.exception.error.jwt.JwtErrorCode
@@ -110,8 +109,7 @@ class GlobalExceptionHandlerDocsTest  : RestDocsSupport() {
                     ChatErrorCode.entries +
                     WorkoutRequestErrorCode.entries +
                     ReviewErrorCode.entries +
-                    ReportErrorCode.entries +
-                    FcmErrorCode.entries
+                    ReportErrorCode.entries
         }
     }
 

@@ -42,7 +42,7 @@ class FcmTokenRepositoryImpl(
         em.clear()
     }
 
-    override fun findByActiveFcmTokenAndOtherDeviceId(deviceId : String, fcmTokenString: String) : FcmToken?{
+    override fun findByActiveFcmTokenAndOtherDeviceId(deviceId : String, fcmTokenString: String) : List<FcmToken>{
         return queryFactory
             .selectFrom(fcmToken)
             .where(
@@ -51,7 +51,7 @@ class FcmTokenRepositoryImpl(
                 fcmToken.deletedAt.isNull,
                 fcmToken.isActive.isTrue
             )
-            .fetchFirst()
+            .fetch()
     }
 
 

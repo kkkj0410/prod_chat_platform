@@ -8,5 +8,5 @@ interface FcmTokenRepositoryCustom {
 
     fun deleteAllFcmTokenBy(memberId: Long)
 
-    fun findByActiveFcmTokenAndOtherDeviceId(deviceId : String, fcmTokenString: String) : FcmToken?
+    fun findByActiveFcmTokenAndOtherDeviceId(deviceId : String, fcmTokenString: String) : List<FcmToken>
 }

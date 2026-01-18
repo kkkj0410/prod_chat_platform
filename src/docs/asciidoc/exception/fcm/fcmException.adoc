@@ -1,9 +1,0 @@
-[[FCM_001]]
-=== FCM_001
-
-==== HTTP Request
-include::{snippets}/FCM_001/http-request.adoc[]
-
-==== HTTP Response
-include::{snippets}/FCM_001/http-response.adoc[]
-include::{snippets}/FCM_001/response-fields.adoc[]
