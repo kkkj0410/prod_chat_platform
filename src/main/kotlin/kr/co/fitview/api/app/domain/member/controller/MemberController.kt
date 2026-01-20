@@ -1,5 +1,6 @@
 package kr.co.fitview.api.app.domain.member.controller
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.validation.Valid
 import kr.co.fitview.api.app.domain.address.service.AddressService
 import kr.co.fitview.api.app.domain.member.condition.MemberLocalCondition
@@ -20,6 +21,7 @@ import kr.co.fitview.api.app.global.dto.ApiResponse
 import kr.co.fitview.api.app.global.dto.SuccessCursorAtPagedResponse
 import kr.co.fitview.api.app.global.dto.SuccessPagedResponse
 import kr.co.fitview.api.app.global.util.SecurityUtil
+import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
@@ -34,8 +36,11 @@ class MemberController(
     val addressService : AddressService,
     val reviewTagCountQueryService: ReviewTagCountQueryService,
     val reviewQueryService: ReviewQueryService,
-    val securityUtil : SecurityUtil
+    val securityUtil : SecurityUtil,
+    val objectMapper : ObjectMapper,
 ) {
+
+    private val log = LoggerFactory.getLogger(this.javaClass)
 
     @GetMapping("/me")
     fun memberMe() : ResponseEntity<ApiResponse<MemberProfileResponse>> {
@@ -91,6 +96,17 @@ class MemberController(
         seed : Long
 
         ) : ResponseEntity<ApiResponse<SuccessPagedResponse<MemberLocalResponse>>> {
+
+        log.info(
+            "api_query_usage {}",
+            objectMapper.writeValueAsString(
+                mapOf(
+                    "endpoint" to "/api/v1/members/local/{seed}",
+                    "seed" to seed,
+                    "condition" to condition
+                )
+            )
+        )
 
         val response = memberQueryService.findRandomMemberWithinLocal(securityUtil.getMemberId(), condition, seed)
 

@@ -1,12 +1,8 @@
 package kr.co.fitview.api.app.domain.fcm.service
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.google.firebase.messaging.*
-import kr.co.fitview.api.app.domain.fcm.dto.FcmSendEvent
 import kr.co.fitview.api.app.domain.fcm.entity.enums.FcmTokenPlatform
 import org.springframework.stereotype.Component
-import org.springframework.transaction.event.TransactionPhase
-import org.springframework.transaction.event.TransactionalEventListener
 
 
 @Component
