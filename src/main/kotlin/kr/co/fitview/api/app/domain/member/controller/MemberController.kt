@@ -102,6 +102,7 @@ class MemberController(
             objectMapper.writeValueAsString(
                 mapOf(
                     "endpoint" to "/api/v1/members/local/{seed}",
+                    "memberId" to securityUtil.getMemberId(),
                     "seed" to seed,
                     "condition" to condition
                 )
