@@ -365,8 +365,8 @@ class WorkoutRequestServiceTest @Autowired constructor(
 
 
     @DisplayName("운동 요청이 이미 존재하면 운동 요청을 보낼 수 없다")
-//    @ParameterizedTest(name = "case {index}: 기존 요청 상태 = {0}")
-//    @CsvSource("PENDING", "ACCEPT",)
+    @ParameterizedTest(name = "case {index}: 기존 요청 상태 = {0}")
+    @CsvSource("PENDING", "ACCEPT",)
     fun saveChatWorkoutRequestMessageWhenExistsWorkoutRequest(status : String) {
         // given
         val me = Member(
@@ -448,7 +448,7 @@ class WorkoutRequestServiceTest @Autowired constructor(
 
 
     @DisplayName("회원은 운동 요청 메시지를 보내는데 이미 운동 요청이 활성화되어있으면 전송을 하지 않는다.")
-//    @Test
+    @Test
     fun saveChatWorkoutRequestMessageWhenExistsWorkoutRequest() {
         // given
         val me = Member(

@@ -234,7 +234,7 @@ class WorkoutPartnerRequestServiceTest @Autowired constructor(
 
 
     @DisplayName("핏버디 요청 시, 24시간 동안 본인이 상대방에게 요청을 보냈으면 요청 불가")
-//    @Test
+    @Test
     fun addWorkoutPartnerRequestWithin24H() {
         // given
         val fromMember = Member(
@@ -373,7 +373,7 @@ class WorkoutPartnerRequestServiceTest @Autowired constructor(
     }
 
     @DisplayName("핏버디 요청 시, 이미 수락됐으면 핏버디 요청 불가")
-//    @Test
+    @Test
     fun addWorkoutPartnerRequestAccept() {
         // given
         val fromMember = Member(
