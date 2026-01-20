@@ -16,9 +16,9 @@ class FcmEventListener(
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun fcmWorkoutPartnerRequest(event: EventFcmWorkoutPartnerRequest) {
 
-        if(isMemberConnected(event.toMemberId)){
-            return
-        }
+//        if(isMemberConnected(event.toMemberId)){
+//            return
+//        }
 
         fcmTokenQueryService.sendWorkoutPartnerRequest(event)
     }
@@ -26,9 +26,9 @@ class FcmEventListener(
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun fcmWorkoutPartnerAccept(event: EventFcmWorkoutPartnerAccept) {
 
-        if(isMemberConnected(event.toMemberId)){
-            return
-        }
+//        if(isMemberConnected(event.toMemberId)){
+//            return
+//        }
 
         fcmTokenQueryService.sendWorkoutPartnerAccept(event)
     }
@@ -41,9 +41,9 @@ class FcmEventListener(
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun fcmWorkoutRequest(event: EventFcmWorkoutRequest) {
 
-        if(isMemberConnected(event.toMemberId)){
-            return
-        }
+//        if(isMemberConnected(event.toMemberId)){
+//            return
+//        }
 
         fcmTokenQueryService.sendWorkoutRequest(event)
     }
@@ -51,9 +51,9 @@ class FcmEventListener(
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun fcmWorkoutRequestAccept(event: EventFcmWorkoutRequestAccept) {
 
-        if(isMemberConnected(event.toMemberId)){
-            return
-        }
+//        if(isMemberConnected(event.toMemberId)){
+//            return
+//        }
 
         fcmTokenQueryService.sendWorkoutRequestAccept(event)
     }
@@ -61,9 +61,9 @@ class FcmEventListener(
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun fcmWorkoutRequestReject(event: EventFcmWorkoutRequestReject) {
 
-        if(isMemberConnected(event.toMemberId)){
-            return
-        }
+//        if(isMemberConnected(event.toMemberId)){
+//            return
+//        }
 
         fcmTokenQueryService.sendWorkoutRequestReject(event)
     }
@@ -71,9 +71,9 @@ class FcmEventListener(
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun fcmWorkoutComplete(event: EventFcmWorkoutComplete) {
 
-        if(isMemberConnected(event.toMemberId)){
-            return
-        }
+//        if(isMemberConnected(event.toMemberId)){
+//            return
+//        }
 
         fcmTokenQueryService.sendWorkoutComplete(event)
     }
@@ -81,9 +81,9 @@ class FcmEventListener(
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun fcmReviewReceive(event: EventFcmReviewReceive) {
 
-        if(isMemberConnected(event.toMemberId)){
-            return
-        }
+//        if(isMemberConnected(event.toMemberId)){
+//            return
+//        }
 
         fcmTokenQueryService.sendReviewReceive(event)
     }
@@ -91,9 +91,9 @@ class FcmEventListener(
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun fcmReviewRequest(event: EventFcmReviewRequest) {
 
-        if(isMemberConnected(event.toMemberId)){
-            return
-        }
+//        if(isMemberConnected(event.toMemberId)){
+//            return
+//        }
 
         fcmTokenQueryService.sendReviewRequest(event)
     }

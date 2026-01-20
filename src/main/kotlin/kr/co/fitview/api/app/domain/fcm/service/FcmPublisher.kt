@@ -2,6 +2,7 @@ package kr.co.fitview.api.app.domain.fcm.service
 
 import com.google.firebase.messaging.*
 import kr.co.fitview.api.app.domain.fcm.entity.enums.FcmTokenPlatform
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
 
