@@ -310,8 +310,7 @@ class WorkoutRequestService(
         message: ChatWorkoutRequestMessageServiceRequest,
         now: LocalDateTime
     ) {
-        // 12.1 - FE 테스트를 위해 validate 주석처리. 나중에 다시 활성화 필요
-//        validateExistsWorkoutRequest(chatRoom.id!!)
+        validateExistsWorkoutRequest(chatRoom.id!!)
         validateScheduledAtNotPast(message.scheduledAt, now)
     }
 

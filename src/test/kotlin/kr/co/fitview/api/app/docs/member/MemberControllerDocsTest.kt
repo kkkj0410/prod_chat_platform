@@ -1,5 +1,6 @@
 package kr.co.fitview.api.app.docs.member
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import kr.co.fitview.api.app.docs.RestDocsHeaders
 import kr.co.fitview.api.app.docs.RestDocsPagination
 import kr.co.fitview.api.app.docs.RestDocsSupport
@@ -78,7 +79,8 @@ class MemberControllerDocsTest : RestDocsSupport() {
             addressService,
             reviewTagCountQueryService,
             reviewQueryService,
-            securityUtil
+            securityUtil,
+            objectMapper
         )
     }
 
