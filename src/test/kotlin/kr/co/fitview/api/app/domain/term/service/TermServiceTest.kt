@@ -39,7 +39,6 @@ class TermServiceTest @Autowired constructor(
         assertThat(savedTerms)
             .extracting("name", "isAgreed")
             .containsExactlyInAnyOrder(
-                tuple(TermName.AGE_OVER_14, true),
                 tuple(TermName.PRIVACY_POLICY, true),
                 tuple(TermName.TERMS_OF_SERVICE, true),
                 tuple(TermName.LOCATION_SERVICE, true),
