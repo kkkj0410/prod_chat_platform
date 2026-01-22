@@ -16,7 +16,7 @@ class WorkoutCompleteMapper(
     private val objectMapper: ObjectMapper
 ) : NotificationMapper {
 
-    override fun supportedType() = NotificationType.WORKOUT_COMPLETE
+    override fun supportedTypes() = setOf(NotificationType.WORKOUT_COMPLETE)
 
     override fun map(notification: Notification, member : Member): NotificationResponse {
         val jsonString = objectMapper.writeValueAsString(notification.content)
@@ -32,7 +32,7 @@ class WorkoutCompleteMapper(
             isRead = notification.isRead!!,
             sender = content.sender,
             link = NotificationLink(
-                type = LinkType.REVIEW_WRITE,
+                type = LinkType.CHAT_ROOM,
                 parameters = mapOf(
                     "workoutHistoryId" to content.payload.workoutHistoryId,
                     "chatRoomId" to content.payload.chatRoomId,

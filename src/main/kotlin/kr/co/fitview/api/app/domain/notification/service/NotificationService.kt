@@ -2,7 +2,6 @@ package kr.co.fitview.api.app.domain.notification.service
 
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.domain.notification.dto.request.*
-import kr.co.fitview.api.app.domain.notification.dto.response.NotificationReadResponse
 import kr.co.fitview.api.app.domain.notification.entity.Notification
 import kr.co.fitview.api.app.domain.notification.entity.enums.NotificationType
 import kr.co.fitview.api.app.domain.notification.repository.NotificationRepository
@@ -127,6 +126,21 @@ class NotificationService(
     }
 
     @Transactional
+    fun saveWorkoutRequestCancel(event: EventWorkoutRequestCancel) : Notification {
+        val findMember = memberQueryService.findMemberReferenceFrom(event.memberId)
+
+        val content = createWorkoutRequestCancelContent(event)
+
+        val notification = Notification.of(
+            member = findMember,
+            type = NotificationType.WORKOUT_REQUEST_CANCEL,
+            content = content,
+            sentAt = time.nowLocalDateTime
+        )
+        return notificationRepository.save(notification)
+    }
+
+    @Transactional
     fun saveWorkoutComplete(event: EventWorkoutComplete) : Notification {
         val findMember = memberQueryService.findMemberReferenceFrom(event.memberId)
 
@@ -225,6 +239,17 @@ class NotificationService(
         )
 
     private fun createWorkoutRequestRejectContent(event: EventWorkoutRequestReject) =
+        mutableMapOf<String, Any>(
+            "sender" to createSender(event.sender),
+
+            "payload" to mapOf(
+                "chatMessageId" to event.payload.chatMessageId,
+                "workoutRequestId" to event.payload.workoutRequestId,
+                "chatRoomId" to event.payload.chatRoomId,
+            )
+        )
+
+    private fun createWorkoutRequestCancelContent(event: EventWorkoutRequestCancel) =
         mutableMapOf<String, Any>(
             "sender" to createSender(event.sender),
 

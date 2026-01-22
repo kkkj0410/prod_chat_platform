@@ -167,7 +167,6 @@ class ChatMessageRepositoryImpl(
 
 
     override fun findChatMessageByCondition(chatRoomId: Long, condition: ChatMessageCondition) : SliceWithBefore<ChatMessageAndWorkoutRequest> {
-        val chatMessageAt :LocalDateTime = condition.lastMessageAt() ?: time.nowLocalDateTime
 
         fun messagePredicate(): BooleanExpression? {
             val lastAt = condition.lastMessageAt()
@@ -192,13 +191,6 @@ class ChatMessageRepositoryImpl(
                 }
                 predicates.add(timePredicate)
             }
-//            val timePredicate =
-//                if (condition.direction == Direction.ASC) {
-//                    chatMessage.sentAt.gt(chatMessageAt)
-//                } else {
-//                    chatMessage.sentAt.lt(chatMessageAt)
-//                }
-//            predicates.add(timePredicate)
 
             if (predicates.isEmpty()) {
                 val timePredicate = if (condition.direction == Direction.ASC) {
@@ -236,7 +228,6 @@ class ChatMessageRepositoryImpl(
             .fetch()
 
 
-
         fun reverseMessagePredicate(): BooleanExpression? {
             val lastAt = condition.lastMessageAt()
             val targetId = condition.targetChatMessageId
@@ -252,8 +243,6 @@ class ChatMessageRepositoryImpl(
                 predicates.add(targetPredicate)
             }
 
-//            val baseTime: LocalDateTime =
-//                lastAt ?: chatMessageAt
 
             lastAt?.let {
                 val timePredicate = if (condition.direction == Direction.ASC) {
@@ -263,14 +252,6 @@ class ChatMessageRepositoryImpl(
                 }
                 predicates.add(timePredicate)
             }
-
-//            val timePredicate =
-//                if (condition.direction == Direction.ASC) {
-//                    chatMessage.sentAt.gt(chatMessageAt)
-//                } else {
-//                    chatMessage.sentAt.lt(chatMessageAt)
-//                }
-//            predicates.add(timePredicate)
 
             if (predicates.isEmpty()) {
                 val timePredicate = if (condition.direction == Direction.ASC) {

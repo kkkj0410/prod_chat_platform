@@ -70,7 +70,7 @@ class WorkoutCompleteMapperTest @Autowired constructor(
                 notification.isRead!!,
                 NotificationSender(123L, "nick", "profile"),
                 NotificationLink(
-                    LinkType.REVIEW_WRITE,
+                    LinkType.CHAT_ROOM,
                     mapOf(
                         "workoutHistoryId" to 789L,
                         "chatRoomId" to 456L,

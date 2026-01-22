@@ -3,7 +3,7 @@ package kr.co.fitview.api.app.domain.auth.service
 import kr.co.fitview.api.app.domain.auth.entity.RefreshToken
 import kr.co.fitview.api.app.domain.auth.entity.RefreshTokenStatus
 import kr.co.fitview.api.app.domain.auth.repository.RefreshTokenRepository
-import kr.co.fitview.api.app.domain.fcm.service.FcmTokenQueryService
+import kr.co.fitview.api.app.domain.fcm.service.FcmTokenService
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.global.exception.GlobalException
@@ -20,7 +20,7 @@ class RefreshTokenService(
     val refreshTokenRepository : RefreshTokenRepository,
     val jwtTokenProvider : JwtTokenProvider,
     val memberQueryService : MemberQueryService,
-    val fcmTokenQueryService : FcmTokenQueryService,
+    val fcmTokenService : FcmTokenService,
     val time : Time
 ) {
 
@@ -118,7 +118,7 @@ class RefreshTokenService(
         findRefreshTokenEntity!!.status == RefreshTokenStatus.INACTIVE
 
     private fun deleteFcmToken(deviceId : String) {
-        val findFcmTokens = fcmTokenQueryService.findAllFcmTokenByDeviceId(deviceId)
+        val findFcmTokens = fcmTokenService.findAllFcmTokenByDeviceId(deviceId)
         findFcmTokens.forEach {
             it.delete(time.nowLocalDateTime)
         }

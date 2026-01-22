@@ -9,7 +9,7 @@ import org.springframework.transaction.event.TransactionalEventListener
 
 @Component
 class FcmEventListener(
-    private val fcmTokenQueryService: FcmTokenQueryService,
+    private val fcmTokenService: FcmTokenService,
     private val simpUserRegistry: SimpUserRegistry,
 ) {
 
@@ -20,7 +20,7 @@ class FcmEventListener(
 //            return
 //        }
 
-        fcmTokenQueryService.sendWorkoutPartnerRequest(event)
+        fcmTokenService.sendWorkoutPartnerRequest(event)
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -30,12 +30,12 @@ class FcmEventListener(
 //            return
 //        }
 
-        fcmTokenQueryService.sendWorkoutPartnerAccept(event)
+        fcmTokenService.sendWorkoutPartnerAccept(event)
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun fcmChatMessage(event: EventFcmChatMessage) {
-        fcmTokenQueryService.sendChatMessage(event)
+        fcmTokenService.sendChatMessage(event)
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -45,7 +45,7 @@ class FcmEventListener(
 //            return
 //        }
 
-        fcmTokenQueryService.sendWorkoutRequest(event)
+        fcmTokenService.sendWorkoutRequest(event)
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -55,7 +55,7 @@ class FcmEventListener(
 //            return
 //        }
 
-        fcmTokenQueryService.sendWorkoutRequestAccept(event)
+        fcmTokenService.sendWorkoutRequestAccept(event)
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -65,8 +65,19 @@ class FcmEventListener(
 //            return
 //        }
 
-        fcmTokenQueryService.sendWorkoutRequestReject(event)
+        fcmTokenService.sendWorkoutRequestReject(event)
     }
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    fun fcmWorkoutRequestCancel(event: EventFcmWorkoutRequestCancel) {
+
+//        if(isMemberConnected(event.toMemberId)){
+//            return
+//        }
+
+        fcmTokenService.sendWorkoutRequestCancel(event)
+    }
+
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun fcmWorkoutComplete(event: EventFcmWorkoutComplete) {
@@ -75,7 +86,7 @@ class FcmEventListener(
 //            return
 //        }
 
-        fcmTokenQueryService.sendWorkoutComplete(event)
+        fcmTokenService.sendWorkoutComplete(event)
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -85,7 +96,7 @@ class FcmEventListener(
 //            return
 //        }
 
-        fcmTokenQueryService.sendReviewReceive(event)
+        fcmTokenService.sendReviewReceive(event)
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -95,7 +106,7 @@ class FcmEventListener(
 //            return
 //        }
 
-        fcmTokenQueryService.sendReviewRequest(event)
+        fcmTokenService.sendReviewRequest(event)
     }
 
     fun isMemberConnected(memberId: Long): Boolean {
