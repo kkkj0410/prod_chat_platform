@@ -42,6 +42,8 @@ class AdminFcmTokenService(
         return fcmTokenRepository.findActiveFcmTokens()
             .map { token ->
                 FcmTokenActiveResponse(
+                    email = token.member!!.email!!,
+                    nickname = token.member!!.nickname!!,
                     fcmTokenId = token.id!!,
                     memberId = token.member!!.id!!,
                     createdAt = token.createdAt!!,

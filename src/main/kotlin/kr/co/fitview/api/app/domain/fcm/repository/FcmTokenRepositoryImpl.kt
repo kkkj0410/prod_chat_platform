@@ -5,6 +5,7 @@ import jakarta.persistence.EntityManager
 import kr.co.fitview.api.app.domain.fcm.dto.response.FcmTokenActiveResponse
 import kr.co.fitview.api.app.domain.fcm.entity.FcmToken
 import kr.co.fitview.api.app.domain.fcm.entity.QFcmToken.fcmToken
+import kr.co.fitview.api.app.domain.member.entity.QMember.member
 import kr.co.fitview.api.app.global.time.Time
 
 class FcmTokenRepositoryImpl(
@@ -58,6 +59,7 @@ class FcmTokenRepositoryImpl(
     override fun findActiveFcmTokens(): List<FcmToken> {
         return queryFactory
             .selectFrom(fcmToken)
+            .join(fcmToken.member, member).fetchJoin()
             .where(
                 fcmToken.deletedAt.isNull,
                 fcmToken.isActive.isTrue
