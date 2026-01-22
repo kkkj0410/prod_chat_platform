@@ -174,7 +174,7 @@ class NotificationControllerDocsTest : RestDocsSupport() {
             sentAt = LocalDateTime.now(),
             isRead = true,
             sender = NotificationSender(124L, "멜론", "https://..."),
-            link = NotificationLink(LinkType.CHAT_START, mapOf("memberId" to 124)),
+            link = NotificationLink(LinkType.MEMBER_PROFILE, mapOf("memberId" to 124)),
             messages = NotificationMessage(
                 text1 = NotificationType.WORKOUT_PARTNER_ACCEPT.displayText1,
                 text2 = NotificationType.WORKOUT_PARTNER_ACCEPT.displayText2,
@@ -321,7 +321,7 @@ class NotificationControllerDocsTest : RestDocsSupport() {
             sentAt = LocalDateTime.now(),
             isRead = false,
             sender = NotificationSender(126L, "체리", "https://..."),
-            link = NotificationLink(LinkType.REVIEW_WRITE, mapOf(
+            link = NotificationLink(LinkType.CHAT_ROOM, mapOf(
                 "workoutHistoryId" to 888,
                 "chatRoomId" to 555,
                 "chatMessageId" to 666
