@@ -32,7 +32,7 @@ class WorkoutPartnerAcceptMapper(
             isRead = notification.isRead!!,
             sender = content.sender,
             link = NotificationLink(
-                type = LinkType.CHAT_START,
+                type = LinkType.MEMBER_PROFILE,
                 parameters = mapOf(
                     "memberId" to content.payload.memberId
                 )
