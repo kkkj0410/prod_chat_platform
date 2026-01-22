@@ -146,29 +146,53 @@ class WorkoutRequestService(
         )
 
         var workoutHistory : WorkoutHistory? = null
-        if(isSuccessComplete(findWorkoutRequest)){
+        if(isComplete(request)){
             workoutHistory = workoutHistoryService.addWorkoutHistory(findWorkoutRequest.getChatRoom()!!, findWorkoutRequest, findWorkoutRequest.fromMember!!, findWorkoutRequest.toMember!!)
+
+            chatNoticeMessageService.addChatNoticeFrom(
+                memberId,
+                request.workoutRequestId,
+                ChatNoticeMessageType.WORKOUT_REQUEST_COMPLETE,
+                workoutHistory
+            )
 
             sendFcmCompleteWorkoutRequest(findWorkoutRequest)
 
             sendNotificationCompleteWorkoutRequest(findWorkoutRequest, workoutHistory)
         }
 
-        addChatNoticeMessage(memberId, request, workoutHistory)
-
-        sendStompUpdateWorkoutRequest(findWorkoutRequest)
-
         if(isAccept(request)){
-            sendAcceptFcmWorkoutRequest(findWorkoutRequest)
 
+            chatNoticeMessageService.addChatNoticeFrom(
+                memberId,
+                request.workoutRequestId,
+                ChatNoticeMessageType.WORKOUT_REQUEST_ACCEPT
+            )
+
+            sendAcceptFcmWorkoutRequest(findWorkoutRequest)
             sendAcceptNotificationWorkoutRequest(findWorkoutRequest)
         }
 
         if(isReject(request)){
-            sendRejectFcmWorkoutRequest(findWorkoutRequest)
+            chatNoticeMessageService.addChatNoticeFrom(
+                memberId,
+                request.workoutRequestId,
+                ChatNoticeMessageType.WORKOUT_REQUEST_REJECT
+            )
 
+            sendRejectFcmWorkoutRequest(findWorkoutRequest)
             sendRejectNotificationWorkoutRequest(findWorkoutRequest)
         }
+
+        if (isCancel(request)) {
+            chatNoticeMessageService.addChatNoticeFrom(
+                memberId,
+                request.workoutRequestId,
+                ChatNoticeMessageType.WORKOUT_REQUEST_CANCEL
+            )
+        }
+
+        sendStompUpdateWorkoutRequest(findWorkoutRequest)
 
         return findWorkoutRequest
     }
@@ -396,40 +420,7 @@ class WorkoutRequestService(
         findWorkoutRequest: WorkoutRequest
     ) = memberId == findWorkoutRequest.getFromMemberId()
 
-    private fun addChatNoticeMessage(memberId : Long, request: WorkoutRequestUpdateRequest, workoutHistory : WorkoutHistory?) {
-        if (isAccept(request)) {
-            chatNoticeMessageService.addChatNoticeFrom(
-                memberId,
-                request.workoutRequestId,
-                ChatNoticeMessageType.WORKOUT_REQUEST_ACCEPT
-            )
-        }
 
-        if (isComplete(request)) {
-            chatNoticeMessageService.addChatNoticeFrom(
-                memberId,
-                request.workoutRequestId,
-                ChatNoticeMessageType.WORKOUT_REQUEST_COMPLETE,
-                workoutHistory!!
-            )
-        }
-
-        if (isReject(request)) {
-            chatNoticeMessageService.addChatNoticeFrom(
-                memberId,
-                request.workoutRequestId,
-                ChatNoticeMessageType.WORKOUT_REQUEST_REJECT
-            )
-        }
-
-        if (isCancel(request)) {
-            chatNoticeMessageService.addChatNoticeFrom(
-                memberId,
-                request.workoutRequestId,
-                ChatNoticeMessageType.WORKOUT_REQUEST_CANCEL
-            )
-        }
-    }
 
     private fun isAccept(request: WorkoutRequestUpdateRequest) =
         request.status == WorkoutRequestStatusForRequest.ACCEPT
