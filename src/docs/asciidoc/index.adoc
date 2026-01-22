@@ -60,6 +60,11 @@ include::api/chat/chat.adoc[]
 
 include::api/fcm/fcm.adoc[]
 
+[[Admin-FCM-API]]
+== FCM API
+
+include::api/fcm/adminFcm.adoc[]
+
 [[REVIEW-API]]
 == REVIEW API
 

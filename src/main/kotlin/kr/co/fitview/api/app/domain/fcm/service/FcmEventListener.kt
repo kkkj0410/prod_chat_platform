@@ -9,93 +9,104 @@ import org.springframework.transaction.event.TransactionalEventListener
 
 @Component
 class FcmEventListener(
-    private val fcmTokenQueryService: FcmTokenQueryService,
+    private val fcmTokenService: FcmTokenService,
     private val simpUserRegistry: SimpUserRegistry,
 ) {
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun fcmWorkoutPartnerRequest(event: EventFcmWorkoutPartnerRequest) {
 
-        if(isMemberConnected(event.toMemberId)){
-            return
-        }
+//        if(isMemberConnected(event.toMemberId)){
+//            return
+//        }
 
-        fcmTokenQueryService.sendWorkoutPartnerRequest(event)
+        fcmTokenService.sendWorkoutPartnerRequest(event)
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun fcmWorkoutPartnerAccept(event: EventFcmWorkoutPartnerAccept) {
 
-        if(isMemberConnected(event.toMemberId)){
-            return
-        }
+//        if(isMemberConnected(event.toMemberId)){
+//            return
+//        }
 
-        fcmTokenQueryService.sendWorkoutPartnerAccept(event)
+        fcmTokenService.sendWorkoutPartnerAccept(event)
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun fcmChatMessage(event: EventFcmChatMessage) {
-        fcmTokenQueryService.sendChatMessage(event)
+        fcmTokenService.sendChatMessage(event)
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun fcmWorkoutRequest(event: EventFcmWorkoutRequest) {
 
-        if(isMemberConnected(event.toMemberId)){
-            return
-        }
+//        if(isMemberConnected(event.toMemberId)){
+//            return
+//        }
 
-        fcmTokenQueryService.sendWorkoutRequest(event)
+        fcmTokenService.sendWorkoutRequest(event)
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun fcmWorkoutRequestAccept(event: EventFcmWorkoutRequestAccept) {
 
-        if(isMemberConnected(event.toMemberId)){
-            return
-        }
+//        if(isMemberConnected(event.toMemberId)){
+//            return
+//        }
 
-        fcmTokenQueryService.sendWorkoutRequestAccept(event)
+        fcmTokenService.sendWorkoutRequestAccept(event)
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun fcmWorkoutRequestReject(event: EventFcmWorkoutRequestReject) {
 
-        if(isMemberConnected(event.toMemberId)){
-            return
-        }
+//        if(isMemberConnected(event.toMemberId)){
+//            return
+//        }
 
-        fcmTokenQueryService.sendWorkoutRequestReject(event)
+        fcmTokenService.sendWorkoutRequestReject(event)
     }
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    fun fcmWorkoutRequestCancel(event: EventFcmWorkoutRequestCancel) {
+
+//        if(isMemberConnected(event.toMemberId)){
+//            return
+//        }
+
+        fcmTokenService.sendWorkoutRequestCancel(event)
+    }
+
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun fcmWorkoutComplete(event: EventFcmWorkoutComplete) {
 
-        if(isMemberConnected(event.toMemberId)){
-            return
-        }
+//        if(isMemberConnected(event.toMemberId)){
+//            return
+//        }
 
-        fcmTokenQueryService.sendWorkoutComplete(event)
+        fcmTokenService.sendWorkoutComplete(event)
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun fcmReviewReceive(event: EventFcmReviewReceive) {
 
-        if(isMemberConnected(event.toMemberId)){
-            return
-        }
+//        if(isMemberConnected(event.toMemberId)){
+//            return
+//        }
 
-        fcmTokenQueryService.sendReviewReceive(event)
+        fcmTokenService.sendReviewReceive(event)
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun fcmReviewRequest(event: EventFcmReviewRequest) {
 
-        if(isMemberConnected(event.toMemberId)){
-            return
-        }
+//        if(isMemberConnected(event.toMemberId)){
+//            return
+//        }
 
-        fcmTokenQueryService.sendReviewRequest(event)
+        fcmTokenService.sendReviewRequest(event)
     }
 
     fun isMemberConnected(memberId: Long): Boolean {

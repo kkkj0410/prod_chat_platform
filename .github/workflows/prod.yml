@@ -92,6 +92,7 @@ jobs:
             
             sudo docker create --name ${{ env.DOCKER_CONTAINER_NAME }} \
             -p 8080:8080 -e TZ=Asia/Seoul \
+            -v ~/server_logs:/logs \
             ${{ env.NCR_REGISTRY_PUBLIC_URI }}/${{ env.PROD_NCR_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_VERSION }}
           
             sudo docker cp ~/application.yml ${{ env.DOCKER_CONTAINER_NAME }}:/app/resources/application.yml

@@ -16,7 +16,7 @@ class WorkoutRequestMapper(
     private val objectMapper: ObjectMapper
 ) : NotificationMapper {
 
-    override fun supportedType() = NotificationType.WORKOUT_REQUEST
+    override fun supportedTypes() = setOf(NotificationType.WORKOUT_REQUEST)
 
     override fun map(notification: Notification, member : Member): NotificationResponse {
         val jsonString = objectMapper.writeValueAsString(notification.content)

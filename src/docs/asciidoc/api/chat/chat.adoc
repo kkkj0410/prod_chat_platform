@@ -13,7 +13,12 @@ include::{snippets}/chat-room-add/response-fields.adoc[]
 
 [[chat-room-list-text]]
 === 채팅방 목록 (TEXT 유형) API
--> TEXT, WORKOUT_REQUEST 유형으로 나뉨. (lastChatMessage 필드가 달라진다.)
+-> TEXT, WORKOUT_REQUEST, NOTICE 유형으로 나뉨. (lastChatMessage 필드가 달라진다.)
+
+-  targetChatMessageId 존재하면,
+->  해당 id를 포함해서 위 or 아래로 문자 조회
+-  lastMessageAt 존재하면,
+-> 해당 시간을 포함하지 않고 위 or 아래로 문자 조회
 
 ==== HTTP Request
 include::{snippets}/chat-room-list-text/http-request.adoc[]

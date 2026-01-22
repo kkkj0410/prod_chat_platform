@@ -16,7 +16,7 @@ class ReviewRequestMapper(
     private val objectMapper: ObjectMapper
 ) : NotificationMapper {
 
-    override fun supportedType() = NotificationType.REVIEW_REQUEST
+    override fun supportedTypes() = setOf(NotificationType.REVIEW_REQUEST)
 
     override fun map(notification: Notification, member : Member): NotificationResponse {
         val jsonString = objectMapper.writeValueAsString(notification.content)

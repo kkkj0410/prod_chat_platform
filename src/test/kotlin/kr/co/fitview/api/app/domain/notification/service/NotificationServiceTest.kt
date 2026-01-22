@@ -240,6 +240,37 @@ class NotificationServiceTest @Autowired constructor(
             .contains(member, NotificationType.WORKOUT_REQUEST_REJECT, false, expectedContent, time.nowLocalDateTime)
     }
 
+    @DisplayName("운동 약속 취소 알람을 저장한다.")
+    @Test
+    fun saveWorkoutRequestCancel() {
+        //given
+        val member = createMember()
+        val event = EventWorkoutRequestCancel(
+            memberId = member.id!!,
+            sender = EventSender(123L, "nickname", "profileImageUrl"),
+            payload = EventWorkoutRequestCancelPayload(
+                chatMessageId = 555L,
+                workoutRequestId = 345L,
+                chatRoomId = 678L
+            )
+        )
+
+        val expectedContent = mapOf(
+            "sender" to mapOf("memberId" to 123L, "nickname" to "nickname", "profileImageUrl" to "profileImageUrl"),
+            "payload" to mapOf("chatMessageId" to 555L, "workoutRequestId" to 345L, "chatRoomId" to 678L)
+        )
+
+        //when
+        val savedNotification = notificationService.saveWorkoutRequestCancel(event)
+
+        //then
+        assertThat(savedNotification.id).isNotNull()
+        assertThat(savedNotification)
+            .extracting("member", "type", "isRead", "content", "sentAt")
+            .contains(member, NotificationType.WORKOUT_REQUEST_CANCEL, false, expectedContent, time.nowLocalDateTime)
+    }
+
+
     @DisplayName("운동 완료 알람을 저장한다.")
     @Test
     fun saveWorkoutComplete() {

@@ -60,6 +60,7 @@ include::{snippets}/notification-workout-request-accept/response-fields.adoc[]
 
 [[notification-workout-request-reject]]
 === 알람 조회 - (WORKOUT_REQUEST_REJECT 유형) API
+- WORKOUT_REQUEST_CANCEL은 WORKOUT_REQUEST_REJECT에 포함된다.
 
 ==== HTTP Request
 include::{snippets}/notification-workout-request-reject/http-request.adoc[]

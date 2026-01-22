@@ -16,7 +16,14 @@ class WorkoutRequestRejectMapper(
     private val objectMapper: ObjectMapper
 ) : NotificationMapper {
 
-    override fun supportedType() = NotificationType.WORKOUT_REQUEST_REJECT
+
+    override fun supportedTypes(): Set<NotificationType> {
+        return setOf(
+            NotificationType.WORKOUT_REQUEST_REJECT,
+            NotificationType.WORKOUT_REQUEST_CANCEL,
+        )
+    }
+
 
     override fun map(notification: Notification, member : Member): NotificationResponse {
         val jsonString = objectMapper.writeValueAsString(notification.content)
@@ -27,7 +34,7 @@ class WorkoutRequestRejectMapper(
 
         return NotificationResponse(
             notificationId = notification.id!!,
-            type = notification.type!!,
+            type = NotificationType.WORKOUT_REQUEST_REJECT,
             sentAt = notification.sentAt!!,
             isRead = notification.isRead!!,
             sender = content.sender,

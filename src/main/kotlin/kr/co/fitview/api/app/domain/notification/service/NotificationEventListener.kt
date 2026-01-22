@@ -1,7 +1,6 @@
 package kr.co.fitview.api.app.domain.notification.service
 
 import kr.co.fitview.api.app.domain.notification.dto.request.*
-import kr.co.fitview.api.app.global.stomp.dto.request.StompEventTextMessageDepth1
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
@@ -48,6 +47,12 @@ class NotificationEventListener(
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun saveWorkoutRequestReject(event : EventWorkoutRequestReject){
         notificationService.saveWorkoutRequestReject(event)
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    fun saveWorkoutRequestCancel(event : EventWorkoutRequestCancel){
+        notificationService.saveWorkoutRequestCancel(event)
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)

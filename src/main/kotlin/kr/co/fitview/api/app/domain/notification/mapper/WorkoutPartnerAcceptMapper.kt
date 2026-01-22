@@ -16,7 +16,7 @@ class WorkoutPartnerAcceptMapper(
     private val objectMapper: ObjectMapper
 ) : NotificationMapper {
 
-    override fun supportedType() = NotificationType.WORKOUT_PARTNER_ACCEPT
+    override fun supportedTypes() = setOf(NotificationType.WORKOUT_PARTNER_ACCEPT)
 
     override fun map(notification: Notification, member : Member): NotificationResponse {
         val jsonString = objectMapper.writeValueAsString(notification.content)
@@ -33,7 +33,9 @@ class WorkoutPartnerAcceptMapper(
             sender = content.sender,
             link = NotificationLink(
                 type = LinkType.CHAT_START,
-                parameters = mapOf("memberId" to content.payload.memberId)
+                parameters = mapOf(
+                    "memberId" to content.payload.memberId
+                )
             ),
             messages = NotificationMessage(
                 text1 = displayText1,

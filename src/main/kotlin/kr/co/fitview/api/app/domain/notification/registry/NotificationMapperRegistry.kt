@@ -13,7 +13,13 @@ class NotificationMapperRegistry(
 ) {
 
     private val mapperMap: Map<NotificationType, NotificationMapper> =
-        mappers.associateBy { it.supportedType() }
+        mappers
+            .flatMap { mapper ->
+                mapper.supportedTypes().map { type ->
+                    type to mapper
+                }
+            }
+            .toMap()
 
     fun map(notification: Notification, member : Member): NotificationResponse {
         val mapper = mapperMap[notification.type]

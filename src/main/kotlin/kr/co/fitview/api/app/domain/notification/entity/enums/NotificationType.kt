@@ -43,6 +43,12 @@ enum class NotificationType(
         "운동 약속이 취소됐어요."
     ),
 
+    WORKOUT_REQUEST_CANCEL(
+        "운동 약속 거절 및 취소",
+        "%s님과",
+        "운동 약속이 취소됐어요."
+    ),
+
     WORKOUT_COMPLETE(
         "운동 완료",
         "%s님!",

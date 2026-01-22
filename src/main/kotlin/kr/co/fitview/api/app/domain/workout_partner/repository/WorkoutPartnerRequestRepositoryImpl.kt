@@ -202,7 +202,8 @@ class WorkoutPartnerRequestRepositoryImpl(
             .where(
                 workoutPartnerRequest.status.eq(WorkoutPartnerRequestStatus.PENDING),
                 workoutPartnerRequest.deletedAt.isNull,
-                workoutPartnerRequest.requestedAt.loe(time.nowLocalDateTime.minusHours(24)),
+//                workoutPartnerRequest.requestedAt.loe(time.nowLocalDateTime.minusHours(24)),
+                workoutPartnerRequest.requestedAt.loe(time.nowLocalDateTime.minusMinutes(2)),
             )
             .fetch()
     }

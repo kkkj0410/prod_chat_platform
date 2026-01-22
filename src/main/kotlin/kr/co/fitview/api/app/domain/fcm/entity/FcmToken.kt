@@ -73,4 +73,9 @@ class FcmToken(
         return this
     }
 
+    fun deactivate() : FcmToken{
+        this.isActive = false
+        return this
+    }
+
 }
