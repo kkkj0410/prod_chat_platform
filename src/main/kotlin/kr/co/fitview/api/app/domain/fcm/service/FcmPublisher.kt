@@ -60,8 +60,11 @@ class FcmPublisher(
         return Message.builder()
             .setApnsConfig(
                 ApnsConfig.builder()
+                    .putHeader("apns-push-type", "alert")
+                    .putHeader("apns-priority", "10")
                     .setAps(
                         Aps.builder()
+                            .setContentAvailable(true)
                             .setAlert(
                                 ApsAlert.builder()
                                     .setTitle(title)

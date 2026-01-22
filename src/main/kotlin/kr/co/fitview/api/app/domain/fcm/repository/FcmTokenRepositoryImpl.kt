@@ -2,6 +2,7 @@ package kr.co.fitview.api.app.domain.fcm.repository
 
 import com.querydsl.jpa.impl.JPAQueryFactory
 import jakarta.persistence.EntityManager
+import kr.co.fitview.api.app.domain.fcm.dto.response.FcmTokenActiveResponse
 import kr.co.fitview.api.app.domain.fcm.entity.FcmToken
 import kr.co.fitview.api.app.domain.fcm.entity.QFcmToken.fcmToken
 import kr.co.fitview.api.app.global.time.Time
@@ -48,6 +49,16 @@ class FcmTokenRepositoryImpl(
             .where(
                 fcmToken.deviceId.ne(deviceId),
                 fcmToken.token.eq(fcmTokenString),
+                fcmToken.deletedAt.isNull,
+                fcmToken.isActive.isTrue
+            )
+            .fetch()
+    }
+
+    override fun findActiveFcmTokens(): List<FcmToken> {
+        return queryFactory
+            .selectFrom(fcmToken)
+            .where(
                 fcmToken.deletedAt.isNull,
                 fcmToken.isActive.isTrue
             )
