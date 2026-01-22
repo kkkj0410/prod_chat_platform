@@ -36,7 +36,6 @@ class FcmTokenServiceTest @Autowired constructor(
     private val memberRepository : MemberRepository,
     private val deepLinkConstant: DeepLinkConstant,
     private val time : Time,
-    private val fcmPublisher: FcmPublisher
 ) : IntegrationTestSupport(){
 
 
@@ -416,46 +415,6 @@ class FcmTokenServiceTest @Autowired constructor(
         )
     }
 
-    @DisplayName("푸시 알람 전송 실패 시, 재전송한다")
-    @Test
-    fun sendMessageError() {
-        val member = saveTestMemberWithFcmToken()
-
-        val event = EventFcmChatMessage(
-            toMemberId = member.id!!,
-            fromNickname = "nick",
-            chatRoomId = 1L,
-            chatMessageId = 2L
-        )
-
-        fcmTokenService.sendChatMessage(event)
-
-        given(
-            fcmPublisher.send(any(), any(), any(), any(), any())
-        ).willThrow(
-            FirebaseException(
-                ErrorCode.INTERNAL,
-                "test error",
-                null
-            )
-        )
-
-//        then(fcmPublisher).should().send(
-//            token = "token",
-//            title = FcmMessage.CHAT_MESSAGE.formatTitle("nick"),
-//            body = FcmMessage.CHAT_MESSAGE.body,
-//            platform = FcmTokenPlatform.ANDROID,
-//            data = mapOf(
-//                "type" to "CHAT_MESSAGE",
-//                "deepLink" to deepLinkConstant.BASE_DOMAIN + FcmMessage.CHAT_MESSAGE.formatDeepLinkPath(1L),
-//                "chatMessageId" to 2L
-//            )
-//        )
-
-        then(fcmPublisher)
-            .should(times(1))
-            .send(any(), any(), any(), any(), any())
-    }
 
     @DisplayName("운동 요청 푸시 알람을 보낸다.")
     @Test

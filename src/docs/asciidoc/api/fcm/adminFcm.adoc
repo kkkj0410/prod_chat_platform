@@ -1,0 +1,22 @@
+[[admin-fcm-push]]
+=== 현재 활성화된 FCM 토큰 조회
+
+==== HTTP Request
+include::{snippets}/admin-fcm-token-get/http-request.adoc[]
+include::{snippets}/admin-fcm-token-get/request-headers.adoc[]
+
+==== HTTP Response
+include::{snippets}/admin-fcm-token-get/http-response.adoc[]
+include::{snippets}/admin-fcm-token-get/response-fields.adoc[]
+
+
+[[admin-fcm-push]]
+=== 푸시 알람 전송 API
+
+==== HTTP Request
+include::{snippets}/admin-fcm-push/http-request.adoc[]
+include::{snippets}/admin-fcm-push/request-fields.adoc[]
+include::{snippets}/admin-fcm-push/request-headers.adoc[]
+
+==== HTTP Response
+include::{snippets}/admin-fcm-push/http-response.adoc[]
