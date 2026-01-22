@@ -1,5 +1,6 @@
 package kr.co.fitview.api.app.domain.fcm.controller
 
+import com.google.firebase.messaging.FirebaseMessagingException
 import jakarta.validation.Valid
 import kr.co.fitview.api.app.domain.fcm.dto.request.FcmPushRequest
 import kr.co.fitview.api.app.domain.fcm.dto.request.FcmTokenCreateRequest
@@ -20,11 +21,22 @@ class AdminFcmController(
 
     @PostMapping("/push")
     fun fcmTokenAdd(
-        @Valid
-        @RequestBody
-        request: FcmPushRequest
-    ) {
-        adminFcmTokenService.push(request)
+        @RequestBody request: FcmPushRequest
+    ): ResponseEntity<Any> {
+        return try {
+            adminFcmTokenService.push(request)
+            ResponseEntity.ok().build()
+        } catch (e: FirebaseMessagingException) {
+            ResponseEntity.badRequest().body(
+                mapOf(
+                    "exception" to e.javaClass.name,
+                    "errorCode" to e.errorCode?.name,
+                    "message" to e.message,
+                    "cause" to e.cause?.toString(),
+                    "stackTrace" to e.stackTrace.map { it.toString() }
+                )
+            )
+        }
     }
 
     @GetMapping("/active")
