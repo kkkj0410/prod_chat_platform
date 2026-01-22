@@ -68,7 +68,7 @@ class WorkoutPartnerAcceptMapperTest  @Autowired constructor(
                 notification.sentAt!!,
                 notification.isRead!!,
                 NotificationSender(123L, "nick", "profile"),
-                NotificationLink(LinkType.CHAT_START, mapOf("memberId" to 456L)),
+                NotificationLink(LinkType.MEMBER_PROFILE, mapOf("memberId" to 456L)),
                 NotificationMessage(
                     text1 = NotificationType.WORKOUT_PARTNER_ACCEPT.displayText1.format("nick"),
                     text2 = NotificationType.WORKOUT_PARTNER_ACCEPT.displayText2
