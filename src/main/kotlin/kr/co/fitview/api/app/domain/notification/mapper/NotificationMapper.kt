@@ -6,6 +6,6 @@ import kr.co.fitview.api.app.domain.notification.entity.Notification
 import kr.co.fitview.api.app.domain.notification.entity.enums.NotificationType
 
 interface NotificationMapper {
-    fun supportedType(): NotificationType
+    fun supportedTypes(): Set<NotificationType>
     fun map(notification: Notification, member : Member): NotificationResponse
 }

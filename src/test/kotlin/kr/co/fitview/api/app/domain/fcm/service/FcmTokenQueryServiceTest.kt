@@ -24,8 +24,52 @@ class FcmTokenQueryServiceTest @Autowired constructor(
     private val fcmTokenRepository : FcmTokenRepository,
     private val memberRepository : MemberRepository,
     private val deepLinkConstant: DeepLinkConstant,
+    private val fcmPublisher: FcmPublisher,
     private val time : Time,
 ) : IntegrationTestSupport(){
+
+    @DisplayName("")
+    @Test
+    fun test() {
+        // given
+        val androidTokens = listOf(
+            "cD4z2C5XQje7UdVb59DGJC:APA91bFOEsXBT0wVKutwc4kFuV9Cg_-ccYOy4sEQb1tAAAPjRoPF8nGzs18c0IMAxpEBREbt_hIqnd2tqQ7WNinUH70fvTV7GR0HNuGqw1g3KapmIAa3CBA"
+        )
+
+        val iosTokens = listOf(
+            "cHbtrLx-GkIBsfOF4k2h-u:APA91bEP7p9x5nK_M2IBrGlnLxHYThu4hWi89pQqogPexil3hnJFn14WyLcvkEcXsGcca7zn8PLCS3uoX4-_9ATX-NQhe_5ySwrh2L4x_8JhtusYXVZ_dSA"
+        )
+
+        // when
+        androidTokens.forEach { token ->
+            repeat(5) {
+                fcmPublisher.send(
+                    token = token,
+                    title = "test",
+                    body = "body",
+                    platform = FcmTokenPlatform.ANDROID,
+                    data = mapOf()
+                )
+            }
+        }
+
+        iosTokens.forEach { token ->
+            repeat(5) {
+                fcmPublisher.send(
+                    token = token,
+                    title = "test",
+                    body = "body",
+                    platform = FcmTokenPlatform.IOS,
+                    data = mapOf()
+                )
+            }
+        }
+
+        // when
+
+        // then
+
+    }
 
 
     @DisplayName("운동 요청 푸시 알람을 보낸다.")

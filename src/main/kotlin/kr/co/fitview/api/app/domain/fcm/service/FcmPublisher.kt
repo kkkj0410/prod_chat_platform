@@ -44,7 +44,7 @@ class FcmPublisher(
                         AndroidNotification.builder()
                             .setTitle(title)
                             .setBody(body)
-                            .setChannelId("default")
+                            .setChannelId("high_importance_channel")
                             .build()
                     )
                     .putAllData(stringData)

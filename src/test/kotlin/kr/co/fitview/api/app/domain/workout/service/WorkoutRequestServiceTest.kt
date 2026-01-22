@@ -1018,70 +1018,6 @@ class WorkoutRequestServiceTest @Autowired constructor(
         assertThat(count).isEqualTo(2)
     }
 
-    @DisplayName("운동 요청 수락 시, 인앱 알람을 양측에 보낸다.")
-    @Test
-    fun modifyWorkoutRequestAcceptNotification() {
-        // given
-        val me = Member(
-            email = "email1",
-            password = "password1",
-            role = Role.USER,
-        )
-        val other = Member(
-            email = "email1",
-            password = "password1",
-            role = Role.USER,
-        )
-        memberRepository.save(me)
-        memberRepository.save(other)
-
-        val signupRequest = TestDataFactory.oAuth2SignupRequest()
-        oAuth2Service.signup(signupRequest, me.id!!)
-        oAuth2Service.signup(signupRequest, other.id!!)
-
-        val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
-
-        val chatParticipant1 = ChatParticipant(
-            chatRoom,
-            me
-        )
-        val chatParticipant2 = ChatParticipant(
-            chatRoom,
-            other
-        )
-        chatParticipantRepository.save(chatParticipant1)
-        chatParticipantRepository.save(chatParticipant2)
-
-        val chatMessage = ChatMessage.ofWorkoutRequest(
-            member = me,
-            chatRoom = chatRoom,
-            sentAt = time.nowLocalDateTime
-        )
-        chatMessageRepository.save(chatMessage)
-
-        val workoutRequest = WorkoutRequest.of(
-            chatMessage = chatMessage,
-            fromMember = me,
-            toMember = other,
-            location = "location",
-            scheduledAt = time.nowLocalDateTime.plusDays(1),
-            requestedAt = time.nowLocalDateTime
-        )
-        workoutRequestRepository.save(workoutRequest)
-
-        val request = WorkoutRequestUpdateRequest(
-            workoutRequestId = workoutRequest.id!!,
-            status = WorkoutRequestStatusForRequest.ACCEPT
-        )
-
-        // when
-        workoutRequestService.modifyWorkoutRequest(other.id!!, request)
-
-        // then
-        val count = events.stream(EventWorkoutRequestAccept::class.java).count()
-        assertThat(count).isEqualTo(2)
-    }
-
     @DisplayName("운동 요청 수락 시, 푸시 알람을 양측에 보낸다.")
     @Test
     fun modifyWorkoutRequestAcceptFcm() {
@@ -1211,69 +1147,6 @@ class WorkoutRequestServiceTest @Autowired constructor(
     }
 
 
-    @DisplayName("운동 요청 거절 시, 인앱 알람을 양측에 보낸다.")
-    @Test
-    fun modifyWorkoutRequestRejectNotification() {
-        // given
-        val me = Member(
-            email = "email1",
-            password = "password1",
-            role = Role.USER,
-        )
-        val other = Member(
-            email = "email1",
-            password = "password1",
-            role = Role.USER,
-        )
-        memberRepository.save(me)
-        memberRepository.save(other)
-
-        val signupRequest = TestDataFactory.oAuth2SignupRequest()
-        oAuth2Service.signup(signupRequest, me.id!!)
-        oAuth2Service.signup(signupRequest, other.id!!)
-
-        val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
-
-        val chatParticipant1 = ChatParticipant(
-            chatRoom,
-            me
-        )
-        val chatParticipant2 = ChatParticipant(
-            chatRoom,
-            other
-        )
-        chatParticipantRepository.save(chatParticipant1)
-        chatParticipantRepository.save(chatParticipant2)
-
-        val chatMessage = ChatMessage.ofWorkoutRequest(
-            member = me,
-            chatRoom = chatRoom,
-            sentAt = time.nowLocalDateTime
-        )
-        chatMessageRepository.save(chatMessage)
-
-        val workoutRequest = WorkoutRequest.of(
-            chatMessage = chatMessage,
-            fromMember = me,
-            toMember = other,
-            location = "location",
-            scheduledAt = time.nowLocalDateTime.plusDays(1),
-            requestedAt = time.nowLocalDateTime
-        )
-        workoutRequestRepository.save(workoutRequest)
-
-        val request = WorkoutRequestUpdateRequest(
-            workoutRequestId = workoutRequest.id!!,
-            status = WorkoutRequestStatusForRequest.REJECT
-        )
-
-        // when
-        workoutRequestService.modifyWorkoutRequest(other.id!!, request)
-
-        // then
-        val count = events.stream(EventWorkoutRequestReject::class.java).count()
-        assertThat(count).isEqualTo(2)
-    }
 
     @DisplayName("운동 요청의 상태를 완료로 바꾸면 운동 이력에 기록된다.")
     @Test
@@ -1482,6 +1355,197 @@ class WorkoutRequestServiceTest @Autowired constructor(
         assertThat(count).isEqualTo(2)
     }
 
+    @DisplayName("운동 요청 거절 시, 인앱 알람을 양측에 보낸다.")
+    @Test
+    fun modifyWorkoutRequestRejectNotification() {
+        // given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val other = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+        memberRepository.save(other)
+
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest, me.id!!)
+        oAuth2Service.signup(signupRequest, other.id!!)
+
+        val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+
+        val chatParticipant1 = ChatParticipant(
+            chatRoom,
+            me
+        )
+        val chatParticipant2 = ChatParticipant(
+            chatRoom,
+            other
+        )
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+
+        val chatMessage = ChatMessage.ofWorkoutRequest(
+            member = me,
+            chatRoom = chatRoom,
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessage)
+
+        val workoutRequest = WorkoutRequest.of(
+            chatMessage = chatMessage,
+            fromMember = me,
+            toMember = other,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime
+        )
+        workoutRequestRepository.save(workoutRequest)
+
+        val request = WorkoutRequestUpdateRequest(
+            workoutRequestId = workoutRequest.id!!,
+            status = WorkoutRequestStatusForRequest.REJECT
+        )
+
+        // when
+        workoutRequestService.modifyWorkoutRequest(other.id!!, request)
+
+        // then
+        val count = events.stream(EventWorkoutRequestReject::class.java).count()
+        assertThat(count).isEqualTo(2)
+    }
+
+    @DisplayName("운동 요청의 상태를 취소로 바꾸면 양측에 인앱 알람을 저장한다")
+    @Test
+    fun modifyWorkoutRequestCancelNotification() {
+        // given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val other = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+        memberRepository.save(other)
+
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest, me.id!!)
+        oAuth2Service.signup(signupRequest, other.id!!)
+
+        val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+
+        val chatParticipant1 = ChatParticipant(
+            chatRoom,
+            me
+        )
+        val chatParticipant2 = ChatParticipant(
+            chatRoom,
+            other
+        )
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+
+        val chatMessage = ChatMessage.ofWorkoutRequest(
+            member = me,
+            chatRoom = chatRoom,
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessage)
+
+        val workoutRequest = WorkoutRequest.of(
+            chatMessage = chatMessage,
+            fromMember = me,
+            toMember = other,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime
+        )
+        workoutRequestRepository.save(workoutRequest)
+
+        val request = WorkoutRequestUpdateRequest(
+            workoutRequestId = workoutRequest.id!!,
+            status = WorkoutRequestStatusForRequest.CANCEL
+        )
+
+        // when
+        workoutRequestService.modifyWorkoutRequest(me.id!!, request)
+
+        // then
+        val count = events.stream(EventWorkoutRequestCancel::class.java).count()
+        assertThat(count).isEqualTo(2)
+    }
+
+    @DisplayName("운동 요청 수락 시, 인앱 알람을 양측에 보낸다.")
+    @Test
+    fun modifyWorkoutRequestAcceptNotification() {
+        // given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        val other = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+        memberRepository.save(other)
+
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest, me.id!!)
+        oAuth2Service.signup(signupRequest, other.id!!)
+
+        val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+
+        val chatParticipant1 = ChatParticipant(
+            chatRoom,
+            me
+        )
+        val chatParticipant2 = ChatParticipant(
+            chatRoom,
+            other
+        )
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+
+        val chatMessage = ChatMessage.ofWorkoutRequest(
+            member = me,
+            chatRoom = chatRoom,
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessage)
+
+        val workoutRequest = WorkoutRequest.of(
+            chatMessage = chatMessage,
+            fromMember = me,
+            toMember = other,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime
+        )
+        workoutRequestRepository.save(workoutRequest)
+
+        val request = WorkoutRequestUpdateRequest(
+            workoutRequestId = workoutRequest.id!!,
+            status = WorkoutRequestStatusForRequest.ACCEPT
+        )
+
+        // when
+        workoutRequestService.modifyWorkoutRequest(other.id!!, request)
+
+        // then
+        val count = events.stream(EventWorkoutRequestAccept::class.java).count()
+        assertThat(count).isEqualTo(2)
+    }
 
     @DisplayName("운동 요청이 수락되지 않으면 운동 요청의 상태를 완료로 바꿀 수 없다.")
     @Test
