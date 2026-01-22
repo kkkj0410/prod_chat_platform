@@ -44,6 +44,8 @@ class AdminFcmControllerDocsTest : RestDocsSupport() {
 
         val responses = listOf(
             FcmTokenActiveResponse(
+                email = "email",
+                nickname = "nickname",
                 fcmTokenId = 1L,
                 memberId = 10L,
                 createdAt = LocalDateTime.of(2024, 1, 1, 10, 0),
@@ -53,6 +55,8 @@ class AdminFcmControllerDocsTest : RestDocsSupport() {
                 platform = FcmTokenPlatform.ANDROID
             ),
             FcmTokenActiveResponse(
+                email = "email",
+                nickname = "nickname",
                 fcmTokenId = 2L,
                 memberId = 20L,
                 createdAt = LocalDateTime.of(2024, 1, 3, 10, 0),
@@ -93,6 +97,10 @@ class AdminFcmControllerDocsTest : RestDocsSupport() {
                             .description("에러 메시지"),
                         fieldWithPath("data").type(JsonFieldType.ARRAY)
                             .description("응답 데이터"),
+                        fieldWithPath("data[].email").type(JsonFieldType.STRING)
+                            .description("이메일"),
+                        fieldWithPath("data[].nickname").type(JsonFieldType.STRING)
+                            .description("닉네임"),
                         fieldWithPath("data[].fcmTokenId").type(JsonFieldType.NUMBER)
                             .description("FCM 토큰 ID"),
                         fieldWithPath("data[].memberId").type(JsonFieldType.NUMBER)
