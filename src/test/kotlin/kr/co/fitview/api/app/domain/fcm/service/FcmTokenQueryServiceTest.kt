@@ -261,6 +261,32 @@ class FcmTokenQueryServiceTest @Autowired constructor(
         )
     }
 
+    @DisplayName("운동 요청 취소 시, 거절과 동일한 푸시 알람을 보낸다.")
+    @Test
+    fun sendWorkoutRequestCancel() {
+        val member = saveTestMemberWithFcmToken()
+
+        val event = EventFcmWorkoutRequestCancel(
+            toMemberId = member.id!!,
+            chatRoomId = 1L,
+            chatMessageId = 2L
+        )
+
+        fcmTokenQueryService.sendWorkoutRequestCancel(event)
+
+        then(fcmPublisher).should().send(
+            token = "token",
+            title = FcmMessage.WORKOUT_REQUEST_REJECT.title,
+            body = FcmMessage.WORKOUT_REQUEST_REJECT.body,
+            platform = FcmTokenPlatform.ANDROID,
+            data = mapOf(
+                "type" to "WORKOUT_REQUEST_REJECT",
+                "deepLink" to deepLinkConstant.BASE_DOMAIN + FcmMessage.WORKOUT_REQUEST_REJECT.formatDeepLinkPath(1L),
+                "chatMessageId" to 2L
+            )
+        )
+    }
+
     @DisplayName("운동 완료 푸시 알람을 보낸다.")
     @Test
     fun sendWorkoutComplete() {

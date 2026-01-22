@@ -34,7 +34,7 @@ class WorkoutRequestRejectMapper(
 
         return NotificationResponse(
             notificationId = notification.id!!,
-            type = notification.type!!,
+            type = NotificationType.WORKOUT_REQUEST_REJECT,
             sentAt = notification.sentAt!!,
             isRead = notification.isRead!!,
             sender = content.sender,

@@ -144,6 +144,28 @@ class FcmTokenQueryService(
         )
     }
 
+    fun sendWorkoutRequestCancel(event: EventFcmWorkoutRequestCancel) {
+        val findFcmTokens = fcmTokenRepository.findAllByMemberIdAndIsActiveTrueAndDeletedAtIsNull(event.toMemberId)
+
+        val title = FcmMessage.WORKOUT_REQUEST_REJECT.title
+        val body = FcmMessage.WORKOUT_REQUEST_REJECT.body
+
+        val deepLink = createDeepLink(FcmMessage.WORKOUT_REQUEST_REJECT.formatDeepLinkPath(event.chatRoomId))
+        val data = mutableMapOf<String, Any>(
+            "type" to FcmMessage.WORKOUT_REQUEST_REJECT.name,
+            "deepLink" to deepLink,
+            "chatMessageId" to event.chatMessageId
+        )
+
+        sendAllDevice(
+            fcmTokens = findFcmTokens,
+            title = title,
+            body = body,
+            data = data
+        )
+    }
+
+
     fun sendWorkoutComplete(event: EventFcmWorkoutComplete) {
         val findFcmTokens = fcmTokenRepository.findAllByMemberIdAndIsActiveTrueAndDeletedAtIsNull(event.toMemberId)
 

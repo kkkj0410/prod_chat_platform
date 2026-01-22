@@ -69,6 +69,17 @@ class FcmEventListener(
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    fun fcmWorkoutRequestCancel(event: EventFcmWorkoutRequestCancel) {
+
+//        if(isMemberConnected(event.toMemberId)){
+//            return
+//        }
+
+        fcmTokenQueryService.sendWorkoutRequestCancel(event)
+    }
+
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun fcmWorkoutComplete(event: EventFcmWorkoutComplete) {
 
 //        if(isMemberConnected(event.toMemberId)){

@@ -9,10 +9,7 @@ import kr.co.fitview.api.app.domain.chat.service.ChatMessageService
 import kr.co.fitview.api.app.domain.chat.service.ChatNoticeMessageService
 import kr.co.fitview.api.app.domain.chat.service.ChatRoomQueryService
 import kr.co.fitview.api.app.domain.chat.service.MessageReadStatusService
-import kr.co.fitview.api.app.domain.fcm.dto.request.EventFcmWorkoutComplete
-import kr.co.fitview.api.app.domain.fcm.dto.request.EventFcmWorkoutRequest
-import kr.co.fitview.api.app.domain.fcm.dto.request.EventFcmWorkoutRequestAccept
-import kr.co.fitview.api.app.domain.fcm.dto.request.EventFcmWorkoutRequestReject
+import kr.co.fitview.api.app.domain.fcm.dto.request.*
 import kr.co.fitview.api.app.domain.member.dto.response.ChatRoomMemberProfile
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
@@ -164,47 +161,50 @@ class WorkoutRequestService(
                 findWorkoutRequest.toMember!!
             )
 
-            chatNoticeMessageService.addChatNoticeFrom(
+            val savedChatNoticeMessage = chatNoticeMessageService.addChatNoticeFrom(
                 memberId,
                 request.workoutRequestId,
                 ChatNoticeMessageType.WORKOUT_REQUEST_COMPLETE,
                 workoutHistory
             )
 
-            sendFcmCompleteWorkoutRequest(findWorkoutRequest)
+            sendFcmCompleteWorkoutRequest(findWorkoutRequest, savedChatNoticeMessage.id!!)
 
-            sendNotificationCompleteWorkoutRequest(findWorkoutRequest, workoutHistory)
+            sendNotificationCompleteWorkoutRequest(findWorkoutRequest, workoutHistory, savedChatNoticeMessage.id!!)
         }
 
         if (isAccept(request)) {
 
-            chatNoticeMessageService.addChatNoticeFrom(
+            val savedChatNoticeMessage = chatNoticeMessageService.addChatNoticeFrom(
                 memberId,
                 request.workoutRequestId,
                 ChatNoticeMessageType.WORKOUT_REQUEST_ACCEPT
             )
 
-            sendAcceptFcmWorkoutRequest(findWorkoutRequest)
-            sendAcceptNotificationWorkoutRequest(findWorkoutRequest)
+            sendAcceptFcmWorkoutRequest(findWorkoutRequest, savedChatNoticeMessage.id!!)
+
+            sendAcceptNotificationWorkoutRequest(findWorkoutRequest, savedChatNoticeMessage.id!!)
         }
 
         if (isReject(request)) {
-            chatNoticeMessageService.addChatNoticeFrom(
+            val savedChatNoticeMessage = chatNoticeMessageService.addChatNoticeFrom(
                 memberId,
                 request.workoutRequestId,
                 ChatNoticeMessageType.WORKOUT_REQUEST_REJECT
             )
-            sendRejectFcmWorkoutRequest(findWorkoutRequest)
-            sendRejectNotificationWorkoutRequest(findWorkoutRequest)
+            sendRejectFcmWorkoutRequest(findWorkoutRequest, savedChatNoticeMessage.id!!)
+
+            sendRejectNotificationWorkoutRequest(findWorkoutRequest, savedChatNoticeMessage.id!!)
         }
 
         if (isCancel(request)) {
-            chatNoticeMessageService.addChatNoticeFrom(
+            val savedChatNoticeMessage = chatNoticeMessageService.addChatNoticeFrom(
                 memberId,
                 request.workoutRequestId,
                 ChatNoticeMessageType.WORKOUT_REQUEST_CANCEL
             )
-            sendCancelNotificationWorkoutRequest(findWorkoutRequest)
+            sendCancelFcmWorkoutRequest(findWorkoutRequest, savedChatNoticeMessage.id!!)
+            sendCancelNotificationWorkoutRequest(findWorkoutRequest, savedChatNoticeMessage.id!!)
         }
 
         sendStompUpdateWorkoutRequest(findWorkoutRequest)
@@ -482,10 +482,6 @@ class WorkoutRequestService(
     ) =
         findWorkoutRequest.getFromMemberId() == memberId && request.status.toWorkoutRequestStatus() == WorkoutRequestStatus.REJECT
 
-
-    private fun isSuccessComplete(findWorkoutRequest: WorkoutRequest) =
-        findWorkoutRequest.status == WorkoutRequestStatus.COMPLETE
-
     private fun isNotAccept(status: WorkoutRequestStatus) =
         status != WorkoutRequestStatus.ACCEPT
 
@@ -514,16 +510,19 @@ class WorkoutRequestService(
         publisher.publishEvent(stomp2)
     }
 
-    private fun sendFcmCompleteWorkoutRequest(workoutRequest: WorkoutRequest) {
+    private fun sendFcmCompleteWorkoutRequest(
+        workoutRequest: WorkoutRequest,
+        chatNoticeMessageId : Long
+    ) {
         val fromFcmEvent = EventFcmWorkoutComplete(
             toMemberId = workoutRequest.getFromMemberId(),
             chatRoomId = workoutRequest.getChatRoomId()!!,
-            chatMessageId = workoutRequest.getChatMessageId()!!
+            chatMessageId = chatNoticeMessageId
         )
         val toFcmEvent = EventFcmWorkoutComplete(
             toMemberId = workoutRequest.getToMemberId(),
             chatRoomId = workoutRequest.getChatRoomId()!!,
-            chatMessageId = workoutRequest.getChatMessageId()!!
+            chatMessageId = chatNoticeMessageId
         )
         publisher.publishEvent(fromFcmEvent)
         publisher.publishEvent(toFcmEvent)
@@ -531,7 +530,8 @@ class WorkoutRequestService(
 
     private fun sendNotificationCompleteWorkoutRequest(
         workoutRequest: WorkoutRequest,
-        workoutHistory: WorkoutHistory
+        workoutHistory: WorkoutHistory,
+        chatNoticeMessageId : Long
     ) {
         val findMemberProfiles = memberQueryService
             .findMemberProfileFromMemberId(workoutRequest.getFromMemberId(), workoutRequest.getToMemberId())
@@ -556,7 +556,7 @@ class WorkoutRequestService(
             payload = EventWorkoutCompletePayload(
                 workoutRequestId = workoutRequest.id!!,
                 workoutHistoryId = workoutHistory.id!!,
-                chatMessageId = workoutRequest.getChatMessageId()!!,
+                chatMessageId = chatNoticeMessageId,
                 chatRoomId = findChatRoom.id!!
             )
         )
@@ -571,7 +571,7 @@ class WorkoutRequestService(
             payload = EventWorkoutCompletePayload(
                 workoutRequestId = workoutRequest.id!!,
                 workoutHistoryId = workoutHistory.id!!,
-                chatMessageId = workoutRequest.getChatMessageId()!!,
+                chatMessageId = chatNoticeMessageId,
                 chatRoomId = findChatRoom.id!!
             )
         )
@@ -582,23 +582,24 @@ class WorkoutRequestService(
 
     private fun sendAcceptFcmWorkoutRequest(
         workoutRequest: WorkoutRequest,
+        chatNoticeMessageId : Long
     ) {
         val fromFcmEvent = EventFcmWorkoutRequestAccept(
             toMemberId = workoutRequest.getFromMemberId(),
             chatRoomId = workoutRequest.getChatRoomId()!!,
-            chatMessageId = workoutRequest.getChatMessageId()!!,
+            chatMessageId = chatNoticeMessageId
         )
         val toFcmEvent = EventFcmWorkoutRequestAccept(
             toMemberId = workoutRequest.getToMemberId(),
             chatRoomId = workoutRequest.getChatRoomId()!!,
-            chatMessageId = workoutRequest.getChatMessageId()!!,
+            chatMessageId = chatNoticeMessageId
         )
         publisher.publishEvent(fromFcmEvent)
         publisher.publishEvent(toFcmEvent)
     }
 
 
-    private fun sendAcceptNotificationWorkoutRequest(workoutRequest: WorkoutRequest) {
+    private fun sendAcceptNotificationWorkoutRequest(workoutRequest: WorkoutRequest, chatNoticeMessageId : Long) {
 
         val findMemberProfiles = memberQueryService
             .findMemberProfileFromMemberId(workoutRequest.getFromMemberId(), workoutRequest.getToMemberId())
@@ -622,7 +623,7 @@ class WorkoutRequestService(
             ),
             payload = EventWorkoutRequestAcceptPayload(
                 workoutRequestId = workoutRequest.id!!,
-                chatMessageId = workoutRequest.getChatMessageId()!!,
+                chatMessageId = chatNoticeMessageId,
                 chatRoomId = findChatRoom.id!!
             )
         )
@@ -636,7 +637,7 @@ class WorkoutRequestService(
             ),
             payload = EventWorkoutRequestAcceptPayload(
                 workoutRequestId = workoutRequest.id!!,
-                chatMessageId = workoutRequest.getChatMessageId()!!,
+                chatMessageId = chatNoticeMessageId,
                 chatRoomId = findChatRoom.id!!
             )
         )
@@ -645,22 +646,43 @@ class WorkoutRequestService(
         publisher.publishEvent(toEvent)
     }
 
-    private fun sendRejectFcmWorkoutRequest(workoutRequest: WorkoutRequest) {
+    private fun sendRejectFcmWorkoutRequest(
+        workoutRequest: WorkoutRequest,
+        chatNoticeMessageId : Long
+    ) {
         val fromFcmEvent = EventFcmWorkoutRequestReject(
             toMemberId = workoutRequest.getFromMemberId(),
             chatRoomId = workoutRequest.getChatRoomId()!!,
-            chatMessageId = workoutRequest.getChatMessageId()!!
+            chatMessageId = chatNoticeMessageId
         )
         val toFcmEvent = EventFcmWorkoutRequestReject(
             toMemberId = workoutRequest.getToMemberId(),
             chatRoomId = workoutRequest.getChatRoomId()!!,
-            chatMessageId = workoutRequest.getChatMessageId()!!
+            chatMessageId = chatNoticeMessageId
         )
         publisher.publishEvent(fromFcmEvent)
         publisher.publishEvent(toFcmEvent)
     }
 
-    private fun sendRejectNotificationWorkoutRequest(workoutRequest: WorkoutRequest) {
+    private fun sendCancelFcmWorkoutRequest(
+        workoutRequest: WorkoutRequest,
+        chatNoticeMessageId : Long
+    ) {
+        val fromFcmEvent = EventFcmWorkoutRequestCancel(
+            toMemberId = workoutRequest.getFromMemberId(),
+            chatRoomId = workoutRequest.getChatRoomId()!!,
+            chatMessageId = chatNoticeMessageId
+        )
+        val toFcmEvent = EventFcmWorkoutRequestCancel(
+            toMemberId = workoutRequest.getToMemberId(),
+            chatRoomId = workoutRequest.getChatRoomId()!!,
+            chatMessageId = chatNoticeMessageId
+        )
+        publisher.publishEvent(fromFcmEvent)
+        publisher.publishEvent(toFcmEvent)
+    }
+
+    private fun sendRejectNotificationWorkoutRequest(workoutRequest: WorkoutRequest, chatNoticeMessageId : Long) {
         val findMemberProfiles = memberQueryService
             .findMemberProfileFromMemberId(workoutRequest.getFromMemberId(), workoutRequest.getToMemberId())
             ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
@@ -683,7 +705,7 @@ class WorkoutRequestService(
             ),
             payload = EventWorkoutRequestRejectPayload(
                 workoutRequestId = workoutRequest.id!!,
-                chatMessageId = workoutRequest.getChatMessageId()!!,
+                chatMessageId = chatNoticeMessageId,
                 chatRoomId = findChatRoom.id!!
             )
         )
@@ -697,7 +719,7 @@ class WorkoutRequestService(
             ),
             payload = EventWorkoutRequestRejectPayload(
                 workoutRequestId = workoutRequest.id!!,
-                chatMessageId = workoutRequest.getChatMessageId()!!,
+                chatMessageId = chatNoticeMessageId,
                 chatRoomId = findChatRoom.id!!
             )
         )
@@ -706,7 +728,7 @@ class WorkoutRequestService(
         publisher.publishEvent(toEvent)
     }
 
-    private fun sendCancelNotificationWorkoutRequest(workoutRequest: WorkoutRequest) {
+    private fun sendCancelNotificationWorkoutRequest(workoutRequest: WorkoutRequest, chatNoticeMessageId : Long) {
         val findMemberProfiles = memberQueryService
             .findMemberProfileFromMemberId(workoutRequest.getFromMemberId(), workoutRequest.getToMemberId())
             ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
@@ -729,7 +751,7 @@ class WorkoutRequestService(
             ),
             payload = EventWorkoutRequestCancelPayload(
                 workoutRequestId = workoutRequest.id!!,
-                chatMessageId = workoutRequest.getChatMessageId()!!,
+                chatMessageId = chatNoticeMessageId,
                 chatRoomId = findChatRoom.id!!
             )
         )
@@ -743,7 +765,7 @@ class WorkoutRequestService(
             ),
             payload = EventWorkoutRequestCancelPayload(
                 workoutRequestId = workoutRequest.id!!,
-                chatMessageId = workoutRequest.getChatMessageId()!!,
+                chatMessageId = chatNoticeMessageId,
                 chatRoomId = findChatRoom.id!!
             )
         )

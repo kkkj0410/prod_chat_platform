@@ -77,7 +77,7 @@ class WorkoutRequestRejectMapperTest @Autowired constructor(
             )
     }
 
-    @DisplayName("운동 요청 취소 알림을 조회한다.")
+    @DisplayName("운동 요청 취소 알림을 조회 시, 거절 알림과 동일한 규격으로 조회한다.")
     @Test
     fun mapCancel() {
         val member = Member(email = "email", password = "password", role = Role.USER)
@@ -114,7 +114,7 @@ class WorkoutRequestRejectMapperTest @Autowired constructor(
             .extracting("notificationId", "type", "sentAt", "isRead", "sender", "link", "messages")
             .contains(
                 notification.id!!,
-                NotificationType.WORKOUT_REQUEST_CANCEL,
+                NotificationType.WORKOUT_REQUEST_REJECT,
                 notification.sentAt!!,
                 notification.isRead!!,
                 NotificationSender(123L, "nick", "profile"),
