@@ -28,7 +28,6 @@ class GoogleService(
     private val idGenerator: IdGenerator
 ) {
 
-    private val log = LoggerFactory.getLogger(this::class.java)
 
     @Transactional
     fun loginGoogleWithAdd(request : GoogleLoginServiceRequest): Member {
@@ -56,26 +55,12 @@ class GoogleService(
 
     private fun getFormData(authCode: String): MultiValueMap<String, String> {
 
-        log.info(
-            "[Google OAuth] authCode length={}, authCode prefix={}",
-            authCode.length,
-            authCode
-        )
-
         val formData: MultiValueMap<String, String> = LinkedMultiValueMap()
         formData.add("code", authCode)
         formData.add("client_id", googleConfig.clientIdWeb)
         formData.add("client_secret", googleConfig.clientSecretWeb)
         formData.add("redirect_uri", googleConfig.redirectUriWeb)
         formData.add("grant_type", "authorization_code")
-
-
-        log.info(
-            "[Google OAuth FormData] client_id={}, redirect_uri={}, grant_type={}",
-            googleConfig.clientIdWeb,
-            googleConfig.redirectUriWeb,
-            "authorization_code"
-        )
 
         return formData
     }
