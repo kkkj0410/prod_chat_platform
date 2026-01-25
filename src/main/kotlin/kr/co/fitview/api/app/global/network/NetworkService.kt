@@ -31,14 +31,6 @@ class NetworkService(
     ): Map<String, Any> {
 
 
-        log.info(
-            "[Google OAuth Request] url={}, formKeys={}, grant_type={}, redirect_uri={}",
-            url,
-            formData.keys,
-            formData["grant_type"],
-            formData["redirect_uri"]
-        )
-
         try {
             val mapType = object : ParameterizedTypeReference<Map<String, Any>>() {}
 
@@ -50,24 +42,13 @@ class NetworkService(
                 .bodyToMono(mapType)
                 .block() ?: emptyMap()
 
-            log.info(
-                "[Google OAuth Response SUCCESS] keys={}",
-                response.keys
-            )
-
             return response
         } catch (e: WebClientResponseException) {
 
             log.error(
-                """
-                [Google OAuth Response FAILED]
-                status={}
-                responseBody={}
-                formKeys={}
-            """.trimIndent(),
+                "[Google OAuth FAILED] status={}, responseBody={}",
                 e.statusCode,
                 e.responseBodyAsString,
-                formData.keys,
                 e
             )
 
