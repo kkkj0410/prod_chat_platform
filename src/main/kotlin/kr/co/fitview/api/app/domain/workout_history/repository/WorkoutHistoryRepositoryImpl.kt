@@ -35,6 +35,7 @@ class WorkoutHistoryRepositoryImpl(
 
     override fun findAllWorkoutHistoryExceed24HoursWithoutReview(): List<WorkoutHistory> {
         val twentyFourHoursAgo = time.nowLocalDateTime.minusHours(24)
+        val threeMinutesAgo = time.nowLocalDateTime.minusMinutes(3)
 
         return queryFactory
             .selectFrom(workoutHistory)
@@ -46,7 +47,10 @@ class WorkoutHistoryRepositoryImpl(
                 reviewReminderLog.type.eq(ReviewReminderLogType.REVIEW_24H)
             )
             .where(
-                workoutHistory.completedAt.loe(twentyFourHoursAgo),
+//                workoutHistory.completedAt.loe(twentyFourHoursAgo),
+                // 테스트를 위해 threeMinutesAgo로 해둠
+                // 다시 twentyFourHoursAgo로 되돌려야함
+                workoutHistory.completedAt.loe(threeMinutesAgo),
                 review.id.isNull,
                 reviewReminderLog.id.isNull,
                 workoutHistory.deletedAt.isNull,

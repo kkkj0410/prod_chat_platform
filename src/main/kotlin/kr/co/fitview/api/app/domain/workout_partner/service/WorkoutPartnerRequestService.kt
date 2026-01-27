@@ -255,8 +255,6 @@ class WorkoutPartnerRequestService(
         memberId = memberOneProfile.memberId,
         sender = EventSender(
             memberId = memberTwoProfile.memberId,
-            nickname = memberTwoProfile.nickname,
-            profileImageUrl = memberTwoProfile.profileImageUrl
         ),
         payload = EventWorkoutPartnerAcceptPayload(
             workoutPartnerRequestId = workoutPartnerRequest.id!!,
@@ -277,8 +275,6 @@ class WorkoutPartnerRequestService(
             memberId = toMemberId,
             sender = EventSender(
                 memberId = findMemberProfile.memberId,
-                nickname = findMemberProfile.nickname,
-                profileImageUrl = findMemberProfile.profileImageUrl
             ),
             payload = EventWorkoutPartnerRequestPayload(
                 memberId = findMemberProfile.memberId,
@@ -310,8 +306,6 @@ class WorkoutPartnerRequestService(
             memberId = workoutPartnerRequest.getFromMemberId(),
             sender = EventSender(
                 memberId = findToMemberProfile.memberId,
-                nickname = findToMemberProfile.nickname,
-                profileImageUrl = findToMemberProfile.profileImageUrl
             ),
             payload = EventWorkoutPartnerRejectPayload(
                 workoutPartnerRequestId = workoutPartnerRequest.id!!,

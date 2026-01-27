@@ -27,9 +27,13 @@ class ReviewScheduler(
 
     companion object {
         private const val FIVE_MINUTES_IN_MILLIS = 5 * 60 * 1000L
+        private const val ONE_MINUTES_IN_MILLIS = 60 * 1000L
     }
 
-    @Scheduled(fixedRate = FIVE_MINUTES_IN_MILLIS)
+    // 테스트를 위해 ONE_MINUNES_IN_MILLIS로 설정
+    // -> FIVE_MINUTES_IN_MILLIS로 나중에 다시 돌려놔야함
+//    @Scheduled(fixedRate = FIVE_MINUTES_IN_MILLIS)
+    @Scheduled(fixedRate = ONE_MINUTES_IN_MILLIS)
     @SchedulerLock(
         name = "workout:history:review-reminder",
         lockAtMostFor = "PT4M",
@@ -93,8 +97,6 @@ class ReviewScheduler(
                 memberId = history.getMemberOneId(),
                 sender = EventSender(
                     memberId = senderTwoProfile.memberId,
-                    nickname = senderTwoProfile.nickname,
-                    profileImageUrl = senderTwoProfile.profileImageUrl
                 ),
                 payload = EventReviewRequestPayload(
                     workoutHistoryId = history.id!!,
@@ -106,8 +108,6 @@ class ReviewScheduler(
                 memberId = history.getMemberTwoId(),
                 sender = EventSender(
                     memberId = senderOneProfile.memberId,
-                    nickname = senderOneProfile.nickname,
-                    profileImageUrl = senderOneProfile.profileImageUrl
                 ),
                 payload = EventReviewRequestPayload(
                     workoutHistoryId = history.id!!,

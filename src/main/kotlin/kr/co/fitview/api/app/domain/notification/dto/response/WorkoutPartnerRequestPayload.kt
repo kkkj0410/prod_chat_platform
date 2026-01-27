@@ -1,7 +1,6 @@
 package kr.co.fitview.api.app.domain.notification.dto.response
 
 data class WorkoutPartnerRequestContent(
-    val sender: NotificationSender,
     val payload: Payload
 ) {
     data class Payload(
@@ -11,7 +10,6 @@ data class WorkoutPartnerRequestContent(
 }
 
 data class WorkoutPartnerAcceptContent(
-    val sender: NotificationSender,
     val payload: Payload
 ) {
     data class Payload(
@@ -22,7 +20,6 @@ data class WorkoutPartnerAcceptContent(
 }
 
 data class WorkoutPartnerRejectContent(
-    val sender: NotificationSender,
     val payload: Payload
 ) {
     data class Payload(
@@ -32,7 +29,6 @@ data class WorkoutPartnerRejectContent(
 }
 
 data class WorkoutRequestContent(
-    val sender: NotificationSender,
     val payload: Payload
 ) {
     data class Payload(
@@ -43,7 +39,6 @@ data class WorkoutRequestContent(
 }
 
 data class WorkoutRequestAcceptContent(
-    val sender: NotificationSender,
     val payload: Payload
 ) {
     data class Payload(
@@ -54,7 +49,6 @@ data class WorkoutRequestAcceptContent(
 }
 
 data class WorkoutRequestRejectContent(
-    val sender: NotificationSender,
     val payload: Payload
 ) {
     data class Payload(
@@ -65,7 +59,6 @@ data class WorkoutRequestRejectContent(
 }
 
 data class WorkoutCompleteContent(
-    val sender: NotificationSender,
     val payload: Payload
 ) {
     data class Payload(
@@ -77,7 +70,6 @@ data class WorkoutCompleteContent(
 }
 
 data class ReviewReceiveContent(
-    val sender: NotificationSender,
     val payload: Payload
 ) {
     data class Payload(
@@ -88,7 +80,6 @@ data class ReviewReceiveContent(
 }
 
 data class ReviewRequestContent(
-    val sender: NotificationSender,
     val payload: Payload
 ) {
     data class Payload(

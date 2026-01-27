@@ -6,6 +6,8 @@ import com.google.firebase.messaging.MessagingErrorCode
 import kr.co.fitview.api.app.domain.fcm.constant.DeepLinkConstant
 import kr.co.fitview.api.app.domain.fcm.dto.request.*
 import kr.co.fitview.api.app.domain.fcm.entity.FcmToken
+import kr.co.fitview.api.app.domain.fcm.entity.QFcmToken.fcmToken
+import kr.co.fitview.api.app.domain.fcm.entity.enums.FcmTokenPlatform
 import kr.co.fitview.api.app.domain.fcm.enums.FcmMessage
 import kr.co.fitview.api.app.domain.fcm.repository.FcmTokenRepository
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
@@ -112,6 +114,7 @@ class FcmTokenService(
     @Transactional
     fun sendChatMessage(event: EventFcmChatMessage) {
         val findFcmTokens = fcmTokenRepository.findAllByMemberIdAndIsActiveTrueAndDeletedAtIsNull(event.toMemberId)
+
 
         val title = FcmMessage.CHAT_MESSAGE.formatTitle(event.fromNickname)
         val body = FcmMessage.CHAT_MESSAGE.body
@@ -305,6 +308,7 @@ class FcmTokenService(
         body: String,
         data: Map<String, Any>
     ) {
+
         fcmTokens.forEach { fcmToken ->
             try {
                 fcmPublisher.send(
@@ -314,6 +318,7 @@ class FcmTokenService(
                     platform = fcmToken.platform!!,
                     data = data
                 )
+
             } catch (e: FirebaseMessagingException) {
 
                 if (e.messagingErrorCode == MessagingErrorCode.UNREGISTERED) {

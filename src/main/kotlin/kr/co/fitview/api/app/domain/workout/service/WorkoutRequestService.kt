@@ -304,8 +304,6 @@ class WorkoutRequestService(
             memberId = toMemberId,
             sender = EventSender(
                 memberId = findFromMemberProfile.memberId,
-                nickname = findFromMemberProfile.nickname,
-                profileImageUrl = findFromMemberProfile.profileImageUrl
             ),
             payload = EventWorkoutRequestPayload(
                 chatMessageId = chatMessageId,
@@ -550,8 +548,6 @@ class WorkoutRequestService(
             memberId = fromMemberProfile.memberId,
             sender = EventSender(
                 memberId = toMemberProfile.memberId,
-                nickname = toMemberProfile.nickname,
-                profileImageUrl = toMemberProfile.profileImageUrl
             ),
             payload = EventWorkoutCompletePayload(
                 workoutRequestId = workoutRequest.id!!,
@@ -565,8 +561,6 @@ class WorkoutRequestService(
             memberId = toMemberProfile.memberId,
             sender = EventSender(
                 memberId = fromMemberProfile.memberId,
-                nickname = fromMemberProfile.nickname,
-                profileImageUrl = fromMemberProfile.profileImageUrl
             ),
             payload = EventWorkoutCompletePayload(
                 workoutRequestId = workoutRequest.id!!,
@@ -618,8 +612,6 @@ class WorkoutRequestService(
             memberId = fromMemberProfile.memberId,
             sender = EventSender(
                 memberId = toMemberProfile.memberId,
-                nickname = toMemberProfile.nickname,
-                profileImageUrl = toMemberProfile.profileImageUrl
             ),
             payload = EventWorkoutRequestAcceptPayload(
                 workoutRequestId = workoutRequest.id!!,
@@ -632,8 +624,6 @@ class WorkoutRequestService(
             memberId = toMemberProfile.memberId,
             sender = EventSender(
                 memberId = fromMemberProfile.memberId,
-                nickname = fromMemberProfile.nickname,
-                profileImageUrl = fromMemberProfile.profileImageUrl
             ),
             payload = EventWorkoutRequestAcceptPayload(
                 workoutRequestId = workoutRequest.id!!,
@@ -700,8 +690,6 @@ class WorkoutRequestService(
             memberId = fromMemberProfile.memberId,
             sender = EventSender(
                 memberId = toMemberProfile.memberId,
-                nickname = toMemberProfile.nickname,
-                profileImageUrl = toMemberProfile.profileImageUrl
             ),
             payload = EventWorkoutRequestRejectPayload(
                 workoutRequestId = workoutRequest.id!!,
@@ -714,8 +702,6 @@ class WorkoutRequestService(
             memberId = toMemberProfile.memberId,
             sender = EventSender(
                 memberId = fromMemberProfile.memberId,
-                nickname = fromMemberProfile.nickname,
-                profileImageUrl = fromMemberProfile.profileImageUrl
             ),
             payload = EventWorkoutRequestRejectPayload(
                 workoutRequestId = workoutRequest.id!!,
@@ -746,8 +732,6 @@ class WorkoutRequestService(
             memberId = fromMemberProfile.memberId,
             sender = EventSender(
                 memberId = toMemberProfile.memberId,
-                nickname = toMemberProfile.nickname,
-                profileImageUrl = toMemberProfile.profileImageUrl
             ),
             payload = EventWorkoutRequestCancelPayload(
                 workoutRequestId = workoutRequest.id!!,
@@ -760,8 +744,6 @@ class WorkoutRequestService(
             memberId = toMemberProfile.memberId,
             sender = EventSender(
                 memberId = fromMemberProfile.memberId,
-                nickname = fromMemberProfile.nickname,
-                profileImageUrl = fromMemberProfile.profileImageUrl
             ),
             payload = EventWorkoutRequestCancelPayload(
                 workoutRequestId = workoutRequest.id!!,

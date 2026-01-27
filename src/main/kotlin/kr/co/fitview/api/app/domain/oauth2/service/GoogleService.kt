@@ -12,6 +12,7 @@ import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.oauth2.OAuth2ErrorCode
 import kr.co.fitview.api.app.global.id.IdGenerator
 import kr.co.fitview.api.app.global.network.NetworkService
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.util.LinkedMultiValueMap
@@ -26,6 +27,7 @@ class GoogleService(
     private val googleConfig: GoogleConfig,
     private val idGenerator: IdGenerator
 ) {
+
 
     @Transactional
     fun loginGoogleWithAdd(request : GoogleLoginServiceRequest): Member {
@@ -52,12 +54,14 @@ class GoogleService(
     }
 
     private fun getFormData(authCode: String): MultiValueMap<String, String> {
+
         val formData: MultiValueMap<String, String> = LinkedMultiValueMap()
         formData.add("code", authCode)
         formData.add("client_id", googleConfig.clientIdWeb)
         formData.add("client_secret", googleConfig.clientSecretWeb)
         formData.add("redirect_uri", googleConfig.redirectUriWeb)
         formData.add("grant_type", "authorization_code")
+
         return formData
     }
 

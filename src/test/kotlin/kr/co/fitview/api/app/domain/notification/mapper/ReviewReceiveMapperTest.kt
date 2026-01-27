@@ -37,12 +37,14 @@ class ReviewReceiveMapperTest @Autowired constructor(
         val signupRequest = TestDataFactory.oAuth2SignupRequest()
         oAuth2Service.signup(signupRequest, member.id!!)
 
+        val fromMember = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(fromMember)
+
         val content: MutableMap<String, Any> = mutableMapOf(
-            "sender" to mutableMapOf(
-                "memberId" to 123L,
-                "nickname" to "nick",
-                "profileImageUrl" to "profile"
-            ),
             "payload" to mutableMapOf(
                 "reviewId" to 456L,
                 "workoutHistoryId" to 555L,
@@ -52,6 +54,7 @@ class ReviewReceiveMapperTest @Autowired constructor(
 
         val notification = Notification(
             member = member,
+            fromMember = fromMember,
             type = NotificationType.REVIEW_RECEIVE,
             sentAt = time.nowLocalDateTime,
             isRead = false,
@@ -59,7 +62,13 @@ class ReviewReceiveMapperTest @Autowired constructor(
         )
         notificationRepository.save(notification)
 
-        val response = reviewReceiveMapper.map(notification, member)
+        val sender = NotificationSender(
+            memberId = 123L,
+            nickname = "nick",
+            profileImageUrl = "profile"
+        )
+
+        val response = reviewReceiveMapper.map(notification, member, sender)
 
         assertThat(response)
             .extracting("notificationId", "type", "sentAt", "isRead", "sender", "link", "messages")

@@ -34,15 +34,13 @@ class WorkoutRequestRejectMapperTest @Autowired constructor(
         val member = Member(email = "email", password = "password", role = Role.USER)
         memberRepository.save(member)
 
+        val fromMember = Member(email = "email", password = "password", role = Role.USER)
+        memberRepository.save(fromMember)
+
         val signupRequest = TestDataFactory.oAuth2SignupRequest()
         oAuth2Service.signup(signupRequest, member.id!!)
 
         val content: MutableMap<String, Any> = mutableMapOf(
-            "sender" to mutableMapOf(
-                "memberId" to 123L,
-                "nickname" to "nick",
-                "profileImageUrl" to "profile"
-            ),
             "payload" to mutableMapOf(
                 "chatRoomId" to 456L,
                 "workoutRequestId" to 666L,
@@ -52,6 +50,7 @@ class WorkoutRequestRejectMapperTest @Autowired constructor(
 
         val notification = Notification(
             member = member,
+            fromMember = fromMember,
             type = NotificationType.WORKOUT_REQUEST_REJECT,
             sentAt = time.nowLocalDateTime,
             isRead = false,
@@ -59,7 +58,13 @@ class WorkoutRequestRejectMapperTest @Autowired constructor(
         )
         notificationRepository.save(notification)
 
-        val response = workoutRequestRejectMapper.map(notification, member)
+        val sender = NotificationSender(
+            memberId = 123L,
+            nickname = "nick",
+            profileImageUrl = "profile"
+        )
+
+        val response = workoutRequestRejectMapper.map(notification, member, sender)
 
         assertThat(response)
             .extracting("notificationId", "type", "sentAt", "isRead", "sender", "link", "messages")
@@ -83,15 +88,13 @@ class WorkoutRequestRejectMapperTest @Autowired constructor(
         val member = Member(email = "email", password = "password", role = Role.USER)
         memberRepository.save(member)
 
+        val fromMember = Member(email = "email", password = "password", role = Role.USER)
+        memberRepository.save(fromMember)
+
         val signupRequest = TestDataFactory.oAuth2SignupRequest()
         oAuth2Service.signup(signupRequest, member.id!!)
 
         val content: MutableMap<String, Any> = mutableMapOf(
-            "sender" to mutableMapOf(
-                "memberId" to 123L,
-                "nickname" to "nick",
-                "profileImageUrl" to "profile"
-            ),
             "payload" to mutableMapOf(
                 "chatRoomId" to 456L,
                 "workoutRequestId" to 666L,
@@ -101,6 +104,7 @@ class WorkoutRequestRejectMapperTest @Autowired constructor(
 
         val notification = Notification(
             member = member,
+            fromMember = fromMember,
             type = NotificationType.WORKOUT_REQUEST_CANCEL,
             sentAt = time.nowLocalDateTime,
             isRead = false,
@@ -108,7 +112,13 @@ class WorkoutRequestRejectMapperTest @Autowired constructor(
         )
         notificationRepository.save(notification)
 
-        val response = workoutRequestRejectMapper.map(notification, member)
+        val sender = NotificationSender(
+            memberId = 123L,
+            nickname = "nick",
+            profileImageUrl = "profile"
+        )
+
+        val response = workoutRequestRejectMapper.map(notification, member, sender)
 
         assertThat(response)
             .extracting("notificationId", "type", "sentAt", "isRead", "sender", "link", "messages")
