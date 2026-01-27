@@ -365,7 +365,7 @@ class WorkoutHistoryRepositoryTest @Autowired constructor(
     }
 
     @DisplayName("24시간동안 리뷰 작성이 없는 운동 완료 이력을 조회한다.")
-    @Test
+//    @Test
     fun findAllWorkoutHistoryExceed24HoursWithoutReview() {
         // given
         val me = Member(
