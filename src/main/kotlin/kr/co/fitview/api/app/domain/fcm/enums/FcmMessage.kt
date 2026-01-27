@@ -11,7 +11,7 @@ enum class FcmMessage(val title : String, val body : String, val deepLinkPath : 
     WORKOUT_PARTNER_ACCEPT(
         "👍🏻 핏버디 매칭 완료",
         "핏버디가 연결됐어요. 지금 바로 대화를 시작해보세요.",
-        "chat/%s"
+        "member/%s"
     ),
 
     CHAT_MESSAGE(

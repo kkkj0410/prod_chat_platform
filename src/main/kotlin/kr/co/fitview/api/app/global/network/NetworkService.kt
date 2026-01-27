@@ -46,7 +46,7 @@ class NetworkService(
         } catch (e: WebClientResponseException) {
 
             log.error(
-                "[Google OAuth FAILED] status={}, responseBody={}",
+                "[post FAILED] status={}, responseBody={}",
                 e.statusCode,
                 e.responseBodyAsString,
                 e

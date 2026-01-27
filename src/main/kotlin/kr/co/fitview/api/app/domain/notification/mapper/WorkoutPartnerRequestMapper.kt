@@ -15,11 +15,11 @@ class WorkoutPartnerRequestMapper(
 
     override fun supportedTypes() = setOf(NotificationType.WORKOUT_PARTNER_REQUEST)
 
-    override fun map(notification: Notification, member : Member): NotificationResponse {
+    override fun map(notification: Notification, member : Member, sender : NotificationSender): NotificationResponse {
         val jsonString = objectMapper.writeValueAsString(notification.content)
         val content = objectMapper.readValue(jsonString, WorkoutPartnerRequestContent::class.java)
 
-        val displayText1 = NotificationType.WORKOUT_PARTNER_REQUEST.displayText1.format(content.sender.nickname)
+        val displayText1 = NotificationType.WORKOUT_PARTNER_REQUEST.displayText1.format(sender.nickname)
         val displayText2 = NotificationType.WORKOUT_PARTNER_REQUEST.displayText2
 
         return NotificationResponse(
@@ -27,11 +27,7 @@ class WorkoutPartnerRequestMapper(
             type = notification.type!!,
             sentAt = notification.sentAt!!,
             isRead = notification.isRead!!,
-            sender = NotificationSender(
-                memberId = content.sender.memberId,
-                nickname = content.sender.nickname,
-                profileImageUrl = content.sender.profileImageUrl
-            ),
+            sender = sender,
             link = NotificationLink(
                 type = LinkType.MEMBER_PROFILE,
                 parameters = mapOf("memberId" to content.payload.memberId)

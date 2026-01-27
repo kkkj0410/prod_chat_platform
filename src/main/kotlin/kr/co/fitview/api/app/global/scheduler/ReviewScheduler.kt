@@ -93,8 +93,6 @@ class ReviewScheduler(
                 memberId = history.getMemberOneId(),
                 sender = EventSender(
                     memberId = senderTwoProfile.memberId,
-                    nickname = senderTwoProfile.nickname,
-                    profileImageUrl = senderTwoProfile.profileImageUrl
                 ),
                 payload = EventReviewRequestPayload(
                     workoutHistoryId = history.id!!,
@@ -106,8 +104,6 @@ class ReviewScheduler(
                 memberId = history.getMemberTwoId(),
                 sender = EventSender(
                     memberId = senderOneProfile.memberId,
-                    nickname = senderOneProfile.nickname,
-                    profileImageUrl = senderOneProfile.profileImageUrl
                 ),
                 payload = EventReviewRequestPayload(
                     workoutHistoryId = history.id!!,
