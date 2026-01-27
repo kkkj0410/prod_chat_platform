@@ -1,4 +1,6 @@
 [[notification-workout-partner-request]]
+-> 인앱 알람 조회 시, 상대 회원이 삭제되면 해당 인앱 알람은 조회되지 않는다.
+
 === 알람 조회 - (WORKOUT_PARTNER_REQUEST 유형) API
 
 ==== HTTP Request

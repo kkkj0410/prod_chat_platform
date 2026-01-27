@@ -29,12 +29,17 @@ class NotificationServiceTest @Autowired constructor(
         // given
         val member = createMember()
 
+        val fromMember = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(fromMember)
+
         val event = EventWorkoutPartnerRequest(
             memberId = member.id!!,
             sender = EventSender(
-                memberId = 123L,
-                nickname = "nickname",
-                profileImageUrl = "profileImageUrl"
+                memberId = fromMember.id!!,
             ),
             payload = EventWorkoutPartnerRequestPayload(
                 memberId = 123L,
@@ -57,28 +62,21 @@ class NotificationServiceTest @Autowired constructor(
         // given
         val member = createMember()
 
+        val fromMember = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(fromMember)
+
         val event = EventWorkoutPartnerRequest(
             memberId = member.id!!,
             sender = EventSender(
-                memberId = 123L,
-                nickname = "nickname",
-                profileImageUrl = "profileImageUrl"
+                memberId = fromMember.id!!
             ),
             payload = EventWorkoutPartnerRequestPayload(
                 memberId = 123L,
                 workoutPartnerRequestId = 345L
-            )
-        )
-
-        val expectedContent = mapOf(
-            "sender" to mapOf(
-                "memberId" to 123L,
-                "nickname" to "nickname",
-                "profileImageUrl" to "profileImageUrl"
-            ),
-            "payload" to mapOf(
-                "memberId" to 123L,
-                "workoutPartnerRequestId" to 345L
             )
         )
 
@@ -87,6 +85,14 @@ class NotificationServiceTest @Autowired constructor(
 
         // then
         assertThat(savedNotification.id).isNotNull()
+
+        val expectedContent = mapOf(
+            "payload" to mapOf(
+                "memberId" to 123L,
+                "workoutPartnerRequestId" to 345L
+            )
+        )
+
         assertThat(savedNotification)
             .extracting("member", "type", "isRead", "content", "sentAt")
             .contains(
@@ -103,15 +109,18 @@ class NotificationServiceTest @Autowired constructor(
     fun saveWorkoutPartnerAccept() {
         //given
         val member = createMember()
+
+        val fromMember = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(fromMember)
+
         val event = EventWorkoutPartnerAccept(
             memberId = member.id!!,
-            sender = EventSender(123L, "nickname", "profileImageUrl"),
+            sender = EventSender(fromMember.id!!),
             payload = EventWorkoutPartnerAcceptPayload(123L, 345L, 678L)
-        )
-
-        val expectedContent = mapOf(
-            "sender" to mapOf("memberId" to 123L, "nickname" to "nickname", "profileImageUrl" to "profileImageUrl"),
-            "payload" to mapOf("workoutPartnerRequestId" to 123L, "workoutPartnerId" to 345L, "memberId" to 678L)
         )
 
         //when
@@ -119,6 +128,11 @@ class NotificationServiceTest @Autowired constructor(
 
         //then
         assertThat(savedNotification.id).isNotNull()
+
+        val expectedContent = mapOf(
+            "payload" to mapOf("workoutPartnerRequestId" to 123L, "workoutPartnerId" to 345L, "memberId" to 678L)
+        )
+
         assertThat(savedNotification)
             .extracting("member", "type", "isRead", "content", "sentAt")
             .contains(member, NotificationType.WORKOUT_PARTNER_ACCEPT, false, expectedContent, time.nowLocalDateTime)
@@ -129,15 +143,18 @@ class NotificationServiceTest @Autowired constructor(
     fun saveWorkoutPartnerReject() {
         //given
         val member = createMember()
+
+        val fromMember = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(fromMember)
+
         val event = EventWorkoutPartnerReject(
             memberId = member.id!!,
-            sender = EventSender(123L, "nickname", "profileImageUrl"),
+            sender = EventSender(fromMember.id!!),
             payload = EventWorkoutPartnerRejectPayload(123L, 345L)
-        )
-
-        val expectedContent = mapOf(
-            "sender" to mapOf("memberId" to 123L, "nickname" to "nickname", "profileImageUrl" to "profileImageUrl"),
-            "payload" to mapOf("workoutPartnerRequestId" to 123L, "memberId" to 345L)
         )
 
         //when
@@ -145,6 +162,11 @@ class NotificationServiceTest @Autowired constructor(
 
         //then
         assertThat(savedNotification.id).isNotNull()
+
+        val expectedContent = mapOf(
+            "payload" to mapOf("workoutPartnerRequestId" to 123L, "memberId" to 345L)
+        )
+
         assertThat(savedNotification)
             .extracting("member", "type", "isRead", "content", "sentAt")
             .contains(member, NotificationType.WORKOUT_PARTNER_REJECT, false, expectedContent, time.nowLocalDateTime)
@@ -155,9 +177,18 @@ class NotificationServiceTest @Autowired constructor(
     fun saveWorkoutRequest() {
         //given
         val member = createMember()
+
+        val fromMember = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(fromMember)
+
+
         val event = EventWorkoutRequest(
             memberId = member.id!!,
-            sender = EventSender(123L, "nickname", "profileImageUrl"),
+            sender = EventSender(fromMember.id!!),
             payload = EventWorkoutRequestPayload(
                 chatMessageId = 333L,
                 workoutRequestId = 345L,
@@ -165,16 +196,16 @@ class NotificationServiceTest @Autowired constructor(
             )
         )
 
-        val expectedContent = mapOf(
-            "sender" to mapOf("memberId" to 123L, "nickname" to "nickname", "profileImageUrl" to "profileImageUrl"),
-            "payload" to mapOf("chatMessageId" to 333L, "workoutRequestId" to 345L, "chatRoomId" to 678L)
-        )
-
         //when
         val savedNotification = notificationService.saveWorkoutRequest(event)
 
         //then
         assertThat(savedNotification.id).isNotNull()
+
+        val expectedContent = mapOf(
+            "payload" to mapOf("chatMessageId" to 333L, "workoutRequestId" to 345L, "chatRoomId" to 678L)
+        )
+
         assertThat(savedNotification)
             .extracting("member", "type", "isRead", "content", "sentAt")
             .contains(member, NotificationType.WORKOUT_REQUEST, false, expectedContent, time.nowLocalDateTime)
@@ -185,9 +216,17 @@ class NotificationServiceTest @Autowired constructor(
     fun saveWorkoutRequestAccept() {
         //given
         val member = createMember()
+
+        val fromMember = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(fromMember)
+
         val event = EventWorkoutRequestAccept(
             memberId = member.id!!,
-            sender = EventSender(123L, "nickname", "profileImageUrl"),
+            sender = EventSender(fromMember.id!!),
             payload = EventWorkoutRequestAcceptPayload(
                 chatMessageId = 333L,
                 workoutRequestId = 345L,
@@ -195,16 +234,16 @@ class NotificationServiceTest @Autowired constructor(
             )
         )
 
-        val expectedContent = mapOf(
-            "sender" to mapOf("memberId" to 123L, "nickname" to "nickname", "profileImageUrl" to "profileImageUrl"),
-            "payload" to mapOf("chatMessageId" to 333L, "workoutRequestId" to 345L, "chatRoomId" to 678L)
-        )
-
         //when
         val savedNotification = notificationService.saveWorkoutRequestAccept(event)
 
         //then
         assertThat(savedNotification.id).isNotNull()
+
+        val expectedContent = mapOf(
+            "payload" to mapOf("chatMessageId" to 333L, "workoutRequestId" to 345L, "chatRoomId" to 678L)
+        )
+
         assertThat(savedNotification)
             .extracting("member", "type", "isRead", "content", "sentAt")
             .contains(member, NotificationType.WORKOUT_REQUEST_ACCEPT, false, expectedContent, time.nowLocalDateTime)
@@ -215,9 +254,17 @@ class NotificationServiceTest @Autowired constructor(
     fun saveWorkoutRequestReject() {
         //given
         val member = createMember()
+
+        val fromMember = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(fromMember)
+
         val event = EventWorkoutRequestReject(
             memberId = member.id!!,
-            sender = EventSender(123L, "nickname", "profileImageUrl"),
+            sender = EventSender(fromMember.id!!),
             payload = EventWorkoutRequestRejectPayload(
                 chatMessageId = 555L,
                 workoutRequestId = 345L,
@@ -225,16 +272,17 @@ class NotificationServiceTest @Autowired constructor(
             )
         )
 
-        val expectedContent = mapOf(
-            "sender" to mapOf("memberId" to 123L, "nickname" to "nickname", "profileImageUrl" to "profileImageUrl"),
-            "payload" to mapOf("chatMessageId" to 555L, "workoutRequestId" to 345L, "chatRoomId" to 678L)
-        )
 
         //when
         val savedNotification = notificationService.saveWorkoutRequestReject(event)
 
         //then
         assertThat(savedNotification.id).isNotNull()
+
+        val expectedContent = mapOf(
+            "payload" to mapOf("chatMessageId" to 555L, "workoutRequestId" to 345L, "chatRoomId" to 678L)
+        )
+
         assertThat(savedNotification)
             .extracting("member", "type", "isRead", "content", "sentAt")
             .contains(member, NotificationType.WORKOUT_REQUEST_REJECT, false, expectedContent, time.nowLocalDateTime)
@@ -245,9 +293,17 @@ class NotificationServiceTest @Autowired constructor(
     fun saveWorkoutRequestCancel() {
         //given
         val member = createMember()
+
+        val fromMember = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(fromMember)
+
         val event = EventWorkoutRequestCancel(
             memberId = member.id!!,
-            sender = EventSender(123L, "nickname", "profileImageUrl"),
+            sender = EventSender(fromMember.id!!),
             payload = EventWorkoutRequestCancelPayload(
                 chatMessageId = 555L,
                 workoutRequestId = 345L,
@@ -255,16 +311,17 @@ class NotificationServiceTest @Autowired constructor(
             )
         )
 
-        val expectedContent = mapOf(
-            "sender" to mapOf("memberId" to 123L, "nickname" to "nickname", "profileImageUrl" to "profileImageUrl"),
-            "payload" to mapOf("chatMessageId" to 555L, "workoutRequestId" to 345L, "chatRoomId" to 678L)
-        )
 
         //when
         val savedNotification = notificationService.saveWorkoutRequestCancel(event)
 
         //then
         assertThat(savedNotification.id).isNotNull()
+
+        val expectedContent = mapOf(
+            "payload" to mapOf("chatMessageId" to 555L, "workoutRequestId" to 345L, "chatRoomId" to 678L)
+        )
+
         assertThat(savedNotification)
             .extracting("member", "type", "isRead", "content", "sentAt")
             .contains(member, NotificationType.WORKOUT_REQUEST_CANCEL, false, expectedContent, time.nowLocalDateTime)
@@ -276,9 +333,17 @@ class NotificationServiceTest @Autowired constructor(
     fun saveWorkoutComplete() {
         //given
         val member = createMember()
+
+        val fromMember = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(fromMember)
+
         val event = EventWorkoutComplete(
             memberId = member.id!!,
-            sender = EventSender(123L, "nickname", "profileImageUrl"),
+            sender = EventSender(fromMember.id!!),
             payload = EventWorkoutCompletePayload(
                 chatMessageId = 555L,
                 workoutRequestId = 345L,
@@ -287,16 +352,17 @@ class NotificationServiceTest @Autowired constructor(
             )
         )
 
-        val expectedContent = mapOf(
-            "sender" to mapOf("memberId" to 123L, "nickname" to "nickname", "profileImageUrl" to "profileImageUrl"),
-            "payload" to mapOf("chatMessageId" to 555L,"workoutRequestId" to 345L, "workoutHistoryId" to 678L, "chatRoomId" to 901L)
-        )
 
         //when
         val savedNotification = notificationService.saveWorkoutComplete(event)
 
         //then
         assertThat(savedNotification.id).isNotNull()
+
+        val expectedContent = mapOf(
+            "payload" to mapOf("chatMessageId" to 555L,"workoutRequestId" to 345L, "workoutHistoryId" to 678L, "chatRoomId" to 901L)
+        )
+
         assertThat(savedNotification)
             .extracting("member", "type", "isRead", "content", "sentAt")
             .contains(member, NotificationType.WORKOUT_COMPLETE, false, expectedContent, time.nowLocalDateTime)
@@ -307,15 +373,18 @@ class NotificationServiceTest @Autowired constructor(
     fun saveReviewReceive() {
         //given
         val member = createMember()
+
+        val fromMember = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(fromMember)
+
         val event = EventReviewReceive(
             memberId = member.id!!,
-            sender = EventSender(123L, "nickname", "profileImageUrl"),
+            sender = EventSender(fromMember.id!!),
             payload = EventReviewReceivePayload(345L, 678L, 901L)
-        )
-
-        val expectedContent = mapOf(
-            "sender" to mapOf("memberId" to 123L, "nickname" to "nickname", "profileImageUrl" to "profileImageUrl"),
-            "payload" to mapOf("reviewId" to 345L, "workoutHistoryId" to 678L, "chatRoomId" to 901L)
         )
 
         //when
@@ -323,6 +392,11 @@ class NotificationServiceTest @Autowired constructor(
 
         //then
         assertThat(savedNotification.id).isNotNull()
+
+        val expectedContent = mapOf(
+            "payload" to mapOf("reviewId" to 345L, "workoutHistoryId" to 678L, "chatRoomId" to 901L)
+        )
+
         assertThat(savedNotification)
             .extracting("member", "type", "isRead", "content", "sentAt")
             .contains(member, NotificationType.REVIEW_RECEIVE, false, expectedContent, time.nowLocalDateTime)
@@ -333,23 +407,30 @@ class NotificationServiceTest @Autowired constructor(
     fun saveReviewRequest() {
         //given
         val member = createMember()
+
+        val fromMember = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(fromMember)
+
         val event = EventReviewRequest(
             memberId = member.id!!,
-            sender = EventSender(123L, "nickname", "profileImageUrl"),
+            sender = EventSender(fromMember.id!!),
             payload = EventReviewRequestPayload(678L, 901L)
         )
-
-        val expectedContent = mapOf(
-            "sender" to mapOf("memberId" to 123L, "nickname" to "nickname", "profileImageUrl" to "profileImageUrl"),
-            "payload" to mapOf("workoutHistoryId" to 678L, "chatRoomId" to 901L)
-        )
-
 
         //when
         val savedNotification = notificationService.saveReviewRequest(event)
 
         //then
         assertThat(savedNotification.id).isNotNull()
+
+        val expectedContent = mapOf(
+            "payload" to mapOf("workoutHistoryId" to 678L, "chatRoomId" to 901L)
+        )
+
         assertThat(savedNotification)
             .extracting("member", "type", "isRead", "content", "sentAt")
             .contains(member, NotificationType.REVIEW_REQUEST, false, expectedContent, time.nowLocalDateTime)
