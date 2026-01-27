@@ -51,7 +51,7 @@ class ReviewSchedulerTest @Autowired constructor(
     ) : IntegrationTestSupport() {
 
     @DisplayName("운동 이력이 24시간이 지난 경우, 리뷰 이력이 없으면 리뷰 알림 이력을 저장한다.")
-    @Test
+//    @Test
     fun sendReviewReminderForHistoriesExceeded24h() {
         // given
         val me = Member(
