@@ -290,6 +290,7 @@ class NotificationService(
         mutableMapOf<String, Any>(
             "payload" to mapOf(
                 "workoutHistoryId" to event.payload.workoutHistoryId,
+                "chatMessageId" to event.payload.chatMessageId,
                 "chatRoomId" to event.payload.chatRoomId,
             )
         )

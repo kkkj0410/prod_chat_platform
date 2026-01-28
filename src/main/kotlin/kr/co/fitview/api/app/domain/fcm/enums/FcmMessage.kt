@@ -53,7 +53,7 @@ enum class FcmMessage(val title : String, val body : String, val deepLinkPath : 
     REVIEW_REQUEST(
         "📝 후기를 남겨주세요.",
         "이번 운동은 어떠셨나요? 간단한 후기를 남겨주세요.",
-        "workout-review/%s"
+        "chat/%s"
     )
 
 
