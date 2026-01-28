@@ -418,7 +418,7 @@ class NotificationServiceTest @Autowired constructor(
         val event = EventReviewRequest(
             memberId = member.id!!,
             sender = EventSender(fromMember.id!!),
-            payload = EventReviewRequestPayload(678L, 901L)
+            payload = EventReviewRequestPayload(1L, 2L, 3L)
         )
 
         //when
@@ -428,7 +428,7 @@ class NotificationServiceTest @Autowired constructor(
         assertThat(savedNotification.id).isNotNull()
 
         val expectedContent = mapOf(
-            "payload" to mapOf("workoutHistoryId" to 678L, "chatRoomId" to 901L)
+            "payload" to mapOf("workoutHistoryId" to 1L, "chatMessageId" to 2L, "chatRoomId" to 3L)
         )
 
         assertThat(savedNotification)

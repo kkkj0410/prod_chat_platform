@@ -6,16 +6,14 @@ import kr.co.fitview.api.app.domain.notification.dto.request.EventReviewRequest
 import kr.co.fitview.api.app.domain.notification.dto.request.EventReviewRequestPayload
 import kr.co.fitview.api.app.domain.notification.dto.request.EventSender
 import kr.co.fitview.api.app.domain.review.service.ReviewReminderLogService
+import kr.co.fitview.api.app.domain.workout_history.dto.response.WorkoutHistoryAndChatMessage
 import kr.co.fitview.api.app.domain.workout_history.entity.WorkoutHistory
 import kr.co.fitview.api.app.domain.workout_history.service.WorkoutHistoryQueryService
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock
-import org.hibernate.query.sqm.tree.SqmNode.log
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
-import java.net.InetAddress
-import java.time.LocalDateTime
 
 @Component
 class ReviewScheduler(
@@ -27,9 +25,13 @@ class ReviewScheduler(
 
     companion object {
         private const val FIVE_MINUTES_IN_MILLIS = 5 * 60 * 1000L
+        private const val ONE_MINUTES_IN_MILLIS = 60 * 1000L
     }
 
+    // 테스트를 위해 ONE_MINUNES_IN_MILLIS로 설정
+    // -> FIVE_MINUTES_IN_MILLIS로 나중에 다시 돌려놔야함
     @Scheduled(fixedRate = FIVE_MINUTES_IN_MILLIS)
+//    @Scheduled(fixedRate = ONE_MINUTES_IN_MILLIS)
     @SchedulerLock(
         name = "workout:history:review-reminder",
         lockAtMostFor = "PT4M",
@@ -37,30 +39,32 @@ class ReviewScheduler(
     )
     @Transactional
     fun sendReviewReminderForHistoriesExceeded24h() {
-        val findWorkoutHistories = workoutHistoryQueryService.findAllWorkoutHistoryExceed24HoursWithoutReview()
+        val findWorkoutHistoryAndChatMessages = workoutHistoryQueryService.findAllWorkoutHistoryExceed24HoursWithoutReview()
+
+        val findWorkoutHistories = findWorkoutHistoryAndChatMessages.map{it.workoutHistory}
 
         reviewReminderLogService.saveAllFrom(findWorkoutHistories)
 
         val chatRoomIds = findWorkoutHistories.map{it.getChatRoomId()}
 
-        sendFcmReviewRequest(findWorkoutHistories)
+        sendFcmReviewRequest(findWorkoutHistoryAndChatMessages)
 
-        sendNotificationReviewRequest(chatRoomIds, findWorkoutHistories)
+        sendNotificationReviewRequest(chatRoomIds, findWorkoutHistoryAndChatMessages)
     }
 
     private fun sendFcmReviewRequest(
-        workoutHistories : List<WorkoutHistory>
+        workoutHistoryAndChatMessages : List<WorkoutHistoryAndChatMessage>
     ) {
 
-        val events = workoutHistories.flatMap{
+        val events = workoutHistoryAndChatMessages.flatMap{
             val fcmOneEvent = EventFcmReviewRequest(
-                toMemberId = it.getMemberOneId(),
-                workoutHistoryId = it.id!!
+                toMemberId = it.workoutHistory.getMemberOneId(),
+                chatMessageId = it.chatMessage.id!!
             )
 
             val fcmTwoEvent = EventFcmReviewRequest(
-                toMemberId = it.getMemberTwoId(),
-                workoutHistoryId = it.id!!
+                toMemberId = it.workoutHistory.getMemberTwoId(),
+                chatMessageId = it.chatMessage.id!!
             )
 
             listOf(fcmOneEvent, fcmTwoEvent)
@@ -73,40 +77,42 @@ class ReviewScheduler(
 
     private fun sendNotificationReviewRequest(
         chatRoomIds: List<Long>,
-        workoutHistories: List<WorkoutHistory>
+        workoutHistoryAndChatMessages: List<WorkoutHistoryAndChatMessage>
     ) {
         val memberProfiles = memberQueryService.findAllMemberProfileFrom(chatRoomIds)
 
         val profileMap = memberProfiles.associateBy { Pair(it.chatRoomId, it.memberId) }
 
-        val events = workoutHistories.flatMap { history ->
+        val events = workoutHistoryAndChatMessages.flatMap { it ->
 
-            val chatRoomId = history.getChatRoomId()
+            val chatRoomId = it.workoutHistory.getChatRoomId()
 
-            val senderOneProfile = profileMap[Pair(chatRoomId, history.getMemberOneId())]
+            val senderOneProfile = profileMap[Pair(chatRoomId, it.workoutHistory.getMemberOneId())]
                 ?: throw IllegalStateException("memberOne 프로필 없음")
 
-            val senderTwoProfile = profileMap[Pair(chatRoomId, history.getMemberTwoId())]
+            val senderTwoProfile = profileMap[Pair(chatRoomId, it.workoutHistory.getMemberTwoId())]
                 ?: throw IllegalStateException("memberTwo 프로필 없음")
 
             val eventForOne = EventReviewRequest(
-                memberId = history.getMemberOneId(),
+                memberId = it.workoutHistory.getMemberOneId(),
                 sender = EventSender(
                     memberId = senderTwoProfile.memberId,
                 ),
                 payload = EventReviewRequestPayload(
-                    workoutHistoryId = history.id!!,
+                    workoutHistoryId = it.workoutHistory.id!!,
+                    chatMessageId = it.chatMessage.id!!,
                     chatRoomId = chatRoomId
                 )
             )
 
             val eventForTwo = EventReviewRequest(
-                memberId = history.getMemberTwoId(),
+                memberId = it.workoutHistory.getMemberTwoId(),
                 sender = EventSender(
                     memberId = senderOneProfile.memberId,
                 ),
                 payload = EventReviewRequestPayload(
-                    workoutHistoryId = history.id!!,
+                    workoutHistoryId = it.workoutHistory.id!!,
+                    chatMessageId = it.chatMessage.id!!,
                     chatRoomId = chatRoomId
                 )
             )

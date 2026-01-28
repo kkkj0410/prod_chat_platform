@@ -29,9 +29,9 @@ class ReviewRequestMapper(
             isRead = notification.isRead!!,
             sender = sender,
             link = NotificationLink(
-                type = LinkType.REVIEW_WRITE,
+                type = LinkType.CHAT_ROOM,
                 parameters = mapOf(
-                    "workoutHistoryId" to content.payload.workoutHistoryId,
+                    "chatMessageId" to content.payload.chatMessageId,
                     "chatRoomId" to content.payload.chatRoomId
                 )
             ),

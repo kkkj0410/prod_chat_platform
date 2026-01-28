@@ -471,7 +471,7 @@ class NotificationControllerDocsTest : RestDocsSupport() {
             sentAt = LocalDateTime.now(),
             isRead = false,
             sender = NotificationSender(128L, "키위", "https://..."),
-            link = NotificationLink(LinkType.REVIEW_WRITE, mapOf("workoutHistoryId" to 999, "chatRoomId" to 555)),
+            link = NotificationLink(LinkType.CHAT_ROOM, mapOf("chatMessageId" to 999, "chatRoomId" to 555)),
             messages = NotificationMessage(
                 text1 = NotificationType.REVIEW_REQUEST.displayText1,
                 text2 = NotificationType.REVIEW_REQUEST.displayText2,
@@ -519,8 +519,8 @@ class NotificationControllerDocsTest : RestDocsSupport() {
                             .description("발신자 프로필 URL"),
                         fieldWithPath("data.content[].link").type(JsonFieldType.OBJECT).description("링크 정보"),
                         fieldWithPath("data.content[].link.type").type(JsonFieldType.STRING).description("링크 타입"),
-                        fieldWithPath("data.content[].link.parameters.workoutHistoryId").type(JsonFieldType.NUMBER)
-                            .description("운동 기록 ID"),
+                        fieldWithPath("data.content[].link.parameters.chatMessageId").type(JsonFieldType.NUMBER)
+                            .description("채팅 문자 id"),
                         fieldWithPath("data.content[].link.parameters.chatRoomId").type(JsonFieldType.NUMBER)
                             .description("채팅방 ID"),
                         fieldWithPath("data.content[].messages").type(JsonFieldType.OBJECT).description("알림 메시지 객체"),

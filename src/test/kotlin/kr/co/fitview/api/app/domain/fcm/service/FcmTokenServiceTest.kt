@@ -578,7 +578,7 @@ class FcmTokenServiceTest @Autowired constructor(
 
         val event = EventFcmReviewRequest(
             toMemberId = member.id!!,
-            workoutHistoryId = 2L
+            chatMessageId = 2L
         )
 
         fcmTokenService.sendReviewRequest(event)
