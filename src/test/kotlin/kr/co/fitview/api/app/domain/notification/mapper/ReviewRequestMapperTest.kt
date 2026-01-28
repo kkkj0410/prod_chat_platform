@@ -50,7 +50,8 @@ class ReviewRequestMapperTest @Autowired constructor(
 
         val content: MutableMap<String, Any> = mutableMapOf(
             "payload" to mutableMapOf(
-                "workoutHistoryId" to 789L,
+                "workoutHistoryId" to 123L,
+                "chatMessageId" to 789L,
                 "chatRoomId" to 456L
             )
         )
@@ -82,9 +83,9 @@ class ReviewRequestMapperTest @Autowired constructor(
                 notification.isRead!!,
                 NotificationSender(123L, "nick", "profile"),
                 NotificationLink(
-                    LinkType.REVIEW_WRITE,
+                    LinkType.CHAT_ROOM,
                     mapOf(
-                        "workoutHistoryId" to 789L,
+                        "chatMessageId" to 789L,
                         "chatRoomId" to 456L
                     )
                 ),

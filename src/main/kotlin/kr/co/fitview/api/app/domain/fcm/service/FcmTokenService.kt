@@ -275,7 +275,7 @@ class FcmTokenService(
         val title = FcmMessage.REVIEW_REQUEST.title
         val body = FcmMessage.REVIEW_REQUEST.body
 
-        val deepLink = createDeepLink(FcmMessage.REVIEW_REQUEST.formatDeepLinkPath(event.workoutHistoryId))
+        val deepLink = createDeepLink(FcmMessage.REVIEW_REQUEST.formatDeepLinkPath(event.chatMessageId))
         val data = mutableMapOf<String, Any>(
             "type" to FcmMessage.REVIEW_REQUEST.name,
             "deepLink" to deepLink,

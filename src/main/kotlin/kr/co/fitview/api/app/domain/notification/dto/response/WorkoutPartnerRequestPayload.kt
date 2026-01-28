@@ -84,6 +84,7 @@ data class ReviewRequestContent(
 ) {
     data class Payload(
         val workoutHistoryId: Long,
+        val chatMessageId : Long,
         val chatRoomId: Long
     )
 }
