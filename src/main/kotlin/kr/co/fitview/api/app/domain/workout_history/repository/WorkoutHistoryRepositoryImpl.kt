@@ -62,10 +62,10 @@ class WorkoutHistoryRepositoryImpl(
             )
             .where(
                 chatNoticeMessage.type.eq(ChatNoticeMessageType.WORKOUT_REQUEST_COMPLETE),
-                workoutHistory.completedAt.loe(twentyFourHoursAgo),
+//                workoutHistory.completedAt.loe(twentyFourHoursAgo),
                 // 테스트를 위해 threeMinutesAgo로 해둠
                 // 다시 twentyFourHoursAgo로 되돌려야함
-//                workoutHistory.completedAt.loe(threeMinutesAgo),
+                workoutHistory.completedAt.loe(threeMinutesAgo),
                 review.id.isNull,
                 reviewReminderLog.id.isNull,
                 workoutHistory.deletedAt.isNull,
