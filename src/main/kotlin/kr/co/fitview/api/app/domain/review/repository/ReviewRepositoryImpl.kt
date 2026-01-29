@@ -94,63 +94,6 @@ class ReviewRepositoryImpl(
 
     override fun findAllReviewBy(condition: AdminReviewCondition): Slice<AdminReviewResponse> {
 
-//        val reviewId : Long,
-//        val workoutPartnerId : Long,
-//        val workoutHistoryId : Long,
-//        val fromMemberNickname : String,
-//        val toMemberNickname : String,
-//        val reviewType : ReviewType,
-//        val reviewTagDisplayTexts : List<String>,
-//        val reviewContent : String?,
-//        val postedAt : LocalDateTime
-
-//        val fromMember = QMember("fromMember")
-//        val toMember = QMember("toMember")
-
-//        val reviews = queryFactory
-//            .select(
-//                Projections.constructor(
-//                    AdminReviewResponse::class.java,
-//                    review.id,
-//                    Expressions.constant(null),
-//                    review.workoutHistory.id,
-//                    review.fromMember.nickname,
-//                    review.toMember.nickname,
-//                    review.type,
-//                    Expressions.constant(emptyList<String>()),
-//                    review.content,
-//                    review.postedAt
-//                )
-//            )
-//            .from(review)
-//            .orderBy(review.postedAt.desc())
-//            .limit(condition.size.toLong() + 1)
-//            .fetch()
-//
-//        if (reviews.isEmpty()) {
-//            return SliceImpl(emptyList())
-//        }
-//
-//        val memberPairs = reviews.map {
-//            it.fromMemberNickname to it.toMemberNickname
-//        }
-//
-//        val workoutPartners = queryFactory
-//            .select(workoutPartner)
-//            .from(workoutPartner)
-//            .where(
-//                workoutPartner.memberOne.nickname.`in`(memberPairs.map { it.first })
-//                    .and(workoutPartner.memberTwo.nickname.`in`(memberPairs.map { it.second }))
-//                    .or(
-//                        workoutPartner.memberOne.nickname.`in`(memberPairs.map { it.second })
-//                            .and(workoutPartner.memberTwo.nickname.`in`(memberPairs.map { it.first }))
-//                    )
-//            )
-//            .fetch()
-//            .associateBy {
-//                setOf(it.memberOne.nickname, it.memberTwo.nickname)
-//            }
-
         val fromMember = QMember("fromMember")
         val toMember = QMember("toMember")
 
@@ -161,7 +104,8 @@ class ReviewRepositoryImpl(
                     review.fromMember.id,
                     review.toMember.id,
                     review.id,
-                    review.workoutHistory.id,
+                    workoutHistory.workoutRequest.id,
+                    workoutHistory.id,
                     fromMember.nickname,
                     toMember.nickname,
                     review.type,
@@ -172,6 +116,7 @@ class ReviewRepositoryImpl(
             .from(review)
             .join(review.fromMember, fromMember)
             .join(review.toMember, toMember)
+            .join(review.workoutHistory, workoutHistory)
             .where(
                 condition.reviewId?.let {
                     review.id.lt(it)

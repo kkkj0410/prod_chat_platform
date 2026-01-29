@@ -68,6 +68,7 @@ class AdminReviewControllerDocsTest : RestDocsSupport() {
                 toMemberId = 101L,
                 reviewId = 99L,
                 workoutPartnerId = 10L,
+                workoutRequestId = 20L,
                 workoutHistoryId = 990L,
                 fromMemberNickname = "FromUser99",
                 toMemberNickname = "ToUser99",
@@ -128,9 +129,10 @@ class AdminReviewControllerDocsTest : RestDocsSupport() {
                             .description("응답 메시지"),
                         fieldWithPath("data.content[].reviewId").type(JsonFieldType.NUMBER)
                             .description("리뷰 ID"),
-
                         fieldWithPath("data.content[].workoutPartnerId").type(JsonFieldType.NUMBER)
                             .description("운동 파트너 ID"),
+                        fieldWithPath("data.content[].workoutRequestId").type(JsonFieldType.NUMBER)
+                            .description("운동 요청 ID"),
                         fieldWithPath("data.content[].workoutHistoryId").type(JsonFieldType.NUMBER)
                             .description("운동 이력 ID"),
                         fieldWithPath("data.content[].fromMemberNickname").type(JsonFieldType.STRING)
