@@ -1049,11 +1049,12 @@ class ReviewRepositoryTest @Autowired constructor(
 
         // then
         assertThat(response)
-            .extracting("reviewId", "workoutPartnerId", "workoutHistoryId", "reviewType", "reviewTagDisplayTexts")
+            .extracting("reviewId", "workoutPartnerId", "workoutRequestId", "workoutHistoryId", "reviewType", "reviewTagDisplayTexts")
             .containsExactly(
                 tuple(
                     review2.id!!,
                     workoutPartner.id!!,
+                    workoutRequest2.id!!,
                     workoutHistory2.id!!,
                     ReviewType.GOOD,
                     listOf(reviewTag3.displayText)
@@ -1061,6 +1062,7 @@ class ReviewRepositoryTest @Autowired constructor(
                 tuple(
                     review.id!!,
                     workoutPartner.id!!,
+                    workoutRequest.id!!,
                     workoutHistory.id!!,
                     ReviewType.GOOD,
                     listOf(reviewTag1.displayText, reviewTag2.displayText)
