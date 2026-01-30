@@ -4,10 +4,12 @@ import jakarta.persistence.*
 import jakarta.validation.constraints.NotNull
 import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.chat.entity.ChatMessage
+import kr.co.fitview.api.app.domain.chat.entity.ChatNoticeMessage
 import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatRoomType
 import kr.co.fitview.api.app.domain.chat.repository.ChatMessageRepository
+import kr.co.fitview.api.app.domain.chat.repository.ChatNoticeMessageRepository
 import kr.co.fitview.api.app.domain.chat.repository.ChatRoomRepository
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
@@ -41,6 +43,7 @@ class WorkoutHistoryQueryServiceTest @Autowired constructor(
     val chatMessageRepository : ChatMessageRepository,
     val workoutRequestRepository: WorkoutRequestRepository,
     val reviewRepository : ReviewRepository,
+    val chatNoticeMessageRepository : ChatNoticeMessageRepository,
     val time : Time
 ) : IntegrationTestSupport(){
 
@@ -433,6 +436,30 @@ class WorkoutHistoryQueryServiceTest @Autowired constructor(
         )
         workoutHistoryRepository.save(workoutHistory2)
 
+        val chatMessageFromNotice1 = ChatMessage.ofNotice(
+            chatRoom = chatRoom,
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessageFromNotice1)
+
+        val chatNoticeMessage1 = ChatNoticeMessage.ofWorkoutHistory(
+            chatMessage = chatMessageFromNotice1,
+            workoutHistory = workoutHistory
+        )
+        chatNoticeMessageRepository.save(chatNoticeMessage1)
+
+        val chatMessageFromNotice2 = ChatMessage.ofNotice(
+            chatRoom = chatRoom,
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessageFromNotice2)
+
+        val chatNoticeMessage2 = ChatNoticeMessage.ofWorkoutHistory(
+            chatMessage = chatMessageFromNotice2,
+            workoutHistory = workoutHistory2
+        )
+        chatNoticeMessageRepository.save(chatNoticeMessage2)
+
 
         // when
         val findWorkoutHistories = workoutHistoryQueryService.findAllWorkoutHistoryExceed24HoursWithoutReview()
@@ -440,7 +467,7 @@ class WorkoutHistoryQueryServiceTest @Autowired constructor(
 
         // then
         assertThat(findWorkoutHistories).hasSize(1)
-        assertThat(findWorkoutHistories[0])
+        assertThat(findWorkoutHistories[0].workoutHistory)
             .extracting("chatRoom", "workoutRequest", "memberOne", "memberTwo", "completedAt")
             .contains(chatRoom, workoutRequest, me, other, time.nowLocalDateTime.minusHours(24))
 

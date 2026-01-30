@@ -145,6 +145,30 @@ class ReviewSchedulerTest @Autowired constructor(
         )
         workoutHistoryRepository.save(workoutHistory2)
 
+        val chatMessageFromNotice1 = ChatMessage.ofNotice(
+            chatRoom = chatRoom,
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessageFromNotice1)
+
+        val chatNoticeMessage1 = ChatNoticeMessage.ofWorkoutHistory(
+            chatMessage = chatMessageFromNotice1,
+            workoutHistory = workoutHistory
+        )
+        chatNoticeMessageRepository.save(chatNoticeMessage1)
+
+        val chatMessageFromNotice2 = ChatMessage.ofNotice(
+            chatRoom = chatRoom,
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessageFromNotice2)
+
+        val chatNoticeMessage2 = ChatNoticeMessage.ofWorkoutHistory(
+            chatMessage = chatMessageFromNotice2,
+            workoutHistory = workoutHistory2
+        )
+        chatNoticeMessageRepository.save(chatNoticeMessage2)
+
         // when
         reviewScheduler.sendReviewReminderForHistoriesExceeded24h()
 
