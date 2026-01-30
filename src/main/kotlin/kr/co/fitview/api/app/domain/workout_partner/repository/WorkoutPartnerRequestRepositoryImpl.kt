@@ -27,6 +27,7 @@ import kr.co.fitview.api.app.domain.workout_partner.dto.response.WorkoutPartnerR
 import kr.co.fitview.api.app.domain.workout_partner.entity.QWorkoutPartnerRequest.workoutPartnerRequest
 import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartnerRequest
 import kr.co.fitview.api.app.domain.workout_partner.entity.enums.WorkoutPartnerRequestStatus
+import kr.co.fitview.api.app.global.time.Time
 import kr.co.fitview.api.app.global.time.TimeHolder.time
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Slice
@@ -34,7 +35,8 @@ import org.springframework.data.domain.SliceImpl
 
 class WorkoutPartnerRequestRepositoryImpl(
     private val queryFactory: JPAQueryFactory,
-    private val em : EntityManager
+    private val em : EntityManager,
+    private val time : Time
 ) : WorkoutPartnerRequestRepositoryCustom {
 
     override fun findWorkoutPartnerByConditionAndDeletedAtIsNull(
