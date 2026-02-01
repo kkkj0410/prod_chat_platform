@@ -29,7 +29,7 @@ class RefreshTokenExpireScheduler(
         refreshTokenService.modifyAllExpireRefreshToken(refreshTokenIds)
 
         val deviceIds = expiredRefreshToken.map{it.deviceId}.distinct()
-        fcmTokenService.modifyAllFcmTokenFrom(deviceIds)
+        fcmTokenService.modifyAllRevokeFcmTokenFrom(deviceIds)
     }
 
 }

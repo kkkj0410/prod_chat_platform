@@ -3,6 +3,7 @@ package kr.co.fitview.api.app.domain.member.service
 import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.fcm.entity.FcmToken
 import kr.co.fitview.api.app.domain.fcm.entity.enums.FcmTokenPlatform
+import kr.co.fitview.api.app.domain.fcm.entity.enums.FcmTokenStatus
 import kr.co.fitview.api.app.domain.fcm.repository.FcmTokenRepository
 import kr.co.fitview.api.app.domain.member.dto.request.MemberWithdrawServiceRequest
 import kr.co.fitview.api.app.domain.member.entity.Member
@@ -68,7 +69,7 @@ class MemberWithdrawReasonServiceTest @Autowired constructor(
         assertThat(deletedMember.memberWithdrawReason).isEqualTo(reason1)
     }
 
-    @DisplayName("회원 계정 삭제 시, 회원이 지닌 Fcm 토큰을 전체 삭제한다.")
+    @DisplayName("회원 계정 삭제 시, 회원이 지닌 Fcm 토큰을 전체 무효화한다.")
     @Test
     fun deleteMemberDeleteFcm() {
         // given
@@ -95,14 +96,14 @@ class MemberWithdrawReasonServiceTest @Autowired constructor(
             member = member1,
             deviceId = "deviceId1",
             token = "token1",
-            isActive = true,
+            status = FcmTokenStatus.ACTIVE,
             platform = FcmTokenPlatform.ANDROID
         )
         val fcmToken2 = FcmToken(
             member = member1,
             deviceId = "deviceId2",
             token = "token2",
-            isActive = true,
+            status = FcmTokenStatus.ACTIVE,
             platform = FcmTokenPlatform.IOS
         )
         fcmTokenRepository.save(fcmToken1)
@@ -119,8 +120,8 @@ class MemberWithdrawReasonServiceTest @Autowired constructor(
 
         assertThat(fcmTokens).hasSize(2)
 
-        assertThat(fcmTokens[0].deletedAt).isNotNull()
-        assertThat(fcmTokens[1].deletedAt).isNotNull()
+        assertThat(fcmTokens[0].status).isEqualTo(FcmTokenStatus.REVOKED)
+        assertThat(fcmTokens[1].status).isEqualTo(FcmTokenStatus.REVOKED)
     }
 
 

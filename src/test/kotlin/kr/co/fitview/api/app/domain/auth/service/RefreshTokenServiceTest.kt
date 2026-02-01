@@ -8,6 +8,7 @@ import kr.co.fitview.api.app.domain.auth.entity.RefreshTokenStatus
 import kr.co.fitview.api.app.domain.auth.repository.RefreshTokenRepository
 import kr.co.fitview.api.app.domain.fcm.entity.FcmToken
 import kr.co.fitview.api.app.domain.fcm.entity.enums.FcmTokenPlatform
+import kr.co.fitview.api.app.domain.fcm.entity.enums.FcmTokenStatus
 import kr.co.fitview.api.app.domain.fcm.repository.FcmTokenRepository
 import kr.co.fitview.api.app.domain.member.dto.request.MemberCreateServiceRequest
 import kr.co.fitview.api.app.domain.member.dto.request.MemberLoginServiceRequest
@@ -156,9 +157,9 @@ class RefreshTokenServiceTest@Autowired constructor(
             .contains(usedUuid, RefreshTokenStatus.REVOKED)
     }
 
-    @DisplayName("리프레시 토큰을 무효화시, 관련 fcm 토큰을 삭제한다.")
+    @DisplayName("리프레시 토큰을 무효화시, 관련 fcm 토큰을 무효화한다.")
     @Test
-    fun setRevokeRefreshTokenAllDeleteFcmToken() {
+    fun setRevokeRefreshTokenAllRevokeFcmToken() {
         // given
         val member = Member(
             email = "email",
@@ -190,21 +191,21 @@ class RefreshTokenServiceTest@Autowired constructor(
             member = member,
             deviceId = "deviceId",
             token = "fcmToken",
-            isActive = true,
+            status = FcmTokenStatus.ACTIVE,
             platform = FcmTokenPlatform.ANDROID
         )
         val fcmToken2 = FcmToken(
             member = member,
             deviceId = "deviceId",
             token = "fcmToken",
-            isActive = true,
+            status = FcmTokenStatus.ACTIVE,
             platform = FcmTokenPlatform.ANDROID
         )
         val otherFcmToken = FcmToken(
             member = member,
             deviceId = "deviceId2",
             token = "fcmToken",
-            isActive = true,
+            status = FcmTokenStatus.ACTIVE,
             platform = FcmTokenPlatform.ANDROID
         )
         fcmTokenRepository.save(fcmToken1)
@@ -217,11 +218,11 @@ class RefreshTokenServiceTest@Autowired constructor(
         // then
         val findFcmTokens = fcmTokenRepository.findAll()
         assertThat(findFcmTokens)
-            .extracting("id", "deviceId", "deletedAt")
+            .extracting("id", "deviceId", "status")
             .contains(
-                tuple(fcmToken1.id, "deviceId", time.nowLocalDateTime),
-                tuple(fcmToken2.id, "deviceId", time.nowLocalDateTime),
-                tuple(otherFcmToken.id, "deviceId2", null)
+                tuple(fcmToken1.id, "deviceId", FcmTokenStatus.REVOKED),
+                tuple(fcmToken2.id, "deviceId", FcmTokenStatus.REVOKED),
+                tuple(otherFcmToken.id, "deviceId2", FcmTokenStatus.ACTIVE)
             )
     }
 

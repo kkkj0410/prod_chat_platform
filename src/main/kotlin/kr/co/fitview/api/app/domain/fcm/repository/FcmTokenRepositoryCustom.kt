@@ -5,9 +5,9 @@ import kr.co.fitview.api.app.domain.fcm.entity.FcmToken
 
 interface FcmTokenRepositoryCustom {
 
-    fun deleteAllFcmTokenBy(deviceIds: List<String>)
+    fun revokeAllFcmTokenBy(deviceIds: List<String>)
 
-    fun deleteAllFcmTokenBy(memberId: Long)
+    fun revokeAllFcmTokenBy(memberId: Long)
 
     fun findByActiveFcmTokenAndOtherDeviceId(deviceId : String, fcmTokenString: String) : List<FcmToken>
 

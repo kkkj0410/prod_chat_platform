@@ -1,14 +1,15 @@
 package kr.co.fitview.api.app.domain.fcm.repository
 
 import kr.co.fitview.api.app.domain.fcm.entity.FcmToken
+import kr.co.fitview.api.app.domain.fcm.entity.enums.FcmTokenStatus
 import org.springframework.data.jpa.repository.JpaRepository
 
 interface FcmTokenRepository : JpaRepository<FcmToken, Long>, FcmTokenRepositoryCustom {
 
-    fun findAllByMemberIdAndIsActiveTrueAndDeletedAtIsNull(memberId: Long): List<FcmToken>
+    fun findAllByMemberIdAndStatus(memberId: Long, status : FcmTokenStatus): List<FcmToken>
 
-    fun findByDeviceIdAndIsActiveTrueAndDeletedAtIsNull(deviceId: String) : FcmToken?
+    fun findByDeviceIdAndStatus(deviceId: String, status : FcmTokenStatus) : FcmToken?
 
-    fun findAllByDeviceIdAndDeletedAtIsNull(deviceId: String) : List<FcmToken>
+    fun findAllByDeviceId(deviceId: String) : List<FcmToken>
 
 }

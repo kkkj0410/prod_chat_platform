@@ -51,7 +51,7 @@ class RefreshTokenService(
         val findRefreshTokenEntity = validateRefreshTokenFrom(refreshToken)
 
         if (findRefreshTokenEntity.deviceId != null) {
-            deleteFcmToken(findRefreshTokenEntity.deviceId!!)
+            revokeFcmToken(findRefreshTokenEntity.deviceId!!)
         }
 
         return findRefreshTokenEntity.setRevoke()
@@ -117,10 +117,10 @@ class RefreshTokenService(
     private fun isNotActive(findRefreshTokenEntity: RefreshToken?) =
         findRefreshTokenEntity!!.status != RefreshTokenStatus.ACTIVE
 
-    private fun deleteFcmToken(deviceId : String) {
+    private fun revokeFcmToken(deviceId : String) {
         val findFcmTokens = fcmTokenService.findAllFcmTokenByDeviceId(deviceId)
         findFcmTokens.forEach {
-            it.delete(time.nowLocalDateTime)
+            it.revoke()
         }
     }
 
