@@ -16,14 +16,10 @@ import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
 import kr.co.fitview.api.app.domain.review.entity.Review
 import kr.co.fitview.api.app.domain.review.entity.enums.ReviewType
 import kr.co.fitview.api.app.domain.review.repository.ReviewRepository
-import kr.co.fitview.api.app.domain.review.service.ReviewService
 import kr.co.fitview.api.app.domain.workout.condition.AdminWorkoutRequestCondition
-import kr.co.fitview.api.app.domain.workout.dto.response.AdminDetailReviewResponse
-import kr.co.fitview.api.app.domain.workout.dto.response.AdminDetailWorkoutRequestLogResponse
 import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusForResponse
-import kr.co.fitview.api.app.domain.workout.entity.QWorkoutRequest.workoutRequest
 import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequest
-import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequestLog
+import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequestSnapshot
 import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
 import kr.co.fitview.api.app.domain.workout_history.entity.WorkoutHistory
 import kr.co.fitview.api.app.domain.workout_history.repository.WorkoutHistoryRepository
@@ -38,7 +34,6 @@ import org.hibernate.Hibernate
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import java.time.LocalDateTime
 
 class WorkoutRequestRepositoryTest @Autowired constructor(
     val workoutRequestRepository : WorkoutRequestRepository,
@@ -48,7 +43,7 @@ class WorkoutRequestRepositoryTest @Autowired constructor(
     val chatMessageRepository : ChatMessageRepository,
     val workoutHistoryRepository: WorkoutHistoryRepository,
     val workoutPartnerRepository : WorkoutPartnerRepository,
-    val workoutRequestLogRepository: WorkoutRequestLogRepository,
+    val workoutRequestSnapshotRepository: WorkoutRequestSnapshotRepository,
     val oAuth2Service : OAuth2Service,
     val reviewRepository : ReviewRepository,
     val time : Time,
@@ -708,24 +703,27 @@ class WorkoutRequestRepositoryTest @Autowired constructor(
         workoutRequestRepository.save(workoutRequest1)
         workoutRequestRepository.save(workoutRequest2)
 
-        val log1 = WorkoutRequestLog(
+        val log1 = WorkoutRequestSnapshot.ofStatus(
             workoutRequest = workoutRequest1,
             status = WorkoutRequestStatus.PENDING,
-            loggedAt = time.nowLocalDateTime
         )
-        val log1_1 = WorkoutRequestLog(
+        val log1_1 = WorkoutRequestSnapshot.ofStatus(
             workoutRequest = workoutRequest1,
             status = WorkoutRequestStatus.COMPLETE,
-            loggedAt = time.nowLocalDateTime.plusHours(10)
         )
-        val log2 = WorkoutRequestLog(
+        log1_1.snapshotCreatedAt = time.nowLocalDateTime.plusHours(10)
+
+        val log2 = WorkoutRequestSnapshot.ofStatus(
             workoutRequest = workoutRequest2,
             status = WorkoutRequestStatus.PENDING,
-            loggedAt = time.nowLocalDateTime.plusHours(5)
         )
-        workoutRequestLogRepository.save(log1)
-        workoutRequestLogRepository.save(log1_1)
-        workoutRequestLogRepository.save(log2)
+        log2.snapshotCreatedAt = time.nowLocalDateTime.plusHours(5)
+
+        workoutRequestSnapshotRepository.save(log1)
+        workoutRequestSnapshotRepository.save(log1_1)
+        workoutRequestSnapshotRepository.save(log2)
+
+
 
         val workoutHistory1 = WorkoutHistory(
             chatRoom = chatRoom1,
@@ -869,18 +867,20 @@ class WorkoutRequestRepositoryTest @Autowired constructor(
         workoutRequestRepository.save(workoutRequest1)
         workoutRequestRepository.save(workoutRequest2)
 
-        val log1 = WorkoutRequestLog(
+        val log1 = WorkoutRequestSnapshot.ofStatus(
             workoutRequest = workoutRequest1,
             status = WorkoutRequestStatus.PENDING,
-            loggedAt = time.nowLocalDateTime
         )
-        val log2 = WorkoutRequestLog(
+        log1.snapshotCreatedAt = time.nowLocalDateTime
+
+        val log2 = WorkoutRequestSnapshot.ofStatus(
             workoutRequest = workoutRequest2,
             status = WorkoutRequestStatus.PENDING,
-            loggedAt = time.nowLocalDateTime.plusHours(5)
         )
-        workoutRequestLogRepository.save(log1)
-        workoutRequestLogRepository.save(log2)
+        log1.snapshotCreatedAt = time.nowLocalDateTime.plusHours(5)
+
+        workoutRequestSnapshotRepository.save(log1)
+        workoutRequestSnapshotRepository.save(log2)
 
 
         val condition = AdminWorkoutRequestCondition(
@@ -963,18 +963,20 @@ class WorkoutRequestRepositoryTest @Autowired constructor(
         )
         workoutRequestRepository.save(workoutRequest1)
 
-        val log1 = WorkoutRequestLog(
+        val log1 = WorkoutRequestSnapshot.ofStatus(
             workoutRequest = workoutRequest1,
             status = WorkoutRequestStatus.PENDING,
-            loggedAt = time.nowLocalDateTime.minusHours(10)
         )
-        val log2 = WorkoutRequestLog(
+        log1.snapshotCreatedAt = time.nowLocalDateTime.minusHours(10)
+
+        val log2 = WorkoutRequestSnapshot.ofStatus(
             workoutRequest = workoutRequest1,
             status = WorkoutRequestStatus.COMPLETE,
-            loggedAt = time.nowLocalDateTime.minusHours(5)
         )
-        workoutRequestLogRepository.save(log1)
-        workoutRequestLogRepository.save(log2)
+        log2.snapshotCreatedAt = time.nowLocalDateTime.minusHours(5)
+
+        workoutRequestSnapshotRepository.save(log1)
+        workoutRequestSnapshotRepository.save(log2)
 
         val workoutHistory = WorkoutHistory(
             chatRoom = chatRoom1,
@@ -1020,13 +1022,13 @@ class WorkoutRequestRepositoryTest @Autowired constructor(
             .containsExactly(
                 tuple(
                     WorkoutRequestStatus.PENDING,
-                    log1.loggedAt,
+                    log1.snapshotCreatedAt,
                     "member1",
                     "member2"
                 ),
                 tuple(
                     WorkoutRequestStatus.COMPLETE,
-                    log2.loggedAt,
+                    log2.snapshotCreatedAt,
                     "member1",
                     "member2"
                 ),

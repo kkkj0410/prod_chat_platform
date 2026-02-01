@@ -7,6 +7,7 @@ import kr.co.fitview.api.app.domain.workout.dto.response.LastWorkoutRequestMessa
 import kr.co.fitview.api.app.domain.workout.repository.WorkoutRequestRepository
 import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequest
 import org.springframework.data.domain.Slice
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -22,6 +23,14 @@ class WorkoutRequestQueryService(
 
     fun findRecentWorkoutRequestFrom(chatRoomId: Long): WorkoutRequest? {
         return workoutRequestRepository.findRecentWorkoutRequestEntity(chatRoomId)
+    }
+
+    fun findWorkoutRequestFrom(workoutRequestId: Long) : WorkoutRequest?{
+        return workoutRequestRepository.findByIdOrNull(workoutRequestId)
+    }
+
+    fun findWorkoutRequestFrom(workoutRequestIds: List<Long>) : List<WorkoutRequest>{
+        return workoutRequestRepository.findAllById(workoutRequestIds)
     }
 
     fun findWorkoutRequestReferenceFrom(workoutRequestId: Long) : WorkoutRequest{
