@@ -53,7 +53,7 @@ class ReviewSchedulerTest @Autowired constructor(
     ) : IntegrationTestSupport() {
 
     @DisplayName("운동 이력이 24시간이 지난 경우, 리뷰 이력이 없으면 리뷰 알림 이력을 저장한다.")
-//    @Test
+    @Test
     fun sendReviewReminderForHistoriesExceeded24h() {
         // given
         val me = Member(
@@ -144,6 +144,30 @@ class ReviewSchedulerTest @Autowired constructor(
             completedAt = time.nowLocalDateTime.minusHours(23).minusMinutes(59)
         )
         workoutHistoryRepository.save(workoutHistory2)
+
+        val chatMessageFromNotice1 = ChatMessage.ofNotice(
+            chatRoom = chatRoom,
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessageFromNotice1)
+
+        val chatNoticeMessage1 = ChatNoticeMessage.ofWorkoutHistory(
+            chatMessage = chatMessageFromNotice1,
+            workoutHistory = workoutHistory
+        )
+        chatNoticeMessageRepository.save(chatNoticeMessage1)
+
+        val chatMessageFromNotice2 = ChatMessage.ofNotice(
+            chatRoom = chatRoom,
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessageFromNotice2)
+
+        val chatNoticeMessage2 = ChatNoticeMessage.ofWorkoutHistory(
+            chatMessage = chatMessageFromNotice2,
+            workoutHistory = workoutHistory2
+        )
+        chatNoticeMessageRepository.save(chatNoticeMessage2)
 
         // when
         reviewScheduler.sendReviewReminderForHistoriesExceeded24h()

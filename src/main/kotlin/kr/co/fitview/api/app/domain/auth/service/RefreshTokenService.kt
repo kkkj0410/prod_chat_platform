@@ -47,25 +47,25 @@ class RefreshTokenService(
     }
 
     @Transactional
-    fun inactiveRefreshToken(refreshToken: String) : RefreshToken {
+    fun revokeRefreshToken(refreshToken: String) : RefreshToken {
         val findRefreshTokenEntity = validateRefreshTokenFrom(refreshToken)
 
         if (findRefreshTokenEntity.deviceId != null) {
-            deleteFcmToken(findRefreshTokenEntity.deviceId!!)
+            revokeFcmToken(findRefreshTokenEntity.deviceId!!)
         }
 
-        return findRefreshTokenEntity.inactive()
+        return findRefreshTokenEntity.setRevoke()
     }
 
     @Transactional
-    fun modifyAllInactiveRefreshToken(refreshTokenIds : List<String>){
-        refreshTokenRepository.updateAllInactive(refreshTokenIds)
+    fun modifyAllExpireRefreshToken(refreshTokenIds : List<String>){
+        refreshTokenRepository.updateAllExpire(refreshTokenIds)
     }
 
     fun validateRefreshTokenFrom(refreshToken: String): RefreshToken {
         val refreshTokenUuid = jwtTokenProvider.extractUuidFrom(refreshToken)
 
-        val findRefreshTokenEntity = refreshTokenRepository.findByUidAndDeletedAtIsNull(refreshTokenUuid)
+        val findRefreshTokenEntity = refreshTokenRepository.findByUid(refreshTokenUuid)
 
         validateRefreshTokenFrom(findRefreshTokenEntity)
 
@@ -105,7 +105,7 @@ class RefreshTokenService(
             throw GlobalException(JwtErrorCode.REFRESH_TOKEN_NOT_FOUND)
         }
 
-        if(isInactive(findRefreshTokenEntity)){
+        if(isNotActive(findRefreshTokenEntity)){
             throw GlobalException(JwtErrorCode.REFRESH_TOKEN_INVALID)
         }
 
@@ -114,13 +114,13 @@ class RefreshTokenService(
     private fun isNull(findRefreshTokenEntity: RefreshToken?) =
         findRefreshTokenEntity == null
 
-    private fun isInactive(findRefreshTokenEntity: RefreshToken?) =
-        findRefreshTokenEntity!!.status == RefreshTokenStatus.INACTIVE
+    private fun isNotActive(findRefreshTokenEntity: RefreshToken?) =
+        findRefreshTokenEntity!!.status != RefreshTokenStatus.ACTIVE
 
-    private fun deleteFcmToken(deviceId : String) {
+    private fun revokeFcmToken(deviceId : String) {
         val findFcmTokens = fcmTokenService.findAllFcmTokenByDeviceId(deviceId)
         findFcmTokens.forEach {
-            it.delete(time.nowLocalDateTime)
+            it.revoke()
         }
     }
 

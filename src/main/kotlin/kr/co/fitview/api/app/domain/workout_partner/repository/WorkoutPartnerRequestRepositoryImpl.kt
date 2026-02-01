@@ -27,6 +27,7 @@ import kr.co.fitview.api.app.domain.workout_partner.dto.response.WorkoutPartnerR
 import kr.co.fitview.api.app.domain.workout_partner.entity.QWorkoutPartnerRequest.workoutPartnerRequest
 import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartnerRequest
 import kr.co.fitview.api.app.domain.workout_partner.entity.enums.WorkoutPartnerRequestStatus
+import kr.co.fitview.api.app.global.time.Time
 import kr.co.fitview.api.app.global.time.TimeHolder.time
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Slice
@@ -34,7 +35,8 @@ import org.springframework.data.domain.SliceImpl
 
 class WorkoutPartnerRequestRepositoryImpl(
     private val queryFactory: JPAQueryFactory,
-    private val em : EntityManager
+    private val em : EntityManager,
+    private val time : Time
 ) : WorkoutPartnerRequestRepositoryCustom {
 
     override fun findWorkoutPartnerByConditionAndDeletedAtIsNull(
@@ -114,7 +116,6 @@ class WorkoutPartnerRequestRepositoryImpl(
                 workoutPartnerRequestWhereCondition(),
                 memberImage.type.eq(MemberImageType.PROFILE),
                 member.deletedAt.isNull,
-                workoutPartnerRequest.deletedAt.isNull,
                 memberImage.deletedAt.isNull,
                 image.deletedAt.isNull,
             )
@@ -201,10 +202,9 @@ class WorkoutPartnerRequestRepositoryImpl(
             .from(workoutPartnerRequest)
             .where(
                 workoutPartnerRequest.status.eq(WorkoutPartnerRequestStatus.PENDING),
-                workoutPartnerRequest.deletedAt.isNull,
-//                workoutPartnerRequest.requestedAt.loe(time.nowLocalDateTime.minusHours(24)),
+                workoutPartnerRequest.requestedAt.loe(time.nowLocalDateTime.minusHours(24)),
                 // 다시 위 24시간으로 돌려놔야함. 테스트임
-                workoutPartnerRequest.requestedAt.loe(time.nowLocalDateTime.minusMinutes(2)),
+//                workoutPartnerRequest.requestedAt.loe(time.nowLocalDateTime.minusMinutes(2)),
             )
             .fetch()
     }
@@ -249,7 +249,6 @@ class WorkoutPartnerRequestRepositoryImpl(
             .join(toMember)
                 .on(toMember.id.eq(workoutPartnerRequest.toMember.id))
             .where(
-                workoutPartnerRequest.deletedAt.isNull,
                 condition.workoutPartnerRequestId?.let { workoutPartnerRequest.id.lt(it) }
             )
             .orderBy(workoutPartnerRequest.id.desc())

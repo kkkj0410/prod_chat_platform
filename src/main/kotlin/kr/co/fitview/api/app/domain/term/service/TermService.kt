@@ -18,7 +18,7 @@ class TermService(
 
     @Transactional
     fun addRequiredTerms(member : Member) : List<Term>{
-        val findTerms = termRepository.findAllByMemberIdAndDeletedAtIsNull(member.id!!)
+        val findTerms = termRepository.findAllByMemberId(member.id!!)
         if(findTerms.isNotEmpty()){
             throw GlobalException(TermErrorCode.DUPLICATE_TERM_AGREEMENT)
         }

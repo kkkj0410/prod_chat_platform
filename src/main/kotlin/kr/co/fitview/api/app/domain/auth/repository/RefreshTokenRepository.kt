@@ -5,5 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository
 
 interface RefreshTokenRepository : JpaRepository<RefreshToken, Long>, RefreshTokenRepositoryCustom{
 
-    fun findByUidAndDeletedAtIsNull(uid : String) : RefreshToken?
+    fun findByUid(uid : String) : RefreshToken?
 }

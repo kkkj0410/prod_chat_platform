@@ -118,7 +118,7 @@ class AuthServiceTest@Autowired constructor(
         assertThat(savedMember.id).isEqualTo(findMemberIdFromAccessToken)
         assertThat(savedMember.id).isEqualTo(findMemberIdFromRefreshToken)
 
-        val findRefreshTokenEntity = refreshTokenRepository.findByUidAndDeletedAtIsNull(usedUuid)
+        val findRefreshTokenEntity = refreshTokenRepository.findByUid(usedUuid)
         assertThat(findRefreshTokenEntity)
             .extracting("uid", "status")
             .contains(usedUuid, RefreshTokenStatus.ACTIVE)
@@ -172,7 +172,7 @@ class AuthServiceTest@Autowired constructor(
         assertThat(response.refreshToken).isNotNull()
         assertThat(response.refreshTokenCookieHeader).isNull()
 
-        val findRefreshTokenEntity = refreshTokenRepository.findByUidAndDeletedAtIsNull(usedUuid)
+        val findRefreshTokenEntity = refreshTokenRepository.findByUid(usedUuid)
         assertThat(findRefreshTokenEntity)
             .extracting("uid", "status")
             .contains(usedUuid, RefreshTokenStatus.ACTIVE)
@@ -289,8 +289,8 @@ class AuthServiceTest@Autowired constructor(
         )
 
         val usedUuid = jwtTokenProvider.idGenerator.createUuid()
-        val refreshTokenEntity = refreshTokenRepository.findByUidAndDeletedAtIsNull(usedUuid)
-        refreshTokenEntity!!.inactive()
+        val refreshTokenEntity = refreshTokenRepository.findByUid(usedUuid)
+        refreshTokenEntity!!.setRevoke()
 
 
         // when & then
@@ -328,9 +328,8 @@ class AuthServiceTest@Autowired constructor(
         )
 
         val usedUuid = jwtTokenProvider.idGenerator.createUuid()
-//        refreshTokenRepository.deleteById(usedUuid)
-        val findRefreshToken = refreshTokenRepository.findByUidAndDeletedAtIsNull(usedUuid)
-        findRefreshToken!!.deletedAt = time.nowLocalDateTime
+        val findRefreshToken = refreshTokenRepository.findByUid(usedUuid)
+        refreshTokenRepository.deleteById(findRefreshToken!!.id!!)
 
         // when & then
         assertThatThrownBy {

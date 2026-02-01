@@ -20,7 +20,7 @@ class TermRepositoryTest @Autowired constructor(
 
     @DisplayName("회원 id를 통해 해당 회원의 약관동의항목 결과를 본다.")
     @Test
-    fun findAllByMemberIdAndDeletedAtIsNull() {
+    fun findAllByMemberId() {
         // given
         val member = Member(
             email = "email",
@@ -43,7 +43,7 @@ class TermRepositoryTest @Autowired constructor(
         termRepository.save(term2)
 
         // when
-        val findTerms = termRepository.findAllByMemberIdAndDeletedAtIsNull(savedMember.id!!)
+        val findTerms = termRepository.findAllByMemberId(savedMember.id!!)
 
         // then
         findTerms.forEach { term ->
@@ -70,7 +70,7 @@ class TermRepositoryTest @Autowired constructor(
         val savedMember = memberRepository.save(member)
 
         //when
-        val findTerms = termRepository.findAllByMemberIdAndDeletedAtIsNull(savedMember.id!!)
+        val findTerms = termRepository.findAllByMemberId(savedMember.id!!)
 
         //then
         assertThat(findTerms).isEmpty()

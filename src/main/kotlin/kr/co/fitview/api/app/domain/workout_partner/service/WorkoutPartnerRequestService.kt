@@ -46,7 +46,7 @@ class WorkoutPartnerRequestService(
 
         validateAlreadyWorkoutPartner(memberId, request.memberId)
 
-        val findWorkoutPartner = workoutPartnerRequestRepository.findTop1ByFromMemberIdAndToMemberIdAndDeletedAtIsNullOrderByRequestedAtDesc(memberId, request.memberId)
+        val findWorkoutPartner = workoutPartnerRequestRepository.findTop1ByFromMemberIdAndToMemberIdOrderByRequestedAtDesc(memberId, request.memberId)
 
         validateAddWorkoutPartnerRequest(findWorkoutPartner)
 
@@ -83,7 +83,7 @@ class WorkoutPartnerRequestService(
 
     @Transactional
     fun updateWorkoutPartnerRequest(memberId: Long, workoutPartnerRequestId : Long, request: WorkoutPartnerUpdateServiceRequest) : WorkoutPartnerRequest {
-        val findWorkoutPartnerRequest = workoutPartnerRequestRepository.findByIdAndToMemberIdAndDeletedAtIsNull(workoutPartnerRequestId, memberId)
+        val findWorkoutPartnerRequest = workoutPartnerRequestRepository.findByIdAndToMemberId(workoutPartnerRequestId, memberId)
                 ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
 
         validateDeletedOtherMember(findWorkoutPartnerRequest, memberId)

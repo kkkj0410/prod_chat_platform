@@ -84,11 +84,7 @@ class ChatMessageRepositoryImpl(
         WHERE 
             rm.rn = 1
         AND
-            rm.deleted_at is null
-        AND
-            mrs.deleted_at is null
-        AND
-            wr.deleted_at is null;
+            rm.deleted_at is null;
     """.trimIndent()
 
         val query = em

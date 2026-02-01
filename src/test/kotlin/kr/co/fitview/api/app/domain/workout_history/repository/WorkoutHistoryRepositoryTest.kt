@@ -368,7 +368,7 @@ class WorkoutHistoryRepositoryTest @Autowired constructor(
     }
 
     @DisplayName("24시간동안 리뷰 작성이 없는 운동 완료 이력을 조회한다.")
-//    @Test
+    @Test
     fun findAllWorkoutHistoryExceed24HoursWithoutReview() {
         // given
         val me = Member(
@@ -443,6 +443,29 @@ class WorkoutHistoryRepositoryTest @Autowired constructor(
         )
         workoutHistoryRepository.save(workoutHistory2)
 
+        val chatMessageFromNotice1 = ChatMessage.ofNotice(
+            chatRoom = chatRoom,
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessageFromNotice1)
+
+        val chatNoticeMessage1 = ChatNoticeMessage.ofWorkoutHistory(
+            chatMessage = chatMessageFromNotice1,
+            workoutHistory = workoutHistory
+        )
+        chatNoticeMessageRepository.save(chatNoticeMessage1)
+
+        val chatMessageFromNotice2 = ChatMessage.ofNotice(
+            chatRoom = chatRoom,
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessageFromNotice2)
+
+        val chatNoticeMessage2 = ChatNoticeMessage.ofWorkoutHistory(
+            chatMessage = chatMessageFromNotice2,
+            workoutHistory = workoutHistory2
+        )
+        chatNoticeMessageRepository.save(chatNoticeMessage2)
 
         // when
         val findWorkoutHistories = workoutHistoryRepository.findAllWorkoutHistoryExceed24HoursWithoutReview()
@@ -450,7 +473,7 @@ class WorkoutHistoryRepositoryTest @Autowired constructor(
 
         // then
         assertThat(findWorkoutHistories).hasSize(1)
-        assertThat(findWorkoutHistories[0])
+        assertThat(findWorkoutHistories[0].workoutHistory)
             .extracting("chatRoom", "workoutRequest", "memberOne", "memberTwo", "completedAt")
             .contains(chatRoom, workoutRequest, me, other, time.nowLocalDateTime.minusHours(24))
 

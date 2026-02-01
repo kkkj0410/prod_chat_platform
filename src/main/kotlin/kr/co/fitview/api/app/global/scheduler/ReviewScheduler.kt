@@ -30,8 +30,8 @@ class ReviewScheduler(
 
     // 테스트를 위해 ONE_MINUNES_IN_MILLIS로 설정
     // -> FIVE_MINUTES_IN_MILLIS로 나중에 다시 돌려놔야함
-//    @Scheduled(fixedRate = FIVE_MINUTES_IN_MILLIS)
-    @Scheduled(fixedRate = ONE_MINUTES_IN_MILLIS)
+    @Scheduled(fixedRate = FIVE_MINUTES_IN_MILLIS)
+//    @Scheduled(fixedRate = ONE_MINUTES_IN_MILLIS)
     @SchedulerLock(
         name = "workout:history:review-reminder",
         lockAtMostFor = "PT4M",
