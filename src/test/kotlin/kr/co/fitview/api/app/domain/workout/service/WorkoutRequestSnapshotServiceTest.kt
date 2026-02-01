@@ -2,12 +2,9 @@ package kr.co.fitview.api.app.domain.workout.service
 
 import jakarta.persistence.EntityManager
 import kr.co.fitview.api.app.IntegrationTestSupport
-import kr.co.fitview.api.app.domain.chat.dto.request.ChatWorkoutRequestMessageServiceRequest
 import kr.co.fitview.api.app.domain.chat.entity.ChatMessage
 import kr.co.fitview.api.app.domain.chat.entity.ChatParticipant
 import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
-import kr.co.fitview.api.app.domain.chat.entity.QChatMessage.chatMessage
-import kr.co.fitview.api.app.domain.chat.entity.QChatRoom.chatRoom
 import kr.co.fitview.api.app.domain.chat.entity.enums.ChatRoomType
 import kr.co.fitview.api.app.domain.chat.repository.ChatMessageRepository
 import kr.co.fitview.api.app.domain.chat.repository.ChatParticipantRepository
@@ -23,12 +20,11 @@ import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.time.Time
 import kr.co.fitview.api.app.global.util.TestDataFactory
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
-class WorkoutRequestLogServiceTest @Autowired constructor(
+class WorkoutRequestSnapshotServiceTest @Autowired constructor(
     val workoutRequestRepository : WorkoutRequestRepository,
     val workoutHistoryRepository : WorkoutHistoryRepository,
     val memberRepository : MemberRepository,
@@ -36,14 +32,14 @@ class WorkoutRequestLogServiceTest @Autowired constructor(
     val chatParticipantRepository : ChatParticipantRepository,
     val chatMessageRepository : ChatMessageRepository,
     val oAuth2Service : OAuth2Service,
-    val workoutRequestLogService : WorkoutRequestLogService,
+    val workoutRequestSnapshotService : WorkoutRequestSnapshotService,
     val time : Time,
     val em : EntityManager
 ) : IntegrationTestSupport() {
 
-    @DisplayName("운동 로그를 기록한다.")
+    @DisplayName("운동 스냅샷을 기록한다.")
     @Test
-    fun addWorkoutRequestLog() {
+    fun addWorkoutRequestSnapshot() {
         // given
         val me = Member(
             email = "email1",
@@ -92,25 +88,25 @@ class WorkoutRequestLogServiceTest @Autowired constructor(
         workoutRequestRepository.save(workoutRequest)
 
         // when
-        val savedWorkoutRequestLog = workoutRequestLogService.addWorkoutRequestLog(
+        val savedWorkoutRequestSnapshot = workoutRequestSnapshotService.addWorkoutRequestSnapshot(
             workoutRequestId = workoutRequest.id!!,
             status = WorkoutRequestStatus.PENDING
         )
 
         // then
-        assertThat(savedWorkoutRequestLog.id).isNotNull()
-        assertThat(savedWorkoutRequestLog)
-            .extracting("workoutRequest", "status")
+        assertThat(savedWorkoutRequestSnapshot.id).isNotNull()
+        assertThat(savedWorkoutRequestSnapshot)
+            .extracting("workoutRequestId", "status")
             .contains(
-                workoutRequest,
+                workoutRequest.id!!,
                 WorkoutRequestStatus.PENDING
             )
 
     }
 
-    @DisplayName("운동 로그 저장 시, 여러 운동 요청에 대해서 한 번에 로그를 저장한다.")
+    @DisplayName("운동 스냅샷 저장 시, 여러 운동 요청에 대해서 한 번에 스냅샷을 저장한다.")
     @Test
-    fun addAllWorkoutRequestLog() {
+    fun addAllWorkoutRequestSnapshot() {
         // given
         val me = Member(
             email = "email1",
@@ -171,27 +167,27 @@ class WorkoutRequestLogServiceTest @Autowired constructor(
         val workoutRequestIds = listOf(workoutRequest.id!!, workoutRequest2.id!!)
 
         // when
-        val savedWorkoutRequestLog = workoutRequestLogService.addAllWorkoutRequestLog(
+        val savedWorkoutRequestSnapshots = workoutRequestSnapshotService.addAllWorkoutRequestSnapshot(
             workoutRequestIds = workoutRequestIds,
             status = WorkoutRequestStatus.EXPIRE
         )
 
         // then
-        assertThat(savedWorkoutRequestLog).hasSize(2)
+        assertThat(savedWorkoutRequestSnapshots).hasSize(2)
 
-        assertThat(savedWorkoutRequestLog[0].id).isNotNull()
-        assertThat(savedWorkoutRequestLog[0])
-            .extracting("workoutRequest", "status")
+        assertThat(savedWorkoutRequestSnapshots[0].id).isNotNull()
+        assertThat(savedWorkoutRequestSnapshots[0])
+            .extracting("workoutRequestId", "status")
             .contains(
-                workoutRequest,
+                workoutRequest.id!!,
                 WorkoutRequestStatus.EXPIRE
             )
 
-        assertThat(savedWorkoutRequestLog[1].id).isNotNull()
-        assertThat(savedWorkoutRequestLog[1])
-            .extracting("workoutRequest", "status")
+        assertThat(savedWorkoutRequestSnapshots[1].id).isNotNull()
+        assertThat(savedWorkoutRequestSnapshots[1])
+            .extracting("workoutRequestId", "status")
             .contains(
-                workoutRequest2,
+                workoutRequest2.id!!,
                 WorkoutRequestStatus.EXPIRE
             )
     }

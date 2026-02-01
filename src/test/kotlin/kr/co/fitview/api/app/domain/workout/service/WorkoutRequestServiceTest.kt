@@ -20,7 +20,7 @@ import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
 import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusForRequest
 import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequest
 import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
-import kr.co.fitview.api.app.domain.workout.repository.WorkoutRequestLogRepository
+import kr.co.fitview.api.app.domain.workout.repository.WorkoutRequestSnapshotRepository
 import kr.co.fitview.api.app.domain.workout_history.repository.WorkoutHistoryRepository
 import kr.co.fitview.api.app.domain.workout.repository.WorkoutRequestRepository
 import kr.co.fitview.api.app.global.entity.Role
@@ -48,7 +48,7 @@ class WorkoutRequestServiceTest @Autowired constructor(
     val chatNoticeMessageRepository : ChatNoticeMessageRepository,
     val oAuth2Service : OAuth2Service,
     val messageReadStatusRepository: MessageReadStatusRepository,
-    val workoutRequestLogRepository : WorkoutRequestLogRepository,
+    val workoutRequestSnapshotRepository : WorkoutRequestSnapshotRepository,
     val time : Time
 ) : IntegrationTestSupport() {
 
@@ -569,7 +569,7 @@ class WorkoutRequestServiceTest @Autowired constructor(
         )
 
         // then
-        val findWorkoutRequestLog = workoutRequestLogRepository.findAll()
+        val findWorkoutRequestLog = workoutRequestSnapshotRepository.findAll()
         assertThat(findWorkoutRequestLog).hasSize(1)
     }
 
@@ -723,12 +723,12 @@ class WorkoutRequestServiceTest @Autowired constructor(
         workoutRequestService.modifyAllWorkoutRequestExpire()
 
         // then
-        val findWorkoutRequestLogs = workoutRequestLogRepository.findAll()
+        val findWorkoutRequestSnapshots = workoutRequestSnapshotRepository.findAll()
 
-        assertThat(findWorkoutRequestLogs).hasSize(2)
+        assertThat(findWorkoutRequestSnapshots).hasSize(2)
 
-        assertThat(findWorkoutRequestLogs)
-            .extracting("workoutRequest.id", "status")
+        assertThat(findWorkoutRequestSnapshots)
+            .extracting("workoutRequestId", "status")
             .containsExactlyInAnyOrder(
                 tuple(expireWorkoutRequest1.id!!, WorkoutRequestStatus.EXPIRE),
                 tuple(expireWorkoutRequest2.id!!, WorkoutRequestStatus.EXPIRE),
@@ -879,9 +879,9 @@ class WorkoutRequestServiceTest @Autowired constructor(
             )
     }
 
-    @DisplayName("운동 요청 상태 변동 시, 로그 기록에 추가한다.")
+    @DisplayName("운동 요청 상태 변동 시, 스냅샷 기록에 추가한다.")
     @Test
-    fun modifyWorkoutRequestAddLog() {
+    fun modifyWorkoutRequestAddSnapshot() {
         // given
         val me = Member(
             email = "email1",
@@ -939,12 +939,12 @@ class WorkoutRequestServiceTest @Autowired constructor(
         workoutRequestService.modifyWorkoutRequest(other.id!!, request)
 
         // then
-        val findWorkoutRequestLogs = workoutRequestLogRepository.findAll()
+        val findWorkoutRequestSnapshots = workoutRequestSnapshotRepository.findAll()
 
-        assertThat(findWorkoutRequestLogs).hasSize(1)
+        assertThat(findWorkoutRequestSnapshots).hasSize(1)
 
-        assertThat(findWorkoutRequestLogs)
-            .extracting("workoutRequest.id", "status")
+        assertThat(findWorkoutRequestSnapshots)
+            .extracting("workoutRequestId", "status")
             .contains(
                 tuple(workoutRequest.id!!, WorkoutRequestStatus.ACCEPT),
             )
