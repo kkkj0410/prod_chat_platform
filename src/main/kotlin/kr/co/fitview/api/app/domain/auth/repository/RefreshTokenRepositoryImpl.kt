@@ -34,7 +34,6 @@ class RefreshTokenRepositoryImpl(
                 refreshToken.deviceId.isNotNull,
                 refreshToken.expiresAt.lt(time.nowLocalDateTime),
                 refreshToken.status.eq(RefreshTokenStatus.ACTIVE),
-                refreshToken.deletedAt.isNull,
 
                 JPAExpressions.selectOne()
                     .from(subRefreshToken)
@@ -50,11 +49,11 @@ class RefreshTokenRepositoryImpl(
         return expiredTokens
     }
 
-    override fun updateAllInactive(tokenIds: List<String>) {
+    override fun updateAllExpire(tokenIds: List<String>) {
         if (tokenIds.isEmpty()) return
 
         queryFactory.update(refreshToken)
-            .set(refreshToken.status, RefreshTokenStatus.INACTIVE)
+            .set(refreshToken.status, RefreshTokenStatus.EXPIRED)
             .where(refreshToken.uid.`in`(tokenIds))
             .execute()
 

@@ -6,6 +6,6 @@ interface RefreshTokenRepositoryCustom{
 
     fun findAllExpiredRefreshToken() : List<RefreshTokenResponse>
 
-    fun updateAllInactive(tokenIds: List<String>)
+    fun updateAllExpire(tokenIds: List<String>)
 
 }

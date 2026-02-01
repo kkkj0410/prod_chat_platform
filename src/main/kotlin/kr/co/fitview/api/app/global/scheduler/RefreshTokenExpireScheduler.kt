@@ -26,7 +26,7 @@ class RefreshTokenExpireScheduler(
         val expiredRefreshToken = refreshTokenQueryService.findAllExpiredRefreshToken()
 
         val refreshTokenIds = expiredRefreshToken.map{it.refreshTokenUid}
-        refreshTokenService.modifyAllInactiveRefreshToken(refreshTokenIds)
+        refreshTokenService.modifyAllExpireRefreshToken(refreshTokenIds)
 
         val deviceIds = expiredRefreshToken.map{it.deviceId}.distinct()
         fcmTokenService.modifyAllFcmTokenFrom(deviceIds)

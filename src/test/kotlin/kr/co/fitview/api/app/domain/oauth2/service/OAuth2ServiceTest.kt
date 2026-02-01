@@ -131,7 +131,7 @@ class OAuth2ServiceTest @Autowired constructor(
         val findMemberIdByRefreshToken = jwtTokenProvider.extractMemberIdFrom(response.refreshToken)
         val findRole = jwtTokenProvider.extractRoleFrom(response.accessToken)
         val findUuid = jwtTokenProvider.extractUuidFrom(response.refreshToken)
-        val findRefreshTokenEntity = refreshTokenRepository.findByUidAndDeletedAtIsNull(findUuid)
+        val findRefreshTokenEntity = refreshTokenRepository.findByUid(findUuid)
 
 
         assertThat(findMember)
@@ -180,7 +180,7 @@ class OAuth2ServiceTest @Autowired constructor(
         val findMemberIdByRefreshToken = jwtTokenProvider.extractMemberIdFrom(response.refreshToken)
         val findRole = jwtTokenProvider.extractRoleFrom(response.accessToken)
         val findUuid = jwtTokenProvider.extractUuidFrom(response.refreshToken)
-        val findRefreshTokenEntity = refreshTokenRepository.findByUidAndDeletedAtIsNull(findUuid)
+        val findRefreshTokenEntity = refreshTokenRepository.findByUid(findUuid)
 
         assertThat(savedMember)
             .extracting("id", "id", "role")
@@ -233,7 +233,7 @@ class OAuth2ServiceTest @Autowired constructor(
         val findMemberIdByRefreshToken = jwtTokenProvider.extractMemberIdFrom(response.refreshToken)
         val findRole = jwtTokenProvider.extractRoleFrom(response.accessToken)
         val findUuid = jwtTokenProvider.extractUuidFrom(response.refreshToken)
-        val findRefreshTokenEntity = refreshTokenRepository.findByUidAndDeletedAtIsNull(findUuid)
+        val findRefreshTokenEntity = refreshTokenRepository.findByUid(findUuid)
 
         assertThat(savedMember)
             .extracting("id", "id", "role")

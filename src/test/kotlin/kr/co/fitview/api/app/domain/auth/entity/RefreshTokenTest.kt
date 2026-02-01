@@ -12,7 +12,7 @@ class RefreshTokenTest : IntegrationTestSupport(){
 
     @DisplayName("리프레시 토큰을 비활성화한다.")
     @Test
-    fun inactive() {
+    fun setRevoke() {
         // given
         val member = Member(
             email = "email",
@@ -27,10 +27,10 @@ class RefreshTokenTest : IntegrationTestSupport(){
         )
 
         // when
-        refreshTokenEntity.inactive()
+        refreshTokenEntity.setRevoke()
 
         // then
-        assertThat(refreshTokenEntity.status).isEqualTo(RefreshTokenStatus.INACTIVE)
+        assertThat(refreshTokenEntity.status).isEqualTo(RefreshTokenStatus.REVOKED)
 
     }
 }
