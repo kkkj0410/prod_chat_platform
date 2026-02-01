@@ -101,8 +101,7 @@ class WorkoutRequestRepositoryImpl(
             .selectFrom(workoutRequest)
             .join(workoutRequest.chatMessage, chatMessage)
             .where(
-                chatMessage.chatRoom.id.eq(chatRoomId),
-                workoutRequest.deletedAt.isNull,
+                chatMessage.chatRoom.id.eq(chatRoomId)
             )
             .orderBy(workoutRequest.requestedAt.desc())
             .limit(1)
@@ -128,7 +127,6 @@ class WorkoutRequestRepositoryImpl(
             .join(workoutRequest.chatMessage, chatMessage)
             .where(
                 workoutRequest.status.eq(WorkoutRequestStatus.PENDING),
-                workoutRequest.deletedAt.isNull,
                 workoutRequest.scheduledAt.lt(time.nowLocalDateTime),
             )
             .fetch()
@@ -148,7 +146,6 @@ class WorkoutRequestRepositoryImpl(
             .join(workoutRequest.chatMessage, chatMessage)
             .where(
                 workoutRequest.status.eq(WorkoutRequestStatus.PENDING),
-                workoutRequest.deletedAt.isNull,
                 workoutRequest.requestedAt.loe(time.nowLocalDateTime.minusHours(24)),
             )
             .fetch()
@@ -213,7 +210,6 @@ class WorkoutRequestRepositoryImpl(
                     toMemberHasReview.toMember.id.eq(fromMember.id)
                 )
             .where(
-                workoutRequest.deletedAt.isNull,
                 condition.workoutRequestId?.let { workoutRequest.id.lt(it) }
             )
             .orderBy(workoutRequest.id.desc())
@@ -300,7 +296,6 @@ class WorkoutRequestRepositoryImpl(
             .join(workoutRequest.chatMessage, chatMessage).fetchJoin()
             .where(
                 workoutRequest.id.eq(workoutRequestId),
-                workoutRequest.deletedAt.isNull
             )
             .fetchOne()
     }
