@@ -118,9 +118,9 @@ class RefreshTokenRepositoryTest@Autowired constructor(
             )
     }
 
-    @DisplayName("refreshToken을 비활성화한다.")
+    @DisplayName("refreshToken을 만료한다.")
     @Test
-    fun updateAllInactive() {
+    fun updateAllExpire() {
         // given
         val member = Member(
             email = "email",
@@ -149,19 +149,19 @@ class RefreshTokenRepositoryTest@Autowired constructor(
         val refreshTokenIds = listOf(refreshToken1.uid, refreshToken2.uid)
 
         // when
-        refreshTokenRepository.updateAllInactive(refreshTokenIds)
+        refreshTokenRepository.updateAllExpire(refreshTokenIds)
 
         // then
         val refreshTokens = refreshTokenRepository.findAll()
 
         assertThat(refreshTokens).hasSize(2)
-        assertThat(refreshTokens[0].status).isEqualTo(RefreshTokenStatus.INACTIVE)
-        assertThat(refreshTokens[1].status).isEqualTo(RefreshTokenStatus.INACTIVE)
+        assertThat(refreshTokens[0].status).isEqualTo(RefreshTokenStatus.EXPIRED)
+        assertThat(refreshTokens[1].status).isEqualTo(RefreshTokenStatus.EXPIRED)
     }
 
     @DisplayName("토큰 고유 id로 해당 리프레시 토큰을 조회한다.")
     @Test
-    fun findByUidAndDeletedAtIsNull() {
+    fun findByUid() {
         // given
         val member = Member(
             email = "email",
@@ -180,7 +180,7 @@ class RefreshTokenRepositoryTest@Autowired constructor(
         refreshTokenRepository.save(refreshToken)
 
         // when
-        val findRefreshToken = refreshTokenRepository.findByUidAndDeletedAtIsNull("id1")
+        val findRefreshToken = refreshTokenRepository.findByUid("id1")
 
         // then
         assertThat(findRefreshToken)

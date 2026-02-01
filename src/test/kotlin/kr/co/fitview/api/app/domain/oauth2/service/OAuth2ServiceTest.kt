@@ -131,7 +131,7 @@ class OAuth2ServiceTest @Autowired constructor(
         val findMemberIdByRefreshToken = jwtTokenProvider.extractMemberIdFrom(response.refreshToken)
         val findRole = jwtTokenProvider.extractRoleFrom(response.accessToken)
         val findUuid = jwtTokenProvider.extractUuidFrom(response.refreshToken)
-        val findRefreshTokenEntity = refreshTokenRepository.findByUidAndDeletedAtIsNull(findUuid)
+        val findRefreshTokenEntity = refreshTokenRepository.findByUid(findUuid)
 
 
         assertThat(findMember)
@@ -180,7 +180,7 @@ class OAuth2ServiceTest @Autowired constructor(
         val findMemberIdByRefreshToken = jwtTokenProvider.extractMemberIdFrom(response.refreshToken)
         val findRole = jwtTokenProvider.extractRoleFrom(response.accessToken)
         val findUuid = jwtTokenProvider.extractUuidFrom(response.refreshToken)
-        val findRefreshTokenEntity = refreshTokenRepository.findByUidAndDeletedAtIsNull(findUuid)
+        val findRefreshTokenEntity = refreshTokenRepository.findByUid(findUuid)
 
         assertThat(savedMember)
             .extracting("id", "id", "role")
@@ -233,7 +233,7 @@ class OAuth2ServiceTest @Autowired constructor(
         val findMemberIdByRefreshToken = jwtTokenProvider.extractMemberIdFrom(response.refreshToken)
         val findRole = jwtTokenProvider.extractRoleFrom(response.accessToken)
         val findUuid = jwtTokenProvider.extractUuidFrom(response.refreshToken)
-        val findRefreshTokenEntity = refreshTokenRepository.findByUidAndDeletedAtIsNull(findUuid)
+        val findRefreshTokenEntity = refreshTokenRepository.findByUid(findUuid)
 
         assertThat(savedMember)
             .extracting("id", "id", "role")
@@ -306,10 +306,11 @@ class OAuth2ServiceTest @Autowired constructor(
             .extracting("nickname", "gender", "birthday", "height", "isSignup", "gender")
             .contains(request.nickname, request.gender, request.birthday, request.height, true, request.gender)
 
-        val findTerms = termRepository.findAllByMemberIdAndDeletedAtIsNull(memberId)
+        val findTerms = termRepository.findAllByMemberId(memberId)
         assertThat(findTerms)
             .extracting("name", "isAgreed")
             .containsExactlyInAnyOrder(
+                tuple(TermName.AGE_OVER_14, true),
                 tuple(TermName.PRIVACY_POLICY, true),
                 tuple(TermName.TERMS_OF_SERVICE, true),
                 tuple(TermName.LOCATION_SERVICE, true),

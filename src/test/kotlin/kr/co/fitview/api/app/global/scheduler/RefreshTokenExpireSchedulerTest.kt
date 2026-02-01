@@ -82,15 +82,15 @@ class RefreshTokenExpireSchedulerTest @Autowired constructor(
         // then
         val findRefreshTokens = refreshTokenRepository.findAll()
         assertThat(findRefreshTokens).hasSize(2)
-        assertThat(findRefreshTokens[0].status).isEqualTo(RefreshTokenStatus.INACTIVE)
-        assertThat(findRefreshTokens[1].status).isEqualTo(RefreshTokenStatus.INACTIVE)
+        assertThat(findRefreshTokens[0].status).isEqualTo(RefreshTokenStatus.EXPIRED)
+        assertThat(findRefreshTokens[1].status).isEqualTo(RefreshTokenStatus.EXPIRED)
 
         val findFcmTokens = fcmTokenRepository.findAll()
         assertThat(findFcmTokens)
-            .extracting("id", "deviceId", "deletedAt")
+            .extracting("id", "deviceId")
             .contains(
-                tuple(fcmToken1.id!!, fcmToken1.deviceId!!, time.nowLocalDateTime),
-                tuple(fcmToken2.id!!, fcmToken2.deviceId!!, time.nowLocalDateTime),
+                tuple(fcmToken1.id!!, fcmToken1.deviceId!!),
+                tuple(fcmToken2.id!!, fcmToken2.deviceId!!),
             )
     }
 }

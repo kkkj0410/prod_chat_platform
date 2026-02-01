@@ -5,5 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository
 
 interface TermRepository : JpaRepository<Term, Long> {
 
-    fun findAllByMemberIdAndDeletedAtIsNull(memberId : Long) : List<Term>
+    fun findAllByMemberId(memberId : Long) : List<Term>
 }

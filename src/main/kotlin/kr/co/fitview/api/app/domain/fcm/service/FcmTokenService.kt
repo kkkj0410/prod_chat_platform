@@ -6,15 +6,13 @@ import com.google.firebase.messaging.MessagingErrorCode
 import kr.co.fitview.api.app.domain.fcm.constant.DeepLinkConstant
 import kr.co.fitview.api.app.domain.fcm.dto.request.*
 import kr.co.fitview.api.app.domain.fcm.entity.FcmToken
-import kr.co.fitview.api.app.domain.fcm.entity.QFcmToken.fcmToken
-import kr.co.fitview.api.app.domain.fcm.entity.enums.FcmTokenPlatform
+import kr.co.fitview.api.app.domain.fcm.entity.enums.FcmTokenStatus
 import kr.co.fitview.api.app.domain.fcm.enums.FcmMessage
 import kr.co.fitview.api.app.domain.fcm.repository.FcmTokenRepository
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.member.MemberErrorCode
 import kr.co.fitview.api.app.global.time.Time
-import kr.co.fitview.api.app.global.time.TimeHolder.time
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -41,7 +39,7 @@ class FcmTokenService(
         val findMember =
             memberQueryService.findMemberFromId(memberId) ?: throw GlobalException(MemberErrorCode.MEMBER_NOT_FOUND)
 
-        val findFcmToken = fcmTokenRepository.findByDeviceIdAndIsActiveTrueAndDeletedAtIsNull(request.deviceId)
+        val findFcmToken = fcmTokenRepository.findByDeviceIdAndStatus(request.deviceId, FcmTokenStatus.ACTIVE)
 
         if(isNotNull(findFcmToken)){
             findFcmToken!!.updateToken(findMember, request.token)
@@ -60,18 +58,18 @@ class FcmTokenService(
 
 
     @Transactional
-    fun modifyAllFcmTokenFrom(deviceIds: List<String>) {
-        fcmTokenRepository.deleteAllFcmTokenBy(deviceIds)
+    fun modifyAllRevokeFcmTokenFrom(deviceIds: List<String>) {
+        fcmTokenRepository.revokeAllFcmTokenBy(deviceIds)
     }
 
     @Transactional
-    fun deleteAllFcmFrom(memberId: Long) {
-        fcmTokenRepository.deleteAllFcmTokenBy(memberId)
+    fun revokeAllFcmFrom(memberId: Long) {
+        fcmTokenRepository.revokeAllFcmTokenBy(memberId)
     }
 
     @Transactional
     fun sendWorkoutPartnerRequest(event: EventFcmWorkoutPartnerRequest) {
-        val findFcmTokens = fcmTokenRepository.findAllByMemberIdAndIsActiveTrueAndDeletedAtIsNull(event.toMemberId)
+        val findFcmTokens = fcmTokenRepository.findAllByMemberIdAndStatus(event.toMemberId, FcmTokenStatus.ACTIVE)
 
         val title = FcmMessage.WORKOUT_PARTNER_REQUEST.title
         val body = FcmMessage.WORKOUT_PARTNER_REQUEST.formatBody(event.fromNickname)
@@ -92,7 +90,7 @@ class FcmTokenService(
 
     @Transactional
     fun sendWorkoutPartnerAccept(event: EventFcmWorkoutPartnerAccept) {
-        val findFcmTokens = fcmTokenRepository.findAllByMemberIdAndIsActiveTrueAndDeletedAtIsNull(event.toMemberId)
+        val findFcmTokens = fcmTokenRepository.findAllByMemberIdAndStatus(event.toMemberId, FcmTokenStatus.ACTIVE)
 
         val title = FcmMessage.WORKOUT_PARTNER_ACCEPT.title
         val body = FcmMessage.WORKOUT_PARTNER_ACCEPT.body
@@ -113,7 +111,7 @@ class FcmTokenService(
 
     @Transactional
     fun sendChatMessage(event: EventFcmChatMessage) {
-        val findFcmTokens = fcmTokenRepository.findAllByMemberIdAndIsActiveTrueAndDeletedAtIsNull(event.toMemberId)
+        val findFcmTokens = fcmTokenRepository.findAllByMemberIdAndStatus(event.toMemberId, FcmTokenStatus.ACTIVE)
 
 
         val title = FcmMessage.CHAT_MESSAGE.formatTitle(event.fromNickname)
@@ -136,7 +134,7 @@ class FcmTokenService(
 
     @Transactional
     fun sendWorkoutRequest(event: EventFcmWorkoutRequest) {
-        val findFcmTokens = fcmTokenRepository.findAllByMemberIdAndIsActiveTrueAndDeletedAtIsNull(event.toMemberId)
+        val findFcmTokens = fcmTokenRepository.findAllByMemberIdAndStatus(event.toMemberId, FcmTokenStatus.ACTIVE)
 
         val title = FcmMessage.WORKOUT_REQUEST.formatTitle(event.fromNickname)
 
@@ -160,7 +158,7 @@ class FcmTokenService(
 
     @Transactional
     fun sendWorkoutRequestAccept(event: EventFcmWorkoutRequestAccept) {
-        val findFcmTokens = fcmTokenRepository.findAllByMemberIdAndIsActiveTrueAndDeletedAtIsNull(event.toMemberId)
+        val findFcmTokens = fcmTokenRepository.findAllByMemberIdAndStatus(event.toMemberId, FcmTokenStatus.ACTIVE)
 
         val title = FcmMessage.WORKOUT_REQUEST_ACCEPT.title
         val body = FcmMessage.WORKOUT_REQUEST_ACCEPT.body
@@ -182,7 +180,7 @@ class FcmTokenService(
 
     @Transactional
     fun sendWorkoutRequestReject(event: EventFcmWorkoutRequestReject) {
-        val findFcmTokens = fcmTokenRepository.findAllByMemberIdAndIsActiveTrueAndDeletedAtIsNull(event.toMemberId)
+        val findFcmTokens = fcmTokenRepository.findAllByMemberIdAndStatus(event.toMemberId, FcmTokenStatus.ACTIVE)
 
         val title = FcmMessage.WORKOUT_REQUEST_REJECT.title
         val body = FcmMessage.WORKOUT_REQUEST_REJECT.body
@@ -204,7 +202,7 @@ class FcmTokenService(
 
     @Transactional
     fun sendWorkoutRequestCancel(event: EventFcmWorkoutRequestCancel) {
-        val findFcmTokens = fcmTokenRepository.findAllByMemberIdAndIsActiveTrueAndDeletedAtIsNull(event.toMemberId)
+        val findFcmTokens = fcmTokenRepository.findAllByMemberIdAndStatus(event.toMemberId, FcmTokenStatus.ACTIVE)
 
         val title = FcmMessage.WORKOUT_REQUEST_REJECT.title
         val body = FcmMessage.WORKOUT_REQUEST_REJECT.body
@@ -227,7 +225,7 @@ class FcmTokenService(
 
     @Transactional
     fun sendWorkoutComplete(event: EventFcmWorkoutComplete) {
-        val findFcmTokens = fcmTokenRepository.findAllByMemberIdAndIsActiveTrueAndDeletedAtIsNull(event.toMemberId)
+        val findFcmTokens = fcmTokenRepository.findAllByMemberIdAndStatus(event.toMemberId, FcmTokenStatus.ACTIVE)
 
         val title = FcmMessage.WORKOUT_COMPLETE.title
         val body = FcmMessage.WORKOUT_COMPLETE.body
@@ -249,7 +247,7 @@ class FcmTokenService(
 
     @Transactional
     fun sendReviewReceive(event: EventFcmReviewReceive) {
-        val findFcmTokens = fcmTokenRepository.findAllByMemberIdAndIsActiveTrueAndDeletedAtIsNull(event.toMemberId)
+        val findFcmTokens = fcmTokenRepository.findAllByMemberIdAndStatus(event.toMemberId, FcmTokenStatus.ACTIVE)
 
         val title = FcmMessage.REVIEW_RECEIVE.title
         val body = FcmMessage.REVIEW_RECEIVE.body
@@ -270,7 +268,7 @@ class FcmTokenService(
 
     @Transactional
     fun sendReviewRequest(event: EventFcmReviewRequest) {
-        val findFcmTokens = fcmTokenRepository.findAllByMemberIdAndIsActiveTrueAndDeletedAtIsNull(event.toMemberId)
+        val findFcmTokens = fcmTokenRepository.findAllByMemberIdAndStatus(event.toMemberId, FcmTokenStatus.ACTIVE)
 
         val title = FcmMessage.REVIEW_REQUEST.title
         val body = FcmMessage.REVIEW_REQUEST.body
@@ -290,7 +288,7 @@ class FcmTokenService(
     }
 
     fun findAllFcmTokenByDeviceId(deviceId: String) : List<FcmToken> {
-        return fcmTokenRepository.findAllByDeviceIdAndDeletedAtIsNull(deviceId)
+        return fcmTokenRepository.findAllByDeviceId(deviceId)
     }
 
     private fun deleteOtherDeviceIdAlreadyExistsFcmToken(deviceId : String, fcmToken : String) {
@@ -299,7 +297,7 @@ class FcmTokenService(
             fcmTokenString = fcmToken
         )
 
-        findFcmTokens.forEach{it.delete(time.nowLocalDateTime)}
+        findFcmTokens.forEach{it.revoke()}
     }
 
     private fun sendAllDevice(
@@ -322,7 +320,7 @@ class FcmTokenService(
             } catch (e: FirebaseMessagingException) {
 
                 if (e.messagingErrorCode == MessagingErrorCode.UNREGISTERED) {
-                    fcmToken.deactivate()
+                    fcmToken.invalid()
                     logFail(fcmToken, data, e, retry = false)
                     return@forEach
                 }

@@ -4,7 +4,7 @@ import jakarta.persistence.*
 import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
 import kr.co.fitview.api.app.domain.member.entity.Member
-import kr.co.fitview.api.app.global.entity.BaseSoftDeleteEntity
+import kr.co.fitview.api.app.global.entity.BaseEntity
 import java.time.LocalDateTime
 
 @Entity
@@ -33,15 +33,15 @@ class RefreshToken(
     @Column(name = "device_id", length = 100)
     var deviceId: String? = null
 
-) : BaseSoftDeleteEntity() {
+) : BaseEntity() {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "refresh_token_id", nullable = false)
     var id: Long? = null
 
-    fun inactive() : RefreshToken{
-        this.status = RefreshTokenStatus.INACTIVE
+    fun setRevoke() : RefreshToken{
+        this.status = RefreshTokenStatus.REVOKED
         return this
     }
 
