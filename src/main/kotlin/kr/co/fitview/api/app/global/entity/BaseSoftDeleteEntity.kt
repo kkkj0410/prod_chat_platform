@@ -27,8 +27,13 @@ open class BaseSoftDeleteEntity {
     @PrePersist
     fun prePersist() {
         val now = TimeHolder.time.nowLocalDateTime
-        createdAt = now
-        updatedAt = now
+
+        if (createdAt == null) {
+            createdAt = now
+        }
+        if (updatedAt == null) {
+            updatedAt = now
+        }
     }
 
     @PreUpdate

@@ -45,7 +45,7 @@ class WorkoutRequestService(
     private val messageReadStatusService : MessageReadStatusService,
     private val workoutRequestQueryService: WorkoutRequestQueryService,
     private val chatRoomQueryService : ChatRoomQueryService,
-    private val workoutRequestLogService : WorkoutRequestLogService,
+    private val workoutRequestSnapshotService : WorkoutRequestSnapshotService,
     private val publisher: ApplicationEventPublisher,
     private val time: Time
 ) {
@@ -73,7 +73,7 @@ class WorkoutRequestService(
         )
         workoutRequestRepository.save(workoutRequest)
 
-        workoutRequestLogService.addWorkoutRequestLog(
+        workoutRequestSnapshotService.addWorkoutRequestSnapshot(
             workoutRequestId = workoutRequest.id!!,
             status = WorkoutRequestStatus.PENDING
         )
@@ -114,7 +114,7 @@ class WorkoutRequestService(
 
         workoutRequestRepository.updateExpireByIdIn(workoutRequestIds)
 
-        workoutRequestLogService.addAllWorkoutRequestLog(
+        workoutRequestSnapshotService.addAllWorkoutRequestSnapshot(
             workoutRequestIds = workoutRequestIds,
             status = WorkoutRequestStatus.EXPIRE
         )
@@ -137,7 +137,7 @@ class WorkoutRequestService(
 
         findWorkoutRequest.updateStatus(request.status.toWorkoutRequestStatus())
 
-        workoutRequestLogService.addWorkoutRequestLog(
+        workoutRequestSnapshotService.addWorkoutRequestSnapshot(
             workoutRequestId = findWorkoutRequest.id!!,
             status = findWorkoutRequest.status!!
         )
