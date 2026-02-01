@@ -59,7 +59,7 @@ class WorkoutPartnerRequestRepositoryTest @Autowired constructor(
 
     @DisplayName("회원A-B간의 최신 핏버디 요청을 조회한다.")
     @Test
-    fun findTop1ByFromMemberIdAndToMemberIdAndDeletedAtIsNullOrderByRequestedAtDesc(){
+    fun findTop1ByFromMemberIdAndToMemberIdOrderByRequestedAtDesc(){
         // given
         val fromMember = Member(
             email = "email1",
@@ -92,7 +92,7 @@ class WorkoutPartnerRequestRepositoryTest @Autowired constructor(
         workoutPartnerRequestRepository.save(workoutPartnerRequest2)
 
         // when
-        val findWorkPartnerRequest = workoutPartnerRequestRepository.findTop1ByFromMemberIdAndToMemberIdAndDeletedAtIsNullOrderByRequestedAtDesc(
+        val findWorkPartnerRequest = workoutPartnerRequestRepository.findTop1ByFromMemberIdAndToMemberIdOrderByRequestedAtDesc(
             fromMemberId = fromMember.id!!,
             toMemberId = toMember.id!!,
         )
@@ -105,7 +105,7 @@ class WorkoutPartnerRequestRepositoryTest @Autowired constructor(
 
     @DisplayName("상대 회원을 향한 특정 운동 파트너 신청을 조회한다.")
     @Test
-    fun findByIdAndToMemberIdAndDeletedAtIsNull() {
+    fun findByIdAndToMemberId() {
         // given
         val fromMember = Member(
             email = "email1",
@@ -131,7 +131,7 @@ class WorkoutPartnerRequestRepositoryTest @Autowired constructor(
         workoutPartnerRequestRepository.save(workoutPartnerRequest)
 
         // when
-        val findWorkoutPartnerRequest = workoutPartnerRequestRepository.findByIdAndToMemberIdAndDeletedAtIsNull(workoutPartnerRequest.id!!, toMember.id!!)
+        val findWorkoutPartnerRequest = workoutPartnerRequestRepository.findByIdAndToMemberId(workoutPartnerRequest.id!!, toMember.id!!)
 
         // then
         assertThat(findWorkoutPartnerRequest)

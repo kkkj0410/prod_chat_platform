@@ -116,7 +116,6 @@ class WorkoutPartnerRequestRepositoryImpl(
                 workoutPartnerRequestWhereCondition(),
                 memberImage.type.eq(MemberImageType.PROFILE),
                 member.deletedAt.isNull,
-                workoutPartnerRequest.deletedAt.isNull,
                 memberImage.deletedAt.isNull,
                 image.deletedAt.isNull,
             )
@@ -203,7 +202,6 @@ class WorkoutPartnerRequestRepositoryImpl(
             .from(workoutPartnerRequest)
             .where(
                 workoutPartnerRequest.status.eq(WorkoutPartnerRequestStatus.PENDING),
-                workoutPartnerRequest.deletedAt.isNull,
                 workoutPartnerRequest.requestedAt.loe(time.nowLocalDateTime.minusHours(24)),
                 // 다시 위 24시간으로 돌려놔야함. 테스트임
 //                workoutPartnerRequest.requestedAt.loe(time.nowLocalDateTime.minusMinutes(2)),
@@ -251,7 +249,6 @@ class WorkoutPartnerRequestRepositoryImpl(
             .join(toMember)
                 .on(toMember.id.eq(workoutPartnerRequest.toMember.id))
             .where(
-                workoutPartnerRequest.deletedAt.isNull,
                 condition.workoutPartnerRequestId?.let { workoutPartnerRequest.id.lt(it) }
             )
             .orderBy(workoutPartnerRequest.id.desc())

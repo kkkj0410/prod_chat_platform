@@ -306,7 +306,7 @@ class OAuth2ServiceTest @Autowired constructor(
             .extracting("nickname", "gender", "birthday", "height", "isSignup", "gender")
             .contains(request.nickname, request.gender, request.birthday, request.height, true, request.gender)
 
-        val findTerms = termRepository.findAllByMemberIdAndDeletedAtIsNull(memberId)
+        val findTerms = termRepository.findAllByMemberId(memberId)
         assertThat(findTerms)
             .extracting("name", "isAgreed")
             .containsExactlyInAnyOrder(
