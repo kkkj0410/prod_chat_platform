@@ -3,6 +3,7 @@ package kr.co.fitview.api.app.domain.workout.service
 import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.chat.dto.request.ChatWorkoutRequestMessageServiceRequest
 import kr.co.fitview.api.app.domain.chat.dto.request.WorkoutRequestUpdateRequest
+import kr.co.fitview.api.app.domain.chat.dto.request.WorkoutRequestUpdateServiceRequest
 import kr.co.fitview.api.app.domain.chat.entity.ChatMessage
 import kr.co.fitview.api.app.domain.chat.entity.ChatParticipant
 import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
@@ -860,7 +861,7 @@ class WorkoutRequestServiceTest @Autowired constructor(
         )
         workoutRequestRepository.save(workoutRequest)
 
-        val request = WorkoutRequestUpdateRequest(
+        val request = WorkoutRequestUpdateServiceRequest(
             workoutRequestId = workoutRequest.id!!,
             status = WorkoutRequestStatusForRequest.ACCEPT
         )
@@ -930,7 +931,7 @@ class WorkoutRequestServiceTest @Autowired constructor(
         )
         workoutRequestRepository.save(workoutRequest)
 
-        val request = WorkoutRequestUpdateRequest(
+        val request = WorkoutRequestUpdateServiceRequest(
             workoutRequestId = workoutRequest.id!!,
             status = WorkoutRequestStatusForRequest.ACCEPT
         )
@@ -1002,7 +1003,7 @@ class WorkoutRequestServiceTest @Autowired constructor(
         )
         workoutRequestRepository.save(workoutRequest)
 
-        val request = WorkoutRequestUpdateRequest(
+        val request = WorkoutRequestUpdateServiceRequest(
             workoutRequestId = workoutRequest.id!!,
             status = WorkoutRequestStatusForRequest.ACCEPT
         )
@@ -1066,7 +1067,7 @@ class WorkoutRequestServiceTest @Autowired constructor(
         )
         workoutRequestRepository.save(workoutRequest)
 
-        val request = WorkoutRequestUpdateRequest(
+        val request = WorkoutRequestUpdateServiceRequest(
             workoutRequestId = workoutRequest.id!!,
             status = WorkoutRequestStatusForRequest.ACCEPT
         )
@@ -1130,7 +1131,7 @@ class WorkoutRequestServiceTest @Autowired constructor(
         )
         workoutRequestRepository.save(workoutRequest)
 
-        val request = WorkoutRequestUpdateRequest(
+        val request = WorkoutRequestUpdateServiceRequest(
             workoutRequestId = workoutRequest.id!!,
             status = WorkoutRequestStatusForRequest.REJECT
         )
@@ -1194,7 +1195,7 @@ class WorkoutRequestServiceTest @Autowired constructor(
         )
         workoutRequestRepository.save(workoutRequest)
 
-        val request = WorkoutRequestUpdateRequest(
+        val request = WorkoutRequestUpdateServiceRequest(
             workoutRequestId = workoutRequest.id!!,
             status = WorkoutRequestStatusForRequest.CANCEL
         )
@@ -1261,7 +1262,7 @@ class WorkoutRequestServiceTest @Autowired constructor(
         workoutRequest.updateStatus(WorkoutRequestStatus.ACCEPT)
         workoutRequestRepository.save(workoutRequest)
 
-        val request = WorkoutRequestUpdateRequest(
+        val request = WorkoutRequestUpdateServiceRequest(
             workoutRequestId = workoutRequest.id!!,
             status = WorkoutRequestStatusForRequest.COMPLETE
         )
@@ -1337,7 +1338,7 @@ class WorkoutRequestServiceTest @Autowired constructor(
         workoutRequest.updateStatus(WorkoutRequestStatus.ACCEPT)
         workoutRequestRepository.save(workoutRequest)
 
-        val request = WorkoutRequestUpdateRequest(
+        val request = WorkoutRequestUpdateServiceRequest(
             workoutRequestId = workoutRequest.id!!,
             status = WorkoutRequestStatusForRequest.COMPLETE
         )
@@ -1403,7 +1404,7 @@ class WorkoutRequestServiceTest @Autowired constructor(
         workoutRequest.updateStatus(WorkoutRequestStatus.ACCEPT)
         workoutRequestRepository.save(workoutRequest)
 
-        val request = WorkoutRequestUpdateRequest(
+        val request = WorkoutRequestUpdateServiceRequest(
             workoutRequestId = workoutRequest.id!!,
             status = WorkoutRequestStatusForRequest.COMPLETE
         )
@@ -1467,7 +1468,7 @@ class WorkoutRequestServiceTest @Autowired constructor(
         )
         workoutRequestRepository.save(workoutRequest)
 
-        val request = WorkoutRequestUpdateRequest(
+        val request = WorkoutRequestUpdateServiceRequest(
             workoutRequestId = workoutRequest.id!!,
             status = WorkoutRequestStatusForRequest.REJECT
         )
@@ -1531,7 +1532,7 @@ class WorkoutRequestServiceTest @Autowired constructor(
         )
         workoutRequestRepository.save(workoutRequest)
 
-        val request = WorkoutRequestUpdateRequest(
+        val request = WorkoutRequestUpdateServiceRequest(
             workoutRequestId = workoutRequest.id!!,
             status = WorkoutRequestStatusForRequest.CANCEL
         )
@@ -1595,7 +1596,7 @@ class WorkoutRequestServiceTest @Autowired constructor(
         )
         workoutRequestRepository.save(workoutRequest)
 
-        val request = WorkoutRequestUpdateRequest(
+        val request = WorkoutRequestUpdateServiceRequest(
             workoutRequestId = workoutRequest.id!!,
             status = WorkoutRequestStatusForRequest.ACCEPT
         )
@@ -1656,7 +1657,7 @@ class WorkoutRequestServiceTest @Autowired constructor(
         workoutRequest.updateStatus(WorkoutRequestStatus.PENDING)
         workoutRequestRepository.save(workoutRequest)
 
-        val request = WorkoutRequestUpdateRequest(
+        val request = WorkoutRequestUpdateServiceRequest(
             workoutRequestId = workoutRequest.id!!,
             status = WorkoutRequestStatusForRequest.COMPLETE
         )
@@ -1723,7 +1724,7 @@ class WorkoutRequestServiceTest @Autowired constructor(
         workoutRequest.updateStatus(WorkoutRequestStatus.valueOf(status))
         workoutRequestRepository.save(workoutRequest)
 
-        val request = WorkoutRequestUpdateRequest(
+        val request = WorkoutRequestUpdateServiceRequest(
             workoutRequestId = workoutRequest.id!!,
             status = WorkoutRequestStatusForRequest.ACCEPT
         )
@@ -1788,7 +1789,7 @@ class WorkoutRequestServiceTest @Autowired constructor(
         )
         workoutRequestRepository.save(workoutRequest)
 
-        val request = WorkoutRequestUpdateRequest(
+        val request = WorkoutRequestUpdateServiceRequest(
             workoutRequestId = workoutRequest.id!!,
             status = WorkoutRequestStatusForRequest.REJECT
         )
@@ -1853,7 +1854,7 @@ class WorkoutRequestServiceTest @Autowired constructor(
         )
         workoutRequestRepository.save(workoutRequest)
 
-        val request = WorkoutRequestUpdateRequest(
+        val request = WorkoutRequestUpdateServiceRequest(
             workoutRequestId = workoutRequest.id!!,
             status = WorkoutRequestStatusForRequest.CANCEL
         )
@@ -1918,7 +1919,7 @@ class WorkoutRequestServiceTest @Autowired constructor(
         workoutRequest.updateStatus(WorkoutRequestStatus.ACCEPT)
         workoutRequestRepository.save(workoutRequest)
 
-        val request = WorkoutRequestUpdateRequest(
+        val request = WorkoutRequestUpdateServiceRequest(
             workoutRequestId = workoutRequest.id!!,
             status = WorkoutRequestStatusForRequest.ACCEPT
         )
@@ -1982,7 +1983,7 @@ class WorkoutRequestServiceTest @Autowired constructor(
         )
         workoutRequestRepository.save(workoutRequest)
 
-        val request = WorkoutRequestUpdateRequest(
+        val request = WorkoutRequestUpdateServiceRequest(
             workoutRequestId = workoutRequest.id!!,
             status = WorkoutRequestStatusForRequest.ACCEPT
         )
@@ -2050,7 +2051,7 @@ class WorkoutRequestServiceTest @Autowired constructor(
         )
         workoutRequestRepository.save(workoutRequest)
 
-        val request = WorkoutRequestUpdateRequest(
+        val request = WorkoutRequestUpdateServiceRequest(
             workoutRequestId = workoutRequest.id!!,
             status = WorkoutRequestStatusForRequest.ACCEPT
         )
@@ -2117,7 +2118,7 @@ class WorkoutRequestServiceTest @Autowired constructor(
         workoutRequest.updateStatus(WorkoutRequestStatus.ACCEPT)
         workoutRequestRepository.save(workoutRequest)
 
-        val request = WorkoutRequestUpdateRequest(
+        val request = WorkoutRequestUpdateServiceRequest(
             workoutRequestId = workoutRequest.id!!,
             status = WorkoutRequestStatusForRequest.COMPLETE
         )
@@ -2184,7 +2185,7 @@ class WorkoutRequestServiceTest @Autowired constructor(
         )
         workoutRequestRepository.save(workoutRequest)
 
-        val request = WorkoutRequestUpdateRequest(
+        val request = WorkoutRequestUpdateServiceRequest(
             workoutRequestId = workoutRequest.id!!,
             status = WorkoutRequestStatusForRequest.REJECT
         )
@@ -2250,7 +2251,7 @@ class WorkoutRequestServiceTest @Autowired constructor(
         )
         workoutRequestRepository.save(workoutRequest)
 
-        val request = WorkoutRequestUpdateRequest(
+        val request = WorkoutRequestUpdateServiceRequest(
             workoutRequestId = workoutRequest.id!!,
             status = WorkoutRequestStatusForRequest.CANCEL
         )

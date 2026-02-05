@@ -6,4 +6,5 @@ data class StompEventTextMessageDepth2(
     val profileImageUrl: String,
     val nickname: String,
     val chatMessage: StompEventTextMessageDepth3,
+    val clientRequestId : String?
 )

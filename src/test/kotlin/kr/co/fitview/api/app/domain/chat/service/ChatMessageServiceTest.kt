@@ -71,7 +71,7 @@ class ChatMessageServiceTest @Autowired constructor(
         chatParticipantRepository.save(chatParticipant2)
 
         val request = ChatTextMessageServiceRequest(
-            content = "hello"
+            content = "hello",
         )
 
         // when
@@ -124,7 +124,7 @@ class ChatMessageServiceTest @Autowired constructor(
         chatParticipantRepository.save(chatParticipant2)
 
         val request = ChatTextMessageServiceRequest(
-            content = "hello"
+            content = "hello",
         )
 
         // when
@@ -172,7 +172,7 @@ class ChatMessageServiceTest @Autowired constructor(
         chatParticipantRepository.save(chatParticipant2)
 
         val request = ChatTextMessageServiceRequest(
-            content = "hello"
+            content = "hello",
         )
 
         // when
@@ -228,7 +228,7 @@ class ChatMessageServiceTest @Autowired constructor(
         chatParticipantRepository.save(chatParticipant2)
 
         val request = ChatTextMessageServiceRequest(
-            content = "hello"
+            content = "hello",
         )
 
         // when
@@ -277,7 +277,7 @@ class ChatMessageServiceTest @Autowired constructor(
         chatParticipantRepository.save(chatParticipant2)
 
         val request = ChatTextMessageServiceRequest(
-            content = "hello"
+            content = "hello",
         )
 
         // when

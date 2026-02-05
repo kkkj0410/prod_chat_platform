@@ -7,9 +7,20 @@ import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestSta
 data class WorkoutRequestUpdateRequest(
 
     @field:NotNull(message = "workoutRequestId is required")
-    val workoutRequestId : Long,
+    val workoutRequestId : Long?,
 
     @field:NotNull(message = "status is required")
-    val status : WorkoutRequestStatusForRequest
+    val status : WorkoutRequestStatusForRequest?,
 
-)
+    val clientRequestId : String? = null
+
+){
+
+    fun toServiceRequest(): WorkoutRequestUpdateServiceRequest {
+        return WorkoutRequestUpdateServiceRequest(
+            workoutRequestId = workoutRequestId!!,
+            status = status!!,
+            clientRequestId = clientRequestId
+        )
+    }
+}

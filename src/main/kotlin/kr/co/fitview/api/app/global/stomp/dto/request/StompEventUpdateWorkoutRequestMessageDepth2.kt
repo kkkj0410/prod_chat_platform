@@ -6,4 +6,5 @@ data class StompEventUpdateWorkoutRequestMessageDepth2(
     val chatRoomId : Long,
     val workoutRequestId : Long,
     val status : WorkoutRequestStatus,
+    val clientRequestId : String?
 )
