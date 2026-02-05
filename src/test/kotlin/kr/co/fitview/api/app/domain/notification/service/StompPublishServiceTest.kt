@@ -58,7 +58,8 @@ class StompPublishServiceTest @Autowired constructor(
                     content = "content",
                     sentAt = time.nowLocalDateTime,
                     isMe = false
-                )
+                ),
+                clientRequestId = "UUID"
             )
         )
 
@@ -97,7 +98,8 @@ class StompPublishServiceTest @Autowired constructor(
                     status = WorkoutRequestStatus.EXPIRE,
                     scheduledAt = time.nowLocalDateTime.plusDays(3),
                     location = "location"
-                )
+                ),
+                clientRequestId = "UUID"
             )
         )
 
@@ -162,7 +164,8 @@ class StompPublishServiceTest @Autowired constructor(
             message = StompEventUpdateWorkoutRequestMessageDepth2(
                 chatRoomId = 1234L,
                 workoutRequestId = 12345L,
-                status = WorkoutRequestStatus.EXPIRE
+                status = WorkoutRequestStatus.EXPIRE,
+                clientRequestId = null
             )
         )
 

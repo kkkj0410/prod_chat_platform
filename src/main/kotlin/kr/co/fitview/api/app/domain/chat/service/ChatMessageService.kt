@@ -47,7 +47,12 @@ class ChatMessageService(
             chatRoom = chatRoom
         )
 
-        sendStompChatTextMessage(member, chatRoom, savedChatMessage)
+        sendStompChatTextMessage(
+            fromMember = member,
+            chatRoom = chatRoom,
+            chatMessage = savedChatMessage,
+            clientRequestId = message.clientRequestId
+        )
 
         sendFcmChatTextMessage(member, chatRoom.id!!, savedChatMessage.id!!)
 
@@ -86,6 +91,7 @@ class ChatMessageService(
         fromMember: Member,
         chatRoom: ChatRoom,
         chatMessage: ChatMessage,
+        clientRequestId : String?
     ) {
         val toMember = memberQueryService.findOtherMemberFrom(fromMember.id!!, chatRoom.id!!)
             ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
@@ -94,8 +100,25 @@ class ChatMessageService(
         val meProfile = memberQueryService.findMemberProfileFrom(fromMember.id!!, chatRoom.id!!)
             ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
 
-        val meStompMessage = createStompTextMessage(fromMember.id!!, chatRoom, isCompleteWorkout, meProfile, chatMessage, true)
-        val otherStompMessage = createStompTextMessage(toMember.id!!, chatRoom, isCompleteWorkout, meProfile, chatMessage, false)
+        val meStompMessage = createStompTextMessage(
+            memberId = fromMember.id!!,
+            chatRoom = chatRoom,
+            isCompleteWorkout = isCompleteWorkout,
+            meProfile = meProfile,
+            chatMessage = chatMessage,
+            isMe = true,
+            clientRequestId = clientRequestId
+        )
+        val otherStompMessage = createStompTextMessage(
+            memberId = toMember.id!!,
+            chatRoom = chatRoom,
+            isCompleteWorkout = isCompleteWorkout,
+            meProfile = meProfile,
+            chatMessage = chatMessage,
+            isMe = false,
+            clientRequestId = clientRequestId
+
+        )
 
         publisher.publishEvent(meStompMessage)
         publisher.publishEvent(otherStompMessage)
@@ -107,7 +130,8 @@ class ChatMessageService(
         isCompleteWorkout: Boolean,
         meProfile: ChatRoomMemberProfile,
         chatMessage: ChatMessage,
-        isMe : Boolean
+        isMe : Boolean,
+        clientRequestId : String?
     ) : StompEventTextMessageDepth1 {
         return StompEventTextMessageDepth1(
             memberId = memberId,
@@ -121,7 +145,8 @@ class ChatMessageService(
                     content = chatMessage.content!!,
                     sentAt = chatMessage.sentAt!!,
                     isMe = isMe
-                )
+                ),
+                clientRequestId = clientRequestId
             )
         )
     }
