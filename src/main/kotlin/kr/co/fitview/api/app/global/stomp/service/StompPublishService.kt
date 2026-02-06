@@ -19,7 +19,8 @@ class StompPublishService(
             payload = WsResponse(
                 type = WsMessageType.TEXT.code,
                 payload = event.message
-            )
+            ),
+            clientRequestId = event.clientRequestId
         )
     }
 
@@ -30,7 +31,8 @@ class StompPublishService(
             payload = WsResponse(
                 type = WsMessageType.WORKOUT_REQUEST.code,
                 payload = event.message
-            )
+            ),
+            clientRequestId = event.clientRequestId
         )
     }
 
@@ -41,7 +43,8 @@ class StompPublishService(
             payload = WsResponse(
                 type = WsMessageType.NOTICE.code,
                 payload = event.message
-            )
+            ),
+            clientRequestId = null
         )
     }
 
@@ -52,7 +55,8 @@ class StompPublishService(
             payload = WsResponse(
                 type = WsMessageType.WORKOUT_REQUEST_UPDATE.code,
                 payload = event.message
-            )
+            ),
+            clientRequestId = event.clientRequestId
         )
     }
 
@@ -63,7 +67,8 @@ class StompPublishService(
             payload = WsResponse(
                 type = WsMessageType.WORKOUT_PARTNER_REQUEST.code,
                 payload = event.message
-            )
+            ),
+            clientRequestId = null
         )
     }
 
@@ -75,31 +80,34 @@ class StompPublishService(
             payload = WsResponse(
                 type = WsMessageType.WORKOUT_PARTNER_ACCEPT.code,
                 payload = event.message
-            )
+            ),
+            clientRequestId = null
         )
     }
 
 
-    fun sendGlobalError(memberId: Long, errorCode: ErrorCode) {
+    fun sendGlobalError(memberId: Long, errorCode: ErrorCode, clientRequestId : String?) {
         stompPublisher.sendToUser(
             memberId = memberId,
             destination = StompConstant.SUB_ERROR,
             payload = WsResponse(
                 type = errorCode.code,
                 payload = errorCode.message
-            )
+            ),
+            clientRequestId = clientRequestId
         )
 
     }
 
-    fun sendOtherError(memberId: Long, ex: Throwable) {
+    fun sendOtherError(memberId: Long, ex: Throwable, clientRequestId : String?) {
         stompPublisher.sendToUser(
             memberId = memberId,
             destination = StompConstant.SUB_ERROR,
             payload = WsResponse(
                 type = ex.javaClass.simpleName,
                 payload = (ex.message ?: "Unknown error")
-            )
+            ),
+            clientRequestId = clientRequestId
         )
     }
 

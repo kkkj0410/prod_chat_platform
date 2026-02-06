@@ -34,7 +34,7 @@ class ChatMessageService(
 ) {
 
     @Transactional
-    fun saveChatTextMessage(member: Member, chatRoom: ChatRoom, message: ChatTextMessageServiceRequest) : ChatMessage {
+    fun saveChatTextMessage(member: Member, chatRoom: ChatRoom, message: ChatTextMessageServiceRequest, clientRequestId : String? = null) : ChatMessage {
         val now = time.nowLocalDateTime
 
         chatRoom.updateLastMessageAt(now)
@@ -51,7 +51,7 @@ class ChatMessageService(
             fromMember = member,
             chatRoom = chatRoom,
             chatMessage = savedChatMessage,
-            clientRequestId = message.clientRequestId
+            clientRequestId = clientRequestId
         )
 
         sendFcmChatTextMessage(member, chatRoom.id!!, savedChatMessage.id!!)
@@ -135,6 +135,7 @@ class ChatMessageService(
     ) : StompEventTextMessageDepth1 {
         return StompEventTextMessageDepth1(
             memberId = memberId,
+            clientRequestId = clientRequestId,
             message = StompEventTextMessageDepth2(
                 chatRoomId = chatRoom.id!!,
                 isCompleteWorkout = isCompleteWorkout,
@@ -145,8 +146,7 @@ class ChatMessageService(
                     content = chatMessage.content!!,
                     sentAt = chatMessage.sentAt!!,
                     isMe = isMe
-                ),
-                clientRequestId = clientRequestId
+                )
             )
         )
     }

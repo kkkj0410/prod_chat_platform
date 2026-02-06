@@ -6,9 +6,11 @@ import kr.co.fitview.api.app.domain.chat.dto.request.WorkoutRequestUpdateRequest
 import kr.co.fitview.api.app.domain.chat.service.ChatService
 import kr.co.fitview.api.app.global.stomp.service.StompPublishService
 import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestService
+import kr.co.fitview.api.app.global.stomp.constant.StompConstant
 import org.springframework.messaging.handler.annotation.DestinationVariable
 import org.springframework.messaging.handler.annotation.MessageMapping
 import org.springframework.messaging.handler.annotation.Payload
+import org.springframework.messaging.simp.SimpMessageHeaderAccessor
 import org.springframework.messaging.simp.SimpMessageSendingOperations
 import org.springframework.messaging.simp.user.SimpUserRegistry
 import org.springframework.web.bind.annotation.*
@@ -51,9 +53,13 @@ class StompController(
 
         @Valid
         @Payload
-        message: ChatMessageRequest
+        message: ChatMessageRequest,
+
+        headerAccessor: SimpMessageHeaderAccessor
     ) {
-        chatService.sendMessage(principal.name.toLong(), chatRoomId, message)
+        val clientRequestId = headerAccessor.getFirstNativeHeader(StompConstant.HEADER_NAME_CLIENT_REQUEST)
+
+        chatService.sendMessage(principal.name.toLong(), chatRoomId, message, clientRequestId)
     }
 
     @MessageMapping("/workout-requests")
@@ -62,10 +68,15 @@ class StompController(
 
         @Valid
         @Payload
-        request: WorkoutRequestUpdateRequest
+        request: WorkoutRequestUpdateRequest,
+
+        headerAccessor: SimpMessageHeaderAccessor
     ) {
         val senderId = principal.name
-        workoutRequestService.modifyWorkoutRequest(senderId.toLong(), request.toServiceRequest())
+
+        val clientRequestId = headerAccessor.getFirstNativeHeader(StompConstant.HEADER_NAME_CLIENT_REQUEST)
+
+        workoutRequestService.modifyWorkoutRequest(senderId.toLong(), request.toServiceRequest(), clientRequestId)
     }
 
 }

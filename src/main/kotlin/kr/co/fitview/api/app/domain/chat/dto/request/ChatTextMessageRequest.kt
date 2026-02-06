@@ -9,8 +9,6 @@ data class ChatTextMessageRequest(
     @field:NotNull(message = "type is required")
     override val type: ChatMessageType = ChatMessageType.TEXT,
 
-    override val clientRequestId: String? = null,
-
     @field:NotBlank(message = "content is required")
     val content : String?,
 
@@ -20,7 +18,6 @@ data class ChatTextMessageRequest(
     fun toServiceRequest(): ChatTextMessageServiceRequest {
         return ChatTextMessageServiceRequest(
             type = type,
-            clientRequestId = clientRequestId,
             content = content!!
         )
     }

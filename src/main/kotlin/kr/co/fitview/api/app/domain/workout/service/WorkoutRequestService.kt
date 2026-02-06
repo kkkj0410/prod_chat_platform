@@ -52,7 +52,7 @@ class WorkoutRequestService(
 ) {
 
     @Transactional
-    fun saveChatWorkoutRequestMessage(fromMember: Member, chatRoom: ChatRoom, message: ChatWorkoutRequestMessageServiceRequest) : ChatMessage {
+    fun saveChatWorkoutRequestMessage(fromMember: Member, chatRoom: ChatRoom, message: ChatWorkoutRequestMessageServiceRequest, clientRequestId : String? = null) : ChatMessage {
         val now = time.nowLocalDateTime
 
         validateAddWorkoutRequest(chatRoom, message, now)
@@ -91,7 +91,7 @@ class WorkoutRequestService(
             chatRoom = chatRoom,
             chatMessage = savedChatMessage,
             workoutRequest = workoutRequest,
-            clientRequestId = message.clientRequestId
+            clientRequestId = clientRequestId
         )
 
         sendFcmWorkoutRequestMessage(
@@ -135,7 +135,7 @@ class WorkoutRequestService(
     }
 
     @Transactional
-    fun modifyWorkoutRequest(memberId: Long, request: WorkoutRequestUpdateServiceRequest): WorkoutRequest {
+    fun modifyWorkoutRequest(memberId: Long, request: WorkoutRequestUpdateServiceRequest, clientRequestId : String? = null): WorkoutRequest {
 
         val findWorkoutRequest = workoutRequestRepository
             .findWorkoutRequestByIdAndDeletedAtIsNullWithChatMessage(request.workoutRequestId)
@@ -150,7 +150,7 @@ class WorkoutRequestService(
             status = findWorkoutRequest.status!!
         )
 
-        notifyWorkoutRequestStatusChange(request, findWorkoutRequest, memberId)
+        notifyWorkoutRequestStatusChange(request, findWorkoutRequest, memberId, clientRequestId)
 
         return findWorkoutRequest
     }
@@ -158,7 +158,8 @@ class WorkoutRequestService(
     private fun notifyWorkoutRequestStatusChange(
         request: WorkoutRequestUpdateServiceRequest,
         findWorkoutRequest: WorkoutRequest,
-        memberId: Long
+        memberId: Long,
+        clientRequestId : String?
     ) {
 
         if (isComplete(request)) {
@@ -215,7 +216,7 @@ class WorkoutRequestService(
             sendCancelNotificationWorkoutRequest(findWorkoutRequest, savedChatNoticeMessage.id!!)
         }
 
-        sendStompUpdateWorkoutRequest(findWorkoutRequest, request.clientRequestId)
+        sendStompUpdateWorkoutRequest(findWorkoutRequest, clientRequestId)
     }
 
 
@@ -267,6 +268,7 @@ class WorkoutRequestService(
     ) : StompEventWorkoutRequestMessageDepth1 {
         return StompEventWorkoutRequestMessageDepth1(
             memberId = member.id!!,
+            clientRequestId = clientRequestId,
             message = StompEventWorkoutRequestMessageDepth2(
                 chatRoomId = chatRoom.id!!,
                 isCompleteWorkout = isCompleteWorkout,
@@ -280,8 +282,7 @@ class WorkoutRequestService(
                     location = workoutRequest.location!!,
                     sentAt = workoutRequest.requestedAt!!,
                     isMe = isMe
-                ),
-                clientRequestId = clientRequestId
+                )
             )
         )
     }
@@ -332,21 +333,21 @@ class WorkoutRequestService(
         response.forEach {
             val stomp1 = StompEventUpdateWorkoutRequestMessageDepth1(
                 memberId = it.fromMemberId,
+                clientRequestId = "UUID",
                 message = StompEventUpdateWorkoutRequestMessageDepth2(
                     chatRoomId = it.chatRoomId,
                     workoutRequestId = it.workoutRequestId,
                     status = WorkoutRequestStatus.EXPIRE,
-                    clientRequestId = null
                 )
             )
 
             val stomp2 = StompEventUpdateWorkoutRequestMessageDepth1(
                 memberId = it.toMemberId,
+                clientRequestId = "UUID",
                 message = StompEventUpdateWorkoutRequestMessageDepth2(
                     chatRoomId = it.chatRoomId,
                     workoutRequestId = it.workoutRequestId,
                     status = WorkoutRequestStatus.EXPIRE,
-                    clientRequestId = null
                 )
             )
 
@@ -504,20 +505,20 @@ class WorkoutRequestService(
     private fun sendStompUpdateWorkoutRequest(workoutRequest: WorkoutRequest, clientRequestId : String?) {
         val stomp1 = StompEventUpdateWorkoutRequestMessageDepth1(
             memberId = workoutRequest.getFromMemberId(),
+            clientRequestId = clientRequestId,
             message = StompEventUpdateWorkoutRequestMessageDepth2(
                 chatRoomId = workoutRequest.getChatRoomId()!!,
                 workoutRequestId = workoutRequest.id!!,
                 status = workoutRequest.status!!,
-                clientRequestId = clientRequestId
             )
         )
         val stomp2 = StompEventUpdateWorkoutRequestMessageDepth1(
             memberId = workoutRequest.getToMemberId(),
+            clientRequestId = clientRequestId,
             message = StompEventUpdateWorkoutRequestMessageDepth2(
                 chatRoomId = workoutRequest.getChatRoomId()!!,
                 workoutRequestId = workoutRequest.id!!,
                 status = workoutRequest.status!!,
-                clientRequestId = clientRequestId
             )
         )
 

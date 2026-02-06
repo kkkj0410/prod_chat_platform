@@ -18,6 +18,4 @@ import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
 sealed interface ChatMessageRequest {
 //    val type: ChatMessageType?
     val type: ChatMessageType
-
-    val clientRequestId : String?
 }

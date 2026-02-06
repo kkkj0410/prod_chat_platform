@@ -5,5 +5,6 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
 data class StompEventUpdateWorkoutRequestMessageDepth1(
     val memberId : Long,
+    val clientRequestId : String?,
     val message : StompEventUpdateWorkoutRequestMessageDepth2,
 )
