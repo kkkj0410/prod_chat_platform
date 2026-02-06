@@ -8,5 +8,4 @@ data class WorkoutRequestUpdateServiceRequest(
 
     val workoutRequestId : Long,
     val status : WorkoutRequestStatusForRequest,
-    val clientRequestId : String? = null
 )

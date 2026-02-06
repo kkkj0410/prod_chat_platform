@@ -39,6 +39,7 @@ class RedisStompServiceTest @Autowired constructor(
         // given
         val event = StompEventTextMessageDepth1(
             memberId = 123L,
+            clientRequestId = "UUID",
             message = StompEventTextMessageDepth2(
                 chatRoomId = 1L,
                 isCompleteWorkout = true,
@@ -50,7 +51,6 @@ class RedisStompServiceTest @Autowired constructor(
                     sentAt = time.nowLocalDateTime,
                     isMe = true
                 ),
-                clientRequestId = "UUID"
             )
         )
 
@@ -70,6 +70,7 @@ class RedisStompServiceTest @Autowired constructor(
         // given
         val event = StompEventTextMessageDepth1(
             memberId = 123L,
+            clientRequestId = "UUID",
             message = StompEventTextMessageDepth2(
                 chatRoomId = 1L,
                 isCompleteWorkout = true,
@@ -81,7 +82,6 @@ class RedisStompServiceTest @Autowired constructor(
                     sentAt = time.nowLocalDateTime,
                     isMe = true
                 ),
-                clientRequestId = "UUID"
             )
         )
 
@@ -107,6 +107,7 @@ class RedisStompServiceTest @Autowired constructor(
         // given
         val event = StompEventTextMessageDepth1(
             memberId = 123L,
+            clientRequestId = "UUID",
             message = StompEventTextMessageDepth2(
                 chatRoomId = 1L,
                 isCompleteWorkout = true,
@@ -118,7 +119,6 @@ class RedisStompServiceTest @Autowired constructor(
                     sentAt = time.nowLocalDateTime,
                     isMe = true
                 ),
-                clientRequestId = "UUID"
             )
         )
 
@@ -147,43 +147,9 @@ class RedisStompServiceTest @Autowired constructor(
             payload = WsResponse(
                 type = WsMessageType.TEXT.code,
                 payload = event.message
-            )
+            ),
+            clientRequestId = "UUID"
         )
-    }
-
-    @DisplayName("clientRequestId가 null이면 JSON에 clientRequestId:null로 포함된다")
-    @Test
-    fun onMessageClientRequestIdIsNull() {
-        // given
-        val event = StompEventTextMessageDepth1(
-            memberId = 123L,
-            message = StompEventTextMessageDepth2(
-                chatRoomId = 1L,
-                isCompleteWorkout = true,
-                profileImageUrl = "profile",
-                nickname = "nick",
-                chatMessage = StompEventTextMessageDepth3(
-                    chatMessageId = 2L,
-                    content = "content",
-                    sentAt = time.nowLocalDateTime,
-                    isMe = true
-                ),
-                clientRequestId = null
-            )
-        )
-
-        val response = WsResponse(
-            type = WsMessageType.TEXT.code,
-            payload = event.message
-        )
-
-        // when
-        val json = objectMapper.writeValueAsString(response)
-
-        // then
-        assertThat(json)
-            .contains("\"clientRequestId\":null")
-
     }
 
 }

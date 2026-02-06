@@ -12,15 +12,12 @@ data class WorkoutRequestUpdateRequest(
     @field:NotNull(message = "status is required")
     val status : WorkoutRequestStatusForRequest?,
 
-    val clientRequestId : String? = null
-
 ){
 
     fun toServiceRequest(): WorkoutRequestUpdateServiceRequest {
         return WorkoutRequestUpdateServiceRequest(
             workoutRequestId = workoutRequestId!!,
             status = status!!,
-            clientRequestId = clientRequestId
         )
     }
 }

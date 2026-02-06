@@ -10,8 +10,6 @@ data class ChatWorkoutRequestMessageRequest(
     @field:NotNull(message = "type is required")
     override val type: ChatMessageType = ChatMessageType.WORKOUT_REQUEST,
 
-    override val clientRequestId: String? = null,
-
     @field:NotNull(message = "scheduledAt is required")
     val scheduledAt : LocalDateTime?,
 
@@ -23,7 +21,6 @@ data class ChatWorkoutRequestMessageRequest(
     fun toServiceRequest(): ChatWorkoutRequestMessageServiceRequest {
         return ChatWorkoutRequestMessageServiceRequest(
             type = type,
-            clientRequestId = clientRequestId,
             scheduledAt = scheduledAt!!,
             location = location!!
         )

@@ -78,7 +78,7 @@ class ChatMessageServiceTest @Autowired constructor(
         chatMessageService.saveChatTextMessage(
             member = me,
             chatRoom = savedChatRoom,
-            message = request
+            message = request,
         )
 
         // then

@@ -58,7 +58,7 @@ class ChatService(
     }
 
     @Transactional
-    fun sendMessage(memberId: Long, chatRoomId: Long, message: ChatMessageRequest): ChatMessage {
+    fun sendMessage(memberId: Long, chatRoomId: Long, message: ChatMessageRequest, clientRequestId : String? = null): ChatMessage {
 
         val findChatRoom = chatRoomService.findChatRoomFromMemberIdAndChatRoomId(memberId, chatRoomId)
             ?: throw GlobalException(ChatErrorCode.NOT_MEMBER_OF_CHAT_ROOM)
@@ -68,7 +68,8 @@ class ChatService(
                 return chatMessageService.saveChatTextMessage(
                     member = memberQueryService.findMemberReferenceFrom(memberId),
                     chatRoom = findChatRoom,
-                    message = message.toServiceRequest()
+                    message = message.toServiceRequest(),
+                    clientRequestId = clientRequestId
                 )
             }
 
@@ -76,7 +77,8 @@ class ChatService(
                 return workoutRequestService.saveChatWorkoutRequestMessage(
                     fromMember = memberQueryService.findMemberReferenceFrom(memberId),
                     chatRoom = findChatRoom,
-                    message = message.toServiceRequest()
+                    message = message.toServiceRequest(),
+                    clientRequestId = clientRequestId
                 )
             }
         }
