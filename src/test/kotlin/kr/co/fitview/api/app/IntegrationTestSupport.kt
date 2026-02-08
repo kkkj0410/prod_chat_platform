@@ -4,10 +4,8 @@ import kr.co.fitview.api.app.domain.fcm.service.FcmPublisher
 import kr.co.fitview.api.app.global.stomp.service.StompPublisher
 import kr.co.fitview.api.app.global.config.TestJwtConfig
 import kr.co.fitview.api.app.global.network.NetworkService
-import kr.co.fitview.api.app.global.redis.config.RedisConfig
 import kr.co.fitview.api.app.global.redis.config.TestRedisConfig
 import kr.co.fitview.api.app.global.redis.service.RedisClient
-import kr.co.fitview.api.app.global.scheduler.config.TestShedLockConfig
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import

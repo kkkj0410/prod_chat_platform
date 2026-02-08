@@ -48,6 +48,7 @@ class StompPublishServiceTest @Autowired constructor(
         // given
         val sendMessage = StompEventTextMessageDepth1(
             memberId = 12L,
+            clientRequestId = "UUID",
             message = StompEventTextMessageDepth2(
                 chatRoomId = 123L,
                 isCompleteWorkout = false,
@@ -58,11 +59,11 @@ class StompPublishServiceTest @Autowired constructor(
                     content = "content",
                     sentAt = time.nowLocalDateTime,
                     isMe = false
-                )
+                ),
             )
         )
 
-        given(stompPublisher.sendToUser(any(), any(), any())).willAnswer {}
+        given(stompPublisher.sendToUser(any(), any(), any(),any())).willAnswer {}
 
         // when
         stompPublishService.sendChatTextMessage(sendMessage)
@@ -74,7 +75,8 @@ class StompPublishServiceTest @Autowired constructor(
             payload = WsResponse(
                 type = WsMessageType.TEXT.code,
                 payload = sendMessage.message
-            )
+            ),
+            clientRequestId = "UUID"
         )
     }
 
@@ -84,6 +86,7 @@ class StompPublishServiceTest @Autowired constructor(
         // given
         val sendMessage = StompEventWorkoutRequestMessageDepth1(
             memberId = 12L,
+            clientRequestId = "UUID",
             message = StompEventWorkoutRequestMessageDepth2(
                 chatRoomId = 123L,
                 isCompleteWorkout = false,
@@ -97,11 +100,11 @@ class StompPublishServiceTest @Autowired constructor(
                     status = WorkoutRequestStatus.EXPIRE,
                     scheduledAt = time.nowLocalDateTime.plusDays(3),
                     location = "location"
-                )
+                ),
             )
         )
 
-        given(stompPublisher.sendToUser(any(), any(), any())).willAnswer {}
+        given(stompPublisher.sendToUser(any(), any(), any(),any())).willAnswer {}
 
         // when
         stompPublishService.sendChatWorkoutRequestMessage(sendMessage)
@@ -113,7 +116,8 @@ class StompPublishServiceTest @Autowired constructor(
             payload = WsResponse(
                 type = WsMessageType.WORKOUT_REQUEST.code,
                 payload = sendMessage.message
-            )
+            ),
+            clientRequestId = "UUID"
         )
     }
 
@@ -137,7 +141,7 @@ class StompPublishServiceTest @Autowired constructor(
             )
         )
 
-        given(stompPublisher.sendToUser(any(), any(), any())).willAnswer {}
+        given(stompPublisher.sendToUser(any(), any(), any(),any())).willAnswer {}
 
         // when
         stompPublishService.sendChatNoticeMessage(sendMessage)
@@ -149,7 +153,8 @@ class StompPublishServiceTest @Autowired constructor(
             payload = WsResponse(
                 type = WsMessageType.NOTICE.code,
                 payload = sendMessage.message
-            )
+            ),
+            clientRequestId = null
         )
     }
 
@@ -159,14 +164,15 @@ class StompPublishServiceTest @Autowired constructor(
         // given
         val sendMessage = StompEventUpdateWorkoutRequestMessageDepth1(
             memberId = 123L,
+            clientRequestId = "UUID",
             message = StompEventUpdateWorkoutRequestMessageDepth2(
                 chatRoomId = 1234L,
                 workoutRequestId = 12345L,
-                status = WorkoutRequestStatus.EXPIRE
+                status = WorkoutRequestStatus.EXPIRE,
             )
         )
 
-        given(stompPublisher.sendToUser(any(), any(), any())).willAnswer {}
+        given(stompPublisher.sendToUser(any(), any(), any(),any())).willAnswer {}
 
         // when
         stompPublishService.sendUpdateWorkoutRequest(sendMessage)
@@ -178,7 +184,8 @@ class StompPublishServiceTest @Autowired constructor(
             payload = WsResponse(
                 type = WsMessageType.WORKOUT_REQUEST_UPDATE.code,
                 payload = sendMessage.message
-            )
+            ),
+            clientRequestId = "UUID"
         )
     }
 
@@ -197,7 +204,7 @@ class StompPublishServiceTest @Autowired constructor(
             )
         )
 
-        given(stompPublisher.sendToUser(any(), any(), any())).willAnswer {}
+        given(stompPublisher.sendToUser(any(), any(), any(),any())).willAnswer {}
 
         // when
         stompPublishService.sendWorkoutPartnerRequest(sendMessage)
@@ -209,7 +216,8 @@ class StompPublishServiceTest @Autowired constructor(
             payload = WsResponse(
                 type = WsMessageType.WORKOUT_PARTNER_REQUEST.code,
                 payload = sendMessage.message
-            )
+            ),
+            clientRequestId = null
         )
     }
 
@@ -227,7 +235,7 @@ class StompPublishServiceTest @Autowired constructor(
             )
         )
 
-        given(stompPublisher.sendToUser(any(), any(), any())).willAnswer {}
+        given(stompPublisher.sendToUser(any(), any(),any(), any())).willAnswer {}
 
         // when
         stompPublishService.sendAcceptWorkoutPartner(sendMessage)
@@ -239,7 +247,8 @@ class StompPublishServiceTest @Autowired constructor(
             payload = WsResponse(
                 type = WsMessageType.WORKOUT_PARTNER_ACCEPT.code,
                 payload = sendMessage.message
-            )
+            ),
+            clientRequestId = null
         )
     }
 
@@ -416,12 +425,13 @@ class StompPublishServiceTest @Autowired constructor(
         val memberId = 123L
         val errorCode = ChatErrorCode.NOT_PARTNER
 
-        given(stompPublisher.sendToUser(any(), any(), any())).willAnswer {}
+        given(stompPublisher.sendToUser(any(), any(), any(),any())).willAnswer {}
 
         // when
         stompPublishService.sendGlobalError(
             memberId = memberId,
-            errorCode = errorCode
+            errorCode = errorCode,
+            clientRequestId = "UUID",
         )
 
         // then
@@ -431,7 +441,8 @@ class StompPublishServiceTest @Autowired constructor(
             payload = WsResponse(
                 type = errorCode.code,
                 payload = errorCode.message
-            )
+            ),
+            clientRequestId = "UUID",
         )
     }
 
@@ -442,12 +453,13 @@ class StompPublishServiceTest @Autowired constructor(
         val memberId = 123L
         val ex = RuntimeException("exception")
 
-        given(stompPublisher.sendToUser(any(), any(), any())).willAnswer {}
+        given(stompPublisher.sendToUser(any(), any(), any(), any())).willAnswer {}
 
         // when
         stompPublishService.sendOtherError(
             memberId = memberId,
-            ex = ex
+            ex = ex,
+            clientRequestId = "UUID"
         )
 
         // then
@@ -457,7 +469,8 @@ class StompPublishServiceTest @Autowired constructor(
             payload = WsResponse(
                 type = ex.javaClass.simpleName,
                 payload = ex.message ?: "Unknown error"
-            )
+            ),
+            clientRequestId = "UUID"
         )
     }
 
@@ -562,7 +575,8 @@ class StompPublishServiceTest @Autowired constructor(
             payload = WsResponse(
                 type = WsMessageType.NOTICE.code,
                 payload = stomp1.message
-            )
+            ),
+            clientRequestId = null
         )
         then(stompPublisher).should().sendToUser(
             memberId = other.id!!,
@@ -570,7 +584,8 @@ class StompPublishServiceTest @Autowired constructor(
             payload = WsResponse(
                 type = WsMessageType.NOTICE.code,
                 payload = stomp2.message
-            )
+            ),
+            clientRequestId = null
         )
     }
 

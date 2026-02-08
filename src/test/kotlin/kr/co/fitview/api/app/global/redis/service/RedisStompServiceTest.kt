@@ -39,6 +39,7 @@ class RedisStompServiceTest @Autowired constructor(
         // given
         val event = StompEventTextMessageDepth1(
             memberId = 123L,
+            clientRequestId = "UUID",
             message = StompEventTextMessageDepth2(
                 chatRoomId = 1L,
                 isCompleteWorkout = true,
@@ -49,7 +50,7 @@ class RedisStompServiceTest @Autowired constructor(
                     content = "content",
                     sentAt = time.nowLocalDateTime,
                     isMe = true
-                )
+                ),
             )
         )
 
@@ -69,6 +70,7 @@ class RedisStompServiceTest @Autowired constructor(
         // given
         val event = StompEventTextMessageDepth1(
             memberId = 123L,
+            clientRequestId = "UUID",
             message = StompEventTextMessageDepth2(
                 chatRoomId = 1L,
                 isCompleteWorkout = true,
@@ -79,7 +81,7 @@ class RedisStompServiceTest @Autowired constructor(
                     content = "content",
                     sentAt = time.nowLocalDateTime,
                     isMe = true
-                )
+                ),
             )
         )
 
@@ -105,6 +107,7 @@ class RedisStompServiceTest @Autowired constructor(
         // given
         val event = StompEventTextMessageDepth1(
             memberId = 123L,
+            clientRequestId = "UUID",
             message = StompEventTextMessageDepth2(
                 chatRoomId = 1L,
                 isCompleteWorkout = true,
@@ -115,7 +118,7 @@ class RedisStompServiceTest @Autowired constructor(
                     content = "content",
                     sentAt = time.nowLocalDateTime,
                     isMe = true
-                )
+                ),
             )
         )
 
@@ -144,7 +147,8 @@ class RedisStompServiceTest @Autowired constructor(
             payload = WsResponse(
                 type = WsMessageType.TEXT.code,
                 payload = event.message
-            )
+            ),
+            clientRequestId = "UUID"
         )
     }
 
