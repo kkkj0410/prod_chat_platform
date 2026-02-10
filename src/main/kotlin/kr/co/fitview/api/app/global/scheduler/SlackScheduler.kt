@@ -49,7 +49,7 @@ class SlackScheduler(
         val monthEnd = yesterday
 
         val message = """
-        📊 FitView API 통계 리포트
+        📊 FITVIEW 일일 리포트
         
         👤 활성 사용자
         - DAU (${yesterday}): ${dau}명
