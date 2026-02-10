@@ -79,7 +79,7 @@ class SlackSchedulerTest @Autowired constructor(
         // then
         then(slackNotifier).should(times(1)).send(
             argThat { message ->
-                message.contains("FitView API 통계 리포트") &&
+                message.contains("FITVIEW 일일 리포트") &&
                 message.contains("DAU") &&
                 message.contains("MAU") &&
                 message.contains("/api/v1/hello2/{id}")
