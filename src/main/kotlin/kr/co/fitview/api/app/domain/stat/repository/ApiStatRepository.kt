@@ -5,7 +5,8 @@ import kr.co.fitview.api.app.domain.stat.entity.enums.ApiStatMethod
 import org.springframework.data.jpa.repository.JpaRepository
 import java.time.LocalDate
 
-interface ApiStatRepository : JpaRepository<ApiStat, Long> {
+interface ApiStatRepository : JpaRepository<ApiStat, Long>, ApiStatRepositoryCustom {
 
     fun findByStatDateAndPathAndMethod(statDate: LocalDate, path: String, method: ApiStatMethod) : ApiStat?
+
 }

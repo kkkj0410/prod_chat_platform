@@ -8,7 +8,6 @@ import kr.co.fitview.api.app.domain.stat.repository.ActiveMemberStatRepository
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.time.Time
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -34,17 +33,118 @@ class ActiveMemberStatQueryServiceTest @Autowired constructor(
 
         val activeMemberStat = ActiveMemberStat.of(
             member = member,
-            activeDate = time.nowLocalDate
+            statDate = time.nowLocalDate
         )
         activeMemberStatRepository.save(activeMemberStat)
 
         // when
         val findActiveMemberStat = activeMemberStatQueryService.findActiveMemberStatFrom(
-            activeDate = time.nowLocalDate,
+            statDate = time.nowLocalDate,
             memberId = member.id!!
         )
 
         // then
         assertThat(findActiveMemberStat!!.id!!).isEqualTo(activeMemberStat.id!!)
+    }
+
+    @DisplayName("특정날 활성화한 회원 개수를 조회한다.")
+    @Test
+    fun countDailyActiveMembers() {
+        // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        memberRepository.save(member)
+
+        val member2 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        memberRepository.save(member2)
+
+        val member3 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        memberRepository.save(member3)
+
+        val activeMemberStat = ActiveMemberStat.of(
+            member = member,
+            statDate = time.nowLocalDate
+        )
+        activeMemberStatRepository.save(activeMemberStat)
+
+        val activeMemberStat2 = ActiveMemberStat.of(
+            member = member2,
+            statDate = time.nowLocalDate
+        )
+        activeMemberStatRepository.save(activeMemberStat2)
+
+        val yesterdayActiveMemberStat = ActiveMemberStat.of(
+            member = member3,
+            statDate = time.nowLocalDate.minusDays(1)
+        )
+        activeMemberStatRepository.save(yesterdayActiveMemberStat)
+
+        // when
+        val count = activeMemberStatQueryService.countDailyActiveMembers(time.nowLocalDate)
+
+        // then
+        assertThat(count).isEqualTo(2L)
+    }
+
+    @DisplayName("이번달 활성 회원 개수를 조회한다.")
+    @Test
+    fun countMonthlyActiveMembers() {
+        // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        memberRepository.save(member)
+
+        val member2 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        memberRepository.save(member2)
+
+        val member3 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        memberRepository.save(member3)
+
+        val activeMemberStat = ActiveMemberStat.of(
+            member = member,
+            statDate = time.nowLocalDate
+        )
+        activeMemberStatRepository.save(activeMemberStat)
+
+        val activeMemberStat2 = ActiveMemberStat.of(
+            member = member2,
+            statDate = time.nowLocalDate
+        )
+        activeMemberStatRepository.save(activeMemberStat2)
+
+        val lastMonthDate = time.nowLocalDate.minusMonths(1).withDayOfMonth(1)
+        val lastMonthActiveMemberStat = ActiveMemberStat.of(
+            member = member3,
+            statDate = lastMonthDate
+        )
+        activeMemberStatRepository.save(lastMonthActiveMemberStat)
+
+        // when
+        val count = activeMemberStatQueryService.countMonthlyActiveMembers(time.nowLocalDate)
+
+        // then
+        assertThat(count).isEqualTo(2L)
     }
 }

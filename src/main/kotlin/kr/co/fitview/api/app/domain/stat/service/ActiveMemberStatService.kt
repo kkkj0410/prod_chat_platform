@@ -21,7 +21,7 @@ class ActiveMemberStatService(
     @Transactional
     fun saveActiveMemberStat(memberId : Long) : ActiveMemberStat {
         val findActiveMemberStat = activeMemberStatQueryService.findActiveMemberStatFrom(
-            activeDate = time.nowLocalDate,
+            statDate = time.nowLocalDate,
             memberId = memberId
         )
 
@@ -32,7 +32,7 @@ class ActiveMemberStatService(
         val findMember = memberQueryService.findMemberReferenceFrom(memberId)
         val activeMemberStat = ActiveMemberStat.of(
             member = findMember,
-            activeDate = time.nowLocalDate
+            statDate = time.nowLocalDate
         )
 
         return activeMemberStatRepository.save(activeMemberStat)

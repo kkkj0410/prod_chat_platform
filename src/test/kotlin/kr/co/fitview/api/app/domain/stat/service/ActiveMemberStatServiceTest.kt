@@ -57,7 +57,7 @@ class ActiveMemberStatServiceTest  @Autowired constructor(
 
         val activeMemberStat = ActiveMemberStat.of(
             member = member,
-            activeDate = time.nowLocalDate
+            statDate = time.nowLocalDate
         )
         activeMemberStatRepository.save(activeMemberStat)
 

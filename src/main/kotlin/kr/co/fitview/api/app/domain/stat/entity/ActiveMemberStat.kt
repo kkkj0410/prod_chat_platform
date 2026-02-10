@@ -12,8 +12,6 @@ import jakarta.persistence.Table
 import jakarta.validation.constraints.NotNull
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.global.entity.BaseEntity
-import org.hibernate.annotations.ColumnDefault
-import java.time.Instant
 import java.time.LocalDate
 
 @Entity
@@ -26,8 +24,8 @@ open class ActiveMemberStat(
     open var member: Member? = null,
 
     @NotNull
-    @Column(name = "active_date", nullable = false)
-    open var activeDate: LocalDate? = null
+    @Column(name = "stat_date", nullable = false)
+    open var statDate: LocalDate? = null
 
 ) : BaseEntity(){
 
@@ -37,10 +35,10 @@ open class ActiveMemberStat(
     open var id: Long? = null
 
     companion object {
-        fun of(member : Member, activeDate : LocalDate) : ActiveMemberStat{
+        fun of(member : Member, statDate : LocalDate) : ActiveMemberStat{
             return ActiveMemberStat(
                 member = member,
-                activeDate = activeDate
+                statDate = statDate
             )
         }
     }

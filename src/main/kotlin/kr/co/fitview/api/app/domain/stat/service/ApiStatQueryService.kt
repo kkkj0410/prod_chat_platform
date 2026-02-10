@@ -18,5 +18,9 @@ class ApiStatQueryService(
         return apiStatRepository.findByStatDateAndPathAndMethod(statDate, path, method)
     }
 
+    fun findTopApiStatFrom(statDate : LocalDate, limit : Int) : List<ApiStat>{
+        return apiStatRepository.findApiStatTop(statDate, limit)
+    }
+
 
 }

@@ -6,5 +6,9 @@ import java.time.LocalDate
 
 interface ActiveMemberStatRepository : JpaRepository<ActiveMemberStat, Long> {
 
-    fun findByActiveDateAndMemberId(activeDate: LocalDate, memberId: Long): ActiveMemberStat?
+    fun findByStatDateAndMemberId(statDate: LocalDate, memberId: Long): ActiveMemberStat?
+
+    fun countByStatDate(statDate: LocalDate): Long
+
+    fun countByStatDateBetween(startDate: LocalDate, endDate: LocalDate): Long
 }
