@@ -11,11 +11,11 @@ import org.springframework.web.reactive.function.client.WebClient
 class SlackNotifierProd(
     @Value("\${slack.webhook.social-channel}")
     private val webhookUrl: String
-) {
+) : SlackNotifier {
 
     private val webClient = WebClient.create()
 
-    fun send(message: String) {
+    override fun send(message: String) {
         val payload = mapOf("text" to message)
 
         webClient.post()
