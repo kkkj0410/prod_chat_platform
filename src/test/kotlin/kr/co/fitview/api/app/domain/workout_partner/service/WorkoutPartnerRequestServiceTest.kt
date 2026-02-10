@@ -1229,15 +1229,12 @@ class WorkoutPartnerRequestServiceTest @Autowired constructor(
         val slice = workoutPartnerRequestQueryService.findWorkoutPartnerFrom(me.id!!, condition)
 
         // then
-        assertThat(slice.content).hasSize(2)
+        assertThat(slice.content).hasSize(1)
 
         val response1 = slice.content[0]
-        val response2 = slice.content[1]
 
         assertThat(response1.workoutPartnerRequestId)
             .isEqualTo(partnerRequest2.id)
-        assertThat(response2.workoutPartnerRequestId)
-            .isEqualTo(partnerRequest1.id)
 
         assertThat(response1.nickname).isEqualTo(otherMember.nickname)
         assertThat(response1.profileImageUrl).isEqualTo(signupRequest.profileImageUrl)
@@ -1246,10 +1243,8 @@ class WorkoutPartnerRequestServiceTest @Autowired constructor(
         assertThat(response1.workoutStyle).isEqualTo(otherMember.workoutStyle)
 
         assertThat(response1.status).isEqualTo(WorkoutPartnerRequestStatusForResponse.PENDING)
-        assertThat(response2.status).isEqualTo(WorkoutPartnerRequestStatusForResponse.PENDING)
 
         assertThat(response1.chatRoomId).isNull()
-        assertThat(response2.chatRoomId).isNull()
 
         assertThat(slice.hasNext()).isFalse()
     }

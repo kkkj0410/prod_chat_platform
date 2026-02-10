@@ -4,11 +4,13 @@ import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import kr.co.fitview.api.app.domain.auth.constant.AuthConstant
+import kr.co.fitview.api.app.domain.stat.service.ActiveMemberStatService
 import kr.co.fitview.api.app.global.constant.JwtConstant
 import kr.co.fitview.api.app.global.constant.SecurityConstant
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.jwt.JwtErrorCode
 import kr.co.fitview.api.app.global.jwt.JwtAuthentication
+import kr.co.fitview.api.app.global.jwt.JwtTokenProvider
 import org.springframework.stereotype.Component
 import org.springframework.util.AntPathMatcher
 import org.springframework.web.filter.OncePerRequestFilter
@@ -17,7 +19,9 @@ import org.springframework.web.filter.OncePerRequestFilter
 @Component
 class JwtAuthenticationFilter(
     val jwtAuthentication : JwtAuthentication,
-    val antPathMatcher: AntPathMatcher
+    val antPathMatcher: AntPathMatcher,
+    val activeMemberStatService : ActiveMemberStatService,
+    val jwtTokenProvider : JwtTokenProvider
 )  : OncePerRequestFilter(){
 
 
@@ -46,6 +50,7 @@ class JwtAuthenticationFilter(
         if (isSkipFilterApplyTokenIfValid(findAccessToken, uri)) {
             try {
                 jwtAuthentication.setAuthentication(findAccessToken!!)
+                saveActiveMemberStat(findAccessToken)
                 filterChain.doFilter(request, response)
                 return
             } catch (e: Exception) {
@@ -56,6 +61,7 @@ class JwtAuthenticationFilter(
 
         if(hasToken(findAccessToken)){
             jwtAuthentication.setAuthentication(findAccessToken!!)
+            saveActiveMemberStat(findAccessToken)
         }
         filterChain.doFilter(request, response)
     }
@@ -97,5 +103,10 @@ class JwtAuthenticationFilter(
     private fun hasToken(token: String?): Boolean = token != null
 
     private fun hasNotToken(token: String?) = !hasToken(token)
+
+    private fun saveActiveMemberStat(accessToken : String){
+        val memberId = jwtTokenProvider.extractMemberIdFrom(accessToken)
+        activeMemberStatService.saveActiveMemberStat(memberId)
+    }
 
 }
