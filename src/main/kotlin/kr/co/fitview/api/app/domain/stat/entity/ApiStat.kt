@@ -46,4 +46,21 @@ open class ApiStat(
     @Column(name = "api_stat_id", nullable = false)
     open var id: Long? = null
 
+    companion object{
+
+        fun of(statDate : LocalDate, path : String, method : ApiStatMethod) : ApiStat{
+            return ApiStat(
+                statDate = statDate,
+                path = path,
+                method = method,
+                count = 1L
+            )
+        }
+    }
+
+    fun increaseCount() : ApiStat {
+        this.count = this.count?.plus(1)
+        return this
+    }
+
 }
