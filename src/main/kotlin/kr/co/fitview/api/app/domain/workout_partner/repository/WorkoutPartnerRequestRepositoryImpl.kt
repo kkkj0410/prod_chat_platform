@@ -4,6 +4,7 @@ import com.querydsl.core.types.Projections
 import com.querydsl.core.types.dsl.BooleanExpression
 import com.querydsl.core.types.dsl.CaseBuilder
 import com.querydsl.core.types.dsl.Expressions
+import com.querydsl.jpa.JPAExpressions
 import com.querydsl.jpa.impl.JPAQueryFactory
 import jakarta.persistence.EntityManager
 import kr.co.fitview.api.app.domain.chat.entity.QChatParticipant
@@ -24,11 +25,11 @@ import kr.co.fitview.api.app.domain.workout_partner.dto.response.AdminWorkoutPar
 import kr.co.fitview.api.app.domain.workout_partner.dto.response.WorkoutImageMinResponse
 import kr.co.fitview.api.app.domain.workout_partner.dto.response.WorkoutPartnerRequestExpireResponse
 import kr.co.fitview.api.app.domain.workout_partner.dto.response.WorkoutPartnerRequestResponse
+import kr.co.fitview.api.app.domain.workout_partner.entity.QWorkoutPartnerRequest
 import kr.co.fitview.api.app.domain.workout_partner.entity.QWorkoutPartnerRequest.workoutPartnerRequest
 import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartnerRequest
 import kr.co.fitview.api.app.domain.workout_partner.entity.enums.WorkoutPartnerRequestStatus
 import kr.co.fitview.api.app.global.time.Time
-import kr.co.fitview.api.app.global.time.TimeHolder.time
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Slice
 import org.springframework.data.domain.SliceImpl
@@ -68,26 +69,6 @@ class WorkoutPartnerRequestRepositoryImpl(
         memberId: Long
     ): List<WorkoutPartnerRequestResponseForWorkoutPartner> {
 
-        fun otherMemberJoinCondition(): BooleanExpression? {
-            if (condition.type == WorkoutPartnerRequestType.RECEIVE) {
-                return member.id.eq(workoutPartnerRequest.fromMember.id)
-            }
-
-            return member.id.eq(workoutPartnerRequest.toMember.id)
-        }
-
-        fun workoutPartnerRequestWhereCondition(): BooleanExpression? {
-            if (condition.type == WorkoutPartnerRequestType.RECEIVE) {
-                return workoutPartnerRequest.toMember.id.eq(memberId)
-            }
-
-            return workoutPartnerRequest.fromMember.id.eq(memberId)
-        }
-
-        fun lastRequestIdCondition(): BooleanExpression? {
-            val lastId = condition.firstWorkoutPartnerRequestId ?: return null
-            return workoutPartnerRequest.id.lt(lastId)
-        }
 
         val limit = condition.size!! + 1
 
@@ -108,12 +89,13 @@ class WorkoutPartnerRequestRepositoryImpl(
                 )
             )
             .from(workoutPartnerRequest)
-            .join(member).on(otherMemberJoinCondition())
+            .join(member).on(otherMemberJoinCondition(condition))
             .join(memberImage).on(memberImage.member.id.eq(member.id))
             .join(image).on(image.id.eq(memberImage.image.id))
             .where(
-                lastRequestIdCondition(),
-                workoutPartnerRequestWhereCondition(),
+                lastRequestIdCondition(condition),
+                workoutPartnerRequestWhereCondition(condition, memberId),
+                latestRequestCondition(condition, memberId),
                 memberImage.type.eq(MemberImageType.PROFILE),
                 member.deletedAt.isNull,
                 memberImage.deletedAt.isNull,
@@ -125,6 +107,62 @@ class WorkoutPartnerRequestRepositoryImpl(
 
         return workoutPartnerRequestResponses
     }
+
+    private fun latestRequestCondition(
+        condition: WorkoutPartnerRequestCondition,
+        memberId: Long
+    ): BooleanExpression {
+        val subWorkoutPartnerRequest = QWorkoutPartnerRequest("subWpr")
+
+        return workoutPartnerRequest.id.`in`(
+            JPAExpressions
+                .select(subWorkoutPartnerRequest.id.max())
+                .from(subWorkoutPartnerRequest)
+                .where(
+                    if (condition.type == WorkoutPartnerRequestType.RECEIVE) {
+                        subWorkoutPartnerRequest.toMember.id.eq(memberId)
+                    } else {
+                        subWorkoutPartnerRequest.fromMember.id.eq(memberId)
+                    }
+                )
+                .groupBy(
+                    if (condition.type == WorkoutPartnerRequestType.RECEIVE) {
+                        subWorkoutPartnerRequest.fromMember.id
+                    } else {
+                        subWorkoutPartnerRequest.toMember.id
+                    }
+                )
+        )
+    }
+
+    private fun otherMemberJoinCondition(
+        condition: WorkoutPartnerRequestCondition
+    ): BooleanExpression? {
+        if (condition.type == WorkoutPartnerRequestType.RECEIVE) {
+            return member.id.eq(workoutPartnerRequest.fromMember.id)
+        }
+
+        return member.id.eq(workoutPartnerRequest.toMember.id)
+    }
+
+    private fun workoutPartnerRequestWhereCondition(
+        condition: WorkoutPartnerRequestCondition,
+        memberId: Long
+    ): BooleanExpression? {
+        if (condition.type == WorkoutPartnerRequestType.RECEIVE) {
+            return workoutPartnerRequest.toMember.id.eq(memberId)
+        }
+
+        return workoutPartnerRequest.fromMember.id.eq(memberId)
+    }
+
+    private fun lastRequestIdCondition(condition: WorkoutPartnerRequestCondition): BooleanExpression? {
+        val lastId = condition.firstWorkoutPartnerRequestId ?: return null
+        return workoutPartnerRequest.id.lt(lastId)
+    }
+
+
+
 
     private fun findWorkoutPartnerWithWorkoutImageUrlByMemberIds(
         targetMemberIds: List<Long>,
