@@ -5,10 +5,12 @@ import kr.co.fitview.api.app.domain.stat.service.ApiStatQueryService
 import kr.co.fitview.api.app.global.slack.SlackNotifier
 import kr.co.fitview.api.app.global.time.Time
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock
+import org.springframework.context.annotation.Profile
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 
+@Profile("prod")
 @Component
 class SlackScheduler(
     private val activeMemberStatQueryService : ActiveMemberStatQueryService,
