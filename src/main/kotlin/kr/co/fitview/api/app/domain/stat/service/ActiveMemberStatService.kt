@@ -4,6 +4,7 @@ import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.domain.stat.entity.ActiveMemberStat
 import kr.co.fitview.api.app.domain.stat.repository.ActiveMemberStatRepository
 import kr.co.fitview.api.app.global.time.Time
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -29,13 +30,19 @@ class ActiveMemberStatService(
             return findActiveMemberStat!!
         }
 
-        val findMember = memberQueryService.findMemberReferenceFrom(memberId)
-        val activeMemberStat = ActiveMemberStat.of(
-            member = findMember,
-            statDate = time.nowLocalDate
-        )
-
-        return activeMemberStatRepository.save(activeMemberStat)
+        return try {
+            val findMember = memberQueryService.findMemberReferenceFrom(memberId)
+            val activeMemberStat = ActiveMemberStat.of(
+                member = findMember,
+                statDate = time.nowLocalDate
+            )
+            activeMemberStatRepository.saveAndFlush(activeMemberStat)
+        } catch (e: DataIntegrityViolationException) {
+            activeMemberStatQueryService.findActiveMemberStatFrom(
+                statDate = time.nowLocalDate,
+                memberId = memberId
+            ) ?: throw e
+        }
     }
 
     private fun isNotNull(data: Any?): Boolean = data != null

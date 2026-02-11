@@ -1,6 +1,7 @@
 package kr.co.fitview.api.app.domain.stat.service
 
 import com.querydsl.core.types.ExpressionUtils.any
+import jakarta.persistence.EntityManager
 import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.stat.entity.ApiStat
 import kr.co.fitview.api.app.domain.stat.entity.enums.ApiStatMethod
@@ -17,7 +18,8 @@ import org.springframework.dao.DataIntegrityViolationException
 class ApiStatServiceTest @Autowired constructor(
     private val apiStatService : ApiStatService,
     private val apiStatRepository: ApiStatRepository,
-    private val time : Time
+    private val time : Time,
+    private val em : EntityManager
 ) : IntegrationTestSupport() {
 
 
@@ -37,6 +39,9 @@ class ApiStatServiceTest @Autowired constructor(
             path = "/api/v1/members/{id}",
             method = ApiStatMethod.GET
         )
+
+        em.flush()
+        em.clear()
 
         // then
         val apiStats = apiStatRepository.findAll()
