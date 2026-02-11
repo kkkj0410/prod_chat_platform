@@ -128,17 +128,34 @@ jobs:
             sudo docker start $CONTAINER_NAME
             
             # ==========================================
-            # 4. 헬스 체크 및 롤백 로직
+            # 4. 반복 헬스 체크 (Retry Loop)
             # ==========================================
-            echo "=== [Health Check] 서비스 시작 대기 (100초) ==="
-            sleep 100
+            echo "=== [Health Check] 서비스 상태 확인 시작 (5초 간격, 최대 20회) ==="
             
-            # Actuator가 없다면 주소를 http://localhost:$PORT/ 로 변경하세요
-            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:$PORT/actuator/health || echo "000")
+            RETRIES=0
+            MAX_RETRIES=20   # 5초 * 20회 = 100초
+            SUCCESS="false"
             
-            if [ "$HTTP_CODE" == "200" ]; then
-                echo "✅ [Success] 배포 성공! (HTTP 200)"
+            while [ $RETRIES -lt $MAX_RETRIES ]; do
+                RETRIES=$((RETRIES+1))
+                echo "Checking health... ($RETRIES/$MAX_RETRIES)"
+                sleep 5
             
+                # 헬스 체크 요청 (단순 200 OK 확인)
+                # 만약 스프링 Actuator라면 주소를 /actuator/health 로 변경하세요
+                HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:$PORT/health || echo "000")
+            
+                if [ "$HTTP_CODE" == "200" ]; then
+                    echo "✅ [Success] 서버가 정상적으로 응답합니다! (HTTP 200)"
+                    SUCCESS="true"
+                    break
+                fi
+            done
+            
+            # ==========================================
+            # 5. 결과 처리 (성공 or 롤백)
+            # ==========================================
+            if [ "$SUCCESS" == "true" ]; then
                 # 성공 시 정리 작업
                 sudo docker image prune -f
                 sudo docker logout ${{ env.NCR_REGISTRY_PUBLIC_URI }}
@@ -146,7 +163,8 @@ jobs:
                 rm -rf ~/firebase
                 exit 0
             else
-                echo "❌ [Fail] 배포 실패 (HTTP Code: $HTTP_CODE). 롤백을 시작합니다."
+                echo "❌ [Fail] 100초 동안 서버가 응답하지 않습니다. (Last Code: $HTTP_CODE)"
+                echo "롤백 프로세스를 시작합니다..."
             
                 # ------------------------------------------
                 # 롤백 프로세스 시작
@@ -155,7 +173,6 @@ jobs:
                 sudo docker rm -f $CONTAINER_NAME
             
                 echo "=== [Rollback] 백업 이미지로 복구 시작 ==="
-                # 백업 이미지로 다시 Create
                 sudo docker create --name $CONTAINER_NAME \
                   -p $PORT:$PORT -e TZ=Asia/Seoul \
                   -v ~/server_logs:/logs \
