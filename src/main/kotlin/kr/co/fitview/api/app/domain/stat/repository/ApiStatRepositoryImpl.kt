@@ -37,5 +37,13 @@ class ApiStatRepositoryImpl(
             .fetch()
     }
 
+    override fun increaseCountBy(apiStatId: Long) {
+        queryFactory
+            .update(apiStat)
+            .set(apiStat.count, apiStat.count.add(1))
+            .where(apiStat.id.eq(apiStatId))
+            .execute()
+    }
+
 
 }

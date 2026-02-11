@@ -9,4 +9,5 @@ interface ApiStatRepository : JpaRepository<ApiStat, Long>, ApiStatRepositoryCus
 
     fun findByStatDateAndPathAndMethod(statDate: LocalDate, path: String, method: ApiStatMethod) : ApiStat?
 
+
 }

@@ -1,5 +1,6 @@
 package kr.co.fitview.api.app.domain.stat.repository
 
+import jakarta.persistence.EntityManager
 import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.stat.entity.ApiStat
 import kr.co.fitview.api.app.domain.stat.entity.enums.ApiStatMethod
@@ -12,7 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class ApiStatRepositoryTest @Autowired constructor(
     private val apiStatRepository: ApiStatRepository,
-    private val time : Time
+    private val time : Time,
+    private val em : EntityManager
 ) : IntegrationTestSupport() {
 
     @DisplayName("특정 날의 API 호출 횟수를 본다")
@@ -166,5 +168,29 @@ class ApiStatRepositoryTest @Autowired constructor(
         assertThat(apiStats[2].id!!).isEqualTo(apiStat3.id!!)
         assertThat(apiStats[3].id!!).isEqualTo(apiStat2.id!!)
         assertThat(apiStats[4].id!!).isEqualTo(apiStat1.id!!)
+    }
+
+    @DisplayName("api 통계에 사용 횟수를 증가시킨다.")
+    @Test
+    fun increaseCountBy() {
+        // given
+        val apiStat = ApiStat(
+            statDate = time.nowLocalDate,
+            method = ApiStatMethod.GET,
+            path = "/api/v1/hello1/{id}",
+            count = 100L
+        )
+        apiStatRepository.save(apiStat)
+
+        // when
+        apiStatRepository.increaseCountBy(apiStat.id!!)
+
+        em.flush()
+        em.clear()
+
+        // then
+        val apiStats = apiStatRepository.findAll()
+        assertThat(apiStats).hasSize(1)
+        assertThat(apiStats[0].count).isEqualTo(101L)
     }
 }
