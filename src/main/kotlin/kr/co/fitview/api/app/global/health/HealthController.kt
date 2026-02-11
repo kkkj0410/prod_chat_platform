@@ -12,8 +12,7 @@ class HealthController {
 
     @GetMapping("/health")
     fun healthCheck() : ResponseEntity<*> {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("error")
-//        return ResponseEntity.ok("ok")
+        return ResponseEntity.ok("ok")
     }
 
 }
