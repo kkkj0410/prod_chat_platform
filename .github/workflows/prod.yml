@@ -42,12 +42,6 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-#      - name: Create Configuration Files
-#        run: |
-#          echo "${{ env.APPLICATION_PROD }}" > ./src/main/resources/application.yml
-#          echo "${{ env.APPLICATION_TEST }}" > ./src/main/resources/application-test.yml
-#          mkdir -p ./src/main/resources/firebase
-#          echo '${{ env.FIREBASE_KEY }}' > ./src/main/resources/firebase/firebase-key.json
       - name: Create Configuration Files
         run: |
           echo "$APPLICATION_PROD" > ./src/main/resources/application.yml
@@ -73,35 +67,144 @@ jobs:
         run: |
           docker push ${{ env.NCR_REGISTRY_PUBLIC_URI }}/${{ env.PROD_NCR_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_VERSION }}
 
-      - name: Deploy to WAS 1
+      - name: Deploy to WAS 1 with Rollback Strategy
         uses: appleboy/ssh-action@master
         with:
           host: ${{ env.PROD_CORE_WAS_INSTANCE_01_IP }}
           username: ${{ env.SERVER_USER }}
           key: ${{ env.PROD_WAS_SSH_KEY }}
           script: |
+            # ==========================================
+            # 1. 환경 변수 설정
+            # ==========================================
+            CONTAINER_NAME="${{ env.DOCKER_CONTAINER_NAME }}"
+            IMAGE_FULL_NAME="${{ env.NCR_REGISTRY_PUBLIC_URI }}/${{ env.PROD_NCR_IMAGE_NAME }}"
+            NEW_VERSION="${{ env.DOCKER_IMAGE_VERSION }}"
+            BACKUP_TAG="backup"
+            PORT=8080
+            
+            echo "=== [Deploy] 설정 파일 호스트 생성 ==="
             mkdir -p ~/firebase
             echo "${{ env.APPLICATION_PROD }}" > ~/application.yml
             echo '${{ env.FIREBASE_KEY }}' > ~/firebase/firebase-key.json
             chmod 600 ~/application.yml ~/firebase/firebase-key.json
             
+            echo "=== [Deploy] Docker Hub 로그인 ==="
             echo "${{ env.NHN_SECRET_ACCESS_KEY }}" | sudo docker login ${{ env.NCR_REGISTRY_PUBLIC_URI }} \
               -u "${{ env.NHN_USER_ACCESS_KEY }}" --password-stdin
-            sudo docker pull ${{ env.NCR_REGISTRY_PUBLIC_URI }}/${{ env.PROD_NCR_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_VERSION }}
-            sudo docker rm -f ${{ env.DOCKER_CONTAINER_NAME }} || true
             
-            sudo docker create --name ${{ env.DOCKER_CONTAINER_NAME }} \
-            -p 8080:8080 -e TZ=Asia/Seoul \
-            -v ~/server_logs:/logs \
-            ${{ env.NCR_REGISTRY_PUBLIC_URI }}/${{ env.PROD_NCR_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_VERSION }}
-          
-            sudo docker cp ~/application.yml ${{ env.DOCKER_CONTAINER_NAME }}:/app/resources/application.yml
-            sudo docker cp ~/firebase/firebase-key.json ${{ env.DOCKER_CONTAINER_NAME }}:/app/resources/firebase/firebase-key.json
+            echo "=== [Deploy] 새 이미지 Pull ==="
+            sudo docker pull $IMAGE_FULL_NAME:$NEW_VERSION
             
-            sudo docker start ${{ env.DOCKER_CONTAINER_NAME }}
+            # ==========================================
+            # 2. 현재 버전 백업 (Tagging)
+            # ==========================================
+            echo "=== [Deploy] 현재 실행 중인 이미지 백업 ==="
+            if [ "$(sudo docker ps -q -f name=$CONTAINER_NAME)" ]; then
+                CURRENT_ID=$(sudo docker inspect --format='{{.Image}}' $CONTAINER_NAME)
+                sudo docker tag $CURRENT_ID $IMAGE_FULL_NAME:$BACKUP_TAG
+                echo "-> 현재 버전을 백업했습니다: $IMAGE_FULL_NAME:$BACKUP_TAG"
+            else
+                echo "-> 실행 중인 컨테이너가 없습니다. 백업을 건너뜁니다."
+            fi
             
-            sudo docker image prune -f
-            sudo docker logout ${{ env.NCR_REGISTRY_PUBLIC_URI }}
+            # ==========================================
+            # 3. 기존 컨테이너 삭제 및 새 버전 배포
+            # ==========================================
+            echo "=== [Deploy] 기존 컨테이너 삭제 ==="
+            sudo docker rm -f $CONTAINER_NAME || true
             
-            rm ~/application.yml
-            rm -rf ~/firebase
+            echo "=== [Deploy] 새 컨테이너 생성 (Create) ==="
+            sudo docker create --name $CONTAINER_NAME \
+              -p $PORT:$PORT -e TZ=Asia/Seoul \
+              -v ~/server_logs:/logs \
+              $IMAGE_FULL_NAME:$NEW_VERSION
+            
+            echo "=== [Deploy] 설정 파일 주입 (Copy) ==="
+            sudo docker cp ~/application.yml $CONTAINER_NAME:/app/resources/application.yml
+            sudo docker cp ~/firebase/firebase-key.json $CONTAINER_NAME:/app/resources/firebase/firebase-key.json
+            
+            echo "=== [Deploy] 컨테이너 시작 (Start) ==="
+            sudo docker start $CONTAINER_NAME
+            
+            # ==========================================
+            # 4. 헬스 체크 및 롤백 로직
+            # ==========================================
+            echo "=== [Health Check] 서비스 시작 대기 (100초) ==="
+            sleep 100
+            
+            # Actuator가 없다면 주소를 http://localhost:$PORT/ 로 변경하세요
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:$PORT/actuator/health || echo "000")
+            
+            if [ "$HTTP_CODE" == "200" ]; then
+                echo "✅ [Success] 배포 성공! (HTTP 200)"
+            
+                # 성공 시 정리 작업
+                sudo docker image prune -f
+                sudo docker logout ${{ env.NCR_REGISTRY_PUBLIC_URI }}
+                rm ~/application.yml
+                rm -rf ~/firebase
+                exit 0
+            else
+                echo "❌ [Fail] 배포 실패 (HTTP Code: $HTTP_CODE). 롤백을 시작합니다."
+            
+                # ------------------------------------------
+                # 롤백 프로세스 시작
+                # ------------------------------------------
+                echo "=== [Rollback] 실패한 컨테이너 삭제 ==="
+                sudo docker rm -f $CONTAINER_NAME
+            
+                echo "=== [Rollback] 백업 이미지로 복구 시작 ==="
+                # 백업 이미지로 다시 Create
+                sudo docker create --name $CONTAINER_NAME \
+                  -p $PORT:$PORT -e TZ=Asia/Seoul \
+                  -v ~/server_logs:/logs \
+                  $IMAGE_FULL_NAME:$BACKUP_TAG
+            
+                # 롤백된 컨테이너에도 설정 파일 다시 주입 필수!
+                sudo docker cp ~/application.yml $CONTAINER_NAME:/app/resources/application.yml
+                sudo docker cp ~/firebase/firebase-key.json $CONTAINER_NAME:/app/resources/firebase/firebase-key.json
+            
+                sudo docker start $CONTAINER_NAME
+            
+                echo "🔄 [Rollback] 롤백 완료. 이전 버전이 실행 중입니다."
+            
+                # 롤백 후에도 파일 정리는 해야 함
+                rm ~/application.yml
+                rm -rf ~/firebase
+            
+                # GitHub Actions를 실패로 마킹
+                exit 1
+            fi
+#      - name: Deploy to WAS 1
+#        uses: appleboy/ssh-action@master
+#        with:
+#          host: ${{ env.PROD_CORE_WAS_INSTANCE_01_IP }}
+#          username: ${{ env.SERVER_USER }}
+#          key: ${{ env.PROD_WAS_SSH_KEY }}
+#          script: |
+#            mkdir -p ~/firebase
+#            echo "${{ env.APPLICATION_PROD }}" > ~/application.yml
+#            echo '${{ env.FIREBASE_KEY }}' > ~/firebase/firebase-key.json
+#            chmod 600 ~/application.yml ~/firebase/firebase-key.json
+#
+#            echo "${{ env.NHN_SECRET_ACCESS_KEY }}" | sudo docker login ${{ env.NCR_REGISTRY_PUBLIC_URI }} \
+#              -u "${{ env.NHN_USER_ACCESS_KEY }}" --password-stdin
+#            sudo docker pull ${{ env.NCR_REGISTRY_PUBLIC_URI }}/${{ env.PROD_NCR_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_VERSION }}
+#            sudo docker rm -f ${{ env.DOCKER_CONTAINER_NAME }} || true
+#
+#            sudo docker create --name ${{ env.DOCKER_CONTAINER_NAME }} \
+#            -p 8080:8080 -e TZ=Asia/Seoul \
+#            -v ~/server_logs:/logs \
+#            ${{ env.NCR_REGISTRY_PUBLIC_URI }}/${{ env.PROD_NCR_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_VERSION }}
+#
+#            sudo docker cp ~/application.yml ${{ env.DOCKER_CONTAINER_NAME }}:/app/resources/application.yml
+#            sudo docker cp ~/firebase/firebase-key.json ${{ env.DOCKER_CONTAINER_NAME }}:/app/resources/firebase/firebase-key.json
+#
+#            sudo docker start ${{ env.DOCKER_CONTAINER_NAME }}
+#
+#            sudo docker image prune -f
+#            sudo docker logout ${{ env.NCR_REGISTRY_PUBLIC_URI }}
+#
+#            rm ~/application.yml
+#            rm -rf ~/firebase
