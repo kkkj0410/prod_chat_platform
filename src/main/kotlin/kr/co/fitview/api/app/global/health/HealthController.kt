@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping
 @Controller
 class HealthController {
 
-    @GetMapping("/health2")
+    @GetMapping("/health3")
     fun healthCheck() : ResponseEntity<*> {
         return ResponseEntity.ok("ok")
     }
