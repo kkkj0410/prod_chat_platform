@@ -1,95 +1,207 @@
-name: fitview-be-ci-trivy
+name: fitview-be-PROD-CI/CD
 
 on:
   push:
     branches: [ "test" ]
 
 env:
-  SERVER_HOST: ${{ secrets.SERVER_HOST }}
-  SERVER_HOST_NAME : ubuntu
-  SERVER_SSH_PRIVATE_KEY: ${{ secrets.SERVER_SSH_PRIVATE_KEY }}
+  PROD_CORE_WAS_INSTANCE_01_IP: ${{ secrets.TEST_WAS_IP }}
 
-  DOCKER_IMAGE_NAME: fitview-be
+  SERVER_USER: ubuntu
+
+  NCR_REGISTRY_PUBLIC_URI: ${{ secrets.NCR_REGISTRY_PUBLIC_URI }}
+  NHN_USER_ACCESS_KEY: ${{ secrets.NHN_USER_ACCESS_KEY }}
+  NHN_SECRET_ACCESS_KEY: ${{ secrets.NHN_SECRET_ACCESS_KEY }}
+  PROD_NCR_IMAGE_NAME: ${{ secrets.PROD_NCR_IMAGE_NAME }}
   DOCKER_IMAGE_VERSION: latest
-  DOCKER_NAME: ${{ secrets.DOCKER_NAME }}
-  DOCKER_HUB_TOKEN: ${{ secrets.DOCKER_HUB_TOKEN }}
-  DOCKER_CONTAINER_NAME: backend
+  DOCKER_CONTAINER_NAME: backend-prod
 
-  APPLICATION_PROD: ${{ secrets.APPLICATION_PROD }}
-  APPLICATION_TEST: ${{ secrets.APPLICATION_TEST }}
+  NHN_API_TENANT_ID: ${{ secrets.NHN_API_TENANT_ID }}
+  NHN_API_USER_ID: ${{ secrets.NHN_API_USER_ID }}
+  NHN_API_PASSWORD: ${{ secrets.NHN_API_PASSWORD }}
+  NHN_REGION_NAME: ${{ secrets.NHN_REGION_NAME }}
 
+  PROD_WAS_SSH_KEY: ${{ secrets.PROD_WAS_SSH_KEY }}
+
+  APPLICATION_PROD: ${{ secrets.PROD_APPLICATION_YML }}
+  APPLICATION_TEST: ${{ secrets.TEST_APPLICATION_YML }}
   FIREBASE_KEY: ${{ secrets.FIREBASE_KEY }}
 
-  FULL_GITHUB_SHA: ${{ github.sha }}
-  SHORT_GITHUB_SHA: 0
-
 jobs:
-  # jobs 이름
-  trivy:
-    # 해당 jobs의 실행환경
-    # (현재는 ubuntu 환경에서 실행할 것임)
+  build-and-push-ncr:
     runs-on: ubuntu-latest
-    # jobs는 여러개의 step으로 구성됨
-    # 각각의 step에서 명령어를 넣으면 됨
+
     steps:
+      - uses: actions/checkout@v4
 
-      # 해당 step의 이름(Checkout)
-      - name: Checkout
-        # 현재 리포지토리 코드 가져오기
-        uses: actions/checkout@v4
-
-      # FULL_GITHUB_SHA의 7글자만 SHORT_GITHUB_SHA에 첨가
-      - name: Set SHORT_GITHUB_SHA
-        run: echo "SHORT_GITHUB_SHA=${FULL_GITHUB_SHA::7}" >> $GITHUB_ENV
-      # template로 실제 docker-compose.yml 생성
-      - name: Generate docker-compose.yml from template
-        run: envsubst < docker-compose.yml.template > docker-compose.yml
-        env:
-          DOCKER_NAME: ${{ env.DOCKER_NAME }}
-          DOCKER_IMAGE_NAME: ${{ env.DOCKER_IMAGE_NAME }}
-          DOCKER_CONTAINER_NAME: ${{ env.DOCKER_CONTAINER_NAME }}
-
-      # 자바 JDK 설치
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
+      - uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      # 해당 Spring의 application.yml 파일 넣기
-      # .yml 파일은 보안상 리포지토리에 노출 할 수가 없음
-      # 따라서, 깃허브의 secrets에 application.yml 선언 후, 이를 가져옴
-      - name: Set up application-prod.yml
-        run: echo "${{ env.APPLICATION_PROD }}" > ./src/main/resources/application.yml
-
-      - name: Set up application-test.yml
-        run: echo "${{ env.APPLICATION_TEST }}" > ./src/main/resources/application-test.yml
-
-      - name: Set up Firebase key
+      - name: Create Configuration Files
         run: |
-          # firebase 디렉토리 생성 (존재하지 않는 경우)
-          mkdir -p ./src/main/resources/firebase/
-          # Firebase key 파일 생성
-          echo '${{ env.FIREBASE_KEY }}' > ./src/main/resources/firebase/firebase-key.json
-          # 파일이 올바르게 생성되었는지 확인
-          ls -la ./src/main/resources/firebase/
+          echo "$APPLICATION_PROD" > ./src/main/resources/application.yml
+          echo "$APPLICATION_TEST" > ./src/main/resources/application-test.yml
+          mkdir -p ./src/main/resources/firebase
+          echo "$FIREBASE_KEY" > ./src/main/resources/firebase/firebase-key.json
 
-      # 해당 프로젝트의 gradlew 파일 실행 권한 획득.
-      - name: Grant execute permission for gradlew
-        run: sudo chmod +x ./gradlew  # gradlew에 실행 권한 부여
+      - name: Build with Gradle
+        run: |
+          chmod +x ./gradlew
+          ./gradlew build
 
-      # gradlew 파일 실행
-      # .jar 파일을 만듦(아래에서 추가 설명)
-      - name: Build with Gradle (Run tests)
-        run: ./gradlew build
+      - name: Login to NCR
+        run: |
+          echo "${{ env.NHN_SECRET_ACCESS_KEY }}" | docker login ${{ env.NCR_REGISTRY_PUBLIC_URI }} \
+            -u "${{ env.NHN_USER_ACCESS_KEY }}" --password-stdin
 
-      # 해당 프로젝트를 도커 이미지로 만듦
-      - name: Build the Docker image
-        run: docker build . --file Dockerfile --tag ${{ env.DOCKER_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_VERSION }}
+      - name: Build Docker Image
+        run: |
+          docker build . -t ${{ env.NCR_REGISTRY_PUBLIC_URI }}/${{ env.PROD_NCR_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_VERSION }}
 
-      - name: Trivy scan Docker image
-        uses: aquasecurity/trivy-action@master
+      - name: Push to NCR
+        run: |
+          docker push ${{ env.NCR_REGISTRY_PUBLIC_URI }}/${{ env.PROD_NCR_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_VERSION }}
+
+      - name: Deploy to WAS 1 with Rollback Strategy
+        uses: appleboy/ssh-action@master
         with:
-          image-ref: ${{ env.DOCKER_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_VERSION }}
-          severity: CRITICAL,HIGH
-          exit-code: 1
+          host: ${{ env.PROD_CORE_WAS_INSTANCE_01_IP }}
+          username: ${{ env.SERVER_USER }}
+          key: ${{ env.PROD_WAS_SSH_KEY }}
+          script: |
+            # ==========================================
+            # 1. 환경 변수 설정
+            # ==========================================
+            CONTAINER_NAME="${{ env.DOCKER_CONTAINER_NAME }}"
+            IMAGE_FULL_NAME="${{ env.NCR_REGISTRY_PUBLIC_URI }}/${{ env.PROD_NCR_IMAGE_NAME }}"
+            NEW_VERSION="${{ env.DOCKER_IMAGE_VERSION }}"
+            BACKUP_TAG="backup"
+            PORT=8080
+            
+            echo "=== [Deploy] 설정 파일 호스트 생성 ==="
+            mkdir -p ~/firebase
+            echo "${{ env.APPLICATION_PROD }}" > ~/application.yml
+            echo '${{ env.FIREBASE_KEY }}' > ~/firebase/firebase-key.json
+            chmod 600 ~/application.yml ~/firebase/firebase-key.json
+            
+            echo "=== [Deploy] Docker Hub 로그인 ==="
+            echo "${{ env.NHN_SECRET_ACCESS_KEY }}" | sudo docker login ${{ env.NCR_REGISTRY_PUBLIC_URI }} \
+              -u "${{ env.NHN_USER_ACCESS_KEY }}" --password-stdin
+            
+            echo "=== [Deploy] 새 이미지 Pull ==="
+            sudo docker pull $IMAGE_FULL_NAME:$NEW_VERSION
+            
+            # ==========================================
+            # 2. 현재 버전 백업 (Tagging)
+            # ==========================================
+            echo "=== [Deploy] 현재 실행 중인 이미지 백업 ==="
+            if [ "$(sudo docker ps -q -f name=$CONTAINER_NAME)" ]; then
+                CURRENT_ID=$(sudo docker inspect --format='{{.Image}}' $CONTAINER_NAME)
+                sudo docker tag $CURRENT_ID $IMAGE_FULL_NAME:$BACKUP_TAG
+                echo "-> 현재 버전을 백업했습니다: $IMAGE_FULL_NAME:$BACKUP_TAG"
+            else
+                echo "-> 실행 중인 컨테이너가 없습니다. 백업을 건너뜁니다."
+            fi
+            
+            # ==========================================
+            # 3. 기존 컨테이너 삭제 및 새 버전 배포
+            # ==========================================
+            echo "=== [Deploy] 기존 컨테이너 삭제 ==="
+            sudo docker rm -f $CONTAINER_NAME || true
+            
+            echo "=== [Deploy] 새 컨테이너 생성 (Create) ==="
+            sudo docker create --name $CONTAINER_NAME \
+              -p $PORT:$PORT -e TZ=Asia/Seoul \
+              -v ~/server_logs:/logs \
+              $IMAGE_FULL_NAME:$NEW_VERSION
+            
+            echo "=== [Deploy] 설정 파일 주입 (Copy) ==="
+            sudo docker cp ~/application.yml $CONTAINER_NAME:/app/resources/application.yml
+            sudo docker cp ~/firebase/firebase-key.json $CONTAINER_NAME:/app/resources/firebase/firebase-key.json
+            
+            echo "=== [Deploy] 컨테이너 시작 (Start) ==="
+            sudo docker start $CONTAINER_NAME
+            
+            # ==========================================
+            # 4. 헬스 체크 및 롤백 로직
+            # ==========================================
+            echo "=== [Health Check] 서비스 시작 대기 (100초) ==="
+            sleep 100
+            
+            # Actuator가 없다면 주소를 http://localhost:$PORT/ 로 변경하세요
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:$PORT/actuator/health || echo "000")
+            
+            if [ "$HTTP_CODE" == "200" ]; then
+                echo "✅ [Success] 배포 성공! (HTTP 200)"
+            
+                # 성공 시 정리 작업
+                sudo docker image prune -f
+                sudo docker logout ${{ env.NCR_REGISTRY_PUBLIC_URI }}
+                rm ~/application.yml
+                rm -rf ~/firebase
+                exit 0
+            else
+                echo "❌ [Fail] 배포 실패 (HTTP Code: $HTTP_CODE). 롤백을 시작합니다."
+            
+                # ------------------------------------------
+                # 롤백 프로세스 시작
+                # ------------------------------------------
+                echo "=== [Rollback] 실패한 컨테이너 삭제 ==="
+                sudo docker rm -f $CONTAINER_NAME
+            
+                echo "=== [Rollback] 백업 이미지로 복구 시작 ==="
+                # 백업 이미지로 다시 Create
+                sudo docker create --name $CONTAINER_NAME \
+                  -p $PORT:$PORT -e TZ=Asia/Seoul \
+                  -v ~/server_logs:/logs \
+                  $IMAGE_FULL_NAME:$BACKUP_TAG
+            
+                # 롤백된 컨테이너에도 설정 파일 다시 주입 필수!
+                sudo docker cp ~/application.yml $CONTAINER_NAME:/app/resources/application.yml
+                sudo docker cp ~/firebase/firebase-key.json $CONTAINER_NAME:/app/resources/firebase/firebase-key.json
+            
+                sudo docker start $CONTAINER_NAME
+            
+                echo "🔄 [Rollback] 롤백 완료. 이전 버전이 실행 중입니다."
+            
+                # 롤백 후에도 파일 정리는 해야 함
+                rm ~/application.yml
+                rm -rf ~/firebase
+            
+                # GitHub Actions를 실패로 마킹
+                exit 1
+            fi
+#      - name: Deploy to WAS 1
+#        uses: appleboy/ssh-action@master
+#        with:
+#          host: ${{ env.PROD_CORE_WAS_INSTANCE_01_IP }}
+#          username: ${{ env.SERVER_USER }}
+#          key: ${{ env.PROD_WAS_SSH_KEY }}
+#          script: |
+#            mkdir -p ~/firebase
+#            echo "${{ env.APPLICATION_PROD }}" > ~/application.yml
+#            echo '${{ env.FIREBASE_KEY }}' > ~/firebase/firebase-key.json
+#            chmod 600 ~/application.yml ~/firebase/firebase-key.json
+#
+#            echo "${{ env.NHN_SECRET_ACCESS_KEY }}" | sudo docker login ${{ env.NCR_REGISTRY_PUBLIC_URI }} \
+#              -u "${{ env.NHN_USER_ACCESS_KEY }}" --password-stdin
+#            sudo docker pull ${{ env.NCR_REGISTRY_PUBLIC_URI }}/${{ env.PROD_NCR_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_VERSION }}
+#            sudo docker rm -f ${{ env.DOCKER_CONTAINER_NAME }} || true
+#
+#            sudo docker create --name ${{ env.DOCKER_CONTAINER_NAME }} \
+#            -p 8080:8080 -e TZ=Asia/Seoul \
+#            -v ~/server_logs:/logs \
+#            ${{ env.NCR_REGISTRY_PUBLIC_URI }}/${{ env.PROD_NCR_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_VERSION }}
+#
+#            sudo docker cp ~/application.yml ${{ env.DOCKER_CONTAINER_NAME }}:/app/resources/application.yml
+#            sudo docker cp ~/firebase/firebase-key.json ${{ env.DOCKER_CONTAINER_NAME }}:/app/resources/firebase/firebase-key.json
+#
+#            sudo docker start ${{ env.DOCKER_CONTAINER_NAME }}
+#
+#            sudo docker image prune -f
+#            sudo docker logout ${{ env.NCR_REGISTRY_PUBLIC_URI }}
+#
+#            rm ~/application.yml
+#            rm -rf ~/firebase
