@@ -7,4 +7,5 @@ interface ApiStatRepositoryCustom {
 
     fun findApiStatTop(statDate: LocalDate, limit : Int): List<ApiStat>
 
+    fun increaseCountBy(apiStatId: Long)
 }

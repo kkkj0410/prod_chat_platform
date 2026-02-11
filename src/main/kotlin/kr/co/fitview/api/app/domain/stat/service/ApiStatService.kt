@@ -30,12 +30,12 @@ class ApiStatService(
         )
 
         if(isNotNull(findApiStat)){
-            findApiStat!!.increaseCount()
+            apiStatRepository.increaseCountBy(findApiStat!!.id!!)
             return findApiStat
         }
 
         return try {
-            apiStatRepository.save(
+            apiStatRepository.saveAndFlush(
                 ApiStat.of(
                     statDate = statDate,
                     path = normalizedPath,
@@ -49,7 +49,7 @@ class ApiStatService(
                 method = method
             ) ?: throw e
 
-            retry.increaseCount()
+            apiStatRepository.increaseCountBy(retry.id!!)
             retry
         }
     }
