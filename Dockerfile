@@ -1,6 +1,10 @@
 #FROM openjdk:17-jdk-slim
 FROM eclipse-temurin:17-jdk-jammy
 
+# firebase json 파일을 넣을 수 있게 미리 폴더 생성
+WORKDIR /app
+RUN mkdir -p resources/firebase
+
 COPY build/libs/app-0.0.1-SNAPSHOT.jar app.jar
 #ENTRYPOINT ["java", "-jar", "/app.jar"]
 
