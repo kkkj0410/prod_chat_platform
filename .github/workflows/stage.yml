@@ -153,8 +153,8 @@ jobs:
               $IMAGE_NAME:$NEW_VERSION
 
             echo "=== 6. 헬스 체크 (Health Check) ==="
-            echo "컨테이너 구동 대기 중 (60초)..."
-            sleep 60
+            echo "컨테이너 구동 대기 중 (100초)..."
+            sleep 100
             
             # /health 엔드포인트가 있다고 가정 (없으면 메인 페이지나 다른 API로 변경 필요)
             # curl 명령어로 상태 코드 확인
