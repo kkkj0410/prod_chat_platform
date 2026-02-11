@@ -36,12 +36,14 @@ class WorkoutPartnerRejectMapperTest @Autowired constructor(
         val signupRequest = TestDataFactory.oAuth2SignupRequest()
         oAuth2Service.signup(signupRequest, member.id!!)
 
+        val fromMember = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(fromMember)
+
         val content: MutableMap<String, Any> = mutableMapOf(
-            "sender" to mutableMapOf(
-                "memberId" to 123L,
-                "nickname" to "nick",
-                "profileImageUrl" to "profile"
-            ),
             "payload" to mutableMapOf(
                 "memberId" to 456L,
                 "workoutPartnerRequestId" to 666L
@@ -50,6 +52,7 @@ class WorkoutPartnerRejectMapperTest @Autowired constructor(
 
         val notification = Notification(
             member = member,
+            fromMember = fromMember,
             type = NotificationType.WORKOUT_PARTNER_REJECT,
             sentAt = time.nowLocalDateTime,
             isRead = false,
@@ -57,7 +60,13 @@ class WorkoutPartnerRejectMapperTest @Autowired constructor(
         )
         notificationRepository.save(notification)
 
-        val response = workoutPartnerRejectMapper.map(notification, member)
+        val sender = NotificationSender(
+            memberId = 123L,
+            nickname = "nick",
+            profileImageUrl = "profile"
+        )
+
+        val response = workoutPartnerRejectMapper.map(notification, member, sender)
 
         assertThat(response)
             .extracting("notificationId", "type", "sentAt", "isRead", "sender", "link", "messages")

@@ -2,6 +2,7 @@ package kr.co.fitview.api.app.domain.workout_history.service
 
 import kr.co.fitview.api.app.domain.review.entity.Review
 import kr.co.fitview.api.app.domain.review.service.ReviewQueryService
+import kr.co.fitview.api.app.domain.workout_history.dto.response.WorkoutHistoryAndChatMessage
 import kr.co.fitview.api.app.domain.workout_history.dto.response.WorkoutHistoryChatRoomResponse
 import kr.co.fitview.api.app.domain.workout_history.dto.response.WorkoutHistoryReviewStatusResponse
 import kr.co.fitview.api.app.domain.workout_history.dto.response.enums.WorkoutHistoryReviewStatus
@@ -47,7 +48,7 @@ class WorkoutHistoryQueryService(
         return WorkoutHistoryReviewStatusResponse(WorkoutHistoryReviewStatus.WRITABLE)
     }
 
-    fun findAllWorkoutHistoryExceed24HoursWithoutReview() : List<WorkoutHistory> {
+    fun findAllWorkoutHistoryExceed24HoursWithoutReview() : List<WorkoutHistoryAndChatMessage> {
         return workoutHistoryRepository.findAllWorkoutHistoryExceed24HoursWithoutReview()
     }
 

@@ -36,12 +36,14 @@ class WorkoutCompleteMapperTest @Autowired constructor(
         val signupRequest = TestDataFactory.oAuth2SignupRequest()
         oAuth2Service.signup(signupRequest, member.id!!)
 
+        val fromMember = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(fromMember)
+
         val content: MutableMap<String, Any> = mutableMapOf(
-            "sender" to mutableMapOf(
-                "memberId" to 123L,
-                "nickname" to "nick",
-                "profileImageUrl" to "profile"
-            ),
             "payload" to mutableMapOf(
                 "workoutHistoryId" to 789L,
                 "workoutRequestId" to 444L,
@@ -52,6 +54,7 @@ class WorkoutCompleteMapperTest @Autowired constructor(
 
         val notification = Notification(
             member = member,
+            fromMember = fromMember,
             type = NotificationType.WORKOUT_COMPLETE,
             sentAt = time.nowLocalDateTime,
             isRead = false,
@@ -59,7 +62,13 @@ class WorkoutCompleteMapperTest @Autowired constructor(
         )
         notificationRepository.save(notification)
 
-        val response = workoutCompleteMapper.map(notification, member)
+        val sender = NotificationSender(
+            memberId = 123L,
+            nickname = "nick",
+            profileImageUrl = "profile"
+        )
+
+        val response = workoutCompleteMapper.map(notification, member, sender)
 
         assertThat(response)
             .extracting("notificationId", "type", "sentAt", "isRead", "sender", "link", "messages")
@@ -70,7 +79,7 @@ class WorkoutCompleteMapperTest @Autowired constructor(
                 notification.isRead!!,
                 NotificationSender(123L, "nick", "profile"),
                 NotificationLink(
-                    LinkType.REVIEW_WRITE,
+                    LinkType.CHAT_ROOM,
                     mapOf(
                         "workoutHistoryId" to 789L,
                         "chatRoomId" to 456L,

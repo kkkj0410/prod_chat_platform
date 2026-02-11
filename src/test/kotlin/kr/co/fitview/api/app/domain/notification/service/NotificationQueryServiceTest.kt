@@ -9,8 +9,10 @@ import kr.co.fitview.api.app.domain.notification.dto.response.enums.LinkType
 import kr.co.fitview.api.app.domain.notification.entity.Notification
 import kr.co.fitview.api.app.domain.notification.entity.enums.NotificationType
 import kr.co.fitview.api.app.domain.notification.repository.NotificationRepository
+import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.time.Time
+import kr.co.fitview.api.app.global.util.TestDataFactory
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -20,6 +22,7 @@ class NotificationQueryServiceTest @Autowired constructor(
     private val memberRepository : MemberRepository,
     private val notificationRepository: NotificationRepository,
     private val notificationQueryService : NotificationQueryService,
+    private val oAuth2Service : OAuth2Service,
     private val time : Time
 ) : IntegrationTestSupport(){
 
@@ -34,11 +37,17 @@ class NotificationQueryServiceTest @Autowired constructor(
         )
         memberRepository.save(member)
 
-        val senderData = mapOf(
-            "memberId" to 999L,
-            "nickname" to "헬스매니아",
-            "profileImageUrl" to "https://image.url/profile.jpg"
+        val fromMember = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
         )
+        memberRepository.save(fromMember)
+
+        val request = TestDataFactory.oAuth2SignupRequest(
+            nickname = "헬스매니아"
+        )
+        oAuth2Service.signup(request, fromMember.id!!)
 
         val payloadData = mapOf(
             "memberId" to 999L,
@@ -46,11 +55,11 @@ class NotificationQueryServiceTest @Autowired constructor(
         )
 
         val contentMap: MutableMap<String, Any> = mutableMapOf(
-            "sender" to senderData,
             "payload" to payloadData
         )
         val notification = Notification.of(
             member = member,
+            fromMember = fromMember,
             type = NotificationType.WORKOUT_PARTNER_REQUEST,
             content = contentMap,
             sentAt = time.nowLocalDateTime
@@ -66,12 +75,13 @@ class NotificationQueryServiceTest @Autowired constructor(
         val response = findNotifications.content
         assertThat(response).hasSize(1)
         assertThat(response[0])
-            .extracting("notificationId", "type", "sentAt", "isRead", "link.type", "link.parameters.memberId", "messages")
+            .extracting("notificationId", "type", "sentAt", "isRead", "sender.memberId", "link.type", "link.parameters.memberId", "messages")
             .contains(
                 notification.id!!,
                 NotificationType.WORKOUT_PARTNER_REQUEST,
                 time.nowLocalDateTime,
                 false,
+                fromMember.id!!,
                 LinkType.MEMBER_PROFILE,
                 999L,
                 NotificationMessage(
@@ -92,10 +102,15 @@ class NotificationQueryServiceTest @Autowired constructor(
         )
         memberRepository.save(member)
 
+        val fromMember = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(fromMember)
+
         val senderData = mapOf(
             "memberId" to 999L,
-            "nickname" to "헬스매니아",
-            "profileImageUrl" to "https://image.url/profile.jpg"
         )
 
         val payloadData = mapOf(
@@ -109,6 +124,7 @@ class NotificationQueryServiceTest @Autowired constructor(
         )
         val notification = Notification.of(
             member = member,
+            fromMember = fromMember,
             type = NotificationType.WORKOUT_PARTNER_REQUEST,
             content = contentMap,
             sentAt = time.nowLocalDateTime

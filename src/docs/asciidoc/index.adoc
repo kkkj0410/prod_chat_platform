@@ -60,6 +60,11 @@ include::api/chat/chat.adoc[]
 
 include::api/fcm/fcm.adoc[]
 
+[[Admin-FCM-API]]
+== FCM API
+
+include::api/fcm/adminFcm.adoc[]
+
 [[REVIEW-API]]
 == REVIEW API
 
@@ -90,6 +95,11 @@ include::api/notification/notification.adoc[]
 == REPORT API
 
 include::api/report/report.adoc[]
+
+[[FAVORITE]]
+== FAVORITE API
+
+include::api/favorite/favorite.adoc[]
 
 [[Admin-Report]]
 == Admin-Report API

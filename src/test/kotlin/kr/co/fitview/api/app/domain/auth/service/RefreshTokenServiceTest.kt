@@ -8,6 +8,7 @@ import kr.co.fitview.api.app.domain.auth.entity.RefreshTokenStatus
 import kr.co.fitview.api.app.domain.auth.repository.RefreshTokenRepository
 import kr.co.fitview.api.app.domain.fcm.entity.FcmToken
 import kr.co.fitview.api.app.domain.fcm.entity.enums.FcmTokenPlatform
+import kr.co.fitview.api.app.domain.fcm.entity.enums.FcmTokenStatus
 import kr.co.fitview.api.app.domain.fcm.repository.FcmTokenRepository
 import kr.co.fitview.api.app.domain.member.dto.request.MemberCreateServiceRequest
 import kr.co.fitview.api.app.domain.member.dto.request.MemberLoginServiceRequest
@@ -72,7 +73,7 @@ class RefreshTokenServiceTest@Autowired constructor(
         val uuid = jwtTokenProvider.extractUuidFrom(savedRefreshToken)
         assertThat(uuid).isEqualTo(usedUuid)
 
-        val refreshTokenEntity = refreshTokenRepository.findByUidAndDeletedAtIsNull(usedUuid)
+        val refreshTokenEntity = refreshTokenRepository.findByUid(usedUuid)
         assertThat(refreshTokenEntity)
             .extracting("uid", "status", "deviceId")
             .contains(usedUuid, RefreshTokenStatus.ACTIVE, "deviceId")
@@ -120,16 +121,16 @@ class RefreshTokenServiceTest@Autowired constructor(
         val uuid = jwtTokenProvider.extractUuidFrom(savedRefreshToken)
         assertThat(uuid).isEqualTo(usedUuid)
 
-        val refreshTokenEntity = refreshTokenRepository.findByUidAndDeletedAtIsNull(usedUuid)
+        val refreshTokenEntity = refreshTokenRepository.findByUid(usedUuid)
         assertThat(refreshTokenEntity)
             .extracting("uid", "status")
             .contains(usedUuid, RefreshTokenStatus.ACTIVE)
     }
 
 
-    @DisplayName("리프레시 토큰을 무효화한다.")
+    @DisplayName("리프레시 토큰을 취소한다.")
     @Test
-    fun inactiveRefreshToken() {
+    fun setRevokeRefreshToken() {
         // given
         val signupRequest = MemberCreateServiceRequest(
             email = "email",
@@ -148,17 +149,17 @@ class RefreshTokenServiceTest@Autowired constructor(
         val usedUuid = jwtTokenProvider.idGenerator.createUuid()
 
         // when
-        val refreshTokenEntity = refreshTokenService.inactiveRefreshToken(refreshToken!!)
+        val refreshTokenEntity = refreshTokenService.revokeRefreshToken(refreshToken!!)
 
         // then
         assertThat(refreshTokenEntity)
             .extracting("uid", "status")
-            .contains(usedUuid, RefreshTokenStatus.INACTIVE)
+            .contains(usedUuid, RefreshTokenStatus.REVOKED)
     }
 
-    @DisplayName("리프레시 토큰을 무효화시, 관련 fcm 토큰을 삭제한다.")
+    @DisplayName("리프레시 토큰을 무효화시, 관련 fcm 토큰을 무효화한다.")
     @Test
-    fun inactiveRefreshTokenAllDeleteFcmToken() {
+    fun setRevokeRefreshTokenAllRevokeFcmToken() {
         // given
         val member = Member(
             email = "email",
@@ -190,21 +191,21 @@ class RefreshTokenServiceTest@Autowired constructor(
             member = member,
             deviceId = "deviceId",
             token = "fcmToken",
-            isActive = true,
+            status = FcmTokenStatus.ACTIVE,
             platform = FcmTokenPlatform.ANDROID
         )
         val fcmToken2 = FcmToken(
             member = member,
             deviceId = "deviceId",
             token = "fcmToken",
-            isActive = true,
+            status = FcmTokenStatus.ACTIVE,
             platform = FcmTokenPlatform.ANDROID
         )
         val otherFcmToken = FcmToken(
             member = member,
             deviceId = "deviceId2",
             token = "fcmToken",
-            isActive = true,
+            status = FcmTokenStatus.ACTIVE,
             platform = FcmTokenPlatform.ANDROID
         )
         fcmTokenRepository.save(fcmToken1)
@@ -212,28 +213,28 @@ class RefreshTokenServiceTest@Autowired constructor(
         fcmTokenRepository.save(otherFcmToken)
 
         // when
-        refreshTokenService.inactiveRefreshToken(refreshToken)
+        refreshTokenService.revokeRefreshToken(refreshToken)
 
         // then
         val findFcmTokens = fcmTokenRepository.findAll()
         assertThat(findFcmTokens)
-            .extracting("id", "deviceId", "deletedAt")
+            .extracting("id", "deviceId", "status")
             .contains(
-                tuple(fcmToken1.id, "deviceId", time.nowLocalDateTime),
-                tuple(fcmToken2.id, "deviceId", time.nowLocalDateTime),
-                tuple(otherFcmToken.id, "deviceId2", null)
+                tuple(fcmToken1.id, "deviceId", FcmTokenStatus.REVOKED),
+                tuple(fcmToken2.id, "deviceId", FcmTokenStatus.REVOKED),
+                tuple(otherFcmToken.id, "deviceId2", FcmTokenStatus.ACTIVE)
             )
     }
 
     @DisplayName("리프레시 토큰이 유효하지 않으면 액세스 토큰을 재발급하지 않는다.")
     @Test
-    fun inactiveRefreshTokenInvalidRefreshToken() {
+    fun setRevokeRefreshTokenInvalidRefreshToken() {
         // given
         val refreshToken = "fail jwtToken"
 
         // when & then
         assertThatThrownBy {
-            refreshTokenService.inactiveRefreshToken(refreshToken)
+            refreshTokenService.revokeRefreshToken(refreshToken)
         }
             .isInstanceOf(GlobalException::class.java)
             .satisfies(ThrowingConsumer { ex ->
@@ -245,7 +246,7 @@ class RefreshTokenServiceTest@Autowired constructor(
 
     @DisplayName("비활성화된 리프레시 토큰으로 액세스 토큰 재발급 요청시, 액세스 토큰을 발급하지 않는다.")
     @Test
-    fun inactiveRefreshTokenInactive() {
+    fun revokeRefreshTokenSetRevoke() {
         // given
         val signupRequest = MemberCreateServiceRequest(
             email = "email",
@@ -262,13 +263,13 @@ class RefreshTokenServiceTest@Autowired constructor(
         val refreshToken = loginResponse.refreshToken
 
         val usedUuid = jwtTokenProvider.idGenerator.createUuid()
-        val refreshTokenEntity = refreshTokenRepository.findByUidAndDeletedAtIsNull(usedUuid)
-        refreshTokenEntity!!.inactive()
+        val refreshTokenEntity = refreshTokenRepository.findByUid(usedUuid)
+        refreshTokenEntity!!.setRevoke()
 
 
         // when & then
         assertThatThrownBy {
-            refreshTokenService.inactiveRefreshToken(refreshToken!!)
+            refreshTokenService.revokeRefreshToken(refreshToken!!)
         }
             .isInstanceOf(GlobalException::class.java)
             .satisfies(ThrowingConsumer { ex ->
@@ -279,9 +280,9 @@ class RefreshTokenServiceTest@Autowired constructor(
 
     }
 
-    @DisplayName("DB에 기록되어있지 않은 리프레시 토큰으로 액세스 토큰 재발급 요청을 하면 재발급하지 않는다.")
+    @DisplayName("DB에 기록되어있지 않은 리프레시 토큰을 무효화하면 무효화되지 않는다.")
     @Test
-    fun inactiveRefreshTokenNotRecordRefreshToken() {
+    fun revokeRefreshTokenNotRecordRefreshToken() {
         // given
         val signupRequest = MemberCreateServiceRequest(
             email = "email",
@@ -298,13 +299,12 @@ class RefreshTokenServiceTest@Autowired constructor(
         val refreshToken = loginResponse.refreshToken
 
         val usedUuid = jwtTokenProvider.idGenerator.createUuid()
-//        refreshTokenRepository.deleteById(usedUuid)
-        val findRefreshToken = refreshTokenRepository.findByUidAndDeletedAtIsNull(usedUuid)
-        findRefreshToken!!.deletedAt = time.nowLocalDateTime
+        val findRefreshToken = refreshTokenRepository.findByUid(usedUuid)
+        refreshTokenRepository.deleteById(findRefreshToken!!.id!!)
 
         // when & then
         assertThatThrownBy {
-            refreshTokenService.inactiveRefreshToken(refreshToken!!)
+            refreshTokenService.revokeRefreshToken(refreshToken!!)
         }
             .isInstanceOf(GlobalException::class.java)
             .satisfies(ThrowingConsumer { ex ->
@@ -315,9 +315,9 @@ class RefreshTokenServiceTest@Autowired constructor(
 
     }
 
-    @DisplayName("refreshToken을 비활성화한다.")
+    @DisplayName("refreshToken을 만료한다")
     @Test
-    fun modifyAllInactiveRefreshToken() {
+    fun modifyAllExpireRefreshToken() {
         // given
         val member = Member(
             email = "email",
@@ -346,13 +346,13 @@ class RefreshTokenServiceTest@Autowired constructor(
         val refreshTokenIds = listOf(refreshToken1.uid, refreshToken2.uid)
 
         // when
-        refreshTokenService.modifyAllInactiveRefreshToken(refreshTokenIds)
+        refreshTokenService.modifyAllExpireRefreshToken(refreshTokenIds)
 
         // then
         val refreshTokens = refreshTokenRepository.findAll()
 
         assertThat(refreshTokens).hasSize(2)
-        assertThat(refreshTokens[0].status).isEqualTo(RefreshTokenStatus.INACTIVE)
-        assertThat(refreshTokens[1].status).isEqualTo(RefreshTokenStatus.INACTIVE)
+        assertThat(refreshTokens[0].status).isEqualTo(RefreshTokenStatus.EXPIRED)
+        assertThat(refreshTokens[1].status).isEqualTo(RefreshTokenStatus.EXPIRED)
     }
 }

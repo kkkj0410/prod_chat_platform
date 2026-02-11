@@ -103,8 +103,6 @@ class ReviewService(
             memberId = toMemberId,
             sender = EventSender(
                 memberId = fromMemberProfile.memberId,
-                nickname = fromMemberProfile.nickname,
-                profileImageUrl = fromMemberProfile.profileImageUrl
             ),
             payload = EventReviewReceivePayload(
                 reviewId = reviewId,

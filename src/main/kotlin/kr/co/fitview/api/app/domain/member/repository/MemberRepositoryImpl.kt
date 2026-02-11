@@ -110,6 +110,7 @@ class MemberRepositoryImpl(
             .join(memberImage.image, image)
             .join(member.mutableAddresses, address)
             .where(
+                member.deletedAt.isNull,
                 member.id.ne(meMemberId),
                 member.id.notIn(memberIds),
                 address.siDo.eq(AddressSiDo.SEOUL),
@@ -152,6 +153,7 @@ class MemberRepositoryImpl(
                 } else {
                     member.id.goe(1).and(member.id.lt(randomMemberId))
                 },
+                member.deletedAt.isNull,
                 member.id.ne(memberId),
                 address.siDo.eq(AddressSiDo.SEOUL),
                 address.lat.between(boundingBox.minLat, boundingBox.maxLat),
@@ -746,7 +748,6 @@ class MemberRepositoryImpl(
                 member.isSignup.isTrue,
                 member.role.eq(Role.USER),
                 member.provider.isNotNull,
-                member.deletedAt.isNull,
                 address.deletedAt.isNull,
                 memberId?.let { member.id.lt(it) }
             )

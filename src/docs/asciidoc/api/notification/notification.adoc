@@ -1,4 +1,6 @@
 [[notification-workout-partner-request]]
+-> 인앱 알람 조회 시, 상대 회원이 삭제되면 해당 인앱 알람은 조회되지 않는다.
+
 === 알람 조회 - (WORKOUT_PARTNER_REQUEST 유형) API
 
 ==== HTTP Request
@@ -60,6 +62,7 @@ include::{snippets}/notification-workout-request-accept/response-fields.adoc[]
 
 [[notification-workout-request-reject]]
 === 알람 조회 - (WORKOUT_REQUEST_REJECT 유형) API
+- WORKOUT_REQUEST_CANCEL은 WORKOUT_REQUEST_REJECT에 포함된다.
 
 ==== HTTP Request
 include::{snippets}/notification-workout-request-reject/http-request.adoc[]

@@ -1,0 +1,107 @@
+name: fitview-be-PROD-CI/CD
+
+on:
+  push:
+    branches: [ "master" ]
+
+env:
+  PROD_CORE_WAS_INSTANCE_01_IP: ${{ secrets.PROD_CORE_WAS_INSTANCE_01_IP }}
+
+  SERVER_USER: ubuntu
+
+  NCR_REGISTRY_PUBLIC_URI: ${{ secrets.NCR_REGISTRY_PUBLIC_URI }}
+  NHN_USER_ACCESS_KEY: ${{ secrets.NHN_USER_ACCESS_KEY }}
+  NHN_SECRET_ACCESS_KEY: ${{ secrets.NHN_SECRET_ACCESS_KEY }}
+  PROD_NCR_IMAGE_NAME: ${{ secrets.PROD_NCR_IMAGE_NAME }}
+  DOCKER_IMAGE_VERSION: latest
+  DOCKER_CONTAINER_NAME: backend-prod
+
+  NHN_API_TENANT_ID: ${{ secrets.NHN_API_TENANT_ID }}
+  NHN_API_USER_ID: ${{ secrets.NHN_API_USER_ID }}
+  NHN_API_PASSWORD: ${{ secrets.NHN_API_PASSWORD }}
+  NHN_REGION_NAME: ${{ secrets.NHN_REGION_NAME }}
+
+  PROD_WAS_SSH_KEY: ${{ secrets.PROD_WAS_SSH_KEY }}
+
+  APPLICATION_PROD: ${{ secrets.PROD_APPLICATION_YML }}
+  APPLICATION_TEST: ${{ secrets.TEST_APPLICATION_YML }}
+  FIREBASE_KEY: ${{ secrets.FIREBASE_KEY }}
+
+jobs:
+  build-and-push-ncr:
+    runs-on: ubuntu-latest
+    outputs:
+      WAS_1_IP: ${{ steps.get_ip.outputs.WAS_1_IP }}
+      WAS_2_IP: ${{ steps.get_ip.outputs.WAS_2_IP }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+#      - name: Create Configuration Files
+#        run: |
+#          echo "${{ env.APPLICATION_PROD }}" > ./src/main/resources/application.yml
+#          echo "${{ env.APPLICATION_TEST }}" > ./src/main/resources/application-test.yml
+#          mkdir -p ./src/main/resources/firebase
+#          echo '${{ env.FIREBASE_KEY }}' > ./src/main/resources/firebase/firebase-key.json
+      - name: Create Configuration Files
+        run: |
+          echo "$APPLICATION_PROD" > ./src/main/resources/application.yml
+          echo "$APPLICATION_TEST" > ./src/main/resources/application-test.yml
+          mkdir -p ./src/main/resources/firebase
+          echo "$FIREBASE_KEY" > ./src/main/resources/firebase/firebase-key.json
+
+      - name: Build with Gradle
+        run: |
+          chmod +x ./gradlew
+          ./gradlew build
+
+      - name: Login to NCR
+        run: |
+          echo "${{ env.NHN_SECRET_ACCESS_KEY }}" | docker login ${{ env.NCR_REGISTRY_PUBLIC_URI }} \
+            -u "${{ env.NHN_USER_ACCESS_KEY }}" --password-stdin
+
+      - name: Build Docker Image
+        run: |
+          docker build . -t ${{ env.NCR_REGISTRY_PUBLIC_URI }}/${{ env.PROD_NCR_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_VERSION }}
+
+      - name: Push to NCR
+        run: |
+          docker push ${{ env.NCR_REGISTRY_PUBLIC_URI }}/${{ env.PROD_NCR_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_VERSION }}
+
+      - name: Deploy to WAS 1
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ env.PROD_CORE_WAS_INSTANCE_01_IP }}
+          username: ${{ env.SERVER_USER }}
+          key: ${{ env.PROD_WAS_SSH_KEY }}
+          script: |
+            mkdir -p ~/firebase
+            echo "${{ env.APPLICATION_PROD }}" > ~/application.yml
+            echo '${{ env.FIREBASE_KEY }}' > ~/firebase/firebase-key.json
+            chmod 600 ~/application.yml ~/firebase/firebase-key.json
+            
+            echo "${{ env.NHN_SECRET_ACCESS_KEY }}" | sudo docker login ${{ env.NCR_REGISTRY_PUBLIC_URI }} \
+              -u "${{ env.NHN_USER_ACCESS_KEY }}" --password-stdin
+            sudo docker pull ${{ env.NCR_REGISTRY_PUBLIC_URI }}/${{ env.PROD_NCR_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_VERSION }}
+            sudo docker rm -f ${{ env.DOCKER_CONTAINER_NAME }} || true
+            
+            sudo docker create --name ${{ env.DOCKER_CONTAINER_NAME }} \
+            -p 8080:8080 -e TZ=Asia/Seoul \
+            -v ~/server_logs:/logs \
+            ${{ env.NCR_REGISTRY_PUBLIC_URI }}/${{ env.PROD_NCR_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_VERSION }}
+          
+            sudo docker cp ~/application.yml ${{ env.DOCKER_CONTAINER_NAME }}:/app/resources/application.yml
+            sudo docker cp ~/firebase/firebase-key.json ${{ env.DOCKER_CONTAINER_NAME }}:/app/resources/firebase/firebase-key.json
+            
+            sudo docker start ${{ env.DOCKER_CONTAINER_NAME }}
+            
+            sudo docker image prune -f
+            sudo docker logout ${{ env.NCR_REGISTRY_PUBLIC_URI }}
+            
+            rm ~/application.yml
+            rm -rf ~/firebase

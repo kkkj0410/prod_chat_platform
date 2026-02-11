@@ -1,11 +1,9 @@
 package kr.co.fitview.api.app.domain.workout.repository
 
 import com.querydsl.core.types.Projections
-import com.querydsl.core.types.dsl.Expressions
 import com.querydsl.jpa.impl.JPAQueryFactory
 import jakarta.persistence.EntityManager
 import kr.co.fitview.api.app.domain.chat.entity.QChatMessage.chatMessage
-import kr.co.fitview.api.app.domain.chat.entity.QChatRoom.chatRoom
 import kr.co.fitview.api.app.domain.member.entity.QMember
 import kr.co.fitview.api.app.domain.review.entity.QReview
 import kr.co.fitview.api.app.domain.review.entity.QReview.review
@@ -13,7 +11,7 @@ import kr.co.fitview.api.app.domain.workout.condition.AdminWorkoutRequestConditi
 import kr.co.fitview.api.app.domain.workout.dto.response.*
 import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusForResponse
 import kr.co.fitview.api.app.domain.workout.entity.QWorkoutRequest.workoutRequest
-import kr.co.fitview.api.app.domain.workout.entity.QWorkoutRequestLog.workoutRequestLog
+import kr.co.fitview.api.app.domain.workout.entity.QWorkoutRequestSnapshot.workoutRequestSnapshot
 import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequest
 import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
 import kr.co.fitview.api.app.domain.workout_history.entity.QWorkoutHistory.workoutHistory
@@ -25,7 +23,6 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Slice
 import org.springframework.data.domain.SliceImpl
 import java.sql.Timestamp
-import java.time.LocalDateTime
 
 class WorkoutRequestRepositoryImpl(
     private val queryFactory: JPAQueryFactory,
@@ -101,8 +98,7 @@ class WorkoutRequestRepositoryImpl(
             .selectFrom(workoutRequest)
             .join(workoutRequest.chatMessage, chatMessage)
             .where(
-                chatMessage.chatRoom.id.eq(chatRoomId),
-                workoutRequest.deletedAt.isNull,
+                chatMessage.chatRoom.id.eq(chatRoomId)
             )
             .orderBy(workoutRequest.requestedAt.desc())
             .limit(1)
@@ -128,7 +124,6 @@ class WorkoutRequestRepositoryImpl(
             .join(workoutRequest.chatMessage, chatMessage)
             .where(
                 workoutRequest.status.eq(WorkoutRequestStatus.PENDING),
-                workoutRequest.deletedAt.isNull,
                 workoutRequest.scheduledAt.lt(time.nowLocalDateTime),
             )
             .fetch()
@@ -148,7 +143,6 @@ class WorkoutRequestRepositoryImpl(
             .join(workoutRequest.chatMessage, chatMessage)
             .where(
                 workoutRequest.status.eq(WorkoutRequestStatus.PENDING),
-                workoutRequest.deletedAt.isNull,
                 workoutRequest.requestedAt.loe(time.nowLocalDateTime.minusHours(24)),
             )
             .fetch()
@@ -213,7 +207,6 @@ class WorkoutRequestRepositoryImpl(
                     toMemberHasReview.toMember.id.eq(fromMember.id)
                 )
             .where(
-                workoutRequest.deletedAt.isNull,
                 condition.workoutRequestId?.let { workoutRequest.id.lt(it) }
             )
             .orderBy(workoutRequest.id.desc())
@@ -254,25 +247,25 @@ class WorkoutRequestRepositoryImpl(
 
         val workoutRequestIds = findWorkoutRequests.map{it.workoutRequestId}
 
-        val findWorkoutRequestLogs = queryFactory
+        val findWorkoutRequestSnapshots = queryFactory
             .select(
-                workoutRequestLog.workoutRequest.id,
-                workoutRequestLog.loggedAt.max()
+                workoutRequestSnapshot.workoutRequestId,
+                workoutRequestSnapshot.snapshotCreatedAt.max()
             )
-            .from(workoutRequestLog)
+            .from(workoutRequestSnapshot)
             .where(
-                workoutRequestLog.workoutRequest.id.`in`(workoutRequestIds)
+                workoutRequestSnapshot.workoutRequestId.`in`(workoutRequestIds)
             )
-            .groupBy(workoutRequestLog.workoutRequest.id)
+            .groupBy(workoutRequestSnapshot.workoutRequestId)
             .fetch()
 
         val workoutPartnerMap = workoutPartnerTriples.associate {
             (it.first to it.second) to it.third
         }
 
-        val workoutRequestLogMap = findWorkoutRequestLogs.associate { tuple ->
-            val requestId = tuple.get(workoutRequestLog.workoutRequest.id)
-            val latestLoggedAt = tuple.get(workoutRequestLog.loggedAt.max())
+        val workoutRequestLogMap = findWorkoutRequestSnapshots.associate { tuple ->
+            val requestId = tuple.get(workoutRequestSnapshot.workoutRequestId)
+            val latestLoggedAt = tuple.get(workoutRequestSnapshot.snapshotCreatedAt.max())
             requestId to latestLoggedAt
         }
 
@@ -300,7 +293,6 @@ class WorkoutRequestRepositoryImpl(
             .join(workoutRequest.chatMessage, chatMessage).fetchJoin()
             .where(
                 workoutRequest.id.eq(workoutRequestId),
-                workoutRequest.deletedAt.isNull
             )
             .fetchOne()
     }
@@ -349,18 +341,19 @@ class WorkoutRequestRepositoryImpl(
             .select(
                 Projections.constructor(
                     AdminDetailWorkoutRequestLogResponse::class.java,
-                    workoutRequestLog.status,
-                    workoutRequestLog.loggedAt,
+                    workoutRequestSnapshot.status,
+                    workoutRequestSnapshot.snapshotCreatedAt,
                     fromMember.nickname,
                     toMember.nickname
                 )
             )
-            .from(workoutRequestLog)
-            .join(workoutRequestLog.workoutRequest, workoutRequest)
+            .from(workoutRequestSnapshot)
+            .join(workoutRequest)
+                .on(workoutRequest.id.eq(workoutRequestSnapshot.workoutRequestId))
             .join(workoutRequest.fromMember, fromMember)
             .join(workoutRequest.toMember, toMember)
             .where(workoutRequest.id.eq(workoutRequestId))
-            .orderBy(workoutRequestLog.loggedAt.asc())
+            .orderBy(workoutRequestSnapshot.snapshotCreatedAt.asc())
             .fetch()
 
         val reviewFrom = QMember("reviewFrom")

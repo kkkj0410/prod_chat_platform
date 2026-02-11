@@ -11,6 +11,9 @@ import kr.co.fitview.api.app.domain.chat.controller.ChatController
 import kr.co.fitview.api.app.domain.chat.service.*
 import kr.co.fitview.api.app.domain.dashboard.controller.AdminDashboardController
 import kr.co.fitview.api.app.domain.dashboard.service.DashboardQueryService
+import kr.co.fitview.api.app.domain.favorite.controller.FavoriteController
+import kr.co.fitview.api.app.domain.favorite.service.FavoriteQueryService
+import kr.co.fitview.api.app.domain.favorite.service.FavoriteService
 import kr.co.fitview.api.app.domain.fcm.controller.FcmController
 import kr.co.fitview.api.app.domain.fcm.service.FcmTokenService
 import kr.co.fitview.api.app.domain.image.controller.ImageController
@@ -51,6 +54,7 @@ import kr.co.fitview.api.app.global.config.SecurityConfig
 import kr.co.fitview.api.app.global.config.TestSecurityConfig
 import kr.co.fitview.api.app.global.exception.GlobalExceptionHandler
 import kr.co.fitview.api.app.global.filter.JwtAuthenticationFilter
+import kr.co.fitview.api.app.global.health.HealthController
 import kr.co.fitview.api.app.global.security.JwtAuthenticationEntryPoint
 import kr.co.fitview.api.app.global.util.SecurityUtil
 import org.springframework.beans.factory.annotation.Autowired
@@ -83,12 +87,14 @@ import org.springframework.test.web.servlet.MockMvc
     WorkoutHistoryController::class,
     NotificationController::class,
     ReportController::class,
+    FavoriteController::class,
     AdminDashboardController::class,
     AdminMemberController::class,
     AdminWorkoutPartnerController::class,
     AdminWorkoutController::class,
     AdminReviewController::class,
     AdminReportController::class,
+    HealthController::class,
     GlobalExceptionHandler::class,
 ],
 excludeFilters = [
@@ -211,4 +217,10 @@ abstract class ControllerTestSupport {
 
     @MockitoBean
     protected lateinit var memberWithdrawReasonService : MemberWithdrawReasonService
+
+    @MockitoBean
+    protected lateinit var favoriteService : FavoriteService
+
+    @MockitoBean
+    protected lateinit var favoriteQueryService : FavoriteQueryService
 }

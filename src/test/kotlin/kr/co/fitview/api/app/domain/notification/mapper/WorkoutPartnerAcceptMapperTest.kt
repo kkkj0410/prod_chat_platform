@@ -36,12 +36,14 @@ class WorkoutPartnerAcceptMapperTest  @Autowired constructor(
         val signupRequest = TestDataFactory.oAuth2SignupRequest()
         oAuth2Service.signup(signupRequest, member.id!!)
 
+        val fromMember = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(fromMember)
+
         val content: MutableMap<String, Any> = mutableMapOf(
-            "sender" to mutableMapOf(
-                "memberId" to 123L,
-                "nickname" to "nick",
-                "profileImageUrl" to "profile"
-            ),
             "payload" to mutableMapOf(
                 "memberId" to 456L,
                 "workoutPartnerRequestId" to 666L,
@@ -51,6 +53,7 @@ class WorkoutPartnerAcceptMapperTest  @Autowired constructor(
 
         val notification = Notification(
             member = member,
+            fromMember = fromMember,
             type = NotificationType.WORKOUT_PARTNER_ACCEPT,
             sentAt = time.nowLocalDateTime,
             isRead = false,
@@ -58,7 +61,13 @@ class WorkoutPartnerAcceptMapperTest  @Autowired constructor(
         )
         notificationRepository.save(notification)
 
-        val response = workoutPartnerAcceptMapper.map(notification, member)
+        val sender = NotificationSender(
+            memberId = 123L,
+            nickname = "nick",
+            profileImageUrl = "profile"
+        )
+
+        val response = workoutPartnerAcceptMapper.map(notification, member, sender)
 
         assertThat(response)
             .extracting("notificationId", "type", "sentAt", "isRead", "sender", "link", "messages")
@@ -68,7 +77,7 @@ class WorkoutPartnerAcceptMapperTest  @Autowired constructor(
                 notification.sentAt!!,
                 notification.isRead!!,
                 NotificationSender(123L, "nick", "profile"),
-                NotificationLink(LinkType.CHAT_START, mapOf("memberId" to 456L)),
+                NotificationLink(LinkType.MEMBER_PROFILE, mapOf("memberId" to 456L)),
                 NotificationMessage(
                     text1 = NotificationType.WORKOUT_PARTNER_ACCEPT.displayText1.format("nick"),
                     text2 = NotificationType.WORKOUT_PARTNER_ACCEPT.displayText2

@@ -6,6 +6,7 @@ import kr.co.fitview.api.app.domain.oauth2.dto.response.KakaoProfile
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.ErrorCode
 import kr.co.fitview.api.app.global.exception.error.network.NetworkErrorCode
+import org.slf4j.LoggerFactory
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
@@ -22,10 +23,14 @@ class NetworkService(
     val webClient : WebClient
 ) {
 
+    private val log = LoggerFactory.getLogger(this::class.java)
+
     fun postByWebClient(
         formData: MultiValueMap<String, String>,
         url : String
     ): Map<String, Any> {
+
+
         try {
             val mapType = object : ParameterizedTypeReference<Map<String, Any>>() {}
 
@@ -36,12 +41,16 @@ class NetworkService(
                 .retrieve()
                 .bodyToMono(mapType)
                 .block() ?: emptyMap()
+
             return response
         } catch (e: WebClientResponseException) {
-//            println("❌ [WebClient Error] status=${e.statusCode}")
-//            println("❌ [WebClient Error] headers=${e.headers}")
-//            println("❌ [WebClient Error] body=${e.responseBodyAsString}")
 
+            log.error(
+                "[post FAILED] status={}, responseBody={}",
+                e.statusCode,
+                e.responseBodyAsString,
+                e
+            )
 
             throw GlobalException(NetworkErrorCode.NETWORK_SEND_ERROR)
         }

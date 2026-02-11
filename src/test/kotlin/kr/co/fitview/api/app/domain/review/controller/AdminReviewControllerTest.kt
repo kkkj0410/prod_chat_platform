@@ -28,6 +28,7 @@ class AdminReviewControllerTest  : ControllerTestSupport(){
                 toMemberId = 101L,
                 reviewId = 99L,
                 workoutPartnerId = 10L,
+                workoutRequestId = 20L,
                 workoutHistoryId = 990L,
                 fromMemberNickname = "FromUser99",
                 toMemberNickname = "ToUser99",
@@ -59,6 +60,7 @@ class AdminReviewControllerTest  : ControllerTestSupport(){
 
             .andExpect(jsonPath("$.data.content[0].reviewId").value(99))
             .andExpect(jsonPath("$.data.content[0].workoutPartnerId").value(10))
+            .andExpect(jsonPath("$.data.content[0].workoutRequestId").value(20))
             .andExpect(jsonPath("$.data.content[0].workoutHistoryId").value(990))
             .andExpect(jsonPath("$.data.content[0].fromMemberNickname").value("FromUser99"))
             .andExpect(jsonPath("$.data.content[0].toMemberNickname").value("ToUser99"))

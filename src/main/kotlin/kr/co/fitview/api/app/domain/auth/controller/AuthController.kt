@@ -75,7 +75,7 @@ class AuthController(
         @RequestBody
         request: MemberLogoutRequest
     ): ResponseEntity<ApiResponse<String>> {
-        refreshTokenService.inactiveRefreshToken(request.refreshToken!!)
+        refreshTokenService.revokeRefreshToken(request.refreshToken!!)
 
         return ResponseEntity.ok(ApiResponse.success("ok"))
     }

@@ -5,6 +5,7 @@ import kr.co.fitview.api.app.domain.address.entity.Address
 import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
 import kr.co.fitview.api.app.domain.address.service.AddressService
 import kr.co.fitview.api.app.domain.chat.service.ChatRoomQueryService
+import kr.co.fitview.api.app.domain.favorite.service.FavoriteQueryService
 import kr.co.fitview.api.app.domain.member.condition.AdminMemberCondition
 import kr.co.fitview.api.app.domain.member.condition.MemberLocalCondition
 import kr.co.fitview.api.app.domain.member.dto.BoundingBox
@@ -28,6 +29,7 @@ import org.springframework.data.domain.Slice
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import kotlin.math.cos
+import kotlin.random.Random
 
 
 @Service
@@ -39,6 +41,7 @@ class MemberQueryService(
     private val chatRoomQueryService : ChatRoomQueryService,
     private val addressService : AddressService,
     private val redisService : RedisService,
+    private val favoriteQueryService : FavoriteQueryService,
     private val randomCustom : RandomCustom
 ) {
 
@@ -111,7 +114,17 @@ class MemberQueryService(
         val otherProfile = OtherMemberProfileResponse.fromMemberProfile(findProfile)
 
         val findWorkoutPartnerStatus : WorkoutPartnerStatusResponse = workoutPartnerQueryService.findWorkoutPartnerStatus(fromMemberId, toMemberId)
-        return MemberDetailResponse(otherProfile, findWorkoutPartnerStatus)
+
+        val isFavorite = favoriteQueryService.findFavoriteFrom(
+            fromMemberId = fromMemberId,
+            toMemberId = toMemberId
+        ) != null
+
+        return MemberDetailResponse(
+            profile = otherProfile,
+            workoutPartner = findWorkoutPartnerStatus,
+            isFavorite = isFavorite
+        )
     }
 
     fun findRandomMemberWithinLocal(
@@ -177,7 +190,7 @@ class MemberQueryService(
                 LastWorkoutPartnerRequestResponse(
                     workoutPartnerRequestId = req.id!!,
                     status = req.status!!,
-                    isSentByMe = req.getFromMemberId() == memberId,
+//                    isSentByMe = req.getFromMemberId() == memberId,
                     chatRoomId = chatRoomId
                 )
             }
@@ -190,8 +203,8 @@ class MemberQueryService(
     fun findRandomMemberWithinRecommendation(
         memberId: Long,
         size : Int,
-//        seed: Long = System.currentTimeMillis()
-        seed : Long = 123L
+        seed: Long = System.currentTimeMillis()
+//        seed : Long = 123L
     ) : List<MemberRecommendationResponse>{
 
         val findMeMember = findMemberOrElseThrow(memberId)
@@ -253,7 +266,7 @@ class MemberQueryService(
                 LastWorkoutPartnerRequestResponse(
                     workoutPartnerRequestId = req.id!!,
                     status = req.status!!,
-                    isSentByMe = req.getFromMemberId() == memberId,
+//                    isSentByMe = req.getFromMemberId() == memberId,
                     chatRoomId = chatRoomId
                 )
             }

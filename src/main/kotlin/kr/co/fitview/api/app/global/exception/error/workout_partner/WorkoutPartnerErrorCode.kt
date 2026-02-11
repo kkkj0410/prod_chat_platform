@@ -15,6 +15,7 @@ enum class WorkoutPartnerErrorCode(
 
     SELF_PARTNER_REQUEST_NOT_ALLOWED("004", "Self workout partner request not allowed", "본인 스스로에게는 운동 파트너 요청을 할 수 없음"),
 
+    PARTNER_WITHDRAWN("005", "Target member withdrawn", "상대방 회원이 탈퇴하여 해당 파트너 요청을 처리할 수 없음"),
     ;
 
     override val prefix: String

@@ -28,3 +28,24 @@ include::{snippets}/WORKOUT_PARTNER_003/http-request.adoc[]
 ==== HTTP Response
 include::{snippets}/WORKOUT_PARTNER_003/http-response.adoc[]
 include::{snippets}/WORKOUT_PARTNER_003/response-fields.adoc[]
+
+[[WORKOUT_PARTNER_004]]
+=== WORKOUT_PARTNER_004
+
+==== HTTP Request
+include::{snippets}/WORKOUT_PARTNER_004/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/WORKOUT_PARTNER_004/http-response.adoc[]
+include::{snippets}/WORKOUT_PARTNER_004/response-fields.adoc[]
+
+
+[[WORKOUT_PARTNER_005]]
+=== WORKOUT_PARTNER_005
+
+==== HTTP Request
+include::{snippets}/WORKOUT_PARTNER_005/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/WORKOUT_PARTNER_005/http-response.adoc[]
+include::{snippets}/WORKOUT_PARTNER_005/response-fields.adoc[]

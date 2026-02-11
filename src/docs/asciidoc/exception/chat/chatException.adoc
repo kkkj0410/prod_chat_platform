@@ -40,3 +40,13 @@ include::{snippets}/CHAT_004/http-request.adoc[]
 ==== HTTP Response
 include::{snippets}/CHAT_004/http-response.adoc[]
 include::{snippets}/CHAT_004/response-fields.adoc[]
+
+[[CHAT_005]]
+=== CHAT_005
+
+==== HTTP Request
+include::{snippets}/CHAT_005/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/CHAT_005/http-response.adoc[]
+include::{snippets}/CHAT_005/response-fields.adoc[]

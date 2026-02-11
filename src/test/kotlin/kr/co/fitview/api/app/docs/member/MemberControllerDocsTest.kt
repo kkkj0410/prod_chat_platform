@@ -1,5 +1,6 @@
 package kr.co.fitview.api.app.docs.member
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import kr.co.fitview.api.app.docs.RestDocsHeaders
 import kr.co.fitview.api.app.docs.RestDocsPagination
 import kr.co.fitview.api.app.docs.RestDocsSupport
@@ -78,7 +79,8 @@ class MemberControllerDocsTest : RestDocsSupport() {
             addressService,
             reviewTagCountQueryService,
             reviewQueryService,
-            securityUtil
+            securityUtil,
+            objectMapper
         )
     }
 
@@ -383,7 +385,7 @@ class MemberControllerDocsTest : RestDocsSupport() {
                         lastWorkoutPartnerRequest = LastWorkoutPartnerRequestResponse(
                             workoutPartnerRequestId = 101L,
                             status = WorkoutPartnerRequestStatus.PENDING,
-                            isSentByMe = true,
+//                            isSentByMe = true,
                             chatRoomId = null
                         )
                     )
@@ -444,9 +446,9 @@ class MemberControllerDocsTest : RestDocsSupport() {
                         fieldWithPath("data[].lastWorkoutPartnerRequest.status")
                             .type(JsonFieldType.STRING)
                             .description("마지막 운동 파트너 요청 상태 (PENDING: 응답 대기, ACCEPT: 수락됨)"),
-                        fieldWithPath("data[].lastWorkoutPartnerRequest.isSentByMe")
-                            .type(JsonFieldType.BOOLEAN)
-                            .description("해당 운동 파트너 요청을 본인이 보냈는지 여부 (true: 본인 → 상대, false: 상대 → 본인)"),
+//                        fieldWithPath("data[].lastWorkoutPartnerRequest.isSentByMe")
+//                            .type(JsonFieldType.BOOLEAN)
+//                            .description("해당 운동 파트너 요청을 본인이 보냈는지 여부 (true: 본인 → 상대, false: 상대 → 본인)"),
                         fieldWithPath("data[].lastWorkoutPartnerRequest.chatRoomId")
                             .type(JsonFieldType.NUMBER)
                             .optional()
@@ -489,7 +491,7 @@ class MemberControllerDocsTest : RestDocsSupport() {
                 lastWorkoutPartnerRequest = LastWorkoutPartnerRequestResponse(
                     workoutPartnerRequestId = 101L,
                     status = WorkoutPartnerRequestStatus.PENDING,
-                    isSentByMe = true,
+//                    isSentByMe = true,
                     chatRoomId = null
                 )
             )
@@ -597,9 +599,9 @@ class MemberControllerDocsTest : RestDocsSupport() {
                         fieldWithPath("data.content[].lastWorkoutPartnerRequest.status")
                             .type(JsonFieldType.STRING)
                             .description("마지막 운동 파트너 요청 상태 (PENDING: 응답 대기, ACCEPT: 수락됨)"),
-                        fieldWithPath("data.content[].lastWorkoutPartnerRequest.isSentByMe")
-                            .type(JsonFieldType.BOOLEAN)
-                            .description("해당 운동 파트너 요청을 본인이 보냈는지 여부 (true: 본인 → 상대, false: 상대 → 본인)"),
+//                        fieldWithPath("data.content[].lastWorkoutPartnerRequest.isSentByMe")
+//                            .type(JsonFieldType.BOOLEAN)
+//                            .description("해당 운동 파트너 요청을 본인이 보냈는지 여부 (true: 본인 → 상대, false: 상대 → 본인)"),
                         fieldWithPath("data.content[].lastWorkoutPartnerRequest.chatRoomId")
                             .type(JsonFieldType.NUMBER)
                             .optional()
@@ -647,7 +649,9 @@ class MemberControllerDocsTest : RestDocsSupport() {
                         status = ProfileWorkoutPartnerStatus.NONE,
                         workoutPartnerRequestId = null,
                         chatRoomId = null
-                    )
+                    ),
+
+                    isFavorite = false
                 )
             )
 
@@ -706,7 +710,6 @@ class MemberControllerDocsTest : RestDocsSupport() {
                             .description("운동 인증 이미지 URL 목록. 빈 배열 가능"),
                         fieldWithPath("data.profile.score").type(JsonFieldType.NUMBER).description("핏버디 온도"),
 
-
                         fieldWithPath("data.workoutPartner").type(JsonFieldType.OBJECT)
                             .description("운동 파트너 상태 정보"),
                         fieldWithPath("data.workoutPartner.status").type(JsonFieldType.STRING)
@@ -715,7 +718,10 @@ class MemberControllerDocsTest : RestDocsSupport() {
                             .optional()
                             .description("운동 파트너 요청이 존재할 경우 해당 요청 ID. SEND = 본인이 보낸 파트너 요청 id, RECEIVE = 상대가 본인에게 보낸 파트너 요청 id"),
                         fieldWithPath("data.workoutPartner.chatRoomId").type(JsonFieldType.NUMBER).optional()
-                            .description("파트너 상태일 경우 채팅방 ID. PARTNER가 아니면 null. PARTNER임에도 불구하고, 채팅방을 안만들었어도 null")
+                            .description("파트너 상태일 경우 채팅방 ID. PARTNER가 아니면 null. PARTNER임에도 불구하고, 채팅방을 안만들었어도 null"),
+
+                        fieldWithPath("data.isFavorite").type(JsonFieldType.BOOLEAN)
+                            .description("상대 회원 찜 여부. false = 찜X, true = 찜O")
                     )
                 )
             )

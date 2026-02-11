@@ -174,7 +174,7 @@ class NotificationControllerDocsTest : RestDocsSupport() {
             sentAt = LocalDateTime.now(),
             isRead = true,
             sender = NotificationSender(124L, "멜론", "https://..."),
-            link = NotificationLink(LinkType.CHAT_START, mapOf("memberId" to 124)),
+            link = NotificationLink(LinkType.MEMBER_PROFILE, mapOf("memberId" to 124)),
             messages = NotificationMessage(
                 text1 = NotificationType.WORKOUT_PARTNER_ACCEPT.displayText1,
                 text2 = NotificationType.WORKOUT_PARTNER_ACCEPT.displayText2,
@@ -246,7 +246,10 @@ class NotificationControllerDocsTest : RestDocsSupport() {
             sentAt = LocalDateTime.now(),
             isRead = true,
             sender = NotificationSender(125L, "바나나", "https://..."),
-            link = NotificationLink(LinkType.CHAT_ROOM, mapOf("chatRoomId" to 555)),
+            link = NotificationLink(LinkType.CHAT_ROOM, mapOf(
+                "chatRoomId" to 555,
+                "chatMessageId" to 666
+            )),
             messages = NotificationMessage(
                 text1 = NotificationType.WORKOUT_REQUEST.displayText1,
                 text2 = NotificationType.WORKOUT_REQUEST.displayText2,
@@ -296,6 +299,8 @@ class NotificationControllerDocsTest : RestDocsSupport() {
                         fieldWithPath("data.content[].link.type").type(JsonFieldType.STRING).description("링크 타입"),
                         fieldWithPath("data.content[].link.parameters.chatRoomId").type(JsonFieldType.NUMBER)
                             .description("채팅방 ID"),
+                        fieldWithPath("data.content[].link.parameters.chatMessageId").type(JsonFieldType.NUMBER)
+                            .description("채팅방 메시지 id"),
                         fieldWithPath("data.content[].messages").type(JsonFieldType.OBJECT).description("알림 메시지 객체"),
                         fieldWithPath("data.content[].messages.text1").type(JsonFieldType.STRING)
                             .description("표시 텍스트1"),
@@ -316,7 +321,11 @@ class NotificationControllerDocsTest : RestDocsSupport() {
             sentAt = LocalDateTime.now(),
             isRead = false,
             sender = NotificationSender(126L, "체리", "https://..."),
-            link = NotificationLink(LinkType.REVIEW_WRITE, mapOf("workoutHistoryId" to 888, "chatRoomId" to 555)),
+            link = NotificationLink(LinkType.CHAT_ROOM, mapOf(
+                "workoutHistoryId" to 888,
+                "chatRoomId" to 555,
+                "chatMessageId" to 666
+            )),
             messages = NotificationMessage(
                 text1 = NotificationType.WORKOUT_COMPLETE.displayText1,
                 text2 = NotificationType.WORKOUT_COMPLETE.displayText2,
@@ -368,6 +377,8 @@ class NotificationControllerDocsTest : RestDocsSupport() {
                             .description("운동 기록 ID"),
                         fieldWithPath("data.content[].link.parameters.chatRoomId").type(JsonFieldType.NUMBER)
                             .description("채팅방 ID"),
+                        fieldWithPath("data.content[].link.parameters.chatMessageId").type(JsonFieldType.NUMBER)
+                            .description("채팅방 메시지 id"),
                         fieldWithPath("data.content[].messages").type(JsonFieldType.OBJECT).description("알림 메시지 객체"),
                         fieldWithPath("data.content[].messages.text1").type(JsonFieldType.STRING)
                             .description("표시 텍스트1"),
@@ -460,7 +471,7 @@ class NotificationControllerDocsTest : RestDocsSupport() {
             sentAt = LocalDateTime.now(),
             isRead = false,
             sender = NotificationSender(128L, "키위", "https://..."),
-            link = NotificationLink(LinkType.REVIEW_WRITE, mapOf("workoutHistoryId" to 999, "chatRoomId" to 555)),
+            link = NotificationLink(LinkType.CHAT_ROOM, mapOf("chatMessageId" to 999, "chatRoomId" to 555)),
             messages = NotificationMessage(
                 text1 = NotificationType.REVIEW_REQUEST.displayText1,
                 text2 = NotificationType.REVIEW_REQUEST.displayText2,
@@ -508,8 +519,8 @@ class NotificationControllerDocsTest : RestDocsSupport() {
                             .description("발신자 프로필 URL"),
                         fieldWithPath("data.content[].link").type(JsonFieldType.OBJECT).description("링크 정보"),
                         fieldWithPath("data.content[].link.type").type(JsonFieldType.STRING).description("링크 타입"),
-                        fieldWithPath("data.content[].link.parameters.workoutHistoryId").type(JsonFieldType.NUMBER)
-                            .description("운동 기록 ID"),
+                        fieldWithPath("data.content[].link.parameters.chatMessageId").type(JsonFieldType.NUMBER)
+                            .description("채팅 문자 id"),
                         fieldWithPath("data.content[].link.parameters.chatRoomId").type(JsonFieldType.NUMBER)
                             .description("채팅방 ID"),
                         fieldWithPath("data.content[].messages").type(JsonFieldType.OBJECT).description("알림 메시지 객체"),
@@ -532,7 +543,9 @@ class NotificationControllerDocsTest : RestDocsSupport() {
             sentAt = LocalDateTime.now(),
             isRead = true,
             sender = NotificationSender(129L, "망고", "https://..."),
-            link = NotificationLink(LinkType.MEMBER_PROFILE, mapOf("memberId" to 129)),
+            link = NotificationLink(LinkType.MEMBER_PROFILE, mapOf(
+                "memberId" to 129,
+            )),
             messages = NotificationMessage(
                 text1 = NotificationType.WORKOUT_PARTNER_REJECT.displayText1,
                 text2 = NotificationType.WORKOUT_PARTNER_REJECT.displayText2,
@@ -602,7 +615,10 @@ class NotificationControllerDocsTest : RestDocsSupport() {
             sentAt = LocalDateTime.now(),
             isRead = true,
             sender = NotificationSender(130L, "체리", "https://..."),
-            link = NotificationLink(LinkType.CHAT_ROOM, mapOf("chatRoomId" to 777)),
+            link = NotificationLink(LinkType.CHAT_ROOM, mapOf(
+                "chatRoomId" to 777,
+                "chatMessageId" to 666
+            )),
             messages = NotificationMessage(
                 text1 = NotificationType.WORKOUT_REQUEST_ACCEPT.displayText1,
                 text2 = NotificationType.WORKOUT_REQUEST_ACCEPT.displayText2,
@@ -652,6 +668,8 @@ class NotificationControllerDocsTest : RestDocsSupport() {
                         fieldWithPath("data.content[].link.type").type(JsonFieldType.STRING).description("링크 타입"),
                         fieldWithPath("data.content[].link.parameters.chatRoomId").type(JsonFieldType.NUMBER)
                             .description("채팅방 ID"),
+                        fieldWithPath("data.content[].link.parameters.chatMessageId").type(JsonFieldType.NUMBER)
+                            .description("채팅방 메시지 id"),
                         fieldWithPath("data.content[].messages").type(JsonFieldType.OBJECT).description("알림 메시지 객체"),
                         fieldWithPath("data.content[].messages.text1").type(JsonFieldType.STRING)
                             .description("표시 텍스트1"),
@@ -672,7 +690,10 @@ class NotificationControllerDocsTest : RestDocsSupport() {
             sentAt = LocalDateTime.now(),
             isRead = true,
             sender = NotificationSender(131L, "바나나", "https://..."),
-            link = NotificationLink(LinkType.CHAT_ROOM, mapOf("chatRoomId" to 888)),
+            link = NotificationLink(LinkType.CHAT_ROOM, mapOf(
+                "chatRoomId" to 888,
+                "chatMessageId" to 666
+            )),
             messages = NotificationMessage(
                 text1 = NotificationType.WORKOUT_REQUEST_REJECT.displayText1,
                 text2 = NotificationType.WORKOUT_REQUEST_REJECT.displayText2,
@@ -722,6 +743,8 @@ class NotificationControllerDocsTest : RestDocsSupport() {
                         fieldWithPath("data.content[].link.type").type(JsonFieldType.STRING).description("링크 타입"),
                         fieldWithPath("data.content[].link.parameters.chatRoomId").type(JsonFieldType.NUMBER)
                             .description("채팅방 ID"),
+                        fieldWithPath("data.content[].link.parameters.chatMessageId").type(JsonFieldType.NUMBER)
+                            .description("채팅방 메시지 id"),
                         fieldWithPath("data.content[].messages").type(JsonFieldType.OBJECT).description("알림 메시지 객체"),
                         fieldWithPath("data.content[].messages.text1").type(JsonFieldType.STRING)
                             .description("표시 텍스트1"),

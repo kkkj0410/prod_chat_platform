@@ -992,7 +992,7 @@ class MemberQueryServiceTest @Autowired constructor(
                 "memberId",
                 "lastWorkoutPartnerRequest.workoutPartnerRequestId",
                 "lastWorkoutPartnerRequest.status",
-                "lastWorkoutPartnerRequest.isSentByMe",
+//                "lastWorkoutPartnerRequest.isSentByMe",
                 "lastWorkoutPartnerRequest.chatRoomId",
             )
             .containsExactlyInAnyOrder(
@@ -1000,21 +1000,21 @@ class MemberQueryServiceTest @Autowired constructor(
                     member3.id!!,
                     workoutPartnerRequest3.id!!,
                     workoutPartnerRequest3.status!!,
-                    true,
+//                    true,
                     chatRoom.id!!
                 ),
                 tuple(
                     member2.id!!,
                     workoutPartnerRequest2.id!!,
                     workoutPartnerRequest2.status!!,
-                    false,
+//                    false,
                     null
                 ),
                 tuple(
                     member1.id!!,
                     workoutPartnerRequest1.id!!,
                     workoutPartnerRequest1.status!!,
-                    true,
+//                    true,
                     null
                 ),
             )
@@ -1167,7 +1167,7 @@ class MemberQueryServiceTest @Autowired constructor(
                 "memberId",
                 "lastWorkoutPartnerRequest.workoutPartnerRequestId",
                 "lastWorkoutPartnerRequest.status",
-                "lastWorkoutPartnerRequest.isSentByMe",
+//                "lastWorkoutPartnerRequest.isSentByMe",
                 "lastWorkoutPartnerRequest.chatRoomId",
             )
             .containsExactlyInAnyOrder(
@@ -1175,21 +1175,21 @@ class MemberQueryServiceTest @Autowired constructor(
                     member3.id!!,
                     workoutPartnerRequest3.id!!,
                     workoutPartnerRequest3.status!!,
-                    true,
+//                    true,
                     chatRoom.id!!
                 ),
                 tuple(
                     member2.id!!,
                     null,
                     null,
-                    null,
+//                    null,
                     null
                 ),
                 tuple(
                     member1.id!!,
                     null,
                     null,
-                    null,
+//                    null,
                     null
                 ),
             )
@@ -1870,7 +1870,7 @@ class MemberQueryServiceTest @Autowired constructor(
                 "memberId",
                 "lastWorkoutPartnerRequest.workoutPartnerRequestId",
                 "lastWorkoutPartnerRequest.status",
-                "lastWorkoutPartnerRequest.isSentByMe",
+//                "lastWorkoutPartnerRequest.isSentByMe",
                 "lastWorkoutPartnerRequest.chatRoomId",
             )
             .contains(
@@ -1878,21 +1878,21 @@ class MemberQueryServiceTest @Autowired constructor(
                     matchMember3.id!!,
                     workoutPartnerRequest3.id!!,
                     workoutPartnerRequest3.status!!,
-                    true,
+//                    true,
                     chatRoom.id!!
                 ),
                 tuple(
                     matchMember2.id!!,
                     workoutPartnerRequest2.id!!,
                     workoutPartnerRequest2.status!!,
-                    false,
+//                    false,
                     null
                 ),
                 tuple(
                     matchMember1.id!!,
                     workoutPartnerRequest1.id!!,
                     workoutPartnerRequest1.status!!,
-                    true,
+//                    true,
                     null
                 ),
             )

@@ -22,6 +22,11 @@ class Notification(
     @JoinColumn(name = "member_id", nullable = false)
     var member: Member? = null,
 
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "from_member_id", nullable = false)
+    var fromMember: Member? = null,
+
     @Size(max = 100)
     @Column(name = "type", length = 100)
     @Enumerated(EnumType.STRING)
@@ -56,12 +61,14 @@ class Notification(
     companion object {
         fun of(
             member: Member,
+            fromMember : Member,
             type: NotificationType,
             content: MutableMap<String, Any>,
             sentAt: LocalDateTime
         ): Notification {
             return Notification(
                 member = member,
+                fromMember = fromMember,
                 type = type,
                 isRead = false,
                 content = content,

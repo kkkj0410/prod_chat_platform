@@ -234,7 +234,7 @@ class WorkoutPartnerRequestServiceTest @Autowired constructor(
 
 
     @DisplayName("핏버디 요청 시, 24시간 동안 본인이 상대방에게 요청을 보냈으면 요청 불가")
-//    @Test
+    @Test
     fun addWorkoutPartnerRequestWithin24H() {
         // given
         val fromMember = Member(
@@ -373,7 +373,7 @@ class WorkoutPartnerRequestServiceTest @Autowired constructor(
     }
 
     @DisplayName("핏버디 요청 시, 이미 수락됐으면 핏버디 요청 불가")
-//    @Test
+    @Test
     fun addWorkoutPartnerRequestAccept() {
         // given
         val fromMember = Member(
@@ -516,6 +516,61 @@ class WorkoutPartnerRequestServiceTest @Autowired constructor(
         assertThat(updatedWorkoutPartnerRequest)
             .extracting("fromMember", "toMember", "status")
             .contains(savedFromMember, savedToMember, WorkoutPartnerRequestStatus.ACCEPT)
+    }
+
+    @DisplayName("핏버디 요청을 수정 시, 핏버디 요청 상대방이 계정 탈퇴 시, 수정이 불가하다.")
+    @Test
+    fun updateWorkoutPartnerRequestNotDeletedMember() {
+        // given
+        val fromMember = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+
+        val toMember = Member(
+            email = "email2",
+            password = "password2",
+            role = Role.USER,
+        )
+
+        val savedFromMember = memberService.addMember(fromMember)
+        val savedToMember = memberService.addMember(toMember)
+
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest1, toMember.id!!)
+
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest2, fromMember.id!!)
+
+        val workoutPartnerRequest = WorkoutPartnerRequest.of(
+            fromMember = savedFromMember,
+            toMember = savedToMember,
+            now = time.nowLocalDateTime,
+            content = WorkoutPartnerRequestContent.BURN
+        )
+        val savedWorkoutPartnerRequest = workoutPartnerRequestRepository.save(workoutPartnerRequest)
+
+        val request = WorkoutPartnerUpdateServiceRequest(
+            type = WorkoutPartnerRequestUpdateStatus.ACCEPT
+        )
+
+        savedFromMember.delete(time.nowLocalDateTime)
+
+        // when & then
+        assertThatThrownBy {
+            workoutPartnerRequestService.updateWorkoutPartnerRequest(
+                memberId = savedToMember.id!!,
+                workoutPartnerRequestId = savedWorkoutPartnerRequest.id!!,
+                request
+            )
+        }
+            .isInstanceOf(GlobalException::class.java)
+            .satisfies(ThrowingConsumer { ex ->
+                val globalEx = ex as GlobalException
+                assertThat(globalEx.errorCode)
+                    .isEqualTo(WorkoutPartnerErrorCode.PARTNER_WITHDRAWN)
+            })
     }
 
     @DisplayName("핏버디 요청을 상태 변경 시, 변경 시간을 기록한다.")
@@ -1174,15 +1229,12 @@ class WorkoutPartnerRequestServiceTest @Autowired constructor(
         val slice = workoutPartnerRequestQueryService.findWorkoutPartnerFrom(me.id!!, condition)
 
         // then
-        assertThat(slice.content).hasSize(2)
+        assertThat(slice.content).hasSize(1)
 
         val response1 = slice.content[0]
-        val response2 = slice.content[1]
 
         assertThat(response1.workoutPartnerRequestId)
             .isEqualTo(partnerRequest2.id)
-        assertThat(response2.workoutPartnerRequestId)
-            .isEqualTo(partnerRequest1.id)
 
         assertThat(response1.nickname).isEqualTo(otherMember.nickname)
         assertThat(response1.profileImageUrl).isEqualTo(signupRequest.profileImageUrl)
@@ -1191,10 +1243,8 @@ class WorkoutPartnerRequestServiceTest @Autowired constructor(
         assertThat(response1.workoutStyle).isEqualTo(otherMember.workoutStyle)
 
         assertThat(response1.status).isEqualTo(WorkoutPartnerRequestStatusForResponse.PENDING)
-        assertThat(response2.status).isEqualTo(WorkoutPartnerRequestStatusForResponse.PENDING)
 
         assertThat(response1.chatRoomId).isNull()
-        assertThat(response2.chatRoomId).isNull()
 
         assertThat(slice.hasNext()).isFalse()
     }

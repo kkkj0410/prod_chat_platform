@@ -59,7 +59,7 @@ class WorkoutPartnerRequestRepositoryTest @Autowired constructor(
 
     @DisplayName("회원A-B간의 최신 핏버디 요청을 조회한다.")
     @Test
-    fun findTop1ByFromMemberIdAndToMemberIdAndDeletedAtIsNullOrderByRequestedAtDesc(){
+    fun findTop1ByFromMemberIdAndToMemberIdOrderByRequestedAtDesc(){
         // given
         val fromMember = Member(
             email = "email1",
@@ -92,7 +92,7 @@ class WorkoutPartnerRequestRepositoryTest @Autowired constructor(
         workoutPartnerRequestRepository.save(workoutPartnerRequest2)
 
         // when
-        val findWorkPartnerRequest = workoutPartnerRequestRepository.findTop1ByFromMemberIdAndToMemberIdAndDeletedAtIsNullOrderByRequestedAtDesc(
+        val findWorkPartnerRequest = workoutPartnerRequestRepository.findTop1ByFromMemberIdAndToMemberIdOrderByRequestedAtDesc(
             fromMemberId = fromMember.id!!,
             toMemberId = toMember.id!!,
         )
@@ -105,7 +105,7 @@ class WorkoutPartnerRequestRepositoryTest @Autowired constructor(
 
     @DisplayName("상대 회원을 향한 특정 운동 파트너 신청을 조회한다.")
     @Test
-    fun findByIdAndToMemberIdAndDeletedAtIsNull() {
+    fun findByIdAndToMemberId() {
         // given
         val fromMember = Member(
             email = "email1",
@@ -131,7 +131,7 @@ class WorkoutPartnerRequestRepositoryTest @Autowired constructor(
         workoutPartnerRequestRepository.save(workoutPartnerRequest)
 
         // when
-        val findWorkoutPartnerRequest = workoutPartnerRequestRepository.findByIdAndToMemberIdAndDeletedAtIsNull(workoutPartnerRequest.id!!, toMember.id!!)
+        val findWorkoutPartnerRequest = workoutPartnerRequestRepository.findByIdAndToMemberId(workoutPartnerRequest.id!!, toMember.id!!)
 
         // then
         assertThat(findWorkoutPartnerRequest)
@@ -232,15 +232,12 @@ class WorkoutPartnerRequestRepositoryTest @Autowired constructor(
         val slice = workoutPartnerRequestRepository.findWorkoutPartnerByConditionAndDeletedAtIsNull(me.id!!, condition)
 
         // then
-        assertThat(slice.content).hasSize(2)
+        assertThat(slice.content).hasSize(1)
 
         val response1 = slice.content[0]
-        val response2 = slice.content[1]
 
         assertThat(response1.workoutPartnerRequestId)
             .isEqualTo(partnerRequest2.id)
-        assertThat(response2.workoutPartnerRequestId)
-            .isEqualTo(partnerRequest1.id)
 
         assertThat(response1.nickname).isEqualTo(otherMember.nickname)
         assertThat(response1.profileImageUrl).isEqualTo(signupRequest.profileImageUrl)
@@ -249,10 +246,8 @@ class WorkoutPartnerRequestRepositoryTest @Autowired constructor(
         assertThat(response1.workoutStyle).isEqualTo(otherMember.workoutStyle)
 
         assertThat(response1.status).isEqualTo(WorkoutPartnerRequestStatusForResponse.PENDING)
-        assertThat(response2.status).isEqualTo(WorkoutPartnerRequestStatusForResponse.PENDING)
 
         assertThat(response1.chatRoomId).isNull()
-        assertThat(response2.chatRoomId).isNull()
 
         assertThat(slice.hasNext()).isFalse()
     }
@@ -314,15 +309,12 @@ class WorkoutPartnerRequestRepositoryTest @Autowired constructor(
         val slice = workoutPartnerRequestRepository.findWorkoutPartnerByConditionAndDeletedAtIsNull(me.id!!, condition)
 
         // then
-        assertThat(slice.content).hasSize(2)
+        assertThat(slice.content).hasSize(1)
 
         val response1 = slice.content[0]
-        val response2 = slice.content[1]
 
         assertThat(response1.workoutPartnerRequestId)
             .isEqualTo(partnerRequest2.id)
-        assertThat(response2.workoutPartnerRequestId)
-            .isEqualTo(partnerRequest1.id)
 
         assertThat(response1.memberId).isEqualTo(otherMember.id!!)
         assertThat(response1.nickname).isEqualTo(otherMember.nickname)
@@ -332,15 +324,13 @@ class WorkoutPartnerRequestRepositoryTest @Autowired constructor(
         assertThat(response1.workoutStyle).isEqualTo(otherMember.workoutStyle)
 
         assertThat(response1.status).isEqualTo(WorkoutPartnerRequestStatusForResponse.PENDING)
-        assertThat(response2.status).isEqualTo(WorkoutPartnerRequestStatusForResponse.PENDING)
 
         assertThat(response1.chatRoomId).isNull()
-        assertThat(response2.chatRoomId).isNull()
 
         assertThat(slice.hasNext()).isFalse()
     }
 
-    @DisplayName("회원의 파트너 요청을 조회하되, 이미 파트너이고 둘 만의 채팅방이 있으면 반환한다.")
+    @DisplayName("회원의 파트너 요청을 조회하되, 이미 파트너이고 둘 만의 채팅방이 있으면 채팅방 id를 반환한다.")
     @Test
     fun findWorkoutPartnerByConditionAndDeletedAtExistsChatRoom() {
         // given
@@ -409,15 +399,12 @@ class WorkoutPartnerRequestRepositoryTest @Autowired constructor(
         val slice = workoutPartnerRequestRepository.findWorkoutPartnerByConditionAndDeletedAtIsNull(me.id!!, condition)
 
         // then
-        assertThat(slice.content).hasSize(2)
+        assertThat(slice.content).hasSize(1)
 
         val response1 = slice.content[0]
-        val response2 = slice.content[1]
 
         assertThat(response1.workoutPartnerRequestId)
             .isEqualTo(partnerRequest2.id)
-        assertThat(response2.workoutPartnerRequestId)
-            .isEqualTo(partnerRequest1.id)
 
         assertThat(response1.nickname).isEqualTo(otherMember.nickname)
         assertThat(response1.profileImageUrl).isEqualTo(signupRequest.profileImageUrl)
@@ -426,10 +413,8 @@ class WorkoutPartnerRequestRepositoryTest @Autowired constructor(
         assertThat(response1.workoutStyle).isEqualTo(otherMember.workoutStyle)
 
         assertThat(response1.status).isEqualTo(WorkoutPartnerRequestStatusForResponse.PENDING)
-        assertThat(response2.status).isEqualTo(WorkoutPartnerRequestStatusForResponse.PENDING)
 
         assertThat(response1.chatRoomId).isEqualTo(savedChatRoom.id!!)
-        assertThat(response2.chatRoomId).isEqualTo(savedChatRoom.id!!)
 
         assertThat(slice.hasNext()).isFalse()
     }
@@ -452,8 +437,16 @@ class WorkoutPartnerRequestRepositoryTest @Autowired constructor(
             provider = OAuth2Provider.APPLE,
             providerId = "providerId"
         )
+        val otherMember2 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+            provider = OAuth2Provider.APPLE,
+            providerId = "providerId"
+        )
         memberRepository.save(me)
         memberRepository.save(otherMember)
+        memberRepository.save(otherMember2)
 
         val signupRequest = createOAuth2SignupServiceRequest()
         oAuth2Service.signup(signupRequest, me.id!!)
@@ -478,14 +471,21 @@ class WorkoutPartnerRequestRepositoryTest @Autowired constructor(
             now = time.nowLocalDateTime,
             content = WorkoutPartnerRequestContent.BURN
         )
+        val partnerRequest4 = WorkoutPartnerRequest.of(
+            fromMember = otherMember2,
+            toMember = me,
+            now = time.nowLocalDateTime,
+            content = WorkoutPartnerRequestContent.BURN
+        )
         workoutPartnerRequestRepository.save(partnerRequest1)
         workoutPartnerRequestRepository.save(partnerRequest2)
         workoutPartnerRequestRepository.save(partnerRequest3)
+        workoutPartnerRequestRepository.save(partnerRequest4)
 
 
         val condition = WorkoutPartnerRequestCondition(
             size = 10,
-            firstWorkoutPartnerRequestId = partnerRequest3.id!!,
+            firstWorkoutPartnerRequestId = partnerRequest4.id!!,
             type = WorkoutPartnerRequestType.RECEIVE
         )
 
@@ -493,15 +493,12 @@ class WorkoutPartnerRequestRepositoryTest @Autowired constructor(
         val slice = workoutPartnerRequestRepository.findWorkoutPartnerByConditionAndDeletedAtIsNull(me.id!!, condition)
 
         // then
-        assertThat(slice.content).hasSize(2)
+        assertThat(slice.content).hasSize(1)
 
         val response1 = slice.content[0]
-        val response2 = slice.content[1]
 
         assertThat(response1.workoutPartnerRequestId)
-            .isEqualTo(partnerRequest2.id)
-        assertThat(response2.workoutPartnerRequestId)
-            .isEqualTo(partnerRequest1.id)
+            .isEqualTo(partnerRequest3.id)
 
         assertThat(response1.nickname).isEqualTo(otherMember.nickname)
         assertThat(response1.profileImageUrl).isEqualTo(signupRequest.profileImageUrl)
@@ -510,7 +507,6 @@ class WorkoutPartnerRequestRepositoryTest @Autowired constructor(
         assertThat(response1.workoutStyle).isEqualTo(otherMember.workoutStyle)
 
         assertThat(response1.status).isEqualTo(WorkoutPartnerRequestStatusForResponse.PENDING)
-        assertThat(response2.status).isEqualTo(WorkoutPartnerRequestStatusForResponse.PENDING)
 
         assertThat(slice.hasNext()).isFalse()
     }
@@ -773,6 +769,88 @@ class WorkoutPartnerRequestRepositoryTest @Autowired constructor(
 
         assertThat(slice.hasNext()).isFalse()
     }
+
+    @DisplayName("회원이 받은 운동 요청 조회 시, 각 회원의 최신 요청만 조회한다.")
+    @Test
+    fun findWorkoutPartnerByConditionNotDuplicatedMember() {
+        // given
+        val me = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+            provider = OAuth2Provider.APPLE,
+            providerId = "providerId"
+        )
+        val otherMember1 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+            provider = OAuth2Provider.APPLE,
+            providerId = "providerId"
+        )
+        val otherMember2 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+            provider = OAuth2Provider.APPLE,
+            providerId = "providerId"
+        )
+        memberRepository.save(me)
+        memberRepository.save(otherMember1)
+        memberRepository.save(otherMember2)
+
+
+        val signupRequest = createOAuth2SignupServiceRequest()
+        oAuth2Service.signup(signupRequest, me.id!!)
+        oAuth2Service.signup(signupRequest, otherMember1.id!!)
+        oAuth2Service.signup(signupRequest, otherMember2.id!!)
+
+        val partnerRequest1 = WorkoutPartnerRequest.of(
+            fromMember = otherMember1,
+            toMember = me,
+            now = time.nowLocalDateTime.minusHours(5),
+            content = WorkoutPartnerRequestContent.BURN
+        )
+        val partnerRequest2 = WorkoutPartnerRequest.of(
+            fromMember = otherMember1,
+            toMember = me,
+            now = time.nowLocalDateTime.minusHours(3),
+            content = WorkoutPartnerRequestContent.BURN
+        )
+        val partnerRequest3 = WorkoutPartnerRequest.of(
+            fromMember = otherMember2,
+            toMember = me,
+            now = time.nowLocalDateTime.minusHours(1),
+            content = WorkoutPartnerRequestContent.BURN
+        )
+        workoutPartnerRequestRepository.save(partnerRequest1)
+        workoutPartnerRequestRepository.save(partnerRequest2)
+        workoutPartnerRequestRepository.save(partnerRequest3)
+
+
+        val condition = WorkoutPartnerRequestCondition(
+            size = 10,
+            firstWorkoutPartnerRequestId = null,
+            type = WorkoutPartnerRequestType.RECEIVE
+        )
+
+        // when
+        val slice = workoutPartnerRequestRepository.findWorkoutPartnerByConditionAndDeletedAtIsNull(me.id!!, condition)
+
+        // then
+        assertThat(slice.content).hasSize(2)
+
+        val response1 = slice.content[0]
+        val response2 = slice.content[1]
+
+        assertThat(response1.workoutPartnerRequestId)
+            .isEqualTo(partnerRequest3.id)
+        assertThat(response2.workoutPartnerRequestId)
+            .isEqualTo(partnerRequest2.id)
+
+        assertThat(slice.hasNext()).isFalse()
+    }
+
 
     @DisplayName("24시간이 지나 만료된 운동 파트너 요청을 전체 조회한다.")
     @Test

@@ -354,6 +354,119 @@ class ReviewRepositoryTest @Autowired constructor(
             )
     }
 
+    @DisplayName("공개 후기 조회 시, 삭제된 회원의 후기 정보는 조회하지 않는다.")
+    @Test
+    fun findAllPublicReviewByToMemberIdOrderByPostedAtDescNotDeletedMember() {
+        // given
+        val me = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        val other = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(me)
+        memberRepository.save(other)
+
+        val signupRequest = TestDataFactory.oAuth2SignupRequest(
+            nickname = "meNickname",
+            profileImageUrl = "updateImage1"
+        )
+        oAuth2Service.signup(signupRequest, me.id!!)
+
+
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "otherNick",
+            profileImageUrl = "updateImage2"
+        )
+        oAuth2Service.signup(signupRequest2, other.id!!)
+
+        val chatRoom = ChatRoom(ChatRoomType.PRIVATE)
+        chatRoomRepository.save(chatRoom)
+
+        val chatMessage = ChatMessage(
+            member = me,
+            chatRoom = chatRoom,
+            type = ChatMessageType.WORKOUT_REQUEST,
+            content = "content",
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessage)
+
+        val workoutRequest = WorkoutRequest.of(
+            chatMessage = chatMessage,
+            fromMember = me,
+            toMember = other,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime
+        )
+        workoutRequestRepository.save(workoutRequest)
+
+        val workoutHistory = WorkoutHistory(
+            chatRoom = chatRoom,
+            workoutRequest = workoutRequest,
+            memberOne = me,
+            memberTwo = other,
+            completedAt = time.nowLocalDateTime
+        )
+        workoutHistoryRepository.save(workoutHistory)
+
+        val chatMessage2 = ChatMessage(
+            member = me,
+            chatRoom = chatRoom,
+            type = ChatMessageType.WORKOUT_REQUEST,
+            content = "content",
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessage2)
+
+        val workoutRequest2 = WorkoutRequest.of(
+            chatMessage = chatMessage2,
+            fromMember = me,
+            toMember = other,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime
+        )
+        workoutRequestRepository.save(workoutRequest2)
+
+        val workoutHistory2 = WorkoutHistory(
+            chatRoom = chatRoom,
+            workoutRequest = workoutRequest2,
+            memberOne = me,
+            memberTwo = other,
+            completedAt = time.nowLocalDateTime
+        )
+        workoutHistoryRepository.save(workoutHistory2)
+
+        val review2 = Review(
+            fromMember = me,
+            toMember = other,
+            workoutHistory = workoutHistory2,
+            isPrivate = false,
+            type = ReviewType.GOOD,
+            score = 2.0,
+            content = "content",
+            postedAt = time.nowLocalDateTime
+        )
+        reviewRepository.save(review2)
+
+        me.delete(time.nowLocalDateTime)
+
+        val condition = MemberReviewCondition()
+
+        // when
+        val response = reviewRepository.findAllPublicReviewByToMemberIdOrderByPostedAtDesc(other.id!!, condition)
+
+        // then
+        assertThat(response).hasSize(0)
+    }
+
+
     @DisplayName("공개 전체 후기 조회 시, 특정 시점 이전의 옛날 후기를 조회한다..")
     @Test
     fun findAllPublicReviewByToMemberIdOrderByPostedAtDescLastPostedAt() {
@@ -936,11 +1049,12 @@ class ReviewRepositoryTest @Autowired constructor(
 
         // then
         assertThat(response)
-            .extracting("reviewId", "workoutPartnerId", "workoutHistoryId", "reviewType", "reviewTagDisplayTexts")
+            .extracting("reviewId", "workoutPartnerId", "workoutRequestId", "workoutHistoryId", "reviewType", "reviewTagDisplayTexts")
             .containsExactly(
                 tuple(
                     review2.id!!,
                     workoutPartner.id!!,
+                    workoutRequest2.id!!,
                     workoutHistory2.id!!,
                     ReviewType.GOOD,
                     listOf(reviewTag3.displayText)
@@ -948,6 +1062,7 @@ class ReviewRepositoryTest @Autowired constructor(
                 tuple(
                     review.id!!,
                     workoutPartner.id!!,
+                    workoutRequest.id!!,
                     workoutHistory.id!!,
                     ReviewType.GOOD,
                     listOf(reviewTag1.displayText, reviewTag2.displayText)

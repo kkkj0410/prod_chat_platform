@@ -5,9 +5,8 @@ import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.fcm.entity.enums.FcmTokenPlatform
-import kr.co.fitview.api.app.global.entity.BaseSoftDeleteEntity
-import org.hibernate.annotations.ColumnDefault
-import java.time.LocalDateTime
+import kr.co.fitview.api.app.domain.fcm.entity.enums.FcmTokenStatus
+import kr.co.fitview.api.app.global.entity.BaseEntity
 
 @Entity
 @Table(name = "fcm_token")
@@ -29,9 +28,9 @@ class FcmToken(
     var token: String? = null,
 
     @NotNull
-    @ColumnDefault("1")
-    @Column(name = "is_active", nullable = false)
-    var isActive: Boolean? = false,
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 40)
+    var status: FcmTokenStatus? = FcmTokenStatus.ACTIVE,
 
     @Size(max = 30)
     @NotNull
@@ -39,7 +38,8 @@ class FcmToken(
     @Column(name = "platform", nullable = false, length = 30)
     var platform: FcmTokenPlatform? = null
 
-) : BaseSoftDeleteEntity() {
+) : BaseEntity() {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "fcm_token_id", nullable = false)
@@ -56,19 +56,25 @@ class FcmToken(
                 member = member,
                 deviceId = deviceId,
                 token = token,
-                isActive = true,
+                status = FcmTokenStatus.ACTIVE,
                 platform = platform
             )
         }
     }
 
-    fun updateToken(token : String) : FcmToken{
+    fun updateToken(member : Member, token : String) : FcmToken{
+        this.member = member
         this.token = token
         return this
     }
 
-    fun delete(now : LocalDateTime) : FcmToken{
-        this.deletedAt = now
+    fun revoke() : FcmToken{
+        this.status = FcmTokenStatus.REVOKED
+        return this
+    }
+
+    fun invalid() : FcmToken{
+        this.status = FcmTokenStatus.INVALID
         return this
     }
 

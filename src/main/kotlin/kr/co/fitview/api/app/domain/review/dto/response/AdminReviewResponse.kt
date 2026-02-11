@@ -13,6 +13,8 @@ data class AdminReviewResponse(
 
     val reviewId : Long,
     val workoutPartnerId : Long = 0L,
+    val workoutRequestId : Long,
+    // workoutHistoryId는 필요없는 필드. (나중에 없애야함)
     val workoutHistoryId : Long,
     val fromMemberNickname : String,
     val toMemberNickname : String,
@@ -25,6 +27,7 @@ data class AdminReviewResponse(
         fromMemberId: Long,
         toMemberId: Long,
         reviewId: Long,
+        workoutRequestId : Long,
         workoutHistoryId: Long,
         fromMemberNickname: String,
         toMemberNickname: String,
@@ -36,6 +39,7 @@ data class AdminReviewResponse(
         toMemberId = toMemberId,
         reviewId = reviewId,
         workoutPartnerId = 0L,
+        workoutRequestId = workoutRequestId,
         workoutHistoryId = workoutHistoryId,
         fromMemberNickname = fromMemberNickname,
         toMemberNickname = toMemberNickname,

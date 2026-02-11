@@ -46,11 +46,9 @@ class WorkoutPartnerRequestService(
 
         validateAlreadyWorkoutPartner(memberId, request.memberId)
 
-        // FE 편의상 validate 취소
-        // 정식상으로 다시 validate 활성화 필요
-//        val findWorkoutPartner = workoutPartnerRequestRepository.findTop1ByFromMemberIdAndToMemberIdAndDeletedAtIsNullOrderByRequestedAtDesc(memberId, request.memberId)
+        val findWorkoutPartner = workoutPartnerRequestRepository.findTop1ByFromMemberIdAndToMemberIdOrderByRequestedAtDesc(memberId, request.memberId)
 
-//        validateAddWorkoutPartnerRequest(findWorkoutPartner)
+        validateAddWorkoutPartnerRequest(findWorkoutPartner)
 
         val toMember = memberQueryService.findMemberReferenceFrom(request.memberId)
         val fromMember = memberQueryService.findMemberFromId(memberId)
@@ -85,8 +83,10 @@ class WorkoutPartnerRequestService(
 
     @Transactional
     fun updateWorkoutPartnerRequest(memberId: Long, workoutPartnerRequestId : Long, request: WorkoutPartnerUpdateServiceRequest) : WorkoutPartnerRequest {
-        val findWorkoutPartnerRequest = workoutPartnerRequestRepository.findByIdAndToMemberIdAndDeletedAtIsNull(workoutPartnerRequestId, memberId)
+        val findWorkoutPartnerRequest = workoutPartnerRequestRepository.findByIdAndToMemberId(workoutPartnerRequestId, memberId)
                 ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
+
+        validateDeletedOtherMember(findWorkoutPartnerRequest, memberId)
 
         validateUpdateWorkoutPartnerRequest(findWorkoutPartnerRequest)
 
@@ -114,6 +114,20 @@ class WorkoutPartnerRequestService(
         sendNotificationRejectWorkoutPartnerRequest(findWorkoutPartnerRequest)
 
         return findWorkoutPartnerRequest
+    }
+
+    private fun validateDeletedOtherMember(
+        workoutPartnerRequest: WorkoutPartnerRequest,
+        memberId: Long
+    ) {
+        val otherMemberId = if (workoutPartnerRequest.getFromMemberId() == memberId) {
+            workoutPartnerRequest.getToMemberId()
+        } else {
+            workoutPartnerRequest.getFromMemberId()
+        }
+
+        memberQueryService.findMemberFromId(otherMemberId)
+            ?: throw GlobalException(WorkoutPartnerErrorCode.PARTNER_WITHDRAWN)
     }
 
     @Transactional
@@ -241,8 +255,6 @@ class WorkoutPartnerRequestService(
         memberId = memberOneProfile.memberId,
         sender = EventSender(
             memberId = memberTwoProfile.memberId,
-            nickname = memberTwoProfile.nickname,
-            profileImageUrl = memberTwoProfile.profileImageUrl
         ),
         payload = EventWorkoutPartnerAcceptPayload(
             workoutPartnerRequestId = workoutPartnerRequest.id!!,
@@ -263,8 +275,6 @@ class WorkoutPartnerRequestService(
             memberId = toMemberId,
             sender = EventSender(
                 memberId = findMemberProfile.memberId,
-                nickname = findMemberProfile.nickname,
-                profileImageUrl = findMemberProfile.profileImageUrl
             ),
             payload = EventWorkoutPartnerRequestPayload(
                 memberId = findMemberProfile.memberId,
@@ -296,8 +306,6 @@ class WorkoutPartnerRequestService(
             memberId = workoutPartnerRequest.getFromMemberId(),
             sender = EventSender(
                 memberId = findToMemberProfile.memberId,
-                nickname = findToMemberProfile.nickname,
-                profileImageUrl = findToMemberProfile.profileImageUrl
             ),
             payload = EventWorkoutPartnerRejectPayload(
                 workoutPartnerRequestId = workoutPartnerRequest.id!!,

@@ -30,19 +30,17 @@ class WorkoutRequestRejectMapperTest @Autowired constructor(
 
     @DisplayName("운동 요청 거절 알림을 조회한다.")
     @Test
-    fun map() {
+    fun mapReject() {
         val member = Member(email = "email", password = "password", role = Role.USER)
         memberRepository.save(member)
+
+        val fromMember = Member(email = "email", password = "password", role = Role.USER)
+        memberRepository.save(fromMember)
 
         val signupRequest = TestDataFactory.oAuth2SignupRequest()
         oAuth2Service.signup(signupRequest, member.id!!)
 
         val content: MutableMap<String, Any> = mutableMapOf(
-            "sender" to mutableMapOf(
-                "memberId" to 123L,
-                "nickname" to "nick",
-                "profileImageUrl" to "profile"
-            ),
             "payload" to mutableMapOf(
                 "chatRoomId" to 456L,
                 "workoutRequestId" to 666L,
@@ -52,6 +50,7 @@ class WorkoutRequestRejectMapperTest @Autowired constructor(
 
         val notification = Notification(
             member = member,
+            fromMember = fromMember,
             type = NotificationType.WORKOUT_REQUEST_REJECT,
             sentAt = time.nowLocalDateTime,
             isRead = false,
@@ -59,7 +58,67 @@ class WorkoutRequestRejectMapperTest @Autowired constructor(
         )
         notificationRepository.save(notification)
 
-        val response = workoutRequestRejectMapper.map(notification, member)
+        val sender = NotificationSender(
+            memberId = 123L,
+            nickname = "nick",
+            profileImageUrl = "profile"
+        )
+
+        val response = workoutRequestRejectMapper.map(notification, member, sender)
+
+        assertThat(response)
+            .extracting("notificationId", "type", "sentAt", "isRead", "sender", "link", "messages")
+            .contains(
+                notification.id!!,
+                NotificationType.WORKOUT_REQUEST_REJECT,
+                notification.sentAt!!,
+                notification.isRead!!,
+                NotificationSender(123L, "nick", "profile"),
+                NotificationLink(LinkType.CHAT_ROOM, mapOf("chatRoomId" to 456L, "chatMessageId" to 555L)),
+                NotificationMessage(
+                    text1 = NotificationType.WORKOUT_REQUEST_REJECT.displayText1.format("nick"),
+                    text2 = NotificationType.WORKOUT_REQUEST_REJECT.displayText2
+                )
+            )
+    }
+
+    @DisplayName("운동 요청 취소 알림을 조회 시, 거절 알림과 동일한 규격으로 조회한다.")
+    @Test
+    fun mapCancel() {
+        val member = Member(email = "email", password = "password", role = Role.USER)
+        memberRepository.save(member)
+
+        val fromMember = Member(email = "email", password = "password", role = Role.USER)
+        memberRepository.save(fromMember)
+
+        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest, member.id!!)
+
+        val content: MutableMap<String, Any> = mutableMapOf(
+            "payload" to mutableMapOf(
+                "chatRoomId" to 456L,
+                "workoutRequestId" to 666L,
+                "chatMessageId" to 555L
+            )
+        )
+
+        val notification = Notification(
+            member = member,
+            fromMember = fromMember,
+            type = NotificationType.WORKOUT_REQUEST_CANCEL,
+            sentAt = time.nowLocalDateTime,
+            isRead = false,
+            content = content
+        )
+        notificationRepository.save(notification)
+
+        val sender = NotificationSender(
+            memberId = 123L,
+            nickname = "nick",
+            profileImageUrl = "profile"
+        )
+
+        val response = workoutRequestRejectMapper.map(notification, member, sender)
 
         assertThat(response)
             .extracting("notificationId", "type", "sentAt", "isRead", "sender", "link", "messages")

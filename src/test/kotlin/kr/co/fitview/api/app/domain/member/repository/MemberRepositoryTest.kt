@@ -1,5 +1,6 @@
 package kr.co.fitview.api.app.domain.member.repository
 
+import jakarta.persistence.EntityManager
 import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.address.constant.AddressConstant
 import kr.co.fitview.api.app.domain.address.dto.request.AddressCreateServiceRequest
@@ -32,10 +33,6 @@ import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequest
 import kr.co.fitview.api.app.domain.workout.repository.WorkoutRequestRepository
 import kr.co.fitview.api.app.domain.workout_history.entity.WorkoutHistory
 import kr.co.fitview.api.app.domain.workout_history.repository.WorkoutHistoryRepository
-import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartnerRequest
-import kr.co.fitview.api.app.domain.workout_partner.entity.enums.WorkoutPartnerRequestContent
-import kr.co.fitview.api.app.domain.workout_partner.entity.enums.WorkoutPartnerRequestStatus
-import kr.co.fitview.api.app.domain.workout_partner.repository.WorkoutPartnerRequestRepository
 import kr.co.fitview.api.app.global.entity.Gender
 import kr.co.fitview.api.app.global.entity.OAuth2Provider
 import kr.co.fitview.api.app.global.entity.Role
@@ -60,6 +57,7 @@ class MemberRepositoryTest@Autowired constructor(
     val chatMessageRepository : ChatMessageRepository,
     val workoutRequestRepository : WorkoutRequestRepository,
     val reviewRepository: ReviewRepository,
+    val em : EntityManager,
     val time : Time
 ) : IntegrationTestSupport() {
 
@@ -1774,6 +1772,51 @@ class MemberRepositoryTest@Autowired constructor(
             )
     }
 
+    @DisplayName("추천 핏버디 조회 시, 탈퇴 계정은 조회되지 않는다.")
+    @Test
+    fun findMemberWithinRecommendationNotDeletedMember() {
+        // given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+        val signupRequest = TestDataFactory.oAuth2SignupRequest(
+            workoutExperience = MemberWorkoutExperience.FOUR_TO_SIX_YEARS,
+            workoutStyle = MemberWorkoutStyle.PARTNER,
+            workoutGoal = MemberWorkoutGoal.STRENGTH_GAIN
+        )
+        oAuth2Service.signup(signupRequest, me.id!!)
+
+
+        val matchMember = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(matchMember)
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "update1",
+            workoutExperience = MemberWorkoutExperience.JUST_STARTED,
+            workoutStyle = MemberWorkoutStyle.PARTNER,
+            workoutGoal = MemberWorkoutGoal.STRENGTH_GAIN,
+            workoutImageUrls = listOf("updateMember1Workout1", "updateMember1Workout2")
+        )
+        oAuth2Service.signup(signupRequest2, matchMember.id!!)
+        matchMember.delete(time.nowLocalDateTime)
+
+        // when
+        val response = memberRepository.findMemberWithinRecommendation(
+            member = me,
+            randomMemberId = 0,
+            size = 10
+        )
+
+        // then
+        assertThat(response).hasSize(0)
+    }
+
     @DisplayName("추천 핏버디 조회 시, 본인은 조회되지 않는다.")
     @Test
     fun findMemberWithinRecommendationNotExistsMe() {
@@ -2080,6 +2123,50 @@ class MemberRepositoryTest@Autowired constructor(
             .containsExactly(
                 tuple(notMatchMember1.id!!, "update3", "updateMember3Workout1"),
             )
+    }
+
+    @DisplayName("추천 핏버디에서 서울 인원 조회 시, 탈퇴 계정은 조회하지 않는다.")
+    @Test
+    fun findMemberByNotMemberIdsWithinRecommendationsAndSeoulDeletedAtMember() {
+        // given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+        val signupRequest = TestDataFactory.oAuth2SignupRequest(
+            workoutExperience = MemberWorkoutExperience.FOUR_TO_SIX_YEARS,
+            workoutStyle = MemberWorkoutStyle.PARTNER,
+            workoutGoal = MemberWorkoutGoal.STRENGTH_GAIN
+        )
+        oAuth2Service.signup(signupRequest, me.id!!)
+
+        val matchMember1 = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(matchMember1)
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "update2",
+            workoutExperience = MemberWorkoutExperience.JUST_STARTED,
+            workoutStyle = MemberWorkoutStyle.PARTNER,
+            workoutGoal = MemberWorkoutGoal.STRENGTH_GAIN,
+            workoutImageUrls = listOf("updateMember1Workout1", "updateMember1Workout2")
+        )
+        oAuth2Service.signup(signupRequest2, matchMember1.id!!)
+        matchMember1.delete(time.nowLocalDateTime)
+
+        // when
+        val response = memberRepository.findMemberByNotMemberIdsWithinRecommendationsAndSeoul(
+            memberId = me.id!!,
+            memberIds = listOf(),
+            size = 10,
+        )
+
+        // then
+        assertThat(response).hasSize(0)
     }
 
     @DisplayName("추천 핏버디에서 나머지 서울 인원 조회 시, 본인은 조회되지 않는다.")
@@ -2532,6 +2619,90 @@ class MemberRepositoryTest@Autowired constructor(
         assertThat(response.hasNext()).isEqualTo(false)
     }
 
+
+    @DisplayName("전체 회원을 조회 시, 삭제 회원도 조회한다.")
+    @Test
+    fun findAllMemberByAddDeletedMember() {
+        // given
+        val member1 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+            provider = OAuth2Provider.APPLE
+        )
+        val member2 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+            provider = OAuth2Provider.GOOGLE
+        )
+        memberRepository.save(member1)
+        memberRepository.save(member2)
+
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest1, member1.id!!)
+
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            workoutImageUrls = null
+        )
+        oAuth2Service.signup(signupRequest2, member2.id!!)
+
+
+        val chatRoom = ChatRoom(ChatRoomType.PRIVATE)
+        chatRoomRepository.save(chatRoom)
+
+        val chatMessage = ChatMessage(
+            member = member1,
+            chatRoom = chatRoom,
+            type = ChatMessageType.WORKOUT_REQUEST,
+            content = "content",
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessage)
+
+        val workoutRequest = WorkoutRequest.of(
+            chatMessage = chatMessage,
+            fromMember = member1,
+            toMember = member2,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime
+        )
+        workoutRequestRepository.save(workoutRequest)
+
+        val workoutHistory = WorkoutHistory(
+            chatRoom = chatRoom,
+            workoutRequest = workoutRequest,
+            memberOne = member1,
+            memberTwo = member2,
+            completedAt = time.nowLocalDateTime
+        )
+        workoutHistoryRepository.save(workoutHistory)
+
+        val review = Review(
+            fromMember = member2,
+            toMember = member1,
+            workoutHistory = workoutHistory,
+            isPrivate = false,
+            type = ReviewType.GOOD,
+            score = 2.0,
+            content = "content",
+            postedAt = time.nowLocalDateTime
+        )
+        reviewRepository.save(review)
+
+
+        val condition = AdminMemberCondition()
+
+        member2.delete(time.nowLocalDateTime)
+
+        // when
+        val response = memberRepository.findAllMemberBy(condition)
+
+        // then
+        assertThat(response.content).hasSize(2)
+    }
+
     @DisplayName("전체 회원을 조회 시, memberId를 조건으로 넣으면 memberId보다 낮은 회원만 조회한다.")
     @Test
     fun findAllMemberByExistsConditionMemberId() {
@@ -2811,6 +2982,59 @@ class MemberRepositoryTest@Autowired constructor(
         // then
         assertThat(findMember!!.id!!).isEqualTo(member.id!!)
         assertThat(findMember.deletedAt).isNotNull()
+    }
+
+
+    @DisplayName("채팅방의 다른 회원을 조회한다.")
+    @Test
+    fun findOtherMemberBy() {
+        // given
+        val member1 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+            provider = OAuth2Provider.APPLE
+        )
+        val member2 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+            provider = null
+        )
+        memberRepository.save(member1)
+        memberRepository.save(member2)
+
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest1, member1.id!!)
+
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            workoutImageUrls = null
+        )
+        oAuth2Service.signup(signupRequest2, member2.id!!)
+
+        val chatRoom = ChatRoom(ChatRoomType.PRIVATE)
+        chatRoomRepository.save(chatRoom)
+
+        val chatParticipant1 = ChatParticipant(
+            chatRoom = chatRoom,
+            member = member1
+        )
+        val chatParticipant2 = ChatParticipant(
+            chatRoom = chatRoom,
+            member = member2
+        )
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+
+        // when
+        val findMember = memberRepository.findOtherMemberBy(
+            memberId = member1.id!!,
+            chatRoomId = chatRoom.id!!
+        )
+
+
+        // then
+        assertThat(findMember!!.id).isEqualTo(member2.id!!)
     }
 
 }

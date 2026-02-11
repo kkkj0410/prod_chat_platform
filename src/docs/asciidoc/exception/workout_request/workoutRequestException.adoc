@@ -29,4 +29,12 @@ include::{snippets}/WORKOUT_REQUEST_003/http-response.adoc[]
 include::{snippets}/WORKOUT_REQUEST_003/response-fields.adoc[]
 
 
+[[WORKOUT_REQUEST_004]]
+=== WORKOUT_REQUEST_004
 
+==== HTTP Request
+include::{snippets}/WORKOUT_REQUEST_004/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/WORKOUT_REQUEST_004/http-response.adoc[]
+include::{snippets}/WORKOUT_REQUEST_004/response-fields.adoc[]

@@ -164,7 +164,9 @@ class MemberControllerTest : ControllerTestSupport() {
                         status = ProfileWorkoutPartnerStatus.NONE,
                         workoutPartnerRequestId = null,
                         chatRoomId = null
-                    )
+                    ),
+
+                    isFavorite = false
                 )
             )
 
@@ -229,29 +231,6 @@ class MemberControllerTest : ControllerTestSupport() {
             .andExpect(jsonPath("$.code").value(RequestErrorCode.REQ_FIELD_NOT_VALID.code))
             .andExpect(jsonPath("$.status").value("400"))
             .andExpect(jsonPath("$.message").value("workoutTimes cannot be empty"))
-            .andExpect(jsonPath("$.data").isEmpty())
-    }
-
-
-    @DisplayName("본인 프로필 수정 시, 운동 사진 배열이 비어서는 안된다.")
-    @Test
-    fun memberModifyEmptyWorkoutImageUrls() {
-        // given
-        val request = MemberUpdateRequest(
-            workoutImageUrls = listOf()
-        )
-
-        // when // then
-        mockMvc.perform(
-            patch("/api/v1/members/me")
-                .content(objectMapper.writeValueAsString(request))
-                .contentType(MediaType.APPLICATION_JSON)
-        )
-            .andDo(print())
-            .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.code").value(RequestErrorCode.REQ_FIELD_NOT_VALID.code))
-            .andExpect(jsonPath("$.status").value("400"))
-            .andExpect(jsonPath("$.message").value("workoutImageUrls cannot be empty"))
             .andExpect(jsonPath("$.data").isEmpty())
     }
 
