@@ -80,12 +80,6 @@ jobs:
             BACKUP_TAG="backup"
             PORT=8080
             
-            echo "=== [Deploy] 설정 파일 호스트 생성 ==="
-            mkdir -p ~/firebase
-            echo "${{ env.APPLICATION_PROD }}" > ~/application.yml
-            echo '${{ env.FIREBASE_KEY }}' > ~/firebase/firebase-key.json
-            chmod 600 ~/application.yml ~/firebase/firebase-key.json
-            
             echo "=== [Deploy] Docker Hub 로그인 ==="
             echo "${{ env.NHN_SECRET_ACCESS_KEY }}" | sudo docker login ${{ env.NCR_REGISTRY_PUBLIC_URI }} \
               -u "${{ env.NHN_USER_ACCESS_KEY }}" --password-stdin
@@ -117,33 +111,46 @@ jobs:
               -v ~/server_logs:/logs \
               $IMAGE_FULL_NAME:$NEW_VERSION
             
-            echo "=== [Deploy] 설정 파일 주입 (Copy) ==="
-            sudo docker cp ~/application.yml $CONTAINER_NAME:/app/resources/application.yml
-            sudo docker cp ~/firebase/firebase-key.json $CONTAINER_NAME:/app/resources/firebase/firebase-key.json
             
             echo "=== [Deploy] 컨테이너 시작 (Start) ==="
             sudo docker start $CONTAINER_NAME
             
             # ==========================================
-            # 4. 헬스 체크 및 롤백 로직
+            # 4. 반복 헬스 체크 (Retry Loop)
             # ==========================================
-            echo "=== [Health Check] 서비스 시작 대기 (100초) ==="
-            sleep 100
+            echo "=== [Health Check] 서비스 상태 확인 시작 (5초 간격, 최대 20회) ==="
             
-            # Actuator가 없다면 주소를 http://localhost:$PORT/ 로 변경하세요
-            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:$PORT/actuator/health || echo "000")
+            RETRIES=0
+            MAX_RETRIES=20   # 5초 * 20회 = 100초
+            SUCCESS="false"
             
-            if [ "$HTTP_CODE" == "200" ]; then
-                echo "✅ [Success] 배포 성공! (HTTP 200)"
+            while [ $RETRIES -lt $MAX_RETRIES ]; do
+                RETRIES=$((RETRIES+1))
+                echo "Checking health... ($RETRIES/$MAX_RETRIES)"
+                sleep 5
             
+                # 헬스 체크 요청 (단순 200 OK 확인)
+                # 만약 스프링 Actuator라면 주소를 /actuator/health 로 변경하세요
+                HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:$PORT/health || echo "000")
+            
+                if [ "$HTTP_CODE" == "200" ]; then
+                    echo "✅ [Success] 서버가 정상적으로 응답합니다! (HTTP 200)"
+                    SUCCESS="true"
+                    break
+                fi
+            done
+            
+            # ==========================================
+            # 5. 결과 처리 (성공 or 롤백)
+            # ==========================================
+            if [ "$SUCCESS" == "true" ]; then
                 # 성공 시 정리 작업
                 sudo docker image prune -f
                 sudo docker logout ${{ env.NCR_REGISTRY_PUBLIC_URI }}
-                rm ~/application.yml
-                rm -rf ~/firebase
                 exit 0
             else
-                echo "❌ [Fail] 배포 실패 (HTTP Code: $HTTP_CODE). 롤백을 시작합니다."
+                echo "❌ [Fail] 100초 동안 서버가 응답하지 않습니다. (Last Code: $HTTP_CODE)"
+                echo "롤백 프로세스를 시작합니다..."
             
                 # ------------------------------------------
                 # 롤백 프로세스 시작
@@ -152,27 +159,19 @@ jobs:
                 sudo docker rm -f $CONTAINER_NAME
             
                 echo "=== [Rollback] 백업 이미지로 복구 시작 ==="
-                # 백업 이미지로 다시 Create
                 sudo docker create --name $CONTAINER_NAME \
                   -p $PORT:$PORT -e TZ=Asia/Seoul \
                   -v ~/server_logs:/logs \
                   $IMAGE_FULL_NAME:$BACKUP_TAG
             
-                # 롤백된 컨테이너에도 설정 파일 다시 주입 필수!
-                sudo docker cp ~/application.yml $CONTAINER_NAME:/app/resources/application.yml
-                sudo docker cp ~/firebase/firebase-key.json $CONTAINER_NAME:/app/resources/firebase/firebase-key.json
-            
                 sudo docker start $CONTAINER_NAME
             
                 echo "🔄 [Rollback] 롤백 완료. 이전 버전이 실행 중입니다."
             
-                # 롤백 후에도 파일 정리는 해야 함
-                rm ~/application.yml
-                rm -rf ~/firebase
-            
                 # GitHub Actions를 실패로 마킹
                 exit 1
             fi
+
 #      - name: Deploy to WAS 1
 #        uses: appleboy/ssh-action@master
 #        with:

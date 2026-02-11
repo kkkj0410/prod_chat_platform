@@ -112,6 +112,7 @@ jobs:
       # 3. 도커 허브에서 저장한 이미지 가져옴
       # 4. 이미지를 컨테이너로 만들어서 실행
       # [수정됨] 배포 및 롤백 자동화 스크립트 적용
+      # [수정됨] 배포 및 롤백 자동화 스크립트 (Health Check 반복문 적용)
       - name: Deploy with Rollback Strategy
         uses: appleboy/ssh-action@master
         with:
@@ -119,68 +120,173 @@ jobs:
           username: ${{ env.SERVER_HOST_NAME }}
           key: ${{ env.SERVER_SSH_PRIVATE_KEY }}
           script: |
-            # 변수 설정
+            # ==========================================
+            # 1. 변수 및 환경 설정
+            # ==========================================
             CONTAINER_NAME="${{ env.DOCKER_CONTAINER_NAME }}"
-            IMAGE_NAME="${{ env.DOCKER_NAME }}/${{ env.DOCKER_IMAGE_NAME }}"
+            # 이미지 이름 조합 (Docker Hub 계정 / 이미지 이름)
+            IMAGE_FULL_NAME="${{ env.DOCKER_NAME }}/${{ env.DOCKER_IMAGE_NAME }}"
             NEW_VERSION="${{ env.DOCKER_IMAGE_VERSION }}"
             BACKUP_TAG="backup"
             PORT="8080"
 
-            echo "=== 1. Docker Hub 로그인 ==="
+            echo "=== [Deploy] Docker Hub 로그인 ==="
             echo "${{ env.DOCKER_HUB_TOKEN }}" | sudo docker login -u "${{ env.DOCKER_NAME }}" --password-stdin
 
-            echo "=== 2. 새 이미지 미리 다운로드 (Pull) ==="
-            sudo docker pull $IMAGE_NAME:$NEW_VERSION
+            echo "=== [Deploy] 새 이미지 Pull ==="
+            sudo docker pull $IMAGE_FULL_NAME:$NEW_VERSION
 
-            echo "=== 3. 현재 실행 중인 이미지 백업 (Tagging) ==="
-            # 현재 실행 중인 컨테이너가 있다면, 그 이미지를 backup 태그로 지정
+            # ==========================================
+            # 2. 현재 버전 백업 (Tagging)
+            # ==========================================
+            echo "=== [Deploy] 현재 실행 중인 이미지 백업 ==="
             if [ "$(sudo docker ps -q -f name=$CONTAINER_NAME)" ]; then
-                CURRENT_IMAGE_ID=$(sudo docker inspect --format='{{.Image}}' $CONTAINER_NAME)
-                sudo docker tag $CURRENT_IMAGE_ID $IMAGE_NAME:$BACKUP_TAG
-                echo "현재 버전을 $IMAGE_NAME:$BACKUP_TAG 로 백업했습니다."
+                CURRENT_ID=$(sudo docker inspect --format='{{.Image}}' $CONTAINER_NAME)
+                # 현재 실행 중인 이미지 ID에 'backup' 태그를 붙임
+                sudo docker tag $CURRENT_ID $IMAGE_FULL_NAME:$BACKUP_TAG
+                echo "-> 현재 버전을 백업했습니다: $IMAGE_FULL_NAME:$BACKUP_TAG"
             else
-                echo "실행 중인 컨테이너가 없습니다. 백업을 생략합니다."
+                echo "-> 실행 중인 컨테이너가 없습니다. 백업을 건너뜁니다."
             fi
 
-            echo "=== 4. 기존 컨테이너 중지 및 삭제 ==="
+            # ==========================================
+            # 3. 기존 컨테이너 중지/삭제 및 새 버전 실행
+            # ==========================================
+            echo "=== [Deploy] 기존 컨테이너 삭제 ==="
             sudo docker stop $CONTAINER_NAME || true
             sudo docker rm $CONTAINER_NAME || true
 
-            echo "=== 5. 새 버전 컨테이너 실행 ==="
+            echo "=== [Deploy] 새 버전 컨테이너 실행 ==="
             sudo docker run -d \
               --name $CONTAINER_NAME \
               -p $PORT:$PORT \
-              $IMAGE_NAME:$NEW_VERSION
+              $IMAGE_FULL_NAME:$NEW_VERSION
 
-            echo "=== 6. 헬스 체크 (Health Check) ==="
-            echo "컨테이너 구동 대기 중 (100초)..."
-            sleep 100
+            # ==========================================
+            # 4. 반복 헬스 체크 (Retry Loop)
+            # ==========================================
+            echo "=== [Health Check] 서비스 상태 확인 시작 (5초 간격, 최대 20회) ==="
             
-            # /health 엔드포인트가 있다고 가정 (없으면 메인 페이지나 다른 API로 변경 필요)
-            # curl 명령어로 상태 코드 확인
-            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:$PORT/health || echo "000")
+            RETRIES=0
+            MAX_RETRIES=20   # 5초 * 20회 = 100초
+            SUCCESS="false"
 
-            if [ "$HTTP_CODE" == "200" ]; then
-                echo "✅ 배포 성공! (HTTP 200 OK)"
-                # (선택사항) 불필요한 이미지 정리 (dangling images)
+            while [ $RETRIES -lt $MAX_RETRIES ]; do
+                RETRIES=$((RETRIES+1))
+                echo "Checking health... ($RETRIES/$MAX_RETRIES)"
+                sleep 5
+
+                # 헬스 체크 요청 (/health 엔드포인트가 없으면 메인 페이지 등으로 변경)
+                # curl이 실패해도 스크립트가 중단되지 않도록 || echo "000" 처리
+                HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:$PORT/health || echo "000")
+
+                if [ "$HTTP_CODE" == "200" ]; then
+                    echo "✅ [Success] 서버가 정상적으로 응답합니다! (HTTP 200)"
+                    SUCCESS="true"
+                    break
+                fi
+            done
+
+            # ==========================================
+            # 5. 결과 처리 (성공 or 롤백)
+            # ==========================================
+            if [ "$SUCCESS" == "true" ]; then
+                echo "=== [Deploy] 배포 성공 마무리 작업 ==="
                 sudo docker image prune -f
+                sudo docker logout
+                exit 0
             else
-                echo "❌ 배포 실패! (HTTP Code: $HTTP_CODE). 롤백을 시작합니다."
-            
-                # 실패한 컨테이너 삭제
+                echo "❌ [Fail] 100초 동안 서버가 응답하지 않습니다. (Last Code: $HTTP_CODE)"
+                echo "롤백 프로세스를 시작합니다..."
+
+                # ------------------------------------------
+                # 롤백 프로세스
+                # ------------------------------------------
+                echo "=== [Rollback] 실패한 컨테이너 삭제 ==="
                 sudo docker stop $CONTAINER_NAME
                 sudo docker rm $CONTAINER_NAME
-            
-                # 백업 이미지로 재실행
-                echo "🔄 백업 이미지($IMAGE_NAME:$BACKUP_TAG)로 복구 중..."
+
+                echo "=== [Rollback] 백업 이미지로 복구 시작 ==="
                 sudo docker run -d \
                   --name $CONTAINER_NAME \
                   -p $PORT:$PORT \
-                  $IMAGE_NAME:$BACKUP_TAG
+                  $IMAGE_FULL_NAME:$BACKUP_TAG
+
+                echo "🔄 [Rollback] 롤백 완료. 이전 버전이 실행 중입니다."
+                sudo docker logout
             
-                echo "롤백 완료. 이전 버전이 실행되었습니다."
-                exit 1 # GitHub Actions를 실패로 처리하기 위해 종료 코드 1 반환
+                # GitHub Actions를 실패로 마킹
+                exit 1
             fi
+#      - name: Deploy with Rollback Strategy
+#        uses: appleboy/ssh-action@master
+#        with:
+#          host: ${{ env.SERVER_HOST }}
+#          username: ${{ env.SERVER_HOST_NAME }}
+#          key: ${{ env.SERVER_SSH_PRIVATE_KEY }}
+#          script: |
+#            # 변수 설정
+#            CONTAINER_NAME="${{ env.DOCKER_CONTAINER_NAME }}"
+#            IMAGE_NAME="${{ env.DOCKER_NAME }}/${{ env.DOCKER_IMAGE_NAME }}"
+#            NEW_VERSION="${{ env.DOCKER_IMAGE_VERSION }}"
+#            BACKUP_TAG="backup"
+#            PORT="8080"
+#
+#            echo "=== 1. Docker Hub 로그인 ==="
+#            echo "${{ env.DOCKER_HUB_TOKEN }}" | sudo docker login -u "${{ env.DOCKER_NAME }}" --password-stdin
+#
+#            echo "=== 2. 새 이미지 미리 다운로드 (Pull) ==="
+#            sudo docker pull $IMAGE_NAME:$NEW_VERSION
+#
+#            echo "=== 3. 현재 실행 중인 이미지 백업 (Tagging) ==="
+#            # 현재 실행 중인 컨테이너가 있다면, 그 이미지를 backup 태그로 지정
+#            if [ "$(sudo docker ps -q -f name=$CONTAINER_NAME)" ]; then
+#                CURRENT_IMAGE_ID=$(sudo docker inspect --format='{{.Image}}' $CONTAINER_NAME)
+#                sudo docker tag $CURRENT_IMAGE_ID $IMAGE_NAME:$BACKUP_TAG
+#                echo "현재 버전을 $IMAGE_NAME:$BACKUP_TAG 로 백업했습니다."
+#            else
+#                echo "실행 중인 컨테이너가 없습니다. 백업을 생략합니다."
+#            fi
+#
+#            echo "=== 4. 기존 컨테이너 중지 및 삭제 ==="
+#            sudo docker stop $CONTAINER_NAME || true
+#            sudo docker rm $CONTAINER_NAME || true
+#
+#            echo "=== 5. 새 버전 컨테이너 실행 ==="
+#            sudo docker run -d \
+#              --name $CONTAINER_NAME \
+#              -p $PORT:$PORT \
+#              $IMAGE_NAME:$NEW_VERSION
+#
+#            echo "=== 6. 헬스 체크 (Health Check) ==="
+#            echo "컨테이너 구동 대기 중 (100초)..."
+#            sleep 100
+#
+#            # /health 엔드포인트가 있다고 가정 (없으면 메인 페이지나 다른 API로 변경 필요)
+#            # curl 명령어로 상태 코드 확인
+#            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:$PORT/health || echo "000")
+#
+#            if [ "$HTTP_CODE" == "200" ]; then
+#                echo "✅ 배포 성공! (HTTP 200 OK)"
+#                # (선택사항) 불필요한 이미지 정리 (dangling images)
+#                sudo docker image prune -f
+#            else
+#                echo "❌ 배포 실패! (HTTP Code: $HTTP_CODE). 롤백을 시작합니다."
+#
+#                # 실패한 컨테이너 삭제
+#                sudo docker stop $CONTAINER_NAME
+#                sudo docker rm $CONTAINER_NAME
+#
+#                # 백업 이미지로 재실행
+#                echo "🔄 백업 이미지($IMAGE_NAME:$BACKUP_TAG)로 복구 중..."
+#                sudo docker run -d \
+#                  --name $CONTAINER_NAME \
+#                  -p $PORT:$PORT \
+#                  $IMAGE_NAME:$BACKUP_TAG
+#
+#                echo "롤백 완료. 이전 버전이 실행되었습니다."
+#                exit 1 # GitHub Actions를 실패로 처리하기 위해 종료 코드 1 반환
+#            fi
 #      - name: Deploy
 #        uses: appleboy/ssh-action@master
 #        with:
