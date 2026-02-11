@@ -147,8 +147,6 @@ jobs:
                 # 성공 시 정리 작업
                 sudo docker image prune -f
                 sudo docker logout ${{ env.NCR_REGISTRY_PUBLIC_URI }}
-                rm ~/application.yml
-                rm -rf ~/firebase
                 exit 0
             else
                 echo "❌ [Fail] 100초 동안 서버가 응답하지 않습니다. (Last Code: $HTTP_CODE)"
