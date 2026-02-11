@@ -10,7 +10,7 @@ import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 
-@Profile("prod")
+//@Profile("prod")
 @Component
 class SlackScheduler(
     private val activeMemberStatQueryService : ActiveMemberStatQueryService,
