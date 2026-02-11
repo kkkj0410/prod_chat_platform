@@ -80,12 +80,6 @@ jobs:
             BACKUP_TAG="backup"
             PORT=8080
             
-            echo "=== [Deploy] 설정 파일 호스트 생성 ==="
-            mkdir -p ~/firebase
-            echo "${{ env.APPLICATION_PROD }}" > ~/application.yml
-            echo '${{ env.FIREBASE_KEY }}' > ~/firebase/firebase-key.json
-            chmod 600 ~/application.yml ~/firebase/firebase-key.json
-            
             echo "=== [Deploy] Docker Hub 로그인 ==="
             echo "${{ env.NHN_SECRET_ACCESS_KEY }}" | sudo docker login ${{ env.NCR_REGISTRY_PUBLIC_URI }} \
               -u "${{ env.NHN_USER_ACCESS_KEY }}" --password-stdin
@@ -117,9 +111,6 @@ jobs:
               -v ~/server_logs:/logs \
               $IMAGE_FULL_NAME:$NEW_VERSION
             
-            echo "=== [Deploy] 설정 파일 주입 (Copy) ==="
-            sudo docker cp ~/application.yml $CONTAINER_NAME:/app/resources/application.yml
-            sudo docker cp ~/firebase/firebase-key.json $CONTAINER_NAME:/app/resources/firebase/firebase-key.json
             
             echo "=== [Deploy] 컨테이너 시작 (Start) ==="
             sudo docker start $CONTAINER_NAME
@@ -175,21 +166,14 @@ jobs:
                   -v ~/server_logs:/logs \
                   $IMAGE_FULL_NAME:$BACKUP_TAG
             
-                # 롤백된 컨테이너에도 설정 파일 다시 주입 필수!
-                sudo docker cp ~/application.yml $CONTAINER_NAME:/app/resources/application.yml
-                sudo docker cp ~/firebase/firebase-key.json $CONTAINER_NAME:/app/resources/firebase/firebase-key.json
-            
                 sudo docker start $CONTAINER_NAME
             
                 echo "🔄 [Rollback] 롤백 완료. 이전 버전이 실행 중입니다."
             
-                # 롤백 후에도 파일 정리는 해야 함
-                rm ~/application.yml
-                rm -rf ~/firebase
-            
                 # GitHub Actions를 실패로 마킹
                 exit 1
             fi
+
 #      - name: Deploy to WAS 1
 #        uses: appleboy/ssh-action@master
 #        with:
