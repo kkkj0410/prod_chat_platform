@@ -97,6 +97,9 @@ class ActiveMemberStatQueryServiceTest @Autowired constructor(
         assertThat(count).isEqualTo(2L)
     }
 
+
+
+
     @DisplayName("이번달 활성 회원 개수를 조회한다.")
     @Test
     fun countMonthlyActiveMembers() {
@@ -141,10 +144,17 @@ class ActiveMemberStatQueryServiceTest @Autowired constructor(
         )
         activeMemberStatRepository.save(lastMonthActiveMemberStat)
 
+        val startDate = time.nowLocalDate.withDayOfMonth(1)
+        val endDate = time.nowLocalDate
         // when
-        val count = activeMemberStatQueryService.countMonthlyActiveMembers(time.nowLocalDate)
+        val count = activeMemberStatQueryService.countMonthlyActiveMembers(
+            startDate = startDate,
+            endDate = endDate
+        )
 
         // then
         assertThat(count).isEqualTo(2L)
     }
+
+
 }

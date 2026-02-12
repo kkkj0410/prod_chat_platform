@@ -11,23 +11,28 @@ class ApiStatRepositoryImpl(
     private val queryFactory: JPAQueryFactory,
 ) : ApiStatRepositoryCustom {
 
-    override fun findApiStatTop(statDate: LocalDate, limit : Int): List<ApiStat> {
 
-        val excluded = ApiStatPathMeta.entries
-            .filter { it.excludeFromTop }
+    override fun findApiStatTop(statDate: LocalDate, limit: Int): List<ApiStat> {
+
+        val excludedMetas = ApiStatPathMeta.entries
+            .filter { !it.isInclude }
 
         val excludeBuilder = BooleanBuilder()
 
-        excluded.forEach {
-            excludeBuilder.or(
-                apiStat.method.eq(it.method)
-                    .and(apiStat.path.eq(it.path))
-            )
+        excludedMetas.forEach { meta ->
+            val condition = if (meta.path.contains("*")) {
+                apiStat.method.eq(meta.method)
+                    .and(apiStat.path.like(meta.path.replace("*", "%")))
+            } else {
+                apiStat.method.eq(meta.method)
+                    .and(apiStat.path.eq(meta.path))
+            }
+
+            excludeBuilder.or(condition)
         }
 
         return queryFactory
-            .select(apiStat)
-            .from(apiStat)
+            .selectFrom(apiStat)
             .where(
                 apiStat.statDate.eq(statDate),
                 excludeBuilder.not()

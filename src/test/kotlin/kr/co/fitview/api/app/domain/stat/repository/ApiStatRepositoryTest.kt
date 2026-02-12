@@ -170,6 +170,43 @@ class ApiStatRepositoryTest @Autowired constructor(
         assertThat(apiStats[4].id!!).isEqualTo(apiStat1.id!!)
     }
 
+    @DisplayName("최고 사용량 API 조회 시, * 별칭을 가지는 path의 API는 모두 제외한다.")
+    @Test
+    fun findApiStatTopExcludeStar() {
+        // given
+        val apiStat = ApiStat(
+            statDate = time.nowLocalDate,
+            method = ApiStatMethod.GET,
+            path = "/api/v1/hello1/{id}",
+            count = 500L
+        )
+        apiStatRepository.save(apiStat)
+
+        val excludePathStar = "/api/v1/admins/*"
+        val excludeApiStat1 = ApiStat(
+            statDate = time.nowLocalDate,
+            method = ApiStatMethod.GET,
+            path = "/api/v1/admins/abc",
+            count = 100000L
+        )
+        apiStatRepository.save(excludeApiStat1)
+
+        val excludeApiStat2 = ApiStat(
+            statDate = time.nowLocalDate,
+            method = ApiStatMethod.POST,
+            path = "/api/v1/admins/abc/bcd",
+            count = 100000L
+        )
+        apiStatRepository.save(excludeApiStat2)
+
+        // when
+        val apiStats = apiStatRepository.findApiStatTop(time.nowLocalDate, 5)
+
+        // then
+        assertThat(apiStats).hasSize(1)
+        assertThat(apiStats[0].id!!).isEqualTo(apiStat.id!!)
+    }
+
     @DisplayName("api 통계에 사용 횟수를 증가시킨다.")
     @Test
     fun increaseCountBy() {
