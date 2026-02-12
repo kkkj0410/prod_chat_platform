@@ -800,4 +800,35 @@ class MemberRepositoryImpl(
 
         return SliceImpl(finalContent, PageRequest.of(0, size), hasNext)
     }
+
+    override fun countMemberByCreatedAtDate(date: LocalDate): Int {
+        val start = date.atStartOfDay()
+        val end = date.plusDays(1).atStartOfDay()
+
+        return queryFactory
+            .select(member.count())
+            .from(member)
+            .where(
+                member.createdAt.goe(start),
+                member.createdAt.lt(end),
+                member.role.eq(Role.USER)
+            )
+            .fetchOne()?.toInt() ?: 0
+    }
+
+    override fun countNotSignupMemberByCreatedAtDate(date: LocalDate): Int {
+        val start = date.atStartOfDay()
+        val end = date.plusDays(1).atStartOfDay()
+
+        return queryFactory
+            .select(member.count())
+            .from(member)
+            .where(
+                member.createdAt.goe(start),
+                member.createdAt.lt(end),
+                member.role.eq(Role.USER),
+                member.isSignup.eq(false),
+            )
+            .fetchOne()?.toInt() ?: 0
+    }
 }

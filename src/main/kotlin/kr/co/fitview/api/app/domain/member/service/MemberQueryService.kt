@@ -28,6 +28,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Slice
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDate
 import kotlin.math.cos
 import kotlin.random.Random
 
@@ -286,6 +287,14 @@ class MemberQueryService(
 
     fun findDeletedMemberFrom(memberId : Long) : Member?{
         return memberRepository.findByIdAndDeletedAtIsNotNull(memberId)
+    }
+
+    fun countMemberFromCreatedAtDate(date : LocalDate) : Int{
+        return memberRepository.countMemberByCreatedAtDate(date)
+    }
+
+    fun countNotSignupMemberFromCreatedAtDate(date : LocalDate) : Int{
+        return memberRepository.countNotSignupMemberByCreatedAtDate(date)
     }
 
     private fun validateDuplicatedEmail(member: Member) {
