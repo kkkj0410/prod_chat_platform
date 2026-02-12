@@ -19,14 +19,11 @@ class ActiveMemberStatQueryService(
     }
 
     fun countDailyActiveMembers(statDate: LocalDate): Long{
-        return activeMemberStatRepository.countByStatDate(statDate)
+        return activeMemberStatRepository.countActiveMemberStatByStatDate(statDate)
     }
 
-    fun countMonthlyActiveMembers(statDate: LocalDate): Long {
-        val startDate = statDate.withDayOfMonth(1)
-        val endDate = statDate.withDayOfMonth(statDate.lengthOfMonth())
-
-        return activeMemberStatRepository.countByStatDateBetween(startDate, endDate)
+    fun countMonthlyActiveMembers(startDate: LocalDate, endDate : LocalDate): Long {
+        return activeMemberStatRepository.countActiveMemberStatByStatDateBetween(startDate, endDate)
     }
 
 }

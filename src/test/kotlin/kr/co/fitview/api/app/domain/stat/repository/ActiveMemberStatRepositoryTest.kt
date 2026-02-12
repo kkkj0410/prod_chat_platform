@@ -48,7 +48,7 @@ class ActiveMemberStatRepositoryTest @Autowired constructor(
 
     @DisplayName("특정날 활성화한 회원 개수를 조회한다.")
     @Test
-    fun countByStatDate() {
+    fun countActiveMemberStatByStatDate() {
         // given
         val member = Member(
             email = "email",
@@ -90,7 +90,57 @@ class ActiveMemberStatRepositoryTest @Autowired constructor(
         activeMemberStatRepository.save(yesterdayActiveMemberStat)
 
         // when
-        val count = activeMemberStatRepository.countByStatDate(time.nowLocalDate)
+        val count = activeMemberStatRepository.countActiveMemberStatByStatDate(time.nowLocalDate)
+
+        // then
+        assertThat(count).isEqualTo(2L)
+    }
+
+    @DisplayName("특정날 활성화한 회원 개수를 조회 시, 어드민 계정은 생략한다.")
+    @Test
+    fun countActiveMemberStatByStatDateNotAdmin() {
+        // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        memberRepository.save(member)
+
+        val member2 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        memberRepository.save(member2)
+
+        val member3 = Member(
+            email = "email",
+            password = "password",
+            role = Role.ADMIN,
+        )
+        memberRepository.save(member3)
+
+        val activeMemberStat = ActiveMemberStat.of(
+            member = member,
+            statDate = time.nowLocalDate
+        )
+        activeMemberStatRepository.save(activeMemberStat)
+
+        val activeMemberStat2 = ActiveMemberStat.of(
+            member = member2,
+            statDate = time.nowLocalDate
+        )
+        activeMemberStatRepository.save(activeMemberStat2)
+
+        val yesterdayActiveMemberStat = ActiveMemberStat.of(
+            member = member3,
+            statDate = time.nowLocalDate
+        )
+        activeMemberStatRepository.save(yesterdayActiveMemberStat)
+
+        // when
+        val count = activeMemberStatRepository.countActiveMemberStatByStatDate(time.nowLocalDate)
 
         // then
         assertThat(count).isEqualTo(2L)
@@ -98,7 +148,7 @@ class ActiveMemberStatRepositoryTest @Autowired constructor(
 
     @DisplayName("주어진 기간의 활성 회원 개수를 조회한다.")
     @Test
-    fun countByStatDateBetween() {
+    fun countActiveMemberStatByStatDateBetween() {
         // given
         val member = Member(
             email = "email",
@@ -140,9 +190,64 @@ class ActiveMemberStatRepositoryTest @Autowired constructor(
         activeMemberStatRepository.save(activeMemberStat3)
 
         // when
-        val count = activeMemberStatRepository.countByStatDateBetween(
+        val count = activeMemberStatRepository.countActiveMemberStatByStatDateBetween(
             startDate = time.nowLocalDate.minusDays(1),
             endDate = time.nowLocalDate
+        )
+
+        // then
+        assertThat(count).isEqualTo(2L)
+    }
+
+    @DisplayName("이번달 활성 회원 개수를 조회 시, 어드민 계정은 생략한다.")
+    @Test
+    fun countActiveMemberStatByStatDateBetweenNotAdmin() {
+        // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        memberRepository.save(member)
+
+        val member2 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        memberRepository.save(member2)
+
+        val member3 = Member(
+            email = "email",
+            password = "password",
+            role = Role.ADMIN,
+        )
+        memberRepository.save(member3)
+
+        val activeMemberStat = ActiveMemberStat.of(
+            member = member,
+            statDate = time.nowLocalDate
+        )
+        activeMemberStatRepository.save(activeMemberStat)
+
+        val activeMemberStat2 = ActiveMemberStat.of(
+            member = member2,
+            statDate = time.nowLocalDate
+        )
+        activeMemberStatRepository.save(activeMemberStat2)
+
+        val lastMonthActiveMemberStat = ActiveMemberStat.of(
+            member = member3,
+            statDate = time.nowLocalDate
+        )
+        activeMemberStatRepository.save(lastMonthActiveMemberStat)
+
+        val startDate = time.nowLocalDate.withDayOfMonth(1)
+        val endDate = time.nowLocalDate
+        // when
+        val count = activeMemberStatRepository.countActiveMemberStatByStatDateBetween(
+            startDate = startDate,
+            endDate = endDate
         )
 
         // then

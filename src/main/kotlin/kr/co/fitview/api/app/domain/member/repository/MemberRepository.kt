@@ -2,6 +2,7 @@ package kr.co.fitview.api.app.domain.member.repository
 
 import kr.co.fitview.api.app.domain.member.entity.Member
 import org.springframework.data.jpa.repository.JpaRepository
+import java.time.LocalDate
 
 interface MemberRepository : JpaRepository<Member, Long>, MemberRepositoryCustom {
 
@@ -12,5 +13,6 @@ interface MemberRepository : JpaRepository<Member, Long>, MemberRepositoryCustom
     fun findByProviderIdAndDeletedAtIsNull(providerId : String) : Member?
 
     fun findByIdAndDeletedAtIsNotNull(memberId: Long): Member?
+
 
 }

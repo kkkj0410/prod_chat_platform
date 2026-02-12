@@ -3037,4 +3037,118 @@ class MemberRepositoryTest@Autowired constructor(
         assertThat(findMember!!.id).isEqualTo(member2.id!!)
     }
 
+    @DisplayName("특정일에 계정을 생성한 전체 회원 개수를 조회한다.")
+    @Test
+    fun countMemberByCreatedAtDate() {
+        // given
+        val member1 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+            provider = OAuth2Provider.APPLE
+        )
+        val member2 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+            provider = null
+        )
+        memberRepository.save(member1)
+        memberRepository.save(member2)
+
+        // when
+        val count = memberRepository.countMemberByCreatedAtDate(time.nowLocalDate)
+
+        // then
+        assertThat(count).isEqualTo(2)
+    }
+
+    @DisplayName("특정일에 계정을 생성한 전체 회원 개수를 조회 시, 어드민 계정은 생략한다.")
+    @Test
+    fun countMemberByCreatedAtDateNotAdmin() {
+        // given
+        val member1 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+            provider = OAuth2Provider.APPLE
+        )
+        val member2 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+            provider = null
+        )
+        val admin = Member(
+            email = "email",
+            password = "password",
+            role = Role.ADMIN,
+            provider = null
+        )
+        memberRepository.save(member1)
+        memberRepository.save(member2)
+        memberRepository.save(admin)
+
+        // when
+        val count = memberRepository.countMemberByCreatedAtDate(time.nowLocalDate)
+
+        // then
+        assertThat(count).isEqualTo(2)
+    }
+
+    @DisplayName("특정일 기준으로 회원가입을 하지 않은 회원을 조회한다.")
+    @Test
+    fun countNotSignupMemberByCreatedAtDate() {
+        // given
+        val member1 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+            provider = OAuth2Provider.APPLE,
+            isSignup = true
+        )
+        val member2 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+            provider = null,
+            isSignup = false
+        )
+        memberRepository.save(member1)
+        memberRepository.save(member2)
+
+        // when
+        val count = memberRepository.countNotSignupMemberByCreatedAtDate(time.nowLocalDate)
+
+        // then
+        assertThat(count).isEqualTo(1)
+    }
+
+    @DisplayName("회원가입하지 않은 회원 조회 시, 어드민 계정은 생략한다.")
+    @Test
+    fun countNotSignupMemberByCreatedAtDateNotAdmin() {
+        // given
+        val member1 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+            provider = OAuth2Provider.APPLE,
+            isSignup = false
+        )
+        val admin = Member(
+            email = "email",
+            password = "password",
+            role = Role.ADMIN,
+            isSignup = false
+        )
+        memberRepository.save(member1)
+        memberRepository.save(admin)
+
+        // when
+        val count = memberRepository.countNotSignupMemberByCreatedAtDate(time.nowLocalDate)
+
+        // then
+        assertThat(count).isEqualTo(1)
+    }
+
 }
