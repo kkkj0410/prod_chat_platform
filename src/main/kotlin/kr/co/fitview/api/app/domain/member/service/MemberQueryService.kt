@@ -219,7 +219,7 @@ class MemberQueryService(
 
         val response : List<MemberRecommendationResponse>
 
-        if(findMemberByRecommendations.size == size){
+        if(findMemberByRecommendations.size >= size){
             response = randomCustom.shuffled(seed, findMemberByRecommendations)
         }
         else{
