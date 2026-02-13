@@ -134,6 +134,13 @@ enum class ApiStatPathMeta(
         isInclude = true
     ),
 
+    OAUTH2_LOGIN(
+        method = ApiStatMethod.POST,
+        path = "/api/v1/oauth2/login",
+        description = "소셜 로그인",
+        isInclude = true
+    ),
+
     ALL_GET_ADMINS(
         method = ApiStatMethod.GET,
         path = "/api/v1/admins/*",

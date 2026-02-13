@@ -2047,6 +2047,78 @@ class MemberRepositoryTest@Autowired constructor(
                 tuple(matchMember1.id!!, "update1", "updateMember1Workout1"),
             )
     }
+     @DisplayName("추천 핏버디 조회 시, 조회 사이즈를 넘지 않는다.")
+    @Test
+    fun findMemberWithinRecommendationNotExceedSize() {
+        // given
+        val me = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(me)
+        val signupRequest = TestDataFactory.oAuth2SignupRequest(
+            workoutExperience = MemberWorkoutExperience.FOUR_TO_SIX_YEARS,
+            workoutStyle = MemberWorkoutStyle.PARTNER,
+            workoutGoal = MemberWorkoutGoal.STRENGTH_GAIN
+        )
+        oAuth2Service.signup(signupRequest, me.id!!)
+
+         val matchMember1 = Member(
+             email = "email1",
+             password = "password1",
+             role = Role.USER,
+         )
+         memberRepository.save(matchMember1)
+         val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+             nickname = "update1",
+             workoutExperience = MemberWorkoutExperience.JUST_STARTED,
+             workoutStyle = MemberWorkoutStyle.PARTNER,
+             workoutGoal = MemberWorkoutGoal.STRENGTH_GAIN,
+             workoutImageUrls = listOf("updateMember1Workout1", "updateMember1Workout2")
+         )
+         oAuth2Service.signup(signupRequest2, matchMember1.id!!)
+
+         val matchMember2 = Member(
+             email = "email1",
+             password = "password1",
+             role = Role.USER,
+         )
+         memberRepository.save(matchMember2)
+         val signupRequest3 = TestDataFactory.oAuth2SignupRequest(
+             nickname = "update2",
+             workoutExperience = MemberWorkoutExperience.FOUR_TO_SIX_YEARS,
+             workoutStyle = MemberWorkoutStyle.TENSION,
+             workoutGoal = MemberWorkoutGoal.STRENGTH_GAIN,
+             workoutImageUrls = listOf("updateMember2Workout1", "updateMember2Workout2")
+         )
+         oAuth2Service.signup(signupRequest3, matchMember2.id!!)
+
+         val matchMember3 = Member(
+             email = "email1",
+             password = "password1",
+             role = Role.USER,
+         )
+         memberRepository.save(matchMember3)
+         val signupRequest4 = TestDataFactory.oAuth2SignupRequest(
+             nickname = "update3",
+             workoutExperience = MemberWorkoutExperience.OVER_SEVEN_YEARS,
+             workoutStyle = MemberWorkoutStyle.PARTNER,
+             workoutGoal = MemberWorkoutGoal.STRENGTH_GAIN,
+             workoutImageUrls = listOf("updateMember3Workout1", "updateMember3Workout2")
+         )
+         oAuth2Service.signup(signupRequest4, matchMember3.id!!)
+
+        // when
+        val response = memberRepository.findMemberWithinRecommendation(
+            member = me,
+            randomMemberId = matchMember3.id!!,
+            size = 2
+        )
+
+        // then
+        assertThat(response).hasSize(2)
+    }
 
     @DisplayName("추천 핏버디에서 요구 개수만큼 조회를 못하면, 서울 인원으로 조회")
     @Test
@@ -2214,6 +2286,22 @@ class MemberRepositoryTest@Autowired constructor(
 
         // then
         assertThat(response).isEmpty()
+    }
+
+    @DisplayName("추천 핏버디 나머지 서울 인원 조회 시, size가 0이면 빈 배열을 반환한다.")
+    @Test
+    fun findMemberByNotMemberIdsWithinRecommendationsAndSeoulIsEmpty() {
+        // given
+
+        // when
+        val response = memberRepository.findMemberByNotMemberIdsWithinRecommendationsAndSeoul(
+            memberId = 1L,
+            memberIds = listOf(1,2,3),
+            size = 0
+        )
+
+        // when & then
+        assertThat(response).hasSize(0)
     }
 
 

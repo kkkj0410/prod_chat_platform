@@ -93,6 +93,11 @@ class MemberRepositoryImpl(
         size: Int,
         memberIds: List<Long>
     ): List<MemberLocalResponse> {
+
+        if (size <= 0) {
+            return emptyList()
+        }
+
         return queryFactory
             .select(
                 Projections.constructor(
@@ -130,6 +135,10 @@ class MemberRepositoryImpl(
         isFromRandom: Boolean,
         size: Int
     ): List<MemberLocalResponse> {
+
+        if (size <= 0) {
+            return emptyList()
+        }
 
         val results = queryFactory
             .select(
@@ -187,6 +196,10 @@ class MemberRepositoryImpl(
 
 
     override fun findMemberByNotMemberIdsWithinRecommendationsAndSeoul(memberId: Long, memberIds : List<Long>,size: Int): List<MemberRecommendationResponse> {
+
+        if (size <= 0) {
+            return emptyList()
+        }
 
         val findMember = queryFactory
             .select(
@@ -404,6 +417,10 @@ class MemberRepositoryImpl(
         isFromRandom : Boolean
     ): List<MemberRecommendationResponse> {
 
+        if (size <= 0) {
+            return emptyList()
+        }
+
         val targetMember = QMember("targetMember")
 
         val matchCount: NumberExpression<Int> =
@@ -460,7 +477,7 @@ class MemberRepositoryImpl(
                 findMemberByRandomMemberIdWithinRecommendation(
                     member,
                     randomMemberId,
-                    size,
+                    remain,
                     false
                 )
             else
