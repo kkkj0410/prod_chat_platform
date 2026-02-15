@@ -27,7 +27,7 @@ class ActiveMemberStatRepositoryImpl(
         endDate: LocalDate
     ): Long {
         return queryFactory
-            .select(activeMemberStat.count())
+            .select(activeMemberStat.member.id.countDistinct())
             .from(activeMemberStat)
             .join(activeMemberStat.member, member)
             .where(

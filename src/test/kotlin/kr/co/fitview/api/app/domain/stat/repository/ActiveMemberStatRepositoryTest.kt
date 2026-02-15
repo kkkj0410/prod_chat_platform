@@ -10,6 +10,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import java.time.LocalDate
 
 class ActiveMemberStatRepositoryTest @Autowired constructor(
     private val memberRepository : MemberRepository,
@@ -252,5 +253,45 @@ class ActiveMemberStatRepositoryTest @Autowired constructor(
 
         // then
         assertThat(count).isEqualTo(2L)
+    }
+
+    @DisplayName("주어진 기간의 활성 회원 개수 조회 시, 중복 회원은 개수에 포함되지 않는다.")
+    @Test
+    fun countActiveMemberStatByStatDateBetweenUniqueMember() {
+        // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        memberRepository.save(member)
+
+
+        val activeMemberStat = ActiveMemberStat.of(
+            member = member,
+            statDate = LocalDate.of(2025, 5, 1)
+        )
+        activeMemberStatRepository.save(activeMemberStat)
+
+        val activeMemberStat2 = ActiveMemberStat.of(
+            member = member,
+            statDate = LocalDate.of(2025, 5, 2)
+        )
+        activeMemberStatRepository.save(activeMemberStat2)
+
+        val activeMemberStat3 = ActiveMemberStat.of(
+            member = member,
+            statDate = LocalDate.of(2025, 5, 3)
+        )
+        activeMemberStatRepository.save(activeMemberStat3)
+
+        // when
+        val count = activeMemberStatRepository.countActiveMemberStatByStatDateBetween(
+            startDate = LocalDate.of(2025, 5, 1),
+            endDate = LocalDate.of(2025, 5, 30)
+        )
+
+        // then
+        assertThat(count).isEqualTo(1L)
     }
 }
