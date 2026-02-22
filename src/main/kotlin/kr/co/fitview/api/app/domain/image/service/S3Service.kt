@@ -38,7 +38,7 @@ class S3Service(
 
         val fullImageName = createFullImageName(request)
 
-        val presignedUrl = createPresignedUrl(fullImageName, request.imageByte)
+        val presignedUrl = createPresignedUrl(fullImageName, request.imageByte, request.contentType)
 
         val accessUrl = getAccessUrl(fullImageName)
 
@@ -50,13 +50,14 @@ class S3Service(
 
     private fun createPresignedUrl(
         fullFileName: String,
-        imageByte: Long
+        imageByte: Long,
+        contentType : String?
     ): String {
         if (isImageTooLarge(imageByte)) {
             throw GlobalException(ImageErrorCode.S3_IMAGE_TOO_LARGE)
         }
 
-        val putObjectRequest = getPutObjectRequest(fullFileName, imageByte)
+        val putObjectRequest = getPutObjectRequest(fullFileName, imageByte, contentType)
 
         val putObjectPresignRequest = getPutObjectPresignRequest(putObjectRequest)
 
@@ -65,11 +66,12 @@ class S3Service(
 
     private fun isImageTooLarge(imageByte: Long) = imageByte > s3Config.maxImageByte
 
-    private fun getPutObjectRequest(fullFileName: String, imageByte: Long): PutObjectRequest =
+    private fun getPutObjectRequest(fullFileName: String, imageByte: Long, contentType : String?): PutObjectRequest =
         PutObjectRequest.builder()
             .bucket(s3Config.bucket)
             .key(fullFileName)
             .contentLength(imageByte)
+            .contentType(contentType)
             .build()
 
     private fun getPutObjectPresignRequest(putObjectRequest: PutObjectRequest): PutObjectPresignRequest =

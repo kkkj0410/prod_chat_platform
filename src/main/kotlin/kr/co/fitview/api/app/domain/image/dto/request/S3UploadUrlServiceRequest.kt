@@ -7,6 +7,8 @@ data class S3UploadUrlServiceRequest(
     val prefix : S3Prefix,
 
     val imageByte : Long,
+
+    val contentType : String?
 ){
 
 }

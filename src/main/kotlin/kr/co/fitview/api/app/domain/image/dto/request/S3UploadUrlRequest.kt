@@ -14,11 +14,14 @@ data class S3UploadUrlRequest(
     @field:Min(value = 1, message = "imageByte must be at least 1 byte")
     val imageByte : Long?,
 
+    val contentType : String?,
+
     ){
     fun toServiceRequest() : S3UploadUrlServiceRequest {
         return S3UploadUrlServiceRequest(
             prefix = prefix!!,
             imageByte = imageByte!!,
+            contentType = contentType
         )
     }
 
