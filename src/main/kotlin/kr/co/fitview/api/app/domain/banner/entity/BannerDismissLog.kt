@@ -11,34 +11,34 @@ import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import jakarta.validation.constraints.NotNull
 import kr.co.fitview.api.app.domain.member.entity.Member
+import kr.co.fitview.api.app.global.entity.BaseLogEntity
 import org.hibernate.annotations.ColumnDefault
 import java.time.Instant
+import java.time.LocalDateTime
 
 @Entity
 @Table(name = "banner_dismiss_log")
-open class BannerDismissLog {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "banner_dismiss_log_id", nullable = false)
-    open var id: Long? = null
+open class BannerDismissLog(
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "member_id", nullable = false)
-    open var member: Member? = null
+    open var member: Member? = null,
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "banner_id", nullable = false)
-    open var banner: Banner? = null
-
-    @NotNull
-    @ColumnDefault("CURRENT_TIMESTAMP")
-    @Column(name = "created_at", nullable = false)
-    open var createdAt: Instant? = null
+    open var banner: Banner? = null,
 
     @NotNull
     @Column(name = "expires_at", nullable = false)
-    open var expiresAt: Instant? = null
+    open var expiresAt: LocalDateTime? = null
+
+) : BaseLogEntity() {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "banner_dismiss_log_id", nullable = false)
+    open var id: Long? = null
 
 }
