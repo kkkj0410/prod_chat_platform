@@ -3,6 +3,7 @@
 
 ==== HTTP Request
 include::{snippets}/app-feedback-post/http-request.adoc[]
+include::{snippets}/app-feedback-post/request-fields.adoc[]
 include::{snippets}/app-feedback-post/request-headers.adoc[]
 
 ==== HTTP Response
@@ -15,6 +16,7 @@ include::{snippets}/app-feedback-post/response-fields.adoc[]
 
 ==== HTTP Request
 include::{snippets}/app-feedback-contact-patch/http-request.adoc[]
+include::{snippets}/app-feedback-contact-patch/request-fields.adoc[]
 include::{snippets}/app-feedback-contact-patch/request-headers.adoc[]
 include::{snippets}/app-feedback-contact-patch/path-parameters.adoc[]
 
