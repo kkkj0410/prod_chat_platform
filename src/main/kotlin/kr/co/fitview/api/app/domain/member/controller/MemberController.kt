@@ -79,11 +79,19 @@ class MemberController(
     @GetMapping("/recommendations")
     fun memberRecommendationList(
         @RequestParam(name = "size", defaultValue = "10") size: Int
-    ) : ResponseEntity<ApiResponse<List<MemberRecommendationResponse>>> {
+    ) : ResponseEntity<MemberRecommendationWithMetaResponse> {
 
-        val response = memberQueryService.findRandomMemberWithinRecommendation(securityUtil.getMemberId(), size)
+        val data = memberQueryService.findRandomMemberWithinRecommendation(securityUtil.getMemberId(), size)
 
-        return ResponseEntity.ok(ApiResponse.success(response))
+        val response = MemberRecommendationWithMetaResponse.of(
+            data = data,
+            meta = MemberRecommendationAppFeedback(
+                positionIndex = 2,
+                imageUrl = "https://static-dev.fitview.co.kr/app-feedback/card/9a6bd005-d2cc-432b-81ab-d45ad1a5b86c"
+            )
+        )
+
+        return ResponseEntity.ok(response)
     }
 
 
