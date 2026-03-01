@@ -6,6 +6,7 @@ import jakarta.persistence.FetchType
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
+import jakarta.persistence.Index
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
@@ -17,7 +18,15 @@ import java.time.Instant
 import java.time.LocalDateTime
 
 @Entity
-@Table(name = "banner_dismiss_log")
+@Table(
+    name = "banner_dismiss_log",
+    indexes = [
+        Index(
+            name = "banner_dismiss_log_member_id_banner_id_expires_at_idx",
+            columnList = "member_id, banner_id, expires_at"
+        )
+    ]
+)
 open class BannerDismissLog(
 
     @NotNull
