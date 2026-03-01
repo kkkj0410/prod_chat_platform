@@ -16,6 +16,7 @@ include::{snippets}/admin-app-feedback-list-get/response-fields.adoc[]
 
 ==== HTTP Request
 include::{snippets}/admin-app-feedback-coupon-status-patch/http-request.adoc[]
+include::{snippets}/admin-app-feedback-coupon-status-patch/request-fields.adoc[]
 include::{snippets}/admin-app-feedback-coupon-status-patch/request-headers.adoc[]
 include::{snippets}/admin-app-feedback-coupon-status-patch/path-parameters.adoc[]
 

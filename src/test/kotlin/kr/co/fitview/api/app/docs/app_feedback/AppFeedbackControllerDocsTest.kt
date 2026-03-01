@@ -74,6 +74,16 @@ class AppFeedbackControllerDocsTest : RestDocsSupport() {
                         RestDocsHeaders.authorizationHeader(Role.USER)
                     ),
 
+                    requestFields(
+                        fieldWithPath("rating").type(JsonFieldType.NUMBER)
+                            .description("평점 - 1~5점으로 제한"),
+                        fieldWithPath("painPoint").type(JsonFieldType.STRING)
+                            .description("아쉬운 점"),
+                        fieldWithPath("improvement").type(JsonFieldType.STRING)
+                            .optional()
+                            .description("바라는 점")
+                    ),
+
                     responseFields(
                         fieldWithPath("status").type(JsonFieldType.NUMBER)
                             .description("상태"),
@@ -122,6 +132,11 @@ class AppFeedbackControllerDocsTest : RestDocsSupport() {
 
                     pathParameters(
                         parameterWithName("appFeedbackId").description("앱 피드백 ID. [POST] /api/v1/app-feedbacks을 통해 설문조사를 작성하고 해당 설문조사(appFeedbackId)에 대한 사용자 정보를 추가로 넣는다.")
+                    ),
+
+                    requestFields(
+                        fieldWithPath("phoneNumber").type(JsonFieldType.STRING)
+                            .description("전화번호"),
                     ),
 
                     responseFields(
