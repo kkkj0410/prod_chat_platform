@@ -1,0 +1,25 @@
+[[banner-active-get]]
+=== 활성화된 배너 전체 조회 API - FAKE
+
+FAKE) 50% 확률로 빈 배열 가능. (x 버튼 누르는 상황을 가짜로 재현하기 위함)
+
+==== HTTP Request
+include::{snippets}/banner-active-get/http-request.adoc[]
+include::{snippets}/banner-active-get/request-headers.adoc[]
+
+==== HTTP Response
+include::{snippets}/banner-active-get/http-response.adoc[]
+include::{snippets}/banner-active-get/response-fields.adoc[]
+
+
+[[banner-dismiss-post]]
+=== 배너 무시(x버튼) API - FAKE
+
+==== HTTP Request
+include::{snippets}/banner-dismiss-post/http-request.adoc[]
+include::{snippets}/banner-dismiss-post/request-headers.adoc[]
+include::{snippets}/banner-dismiss-post/path-parameters.adoc[]
+
+==== HTTP Response
+include::{snippets}/banner-dismiss-post/http-response.adoc[]
+include::{snippets}/banner-dismiss-post/response-fields.adoc[]

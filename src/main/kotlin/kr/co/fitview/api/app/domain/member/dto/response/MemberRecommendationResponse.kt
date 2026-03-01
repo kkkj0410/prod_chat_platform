@@ -33,20 +33,26 @@ data class MemberRecommendationWithMetaResponse(
     val code: String = "ok",
     val message: String = "ok",
     val data: List<MemberRecommendationResponse>,
-    val meta: MemberRecommendationAppFeedback
+    val meta: MemberRecommendationMeta
 ) {
     companion object {
         fun of(
             data: List<MemberRecommendationResponse>,
-            meta: MemberRecommendationAppFeedback
+            appFeedback: MemberRecommendationAppFeedback?
         ): MemberRecommendationWithMetaResponse {
             return MemberRecommendationWithMetaResponse(
                 data = data,
-                meta = meta
+                meta = MemberRecommendationMeta(
+                    appFeedback = appFeedback
+                )
             )
         }
     }
 }
+
+data class MemberRecommendationMeta(
+    val appFeedback: MemberRecommendationAppFeedback?
+)
 
 data class MemberRecommendationAppFeedback(
     val positionIndex : Int,

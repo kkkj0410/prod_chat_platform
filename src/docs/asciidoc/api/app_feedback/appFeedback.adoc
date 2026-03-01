@@ -1,0 +1,23 @@
+[[app-feedback-post]]
+=== 앱 사용 설문조사 API - FAKE
+
+==== HTTP Request
+include::{snippets}/app-feedback-post/http-request.adoc[]
+include::{snippets}/app-feedback-post/request-headers.adoc[]
+
+==== HTTP Response
+include::{snippets}/app-feedback-post/http-response.adoc[]
+include::{snippets}/app-feedback-post/response-fields.adoc[]
+
+
+[[app-feedback-contact-patch]]
+=== 작성된 설문조사에 대한 추가 정보 기입 API - FAKE
+
+==== HTTP Request
+include::{snippets}/app-feedback-contact-patch/http-request.adoc[]
+include::{snippets}/app-feedback-contact-patch/request-headers.adoc[]
+include::{snippets}/app-feedback-contact-patch/path-parameters.adoc[]
+
+==== HTTP Response
+include::{snippets}/app-feedback-contact-patch/http-response.adoc[]
+include::{snippets}/app-feedback-contact-patch/response-fields.adoc[]
