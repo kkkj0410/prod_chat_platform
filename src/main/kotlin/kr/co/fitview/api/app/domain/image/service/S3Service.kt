@@ -50,7 +50,7 @@ class S3Service(
 
     private fun createPresignedUrl(
         fullFileName: String,
-        imageByte: Long
+        imageByte: Long,
     ): String {
         if (isImageTooLarge(imageByte)) {
             throw GlobalException(ImageErrorCode.S3_IMAGE_TOO_LARGE)
