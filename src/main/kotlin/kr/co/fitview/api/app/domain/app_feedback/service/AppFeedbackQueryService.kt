@@ -18,7 +18,7 @@ class AppFeedbackQueryService {
 
         return MemberRecommendationAppFeedback(
             positionIndex = 2,
-            imageUrl = "https://static-dev.fitview.co.kr/app-feedback/card/9a6bd005-d2cc-432b-81ab-d45ad1a5b86c"
+            imageUrl = "https://static-dev.fitview.co.kr/app-feedback/card/91d4f835-ea2b-492f-a207-06f83dea2c06"
         )
     }
 }
