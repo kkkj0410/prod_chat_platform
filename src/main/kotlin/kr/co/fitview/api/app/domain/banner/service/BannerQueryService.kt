@@ -22,7 +22,7 @@ class BannerQueryService {
                 BannerActiveResponse(
                     bannerId = 1L,
                     type = BannerType.APP_FEEDBACK,
-                    imageUrl = "https://static-dev.fitview.co.kr/app-feedback/banner/68ed0a37-b2a4-4792-adc9-cb673e08cf99"
+                    imageUrl = "https://static-dev.fitview.co.kr/app-feedback/banner/8a89cd06-ac20-4996-9c58-bcddc27ad760"
                 )
             )
         }
