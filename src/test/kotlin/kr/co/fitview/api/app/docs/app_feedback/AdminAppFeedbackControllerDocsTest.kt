@@ -49,6 +49,52 @@ class AdminAppFeedbackControllerDocsTest : RestDocsSupport() {
         )
     }
 
+    @DisplayName("어드민 앱 피드백 통계 조회 API")
+    @Test
+    fun appFeedbackStat() {
+        // when & then
+        mockMvc.perform(
+            get("/api/v1/admins/app-feedbacks/stats")
+                .header("Authorization", "Bearer admin-jwt-token")
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andDo(
+                document(
+                    "admin-app-feedback-stat-get",
+                    preprocessRequest(prettyPrint()),
+                    preprocessResponse(prettyPrint()),
+
+                    requestHeaders(
+                        RestDocsHeaders.authorizationHeader(Role.ADMIN)
+                    ),
+
+                    responseFields(
+                        fieldWithPath("status").type(JsonFieldType.NUMBER)
+                            .description("상태"),
+                        fieldWithPath("code").type(JsonFieldType.STRING)
+                            .description("코드"),
+                        fieldWithPath("message").type(JsonFieldType.STRING)
+                            .description("메시지"),
+                        fieldWithPath("data").type(JsonFieldType.OBJECT)
+                            .description("응답 데이터"),
+
+                        fieldWithPath("data.avgRating").type(JsonFieldType.NUMBER)
+                            .description("평균 별점"),
+                        fieldWithPath("data.satisfiedPercentage").type(JsonFieldType.NUMBER)
+                            .description("만족 응답 비율 (%)"),
+                        fieldWithPath("data.dissatisfiedPercentage").type(JsonFieldType.NUMBER)
+                            .description("미흡 응답 비율 (%)"),
+                        fieldWithPath("data.todayAppFeedbackCount").type(JsonFieldType.NUMBER)
+                            .description("오늘 응답(오늘 들어온 피드백 수)"),
+                        fieldWithPath("data.pendingCouponCount").type(JsonFieldType.NUMBER)
+                            .description("미발송 쿠폰(대기 상태 쿠폰 수)")
+                    )
+                )
+            )
+    }
+
 
     @DisplayName("어드민 앱 피드백 목록 조회 API")
     @Test
