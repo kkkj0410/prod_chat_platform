@@ -51,12 +51,17 @@ open class AppFeedback(
     @Column(name = "is_privacy_agreed", nullable = false)
     open var isPrivacyAgreed: Boolean? = null,
 
+    @Size(max = 50)
+    @Column(name = "phone_number", length = 50)
+    open var phoneNumber: String? = null
+
     ) : BaseAuditEntity(){
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "app_feedback_id", nullable = false)
     open var id: Long? = null
+
 
     companion object {
         fun of(
@@ -74,6 +79,14 @@ open class AppFeedback(
                 isPrivacyAgreed = false
             )
         }
+    }
+
+    fun applyForCoupon(phoneNumber : String) : AppFeedback{
+        this.phoneNumber = phoneNumber
+        this.isPrivacyAgreed = true
+        this.couponStatus = AppFeedbackCouponStatus.PENDING
+
+        return this
     }
 
 }

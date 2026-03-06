@@ -1,7 +1,6 @@
 package kr.co.fitview.api.app.domain.app_feedback.controller
 
 import jakarta.validation.Valid
-import kr.co.fitview.api.app.domain.address.service.AddressService
 import kr.co.fitview.api.app.domain.app_feedback.dto.request.AppFeedbackAddRequest
 import kr.co.fitview.api.app.domain.app_feedback.dto.request.AppFeedbackPhoneNumberAddRequest
 import kr.co.fitview.api.app.domain.app_feedback.dto.response.AppFeedbackAddResponse
@@ -10,7 +9,6 @@ import kr.co.fitview.api.app.global.dto.ApiResponse
 import kr.co.fitview.api.app.global.util.SecurityUtil
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import software.amazon.awssdk.core.internal.waiters.ResponseOrException.response
 
 
 @RestController
@@ -44,7 +42,7 @@ class AppFeedbackController(
 
 
     @PatchMapping("/{appFeedbackId}/contact")
-    fun appFeedbackPhoneNumberAdd(
+    fun modifyAppFeedbackCoupon(
         @PathVariable
         appFeedbackId : Long,
 
@@ -52,6 +50,12 @@ class AppFeedbackController(
         @RequestBody
         request : AppFeedbackPhoneNumberAddRequest
     ) : ResponseEntity<ApiResponse<*>> {
+
+        appFeedbackService.applyAppFeedbackForCoupon(
+            appFeedbackId = appFeedbackId,
+            request = request.toServiceRequest(),
+            memberId = securityUtil.getMemberId(),
+        )
 
 
         return ResponseEntity.ok(ApiResponse.success("ok"))

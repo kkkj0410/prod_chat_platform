@@ -56,7 +56,7 @@ class AdminAppFeedbackController(
             nickname = "테스트유저$id",
             painPoint = "이런 부분이 앱 사용 시 불편했습니다. (데이터 번호: $id)",
             improvement = if (index % 3 == 0) null else "이렇게 개선되면 더 좋을 것 같아요!",
-            phoneNumber = if (index % 4 == 0) null else "010-1234-${id.toString().padStart(4, '0')}",
+            phoneNumber = if (index % 4 == 0) null else "0101234${id.toString().padStart(4, '0')}",
             createdAt = LocalDateTime.now().minusHours(index.toLong()), // cursorAt과 무관하게 고정 시간 세팅
             coupon = AdminAppFeedbackCouponResponse.from(randomStatus)
         )
