@@ -19,4 +19,12 @@ data class AppFeedbackAddRequest(
 
 
 
-)
+){
+    fun toServiceRequest() : AppFeedbackAddServiceRequest {
+        return AppFeedbackAddServiceRequest(
+            rating = rating!!,
+            painPoint = painPoint!!,
+            improvement = improvement
+        )
+    }
+}

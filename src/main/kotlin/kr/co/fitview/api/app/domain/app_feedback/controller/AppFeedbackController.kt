@@ -5,6 +5,7 @@ import kr.co.fitview.api.app.domain.address.service.AddressService
 import kr.co.fitview.api.app.domain.app_feedback.dto.request.AppFeedbackAddRequest
 import kr.co.fitview.api.app.domain.app_feedback.dto.request.AppFeedbackPhoneNumberAddRequest
 import kr.co.fitview.api.app.domain.app_feedback.dto.response.AppFeedbackAddResponse
+import kr.co.fitview.api.app.domain.app_feedback.service.AppFeedbackService
 import kr.co.fitview.api.app.global.dto.ApiResponse
 import kr.co.fitview.api.app.global.util.SecurityUtil
 import org.springframework.http.ResponseEntity
@@ -15,6 +16,10 @@ import software.amazon.awssdk.core.internal.waiters.ResponseOrException.response
 @RestController
 @RequestMapping("/api/v1/app-feedbacks")
 class AppFeedbackController(
+
+    private val appFeedbackService : AppFeedbackService,
+    private val securityUtil : SecurityUtil,
+
 ) {
 
     @PostMapping("")
@@ -24,8 +29,13 @@ class AppFeedbackController(
         request : AppFeedbackAddRequest
     ) : ResponseEntity<ApiResponse<AppFeedbackAddResponse>> {
 
+        val savedAppFeedback = appFeedbackService.addAppFeedback(
+            request = request.toServiceRequest(),
+            memberId = securityUtil.getMemberId()
+        )
+
         val response = AppFeedbackAddResponse(
-            appFeedbackId = 1
+            appFeedbackId = savedAppFeedback.id!!
         )
 
         return ResponseEntity.ok(ApiResponse.success(response))

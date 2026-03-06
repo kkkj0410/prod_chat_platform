@@ -58,4 +58,22 @@ open class AppFeedback(
     @Column(name = "app_feedback_id", nullable = false)
     open var id: Long? = null
 
+    companion object {
+        fun of(
+            member: Member,
+            rating: Int,
+            painPoint: String,
+            improvement: String? = null,
+        ): AppFeedback {
+            return AppFeedback(
+                member = member,
+                couponStatus = AppFeedbackCouponStatus.NOT_ELIGIBLE,
+                rating = rating,
+                painPoint = painPoint,
+                improvement = improvement,
+                isPrivacyAgreed = false
+            )
+        }
+    }
+
 }
