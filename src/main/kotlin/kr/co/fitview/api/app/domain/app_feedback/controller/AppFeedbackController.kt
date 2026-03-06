@@ -57,7 +57,6 @@ class AppFeedbackController(
             memberId = securityUtil.getMemberId(),
         )
 
-
         return ResponseEntity.ok(ApiResponse.success("ok"))
     }
 

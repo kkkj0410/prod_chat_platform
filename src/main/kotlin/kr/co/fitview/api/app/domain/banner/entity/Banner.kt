@@ -47,5 +47,8 @@ open class Banner(
     @Column(name = "banner_id", nullable = false)
     open var id: Long? = null
 
+    fun getImageUrl() : String {
+        return image!!.url!!
+    }
 
 }

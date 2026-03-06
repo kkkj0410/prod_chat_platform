@@ -12,6 +12,7 @@ import kr.co.fitview.api.app.domain.auth.service.AuthService
 import kr.co.fitview.api.app.domain.auth.service.RefreshTokenService
 import kr.co.fitview.api.app.domain.auth.service.TestAuthService
 import kr.co.fitview.api.app.domain.banner.controller.BannerController
+import kr.co.fitview.api.app.domain.banner.service.BannerDismissLogService
 import kr.co.fitview.api.app.domain.banner.service.BannerQueryService
 import kr.co.fitview.api.app.domain.banner.service.BannerService
 import kr.co.fitview.api.app.domain.chat.controller.ChatController
@@ -247,4 +248,7 @@ abstract class ControllerTestSupport {
 
     @MockitoBean
     protected lateinit var appFeedbackQueryService : AppFeedbackQueryService
+
+    @MockitoBean
+    protected lateinit var bannerDismissLogService : BannerDismissLogService
 }

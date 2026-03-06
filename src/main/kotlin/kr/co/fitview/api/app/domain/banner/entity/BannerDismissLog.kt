@@ -20,12 +20,6 @@ import java.time.LocalDateTime
 @Entity
 @Table(
     name = "banner_dismiss_log",
-    indexes = [
-        Index(
-            name = "banner_dismiss_log_member_id_banner_id_expires_at_idx",
-            columnList = "member_id, banner_id, expires_at"
-        )
-    ]
 )
 open class BannerDismissLog(
 

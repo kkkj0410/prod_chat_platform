@@ -6,9 +6,11 @@ import kr.co.fitview.api.app.docs.RestDocsSupport
 import kr.co.fitview.api.app.domain.banner.controller.BannerController
 import kr.co.fitview.api.app.domain.banner.dto.response.BannerActiveResponse
 import kr.co.fitview.api.app.domain.banner.entity.enums.BannerType
+import kr.co.fitview.api.app.domain.banner.service.BannerDismissLogService
 import kr.co.fitview.api.app.domain.banner.service.BannerQueryService
 
 import kr.co.fitview.api.app.global.entity.Role
+import kr.co.fitview.api.app.global.util.SecurityUtil
 
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -31,15 +33,20 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import kotlin.jvm.java
 
 
 class BannerControllerDocsTest : RestDocsSupport() {
 
     private val bannerQueryService: BannerQueryService = mock(BannerQueryService::class.java)
+    private val bannerDismissLogService: BannerDismissLogService = mock(BannerDismissLogService::class.java)
+    private val securityUtil: SecurityUtil = mock(SecurityUtil::class.java)
 
     override fun initController(): Any {
         return BannerController(
-            bannerQueryService = bannerQueryService
+            bannerQueryService = bannerQueryService,
+            bannerDismissLogService = bannerDismissLogService,
+            securityUtil = securityUtil
         )
     }
 
@@ -47,7 +54,7 @@ class BannerControllerDocsTest : RestDocsSupport() {
     @Test
     fun bannerActiveGet() {
         // given
-        given(bannerQueryService.findActiveBanners())
+        given(bannerQueryService.findActiveBanners(any()))
             .willReturn(
                 listOf(
                     BannerActiveResponse(

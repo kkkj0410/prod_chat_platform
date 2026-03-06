@@ -7,6 +7,7 @@ import kr.co.fitview.api.app.domain.member.condition.MemberLocalCondition
 import kr.co.fitview.api.app.domain.address.dto.response.AddressResponse
 import kr.co.fitview.api.app.domain.banner.dto.response.BannerActiveResponse
 import kr.co.fitview.api.app.domain.banner.entity.enums.BannerType
+import kr.co.fitview.api.app.domain.banner.service.BannerDismissLogService
 import kr.co.fitview.api.app.domain.banner.service.BannerQueryService
 import kr.co.fitview.api.app.domain.member.condition.MemberReviewCondition
 import kr.co.fitview.api.app.domain.member.dto.request.MemberUpdateRequest
@@ -34,21 +35,31 @@ import kotlin.random.Random
 @RestController
 @RequestMapping("/api/v1/banners")
 class BannerController(
-    val bannerQueryService : BannerQueryService
+    val bannerQueryService : BannerQueryService,
+    val bannerDismissLogService : BannerDismissLogService,
+    val securityUtil : SecurityUtil
 ) {
 
 
     @GetMapping("/active")
     fun bannerActiveGet(): ResponseEntity<ApiResponse<List<BannerActiveResponse>>> {
 
-        val response = bannerQueryService.findActiveBanners()
+        val response = bannerQueryService.findActiveBanners(securityUtil.getMemberId())
 
         return ResponseEntity.ok(ApiResponse.success(response))
     }
 
     @PostMapping("/{bannerId}/dismiss")
     fun bannerDismiss(
+        @PathVariable
+        bannerId : Long
+
     ): ResponseEntity<ApiResponse<String>> {
+
+        bannerDismissLogService.addBannerDismissLog(
+            bannerId = bannerId,
+            memberId = securityUtil.getMemberId()
+        )
 
         return ResponseEntity.ok(ApiResponse.success("ok"))
     }
