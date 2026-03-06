@@ -11,12 +11,16 @@ import kotlin.random.Random
 @Service
 @Transactional(readOnly = true)
 class AppFeedbackQueryService(
-    private val appFeedbackRepository : AppFeedbackRepository
+    private val appFeedbackRepository : AppFeedbackRepository,
+    private val recommendationAppFeedbackDismissLogQueryService : RecommendationAppFeedbackDismissLogQueryService
 ) {
 
 
-    fun findAppFeedbackCard(): MemberRecommendationAppFeedback? {
-        if (Random.nextBoolean()) {
+    fun findAppFeedbackCard(memberId : Long): MemberRecommendationAppFeedback? {
+
+        val findDismissLog = recommendationAppFeedbackDismissLogQueryService.findValidDismissLog(memberId)
+
+        if(findDismissLog != null){
             return null
         }
 

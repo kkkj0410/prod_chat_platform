@@ -48,4 +48,15 @@ class AppFeedbackQueryServiceTest @Autowired constructor(
         assertThat(findAppFeedback!!.id!!).isEqualTo(appFeedback.id!!)
     }
 
+    @DisplayName("앱 설문조사 홍보 카드를 조회한다.")
+    @Test
+    fun findAppFeedbackCard() {
+        // given
+
+        // when
+
+        // then
+
+    }
+
 }

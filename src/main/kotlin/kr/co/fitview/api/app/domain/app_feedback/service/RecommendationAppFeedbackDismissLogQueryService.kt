@@ -10,22 +10,16 @@ import org.springframework.transaction.annotation.Transactional
 
 @Service
 @Transactional
-class RecommendationAppFeedbackDismissLogService(
-    private val memberQueryService: MemberQueryService,
+class RecommendationAppFeedbackDismissLogQueryService(
     private val recommendationAppFeedbackDismissLogRepository : RecommendationAppFeedbackDismissLogRepository,
     private val time : Time
 ) {
 
-    fun addDismissLog(memberId: Long) : RecommendationAppFeedbackDismissLog{
-
-        val findMember = memberQueryService.findMemberReferenceFrom(memberId)
-
-        val dismissLog = RecommendationAppFeedbackDismissLog(
-            member = findMember,
-            expiresAt = time.nowLocalDateTime.plusDays(1),
+    fun findValidDismissLog(memberId: Long) : RecommendationAppFeedbackDismissLog?{
+        return recommendationAppFeedbackDismissLogRepository.findFirstByMemberIdAndExpiresAtAfter(
+            memberId = memberId,
+            expiresAt = time.nowLocalDateTime.plusDays(1)
         )
-
-        return recommendationAppFeedbackDismissLogRepository.save(dismissLog)
     }
 
 }

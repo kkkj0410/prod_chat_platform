@@ -591,4 +591,18 @@ class MemberControllerTest : ControllerTestSupport() {
             .andExpect(jsonPath("$.data[5].memberWithdrawReasonId").value(6))
             .andExpect(jsonPath("$.data[5].displayText").value("기타"))
     }
+
+    @DisplayName("앱 설문조사 홍보물 닫기 API")
+    @Test
+    fun recommendationsAppFeedbackDismiss() {
+        // given
+
+        // when // then
+        mockMvc.perform(
+            post("/api/v1/members/recommendations/app-feedbacks/dismiss")
+                .header("Authorization", "Bearer jwt-token")
+        )
+            .andDo(print())
+            .andExpect(status().isOk())
+    }
 }

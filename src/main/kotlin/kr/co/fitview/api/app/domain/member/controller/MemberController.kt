@@ -6,6 +6,8 @@ import kr.co.fitview.api.app.domain.address.service.AddressService
 import kr.co.fitview.api.app.domain.member.condition.MemberLocalCondition
 import kr.co.fitview.api.app.domain.address.dto.response.AddressResponse
 import kr.co.fitview.api.app.domain.app_feedback.service.AppFeedbackQueryService
+import kr.co.fitview.api.app.domain.app_feedback.service.AppFeedbackService
+import kr.co.fitview.api.app.domain.app_feedback.service.RecommendationAppFeedbackDismissLogService
 import kr.co.fitview.api.app.domain.member.condition.MemberReviewCondition
 import kr.co.fitview.api.app.domain.member.dto.request.MemberUpdateRequest
 import kr.co.fitview.api.app.domain.member.dto.request.MemberWithdrawRequest
@@ -39,6 +41,7 @@ class MemberController(
     val reviewTagCountQueryService: ReviewTagCountQueryService,
     val reviewQueryService: ReviewQueryService,
     val appFeedbackQueryService : AppFeedbackQueryService,
+    val recommendationAppFeedbackDismissLogService : RecommendationAppFeedbackDismissLogService,
     val securityUtil : SecurityUtil,
     val objectMapper : ObjectMapper,
 ) {
@@ -85,7 +88,7 @@ class MemberController(
     ) : ResponseEntity<MemberRecommendationWithMetaResponse> {
 
         val data = memberQueryService.findRandomMemberWithinRecommendation(securityUtil.getMemberId(), size)
-        val appFeedback = appFeedbackQueryService.findAppFeedbackCard()
+        val appFeedback = appFeedbackQueryService.findAppFeedbackCard(securityUtil.getMemberId())
 
         val response = MemberRecommendationWithMetaResponse.of(
             data = data,
@@ -187,6 +190,8 @@ class MemberController(
     @PostMapping("/recommendations/app-feedbacks/dismiss")
     fun recommendationsAppFeedbackDismiss(
     ): ResponseEntity<ApiResponse<*>> {
+
+        recommendationAppFeedbackDismissLogService.addDismissLog(securityUtil.getMemberId())
 
         return ResponseEntity.ok(ApiResponse.success("ok"))
     }

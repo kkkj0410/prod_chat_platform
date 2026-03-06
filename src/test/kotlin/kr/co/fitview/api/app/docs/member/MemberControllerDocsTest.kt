@@ -8,6 +8,7 @@ import kr.co.fitview.api.app.domain.address.dto.response.AddressResponse
 import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
 import kr.co.fitview.api.app.domain.address.service.AddressService
 import kr.co.fitview.api.app.domain.app_feedback.service.AppFeedbackQueryService
+import kr.co.fitview.api.app.domain.app_feedback.service.RecommendationAppFeedbackDismissLogService
 import kr.co.fitview.api.app.domain.member.controller.MemberController
 import kr.co.fitview.api.app.domain.member.dto.request.Age
 import kr.co.fitview.api.app.domain.member.dto.request.MemberUpdateRequest
@@ -71,6 +72,7 @@ class MemberControllerDocsTest : RestDocsSupport() {
     private val appFeedbackQueryService: AppFeedbackQueryService = mock(AppFeedbackQueryService::class.java)
     private val reviewTagCountQueryService: ReviewTagCountQueryService = mock(ReviewTagCountQueryService::class.java)
     private val reviewQueryService: ReviewQueryService = mock(ReviewQueryService::class.java)
+    private val recommendationAppFeedbackDismissLogService: RecommendationAppFeedbackDismissLogService = mock(RecommendationAppFeedbackDismissLogService::class.java)
     private val securityUtil: SecurityUtil = mock(SecurityUtil::class.java)
 
     override fun initController(): Any {
@@ -83,6 +85,7 @@ class MemberControllerDocsTest : RestDocsSupport() {
             reviewTagCountQueryService = reviewTagCountQueryService,
             reviewQueryService = reviewQueryService,
             appFeedbackQueryService = appFeedbackQueryService,
+            recommendationAppFeedbackDismissLogService = recommendationAppFeedbackDismissLogService,
             securityUtil = securityUtil,
             objectMapper = objectMapper
         )
@@ -395,7 +398,12 @@ class MemberControllerDocsTest : RestDocsSupport() {
                 )
             )
 
-        given(appFeedbackQueryService.findAppFeedbackCard())
+        given(securityUtil.getMemberId())
+            .willReturn(
+                1L
+            )
+
+        given(appFeedbackQueryService.findAppFeedbackCard(any()))
             .willReturn(
                 MemberRecommendationAppFeedback(
                     positionIndex = 2,

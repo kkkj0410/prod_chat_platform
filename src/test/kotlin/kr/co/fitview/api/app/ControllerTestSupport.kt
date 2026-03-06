@@ -7,6 +7,7 @@ import kr.co.fitview.api.app.domain.app_feedback.controller.AdminAppFeedbackCont
 import kr.co.fitview.api.app.domain.app_feedback.controller.AppFeedbackController
 import kr.co.fitview.api.app.domain.app_feedback.service.AppFeedbackQueryService
 import kr.co.fitview.api.app.domain.app_feedback.service.AppFeedbackService
+import kr.co.fitview.api.app.domain.app_feedback.service.RecommendationAppFeedbackDismissLogService
 import kr.co.fitview.api.app.domain.auth.controller.AuthController
 import kr.co.fitview.api.app.domain.auth.service.AuthService
 import kr.co.fitview.api.app.domain.auth.service.RefreshTokenService
@@ -251,4 +252,8 @@ abstract class ControllerTestSupport {
 
     @MockitoBean
     protected lateinit var bannerDismissLogService : BannerDismissLogService
+
+    @MockitoBean
+    protected lateinit var recommendationAppFeedbackDismissLogService : RecommendationAppFeedbackDismissLogService
+
 }
