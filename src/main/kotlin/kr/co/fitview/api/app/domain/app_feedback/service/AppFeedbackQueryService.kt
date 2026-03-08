@@ -1,5 +1,6 @@
 package kr.co.fitview.api.app.domain.app_feedback.service
 
+import kr.co.fitview.api.app.domain.app_feedback.dto.response.AppFeedbackStatResponse
 import kr.co.fitview.api.app.domain.app_feedback.entity.AppFeedback
 import kr.co.fitview.api.app.domain.app_feedback.repository.AppFeedbackRepository
 import kr.co.fitview.api.app.domain.member.dto.response.MemberRecommendationAppFeedback
@@ -37,5 +38,9 @@ class AppFeedbackQueryService(
             memberId = memberId
         )
 
+    }
+
+    fun findAppFeedbackStat() : AppFeedbackStatResponse{
+        return appFeedbackRepository.findAppFeedbackStat()
     }
 }

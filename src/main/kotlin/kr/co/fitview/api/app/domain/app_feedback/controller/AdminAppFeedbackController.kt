@@ -10,6 +10,7 @@ import kr.co.fitview.api.app.domain.app_feedback.dto.response.AdminAppFeedbackRe
 import kr.co.fitview.api.app.domain.app_feedback.dto.response.AppFeedbackAddResponse
 import kr.co.fitview.api.app.domain.app_feedback.dto.response.AppFeedbackStatResponse
 import kr.co.fitview.api.app.domain.app_feedback.entity.enums.AppFeedbackCouponStatus
+import kr.co.fitview.api.app.domain.app_feedback.service.AppFeedbackQueryService
 import kr.co.fitview.api.app.global.dto.ApiResponse
 import kr.co.fitview.api.app.global.dto.SuccessCursorAtPagedResponse
 import kr.co.fitview.api.app.global.util.SecurityUtil
@@ -28,19 +29,14 @@ import kotlin.random.Random
 @RestController
 @RequestMapping("/api/v1/admins/app-feedbacks")
 class AdminAppFeedbackController(
+    private val appFeedbackQueryService : AppFeedbackQueryService
 ) {
 
     @GetMapping("/stats")
     fun appFeedbackStat(
     ): ResponseEntity<ApiResponse<AppFeedbackStatResponse>> {
 
-        val response = AppFeedbackStatResponse(
-            avgRating = 4.5,
-            satisfiedPercentage = 60,
-            dissatisfiedPercentage = 40,
-            todayAppFeedbackCount = 3,
-            pendingCouponCount = 3
-        )
+        val response = appFeedbackQueryService.findAppFeedbackStat()
 
         return ResponseEntity.ok(ApiResponse.success(response))
     }
@@ -71,6 +67,8 @@ class AdminAppFeedbackController(
         size: Int
 
     ): ResponseEntity<ApiResponse<SuccessCursorAtPagedResponse<AdminAppFeedbackResponse>>> {
+
+//        appFeedbackQueryService.findAppFeedbackList()
 
         val filteredData = if (cursorAt == null) {
             mockDatabase

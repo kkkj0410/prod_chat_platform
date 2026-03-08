@@ -7,7 +7,9 @@ import kr.co.fitview.api.app.domain.app_feedback.controller.AppFeedbackControlle
 import kr.co.fitview.api.app.domain.app_feedback.dto.request.AdminAppFeedbackStatusModifyRequest
 import kr.co.fitview.api.app.domain.app_feedback.dto.request.AppFeedbackAddRequest
 import kr.co.fitview.api.app.domain.app_feedback.dto.request.AppFeedbackPhoneNumberAddRequest
+import kr.co.fitview.api.app.domain.app_feedback.dto.response.AppFeedbackStatResponse
 import kr.co.fitview.api.app.domain.app_feedback.entity.enums.AppFeedbackCouponStatus
+import kr.co.fitview.api.app.domain.app_feedback.service.AppFeedbackQueryService
 
 import kr.co.fitview.api.app.domain.banner.controller.BannerController
 import kr.co.fitview.api.app.domain.banner.dto.response.BannerActiveResponse
@@ -15,6 +17,7 @@ import kr.co.fitview.api.app.domain.banner.entity.enums.BannerType
 import kr.co.fitview.api.app.domain.banner.service.BannerQueryService
 
 import kr.co.fitview.api.app.global.entity.Role
+import kr.co.fitview.api.app.global.util.SecurityUtil
 
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -43,15 +46,29 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 class AdminAppFeedbackControllerDocsTest : RestDocsSupport() {
 
+    private val appFeedbackQueryService: AppFeedbackQueryService = mock(AppFeedbackQueryService::class.java)
 
     override fun initController(): Any {
         return AdminAppFeedbackController(
+            appFeedbackQueryService = appFeedbackQueryService
         )
     }
 
     @DisplayName("어드민 앱 피드백 통계 조회 API")
     @Test
     fun appFeedbackStat() {
+        //given
+        given(appFeedbackQueryService.findAppFeedbackStat())
+            .willReturn(
+                AppFeedbackStatResponse(
+                    avgRating = 4.5,
+                    satisfiedPercentage = 80,
+                    dissatisfiedPercentage = 20,
+                    todayAppFeedbackCount = 10,
+                    pendingCouponCount = 5
+                )
+            )
+
         // when & then
         mockMvc.perform(
             get("/api/v1/admins/app-feedbacks/stats")
