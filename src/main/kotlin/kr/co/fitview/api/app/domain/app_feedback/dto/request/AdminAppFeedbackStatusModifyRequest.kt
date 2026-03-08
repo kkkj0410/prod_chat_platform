@@ -12,7 +12,7 @@ data class AdminAppFeedbackStatusModifyRequest(
     val appFeedbackCouponStatus: AppFeedbackCouponStatus?
 ){
 
-    @JsonIgnore // JSON 응답/요청 필드로 인식되지 않도록 숨김
+    @JsonIgnore
     @AssertTrue(message = "appFeedbackCouponStatus must be PENDING or ISSUED")
     fun isValidStatus(): Boolean {
         if (appFeedbackCouponStatus == null) return true
@@ -20,6 +20,13 @@ data class AdminAppFeedbackStatusModifyRequest(
         return appFeedbackCouponStatus in listOf(
             AppFeedbackCouponStatus.PENDING,
             AppFeedbackCouponStatus.ISSUED
+        )
+    }
+
+
+    fun toServiceRequest() : AdminAppFeedbackStatusModifyServiceRequest {
+        return AdminAppFeedbackStatusModifyServiceRequest(
+            appFeedbackCouponStatus = appFeedbackCouponStatus!!,
         )
     }
 }

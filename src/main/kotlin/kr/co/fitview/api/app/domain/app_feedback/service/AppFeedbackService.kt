@@ -1,11 +1,14 @@
 package kr.co.fitview.api.app.domain.app_feedback.service
 
+import kr.co.fitview.api.app.domain.app_feedback.dto.request.AdminAppFeedbackStatusModifyServiceRequest
 import kr.co.fitview.api.app.domain.app_feedback.dto.request.AppFeedbackAddServiceRequest
 import kr.co.fitview.api.app.domain.app_feedback.dto.request.AppFeedbackPhoneNumberAddServiceRequest
 import kr.co.fitview.api.app.domain.app_feedback.entity.AppFeedback
+import kr.co.fitview.api.app.domain.app_feedback.entity.enums.AppFeedbackCouponStatus
 import kr.co.fitview.api.app.domain.app_feedback.repository.AppFeedbackRepository
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.global.exception.GlobalException
+import kr.co.fitview.api.app.global.exception.error.app_feedback.AppFeedbackErrorCode
 import kr.co.fitview.api.app.global.exception.error.global.GlobalErrorCode
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -51,4 +54,22 @@ class AppFeedbackService(
 
         return findAppFeedback
     }
+
+    fun modifyAppFeedbackCouponStatus(appFeedbackId : Long, request: AdminAppFeedbackStatusModifyServiceRequest) : AppFeedback {
+
+        val findAppFeedback = appFeedbackQueryService.findAppFeedbackFrom(appFeedbackId)
+            ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
+
+        if(isNotChangeCouponStatus(findAppFeedback.couponStatus!!)){
+            throw GlobalException(AppFeedbackErrorCode.COUPON_STATUS_NOT_ELIGIBLE)
+        }
+
+        findAppFeedback.updateCouponStatus(request.appFeedbackCouponStatus)
+
+        return findAppFeedback
+
+    }
+
+    private fun isNotChangeCouponStatus(couponStatus: AppFeedbackCouponStatus): Boolean =
+        couponStatus == AppFeedbackCouponStatus.NOT_ELIGIBLE
 }

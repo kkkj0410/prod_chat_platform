@@ -7,7 +7,12 @@ import kr.co.fitview.api.app.domain.app_feedback.controller.AppFeedbackControlle
 import kr.co.fitview.api.app.domain.app_feedback.dto.request.AdminAppFeedbackStatusModifyRequest
 import kr.co.fitview.api.app.domain.app_feedback.dto.request.AppFeedbackAddRequest
 import kr.co.fitview.api.app.domain.app_feedback.dto.request.AppFeedbackPhoneNumberAddRequest
+import kr.co.fitview.api.app.domain.app_feedback.dto.response.AdminAppFeedbackCouponResponse
+import kr.co.fitview.api.app.domain.app_feedback.dto.response.AdminAppFeedbackResponse
+import kr.co.fitview.api.app.domain.app_feedback.dto.response.AppFeedbackStatResponse
 import kr.co.fitview.api.app.domain.app_feedback.entity.enums.AppFeedbackCouponStatus
+import kr.co.fitview.api.app.domain.app_feedback.service.AppFeedbackQueryService
+import kr.co.fitview.api.app.domain.app_feedback.service.AppFeedbackService
 
 import kr.co.fitview.api.app.domain.banner.controller.BannerController
 import kr.co.fitview.api.app.domain.banner.dto.response.BannerActiveResponse
@@ -15,6 +20,7 @@ import kr.co.fitview.api.app.domain.banner.entity.enums.BannerType
 import kr.co.fitview.api.app.domain.banner.service.BannerQueryService
 
 import kr.co.fitview.api.app.global.entity.Role
+import kr.co.fitview.api.app.global.util.SecurityUtil
 
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -22,6 +28,8 @@ import org.mockito.BDDMockito.willReturn
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.any
 import org.mockito.kotlin.given
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.SliceImpl
 import org.springframework.http.MediaType
 import org.springframework.restdocs.cookies.CookieDocumentation.cookieWithName
 import org.springframework.restdocs.cookies.CookieDocumentation.responseCookies
@@ -39,19 +47,36 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import java.time.LocalDateTime
 
 
 class AdminAppFeedbackControllerDocsTest : RestDocsSupport() {
 
+    private val appFeedbackQueryService: AppFeedbackQueryService = mock(AppFeedbackQueryService::class.java)
+    private val appFeedbackService : AppFeedbackService = mock(AppFeedbackService::class.java)
 
     override fun initController(): Any {
         return AdminAppFeedbackController(
+            appFeedbackQueryService = appFeedbackQueryService,
+            appFeedbackService = appFeedbackService
         )
     }
 
     @DisplayName("어드민 앱 피드백 통계 조회 API")
     @Test
     fun appFeedbackStat() {
+        //given
+        given(appFeedbackQueryService.findAppFeedbackStat())
+            .willReturn(
+                AppFeedbackStatResponse(
+                    avgRating = 4.5,
+                    satisfiedPercentage = 80,
+                    dissatisfiedPercentage = 20,
+                    todayAppFeedbackCount = 10,
+                    pendingCouponCount = 5
+                )
+            )
+
         // when & then
         mockMvc.perform(
             get("/api/v1/admins/app-feedbacks/stats")
@@ -99,6 +124,46 @@ class AdminAppFeedbackControllerDocsTest : RestDocsSupport() {
     @DisplayName("어드민 앱 피드백 목록 조회 API")
     @Test
     fun appFeedbackList() {
+        // given
+        val fixedTime = LocalDateTime.of(2026, 3, 8, 10, 0, 0)
+
+        val feedback1 = AdminAppFeedbackResponse(
+            appFeedbackId = 2L,
+            rating = 5,
+            nickname = "member1",
+            painPoint = "아쉬운점",
+            improvement = null,
+            phoneNumber = "01011111111",
+            createdAt = fixedTime,
+            coupon = AdminAppFeedbackCouponResponse(
+                status = AppFeedbackCouponStatus.PENDING,
+                statusLabel = AppFeedbackCouponStatus.PENDING.displayName
+            )
+        )
+
+        val feedback2 = AdminAppFeedbackResponse(
+            appFeedbackId = 1L,
+            rating = 1,
+            nickname = "member2",
+            painPoint = "로그인이 안돼요",
+            improvement = "빠른 수정 부탁요",
+            phoneNumber = null,
+            createdAt = fixedTime.minusHours(1),
+            coupon = AdminAppFeedbackCouponResponse(
+                status = AppFeedbackCouponStatus.NOT_ELIGIBLE,
+                statusLabel = AppFeedbackCouponStatus.NOT_ELIGIBLE.displayName
+            )
+        )
+
+        val sliceResponse = SliceImpl(
+            listOf(feedback1, feedback2),
+            PageRequest.of(0, 10),
+            false
+        )
+
+        given(appFeedbackQueryService.findAppFeedbackList(any()))
+            .willReturn(sliceResponse)
+
         // when & then
         mockMvc.perform(
             get("/api/v1/admins/app-feedbacks")
@@ -116,7 +181,7 @@ class AdminAppFeedbackControllerDocsTest : RestDocsSupport() {
                     preprocessResponse(prettyPrint()),
 
                     requestHeaders(
-                        RestDocsHeaders.authorizationHeader(Role.ADMIN) // Role을 ADMIN으로 세팅하셨다면 맞게 수정하세요
+                        RestDocsHeaders.authorizationHeader(Role.ADMIN)
                     ),
 
                     queryParameters(

@@ -90,3 +90,8 @@ include::exception/review/reviewException.adoc[]
 == <REPORT>
 
 include::exception/report/reportException.adoc[]
+
+[[APP_FEEDBACK]]
+== <APP_FEEDBACK>
+
+include::exception/app_feedback/appFeedbackException.adoc[]

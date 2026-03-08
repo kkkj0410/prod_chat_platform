@@ -1,5 +1,5 @@
 [[admin-app-feedback-stat-get]]
-=== 앱 사용 설문조사 통계 API - FAKE
+=== 앱 사용 설문조사 통계 API
 
 ==== HTTP Request
 include::{snippets}/admin-app-feedback-stat-get/http-request.adoc[]
@@ -11,7 +11,7 @@ include::{snippets}/admin-app-feedback-stat-get/response-fields.adoc[]
 
 
 [[admin-app-feedback-list-get]]
-=== 앱 사용 설문조사 조회 API - FAKE
+=== 앱 사용 설문조사 조회 API
 
 ==== HTTP Request
 include::{snippets}/admin-app-feedback-list-get/http-request.adoc[]
@@ -24,7 +24,7 @@ include::{snippets}/admin-app-feedback-list-get/response-fields.adoc[]
 
 
 [[admin-app-feedback-coupon-status-patch]]
-=== 앱 사용 설문조사 쿠폰 상태 변경 API - FAKE
+=== 앱 사용 설문조사 쿠폰 상태 변경 API
 
 ==== HTTP Request
 include::{snippets}/admin-app-feedback-coupon-status-patch/http-request.adoc[]
