@@ -1,11 +1,13 @@
 package kr.co.fitview.api.app.domain.app_feedback.controller
 
 import kr.co.fitview.api.app.ControllerTestSupport
+import kr.co.fitview.api.app.domain.app_feedback.dto.request.AdminAppFeedbackStatusModifyRequest
 import kr.co.fitview.api.app.domain.app_feedback.dto.response.AdminAppFeedbackCouponResponse
 import kr.co.fitview.api.app.domain.app_feedback.dto.response.AdminAppFeedbackResponse
 import kr.co.fitview.api.app.domain.app_feedback.dto.response.AppFeedbackStatResponse
 import kr.co.fitview.api.app.domain.app_feedback.entity.AppFeedback
 import kr.co.fitview.api.app.domain.app_feedback.entity.enums.AppFeedbackCouponStatus
+import kr.co.fitview.api.app.global.exception.error.request.RequestErrorCode
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -15,6 +17,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.SliceImpl
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
@@ -132,5 +135,74 @@ class AdminAppFeedbackControllerTest : ControllerTestSupport(){
             .andExpect(jsonPath("$.data.pagination.hasNext").value(false))
             .andExpect(jsonPath("$.data.pagination.cursorAt").value(expectedCursorAt))
     }
+
+    @DisplayName("앱 사용 설문조사 쿠폰 전송 상태 변경 API")
+    @Test
+    fun appFeedbackCouponStatusModify() {
+        // given
+        val request = AdminAppFeedbackStatusModifyRequest(
+            appFeedbackCouponStatus = AppFeedbackCouponStatus.PENDING
+        )
+
+        // when & then
+        mockMvc.perform(
+            patch("/api/v1/admins/app-feedbacks/{appFeedbackId}/coupon-status", 1)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request))
+        )
+            .andDo(MockMvcResultHandlers.print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.code").value("ok"))
+            .andExpect(jsonPath("$.status").value("200"))
+            .andExpect(jsonPath("$.message").value("ok"))
+            .andExpect(jsonPath("$.data").value("ok"))
+    }
+
+    @DisplayName("앱 사용 설문조사 쿠폰 전송 상태 변경 API - 허용하지 않는 쿠폰 상태는 거절한다.")
+    @Test
+    fun appFeedbackCouponStatusModifyNotRequiredCouponStatus() {
+        // given
+        val request = AdminAppFeedbackStatusModifyRequest(
+            appFeedbackCouponStatus = AppFeedbackCouponStatus.NOT_ELIGIBLE
+        )
+
+        // when & then
+        mockMvc.perform(
+            patch("/api/v1/admins/app-feedbacks/{appFeedbackId}/coupon-status", 1)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request))
+        )
+            .andDo(MockMvcResultHandlers.print())
+            .andExpect(status().isBadRequest())
+
+            .andExpect(jsonPath("$.code").value(RequestErrorCode.REQ_FIELD_NOT_VALID.code))
+            .andExpect(jsonPath("$.status").value("400"))
+            .andExpect(jsonPath("$.message").value("appFeedbackCouponStatus must be PENDING or ISSUED"))
+            .andExpect(jsonPath("$.data").isEmpty())
+    }
+
+    @DisplayName("앱 사용 설문조사 쿠폰 전송 상태 변경 API - 쿠폰 상태는 필수다.")
+    @Test
+    fun appFeedbackCouponStatusModifyRequiredCouponStatus() {
+        // given
+        val request = AdminAppFeedbackStatusModifyRequest(
+            appFeedbackCouponStatus = null
+        )
+
+        // when & then
+        mockMvc.perform(
+            patch("/api/v1/admins/app-feedbacks/{appFeedbackId}/coupon-status", 1)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request))
+        )
+            .andDo(MockMvcResultHandlers.print())
+            .andExpect(status().isBadRequest())
+
+            .andExpect(jsonPath("$.code").value(RequestErrorCode.REQ_FIELD_NOT_VALID.code))
+            .andExpect(jsonPath("$.status").value("400"))
+            .andExpect(jsonPath("$.message").value("appFeedbackCouponStatus is required"))
+            .andExpect(jsonPath("$.data").isEmpty())
+    }
+
 
 }

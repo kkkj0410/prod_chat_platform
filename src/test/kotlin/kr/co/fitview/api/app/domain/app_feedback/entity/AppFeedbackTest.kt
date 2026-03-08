@@ -83,4 +83,29 @@ class AppFeedbackTest  : IntegrationTestSupport(){
             )
 
     }
+
+    @DisplayName("쿠폰 발급 상태를 변경한다.")
+    @Test
+    fun updateCouponStatus() {
+        // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+
+        val appFeedback = AppFeedback(
+            member = member,
+            rating = 1,
+            painPoint = "아쉬운점",
+            improvement = "개선점",
+            couponStatus = AppFeedbackCouponStatus.PENDING
+        )
+
+        // when
+        appFeedback.updateCouponStatus(AppFeedbackCouponStatus.ISSUED)
+
+        // then
+        assertThat(appFeedback.couponStatus).isEqualTo(AppFeedbackCouponStatus.ISSUED)
+    }
 }

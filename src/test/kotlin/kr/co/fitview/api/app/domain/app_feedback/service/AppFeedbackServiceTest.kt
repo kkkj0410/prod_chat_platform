@@ -1,6 +1,7 @@
 package kr.co.fitview.api.app.domain.app_feedback.service
 
 import kr.co.fitview.api.app.IntegrationTestSupport
+import kr.co.fitview.api.app.domain.app_feedback.dto.request.AdminAppFeedbackStatusModifyServiceRequest
 import kr.co.fitview.api.app.domain.app_feedback.dto.request.AppFeedbackAddServiceRequest
 import kr.co.fitview.api.app.domain.app_feedback.dto.request.AppFeedbackPhoneNumberAddServiceRequest
 import kr.co.fitview.api.app.domain.app_feedback.entity.AppFeedback
@@ -107,6 +108,50 @@ class AppFeedbackServiceTest @Autowired constructor(
                 request.phoneNumber,
                 true,
                 AppFeedbackCouponStatus.PENDING
+            )
+
+    }
+
+    @DisplayName("앱 설문조사 쿠폰 상태를 변화한다.")
+    @Test
+    fun modifyAppFeedbackCouponStatus() {
+        // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(member)
+
+        val appFeedback = AppFeedback(
+            member = member,
+            rating = 1,
+            painPoint = "아쉬운점",
+            improvement = "개선점",
+            couponStatus = AppFeedbackCouponStatus.PENDING,
+            isPrivacyAgreed = true
+        )
+        appFeedbackRepository.save(appFeedback)
+
+        val request = AdminAppFeedbackStatusModifyServiceRequest(
+            appFeedbackCouponStatus = AppFeedbackCouponStatus.ISSUED
+        )
+
+        // when
+        appFeedbackService.modifyAppFeedbackCouponStatus(
+            appFeedbackId = appFeedback.id!!,
+            request = request
+        )
+
+        // then
+        val appFeedbacks = appFeedbackRepository.findAll()
+        assertThat(appFeedbacks).hasSize(1)
+        assertThat(appFeedbacks[0])
+            .extracting(
+                "id", "couponStatus"
+            )
+            .contains(
+                appFeedback.id!!, AppFeedbackCouponStatus.ISSUED
             )
 
     }

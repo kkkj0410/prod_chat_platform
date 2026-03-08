@@ -7,6 +7,7 @@ import kr.co.fitview.api.app.domain.app_feedback.entity.AppFeedback
 import kr.co.fitview.api.app.domain.app_feedback.repository.AppFeedbackRepository
 import kr.co.fitview.api.app.domain.member.dto.response.MemberRecommendationAppFeedback
 import org.springframework.data.domain.Slice
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -41,6 +42,10 @@ class AppFeedbackQueryService(
             memberId = memberId
         )
 
+    }
+
+    fun findAppFeedbackFrom(appFeedbackId : Long) : AppFeedback?{
+        return appFeedbackRepository.findByIdOrNull(appFeedbackId)
     }
 
     fun findAppFeedbackStat() : AppFeedbackStatResponse{

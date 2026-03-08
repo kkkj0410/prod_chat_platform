@@ -89,4 +89,9 @@ open class AppFeedback(
         return this
     }
 
+    fun updateCouponStatus(couponStatus : AppFeedbackCouponStatus) : AppFeedback{
+        this.couponStatus = couponStatus
+        return this
+    }
+
 }

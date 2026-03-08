@@ -12,6 +12,7 @@ import kr.co.fitview.api.app.domain.app_feedback.dto.response.AppFeedbackAddResp
 import kr.co.fitview.api.app.domain.app_feedback.dto.response.AppFeedbackStatResponse
 import kr.co.fitview.api.app.domain.app_feedback.entity.enums.AppFeedbackCouponStatus
 import kr.co.fitview.api.app.domain.app_feedback.service.AppFeedbackQueryService
+import kr.co.fitview.api.app.domain.app_feedback.service.AppFeedbackService
 import kr.co.fitview.api.app.global.dto.ApiResponse
 import kr.co.fitview.api.app.global.dto.SuccessCursorAtPagedResponse
 import kr.co.fitview.api.app.global.util.SecurityUtil
@@ -30,7 +31,8 @@ import kotlin.random.Random
 @RestController
 @RequestMapping("/api/v1/admins/app-feedbacks")
 class AdminAppFeedbackController(
-    private val appFeedbackQueryService : AppFeedbackQueryService
+    private val appFeedbackQueryService : AppFeedbackQueryService,
+    private val appFeedbackService : AppFeedbackService
 ) {
 
     @GetMapping("/stats")
@@ -42,22 +44,6 @@ class AdminAppFeedbackController(
         return ResponseEntity.ok(ApiResponse.success(response))
     }
 
-
-    private val mockDatabase = List(100) { index ->
-        val id = (10000 - index).toLong()
-        val randomStatus = AppFeedbackCouponStatus.entries.random()
-
-        AdminAppFeedbackResponse(
-            appFeedbackId = id,
-            rating = Random.nextInt(1, 6),
-            nickname = "테스트유저$id",
-            painPoint = "이런 부분이 앱 사용 시 불편했습니다. (데이터 번호: $id)",
-            improvement = if (index % 3 == 0) null else "이렇게 개선되면 더 좋을 것 같아요!",
-            phoneNumber = if (index % 4 == 0) null else "0101234${id.toString().padStart(4, '0')}",
-            createdAt = LocalDateTime.now().minusHours(index.toLong()), // cursorAt과 무관하게 고정 시간 세팅
-            coupon = AdminAppFeedbackCouponResponse.from(randomStatus)
-        )
-    }
 
     @GetMapping("")
     fun appFeedbackList(
@@ -74,9 +60,11 @@ class AdminAppFeedbackController(
 
     }
 
-
     @PatchMapping("/{appFeedbackId}/coupon-status")
     fun appFeedbackCouponStatusModify(
+
+        @PathVariable
+        appFeedbackId: Long,
 
         @Valid
         @RequestBody
@@ -84,7 +72,10 @@ class AdminAppFeedbackController(
 
     ): ResponseEntity<ApiResponse<String>> {
 
-
+        appFeedbackService.modifyAppFeedbackCouponStatus(
+            appFeedbackId = appFeedbackId,
+            request = request.toServiceRequest()
+        )
 
         return ResponseEntity.ok(ApiResponse.success("ok"))
     }

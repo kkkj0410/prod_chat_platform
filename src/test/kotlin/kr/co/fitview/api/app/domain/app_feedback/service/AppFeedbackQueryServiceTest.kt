@@ -31,7 +31,7 @@ class AppFeedbackQueryServiceTest @Autowired constructor(
 
     @DisplayName("앱 설문조사 id와 회원 id로 앱 설문조사를 찾는다.")
     @Test
-    fun findByIdAndMemberId() {
+    fun findAppFeedbackFromAppFeedbackIdAndMemberId() {
         // given
         val member = Member(
             email = "email",
@@ -52,6 +52,34 @@ class AppFeedbackQueryServiceTest @Autowired constructor(
         val findAppFeedback = appFeedbackQueryService.findAppFeedbackFrom(
             appFeedbackId = appFeedback.id!!,
             memberId = member.id!!
+        )
+
+        // then
+        assertThat(findAppFeedback!!.id!!).isEqualTo(appFeedback.id!!)
+    }
+
+    @DisplayName("앱 설문조사 id로 앱 설문조사를 찾는다.")
+    @Test
+    fun findAppFeedbackFromAppFeedbackId() {
+        // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(member)
+
+        val appFeedback = AppFeedback.of(
+            member = member,
+            rating = 1,
+            painPoint = "painPoint",
+            improvement = "improvement"
+        )
+        appFeedbackRepository.save(appFeedback)
+
+        // when
+        val findAppFeedback = appFeedbackQueryService.findAppFeedbackFrom(
+            appFeedbackId = appFeedback.id!!,
         )
 
         // then

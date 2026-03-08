@@ -12,6 +12,7 @@ import kr.co.fitview.api.app.domain.app_feedback.dto.response.AdminAppFeedbackRe
 import kr.co.fitview.api.app.domain.app_feedback.dto.response.AppFeedbackStatResponse
 import kr.co.fitview.api.app.domain.app_feedback.entity.enums.AppFeedbackCouponStatus
 import kr.co.fitview.api.app.domain.app_feedback.service.AppFeedbackQueryService
+import kr.co.fitview.api.app.domain.app_feedback.service.AppFeedbackService
 
 import kr.co.fitview.api.app.domain.banner.controller.BannerController
 import kr.co.fitview.api.app.domain.banner.dto.response.BannerActiveResponse
@@ -52,10 +53,12 @@ import java.time.LocalDateTime
 class AdminAppFeedbackControllerDocsTest : RestDocsSupport() {
 
     private val appFeedbackQueryService: AppFeedbackQueryService = mock(AppFeedbackQueryService::class.java)
+    private val appFeedbackService : AppFeedbackService = mock(AppFeedbackService::class.java)
 
     override fun initController(): Any {
         return AdminAppFeedbackController(
-            appFeedbackQueryService = appFeedbackQueryService
+            appFeedbackQueryService = appFeedbackQueryService,
+            appFeedbackService = appFeedbackService
         )
     }
 

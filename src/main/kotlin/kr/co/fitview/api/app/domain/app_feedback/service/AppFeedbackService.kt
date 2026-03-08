@@ -1,5 +1,6 @@
 package kr.co.fitview.api.app.domain.app_feedback.service
 
+import kr.co.fitview.api.app.domain.app_feedback.dto.request.AdminAppFeedbackStatusModifyServiceRequest
 import kr.co.fitview.api.app.domain.app_feedback.dto.request.AppFeedbackAddServiceRequest
 import kr.co.fitview.api.app.domain.app_feedback.dto.request.AppFeedbackPhoneNumberAddServiceRequest
 import kr.co.fitview.api.app.domain.app_feedback.entity.AppFeedback
@@ -50,5 +51,16 @@ class AppFeedbackService(
         )
 
         return findAppFeedback
+    }
+
+    fun modifyAppFeedbackCouponStatus(appFeedbackId : Long, request: AdminAppFeedbackStatusModifyServiceRequest) : AppFeedback {
+
+        val findAppFeedback = appFeedbackQueryService.findAppFeedbackFrom(appFeedbackId)
+            ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
+
+        findAppFeedback.updateCouponStatus(request.appFeedbackCouponStatus)
+
+        return findAppFeedback
+
     }
 }
