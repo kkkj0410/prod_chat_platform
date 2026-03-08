@@ -1,15 +1,17 @@
 package kr.co.fitview.api.app.domain.app_feedback.repository
 
 import kr.co.fitview.api.app.IntegrationTestSupport
+import kr.co.fitview.api.app.domain.app_feedback.condition.AdminAppFeedbackListCondition
 import kr.co.fitview.api.app.domain.app_feedback.entity.AppFeedback
 import kr.co.fitview.api.app.domain.app_feedback.entity.enums.AppFeedbackCouponStatus
-import kr.co.fitview.api.app.domain.app_feedback.service.AppFeedbackService
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
+import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.time.Time
+import kr.co.fitview.api.app.global.util.TestDataFactory
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Assertions.*
+import org.assertj.core.api.Assertions.tuple
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -17,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired
 class AppFeedbackRepositoryTest @Autowired constructor(
     val appFeedbackRepository : AppFeedbackRepository,
     val memberRepository : MemberRepository,
+    val oAuth2Service : OAuth2Service,
     val time : Time
 ) : IntegrationTestSupport() {
 
@@ -143,6 +146,297 @@ class AppFeedbackRepositoryTest @Autowired constructor(
                 0,
                 0,
                 0
+            )
+    }
+
+    @DisplayName("전체 앱 피드백 설문조사 결과를 조회한다.")
+    @Test
+    fun findAllAppFeedbackBy() {
+        // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(member)
+
+        val signupRequest = TestDataFactory.oAuth2SignupRequest(
+            nickname = "member1"
+        )
+        oAuth2Service.signup(
+            request = signupRequest,
+            memberId = member.id!!
+        )
+
+        val appFeedback1 = AppFeedback(
+            member = member,
+            rating = 2,
+            painPoint = "아쉬운점",
+            improvement = "개선점1",
+            couponStatus = AppFeedbackCouponStatus.NOT_ELIGIBLE,
+            isPrivacyAgreed = false
+        )
+        appFeedback1.createdAt = time.nowLocalDateTime.minusSeconds(3)
+        appFeedbackRepository.save(appFeedback1)
+
+        val appFeedback2 = AppFeedback(
+            member = member,
+            rating = 1,
+            painPoint = "아쉬운점",
+            improvement = "개선점2",
+            phoneNumber = "01011111111",
+            couponStatus = AppFeedbackCouponStatus.ISSUED,
+            isPrivacyAgreed = true
+        )
+        appFeedback2.createdAt = time.nowLocalDateTime.minusSeconds(2)
+        appFeedbackRepository.save(appFeedback2)
+
+        val appFeedback3 = AppFeedback(
+            member = member,
+            rating = 5,
+            painPoint = "아쉬운점",
+            improvement = null,
+            phoneNumber = "01011111111",
+            couponStatus = AppFeedbackCouponStatus.PENDING,
+            isPrivacyAgreed = true
+        )
+        appFeedback3.createdAt = time.nowLocalDateTime.minusSeconds(1)
+        appFeedbackRepository.save(appFeedback3)
+
+        val condition = AdminAppFeedbackListCondition()
+
+        // when
+        val response = appFeedbackRepository.findAllAppFeedbackBy(
+            condition = condition
+        )
+
+        // then
+        val content = response.content
+        assertThat(content)
+            .extracting(
+                "appFeedbackId",
+                "nickname",
+                "improvement",
+                "phoneNumber",
+                "coupon.status",
+                "coupon.statusLabel"
+            )
+            .containsExactly(
+                tuple(
+                    appFeedback3.id!!,
+                    "member1",
+                    null,
+                    "01011111111",
+                    AppFeedbackCouponStatus.PENDING,
+                    AppFeedbackCouponStatus.PENDING.displayName
+                ),
+                tuple(
+                    appFeedback2.id!!,
+                    "member1",
+                    "개선점2",
+                    "01011111111",
+                    AppFeedbackCouponStatus.ISSUED,
+                    AppFeedbackCouponStatus.ISSUED.displayName
+                ),
+                tuple(
+                    appFeedback1.id!!,
+                    "member1",
+                    "개선점1",
+                    null,
+                    AppFeedbackCouponStatus.NOT_ELIGIBLE,
+                    AppFeedbackCouponStatus.NOT_ELIGIBLE.displayName
+                )
+            )
+    }
+
+    @DisplayName("커서(cursorAt)를 입력하면 해당 시간 이전의 앱 피드백 목록을 조회한다.")
+    @Test
+    fun findAllAppFeedbackByWithCursor() {
+        // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(member)
+
+        val signupRequest = TestDataFactory.oAuth2SignupRequest(
+            nickname = "member1"
+        )
+        oAuth2Service.signup(
+            request = signupRequest,
+            memberId = member.id!!
+        )
+
+        val appFeedback1 = AppFeedback(
+            member = member,
+            rating = 2,
+            painPoint = "아쉬운점",
+            improvement = "개선점1",
+            couponStatus = AppFeedbackCouponStatus.NOT_ELIGIBLE,
+            isPrivacyAgreed = false
+        )
+        appFeedback1.createdAt = time.nowLocalDateTime.minusSeconds(3)
+        appFeedbackRepository.save(appFeedback1)
+
+        val appFeedback2 = AppFeedback(
+            member = member,
+            rating = 1,
+            painPoint = "아쉬운점",
+            improvement = "개선점2",
+            phoneNumber = "01011111111",
+            couponStatus = AppFeedbackCouponStatus.ISSUED,
+            isPrivacyAgreed = true
+        )
+        appFeedback2.createdAt = time.nowLocalDateTime.minusSeconds(2)
+        appFeedbackRepository.save(appFeedback2)
+
+        val appFeedback3 = AppFeedback(
+            member = member,
+            rating = 5,
+            painPoint = "아쉬운점",
+            improvement = null,
+            phoneNumber = "01011111111",
+            couponStatus = AppFeedbackCouponStatus.PENDING,
+            isPrivacyAgreed = true
+        )
+        appFeedback3.createdAt = time.nowLocalDateTime.minusSeconds(1)
+        appFeedbackRepository.save(appFeedback3)
+
+
+        val cursorAt = appFeedback3.createdAt!!.atZone(java.time.ZoneId.of("Asia/Seoul")).toInstant().toEpochMilli()
+
+        val condition = AdminAppFeedbackListCondition(
+            cursorAt = cursorAt
+        )
+
+        // when
+        val response = appFeedbackRepository.findAllAppFeedbackBy(
+            condition = condition
+        )
+
+        // then
+        val content = response.content
+        assertThat(content)
+            .extracting(
+                "appFeedbackId",
+                "nickname",
+                "improvement",
+                "phoneNumber",
+                "coupon.status",
+                "coupon.statusLabel"
+            )
+            .containsExactly(
+                tuple(
+                    appFeedback2.id!!,
+                    "member1",
+                    "개선점2",
+                    "01011111111",
+                    AppFeedbackCouponStatus.ISSUED,
+                    AppFeedbackCouponStatus.ISSUED.displayName
+                ),
+                tuple(
+                    appFeedback1.id!!,
+                    "member1",
+                    "개선점1",
+                    null,
+                    AppFeedbackCouponStatus.NOT_ELIGIBLE,
+                    AppFeedbackCouponStatus.NOT_ELIGIBLE.displayName
+                )
+            )
+    }
+
+    @DisplayName("전체 앱 피드백 설문조사 결과를 조회 시, 지정된 개수 제한으로 조회한다.")
+    @Test
+    fun findAllAppFeedbackBySize() {
+        // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(member)
+
+        val signupRequest = TestDataFactory.oAuth2SignupRequest(
+            nickname = "member1"
+        )
+        oAuth2Service.signup(
+            request = signupRequest,
+            memberId = member.id!!
+        )
+
+        val appFeedback1 = AppFeedback(
+            member = member,
+            rating = 2,
+            painPoint = "아쉬운점",
+            improvement = "개선점1",
+            couponStatus = AppFeedbackCouponStatus.NOT_ELIGIBLE,
+            isPrivacyAgreed = false
+        )
+        appFeedback1.createdAt = time.nowLocalDateTime.minusSeconds(3)
+        appFeedbackRepository.save(appFeedback1)
+
+        val appFeedback2 = AppFeedback(
+            member = member,
+            rating = 1,
+            painPoint = "아쉬운점",
+            improvement = "개선점2",
+            phoneNumber = "01011111111",
+            couponStatus = AppFeedbackCouponStatus.ISSUED,
+            isPrivacyAgreed = true
+        )
+        appFeedback2.createdAt = time.nowLocalDateTime.minusSeconds(2)
+        appFeedbackRepository.save(appFeedback2)
+
+        val appFeedback3 = AppFeedback(
+            member = member,
+            rating = 5,
+            painPoint = "아쉬운점",
+            improvement = null,
+            phoneNumber = "01011111111",
+            couponStatus = AppFeedbackCouponStatus.PENDING,
+            isPrivacyAgreed = true
+        )
+        appFeedback3.createdAt = time.nowLocalDateTime.minusSeconds(1)
+        appFeedbackRepository.save(appFeedback3)
+
+        val condition = AdminAppFeedbackListCondition(
+            size = 2
+        )
+
+        // when
+        val response = appFeedbackRepository.findAllAppFeedbackBy(
+            condition = condition
+        )
+
+        // then
+        val content = response.content
+        assertThat(content)
+            .extracting(
+                "appFeedbackId",
+                "nickname",
+                "improvement",
+                "phoneNumber",
+                "coupon.status",
+                "coupon.statusLabel"
+            )
+            .containsExactly(
+                tuple(
+                    appFeedback3.id!!,
+                    "member1",
+                    null,
+                    "01011111111",
+                    AppFeedbackCouponStatus.PENDING,
+                    AppFeedbackCouponStatus.PENDING.displayName
+                ),
+                tuple(
+                    appFeedback2.id!!,
+                    "member1",
+                    "개선점2",
+                    "01011111111",
+                    AppFeedbackCouponStatus.ISSUED,
+                    AppFeedbackCouponStatus.ISSUED.displayName
+                )
             )
     }
 }

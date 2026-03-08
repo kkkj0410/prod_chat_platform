@@ -2,6 +2,7 @@ package kr.co.fitview.api.app.domain.app_feedback.controller
 
 import jakarta.validation.Valid
 import kr.co.fitview.api.app.domain.address.service.AddressService
+import kr.co.fitview.api.app.domain.app_feedback.condition.AdminAppFeedbackListCondition
 import kr.co.fitview.api.app.domain.app_feedback.dto.request.AdminAppFeedbackStatusModifyRequest
 import kr.co.fitview.api.app.domain.app_feedback.dto.request.AppFeedbackAddRequest
 import kr.co.fitview.api.app.domain.app_feedback.dto.request.AppFeedbackPhoneNumberAddRequest
@@ -60,36 +61,17 @@ class AdminAppFeedbackController(
 
     @GetMapping("")
     fun appFeedbackList(
-        @RequestParam(required = false)
-        cursorAt: Long?,
-
-        @RequestParam(defaultValue = "10")
-        size: Int
+        @ModelAttribute
+        condition : AdminAppFeedbackListCondition
 
     ): ResponseEntity<ApiResponse<SuccessCursorAtPagedResponse<AdminAppFeedbackResponse>>> {
 
-//        appFeedbackQueryService.findAppFeedbackList()
-
-        val filteredData = if (cursorAt == null) {
-            mockDatabase
-        } else {
-            val cursorTime = Instant.ofEpochMilli(cursorAt)
-                .atZone(ZoneId.systemDefault())
-                .toLocalDateTime()
-
-            mockDatabase.filter { it.createdAt.isBefore(cursorTime) }
-        }
-
-        val content = filteredData.take(size)
-
-        val hasNext = filteredData.size > size
-
-        val pageRequest = PageRequest.of(0, size)
-        val slice = SliceImpl(content, pageRequest, hasNext)
+        val slice = appFeedbackQueryService.findAppFeedbackList(condition)
 
         return ResponseEntity.ok(
             ApiResponse.successWithCursorAtPagination(slice) { it.createdAt }
         )
+
     }
 
 

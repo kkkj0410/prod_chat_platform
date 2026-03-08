@@ -1,9 +1,12 @@
 package kr.co.fitview.api.app.domain.app_feedback.service
 
+import kr.co.fitview.api.app.domain.app_feedback.condition.AdminAppFeedbackListCondition
+import kr.co.fitview.api.app.domain.app_feedback.dto.response.AdminAppFeedbackResponse
 import kr.co.fitview.api.app.domain.app_feedback.dto.response.AppFeedbackStatResponse
 import kr.co.fitview.api.app.domain.app_feedback.entity.AppFeedback
 import kr.co.fitview.api.app.domain.app_feedback.repository.AppFeedbackRepository
 import kr.co.fitview.api.app.domain.member.dto.response.MemberRecommendationAppFeedback
+import org.springframework.data.domain.Slice
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -42,5 +45,9 @@ class AppFeedbackQueryService(
 
     fun findAppFeedbackStat() : AppFeedbackStatResponse{
         return appFeedbackRepository.findAppFeedbackStat()
+    }
+
+    fun findAppFeedbackList(condition : AdminAppFeedbackListCondition) : Slice<AdminAppFeedbackResponse> {
+        return appFeedbackRepository.findAllAppFeedbackBy(condition)
     }
 }

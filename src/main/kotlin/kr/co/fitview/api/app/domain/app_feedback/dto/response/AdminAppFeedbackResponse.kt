@@ -12,7 +12,27 @@ data class AdminAppFeedbackResponse(
     val phoneNumber: String?,
     val createdAt: LocalDateTime,
     val coupon: AdminAppFeedbackCouponResponse
-)
+){
+    constructor(
+        appFeedbackId: Long,
+        rating: Int,
+        nickname: String,
+        painPoint: String,
+        improvement: String?,
+        phoneNumber: String?,
+        createdAt: LocalDateTime,
+        couponStatus: AppFeedbackCouponStatus
+    ) : this(
+        appFeedbackId = appFeedbackId,
+        rating = rating,
+        nickname = nickname,
+        painPoint = painPoint,
+        improvement = improvement,
+        phoneNumber = phoneNumber,
+        createdAt = createdAt,
+        coupon = AdminAppFeedbackCouponResponse.from(couponStatus)
+    )
+}
 
 data class AdminAppFeedbackCouponResponse(
     val status: AppFeedbackCouponStatus,
