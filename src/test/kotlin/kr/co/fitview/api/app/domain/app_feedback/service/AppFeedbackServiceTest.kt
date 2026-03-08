@@ -12,9 +12,14 @@ import kr.co.fitview.api.app.domain.auth.service.AuthService
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.global.entity.Role
+import kr.co.fitview.api.app.global.exception.GlobalException
+import kr.co.fitview.api.app.global.exception.error.app_feedback.AppFeedbackErrorCode
+import kr.co.fitview.api.app.global.exception.error.member.MemberErrorCode
 import kr.co.fitview.api.app.global.jwt.JwtTokenProvider
 import kr.co.fitview.api.app.global.time.Time
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.assertj.core.api.ThrowingConsumer
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -153,7 +158,46 @@ class AppFeedbackServiceTest @Autowired constructor(
             .contains(
                 appFeedback.id!!, AppFeedbackCouponStatus.ISSUED
             )
+    }
 
+    @DisplayName("앱 설문조사 쿠폰 상태 변경 시, 변경 할 수 없는 상태면 변경하지 않는다.")
+    @Test
+    fun modifyAppFeedbackCouponStatusIsNotChangeCouponStatus() {
+        // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(member)
+
+        val appFeedback = AppFeedback(
+            member = member,
+            rating = 1,
+            painPoint = "아쉬운점",
+            improvement = "개선점",
+            couponStatus = AppFeedbackCouponStatus.NOT_ELIGIBLE,
+            isPrivacyAgreed = true
+        )
+        appFeedbackRepository.save(appFeedback)
+
+        val request = AdminAppFeedbackStatusModifyServiceRequest(
+            appFeedbackCouponStatus = AppFeedbackCouponStatus.ISSUED
+        )
+
+        // when & then
+        assertThatThrownBy {
+            appFeedbackService.modifyAppFeedbackCouponStatus(
+                appFeedbackId = appFeedback.id!!,
+                request = request
+            )
+        }
+            .isInstanceOf(GlobalException::class.java)
+            .satisfies(ThrowingConsumer { ex ->
+                val globalEx = ex as GlobalException
+                assertThat(globalEx.errorCode)
+                    .isEqualTo(AppFeedbackErrorCode.COUPON_STATUS_NOT_ELIGIBLE)
+            })
     }
 
 
