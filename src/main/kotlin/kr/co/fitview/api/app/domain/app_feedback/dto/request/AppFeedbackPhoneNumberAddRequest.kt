@@ -10,5 +10,11 @@ data class AppFeedbackPhoneNumberAddRequest(
     @field:NotBlank(message = "phoneNumber is required")
     val phoneNumber : String?
 
+){
 
-)
+    fun toServiceRequest() : AppFeedbackPhoneNumberAddServiceRequest {
+        return AppFeedbackPhoneNumberAddServiceRequest(
+            phoneNumber = phoneNumber!!,
+        )
+    }
+}

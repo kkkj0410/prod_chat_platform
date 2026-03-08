@@ -1,32 +1,36 @@
 package kr.co.fitview.api.app.domain.banner.service
 
 import kr.co.fitview.api.app.domain.banner.dto.response.BannerActiveResponse
+import kr.co.fitview.api.app.domain.banner.entity.Banner
 import kr.co.fitview.api.app.domain.banner.entity.enums.BannerType
+import kr.co.fitview.api.app.domain.banner.repository.BannerRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import software.amazon.awssdk.core.internal.waiters.ResponseOrException.response
 import kotlin.random.Random
 
 @Service
 @Transactional(readOnly = true)
-class BannerQueryService {
+class BannerQueryService(
+    private val bannerRepository: BannerRepository,
 
+) {
 
-    fun findActiveBanners() : List<BannerActiveResponse> {
+    fun findActiveBanners(memberId : Long) : List<BannerActiveResponse> {
 
-        val isListEmpty = Random.nextBoolean()
+        val findBanners = bannerRepository.findAllActiveBanner(memberId)
 
-        val response = if (isListEmpty) {
-            emptyList()
-        } else {
-            listOf(
-                BannerActiveResponse(
-                    bannerId = 1L,
-                    type = BannerType.APP_FEEDBACK,
-                    imageUrl = "https://static-dev.fitview.co.kr/app-feedback/banner/8a89cd06-ac20-4996-9c58-bcddc27ad760"
-                )
+        return findBanners.map{
+            BannerActiveResponse(
+                bannerId = it.id!!,
+                type = it.bannerType!!,
+                imageUrl = it.getImageUrl()
             )
         }
 
-        return response
+    }
+
+    fun findBannerReferenceFrom(bannerId : Long) : Banner {
+        return bannerRepository.getReferenceById(bannerId)
     }
 }

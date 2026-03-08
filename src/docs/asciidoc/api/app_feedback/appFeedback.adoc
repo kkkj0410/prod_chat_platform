@@ -1,5 +1,5 @@
 [[app-feedback-post]]
-=== 앱 사용 설문조사 API - FAKE
+=== 앱 사용 설문조사 API
 
 ==== HTTP Request
 include::{snippets}/app-feedback-post/http-request.adoc[]
@@ -12,7 +12,7 @@ include::{snippets}/app-feedback-post/response-fields.adoc[]
 
 
 [[app-feedback-contact-patch]]
-=== 작성된 설문조사에 대한 추가 정보 기입 API - FAKE
+=== 작성된 설문조사에 대한 추가 정보 기입 API
 
 ==== HTTP Request
 include::{snippets}/app-feedback-contact-patch/http-request.adoc[]

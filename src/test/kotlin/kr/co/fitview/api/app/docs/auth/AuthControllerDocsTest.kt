@@ -34,7 +34,7 @@ import org.mockito.kotlin.given
 
 
 class AuthControllerDocsTest : RestDocsSupport() {
-
+//
     private val authService: AuthService = mock(AuthService::class.java)
     private val refreshTokenService : RefreshTokenService = mock(RefreshTokenService::class.java)
     private val testAuthService: TestAuthService = mock(TestAuthService::class.java)
