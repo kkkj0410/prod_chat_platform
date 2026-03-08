@@ -263,6 +263,16 @@ class MemberControllerTest : ControllerTestSupport() {
                 )
             )
 
+        given(appFeedbackQueryService.findActiveAppFeedbackCard(any()))
+            .willReturn(
+                MemberRecommendationAppFeedback(
+                    positionIndex = 2,
+                    imageUrl = "imageUrl"
+                )
+            )
+
+
+
         // when // then
         mockMvc.perform(
             get("/api/v1/members/recommendations")
@@ -290,6 +300,9 @@ class MemberControllerTest : ControllerTestSupport() {
             .andExpect(jsonPath("$.data[1].workoutGoal").value("PERFORMANCE_GOAL"))
             .andExpect(jsonPath("$.data[1].profileImageUrl").value("https://example.com/profile/2.jpg"))
             .andExpect(jsonPath("$.data[1].workoutImageUrl").doesNotExist())
+
+            .andExpect(jsonPath("$.meta.appFeedback.positionIndex").value(2))
+            .andExpect(jsonPath("$.meta.appFeedback.imageUrl").value("imageUrl"))
     }
 
     @DisplayName("우리 동네 핏버디(주소 인근 회원 조회)를 조회한다")

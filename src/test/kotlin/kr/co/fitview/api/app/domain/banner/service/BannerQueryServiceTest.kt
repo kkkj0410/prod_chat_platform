@@ -1,5 +1,6 @@
 package kr.co.fitview.api.app.domain.banner.service
 
+import jakarta.persistence.EntityManager
 import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.auth.repository.RefreshTokenRepository
 import kr.co.fitview.api.app.domain.auth.service.RefreshTokenQueryService
@@ -28,7 +29,8 @@ class BannerQueryServiceTest @Autowired constructor(
     val imageRepository: ImageRepository,
     val memberRepository: MemberRepository,
     val oAuth2Service : OAuth2Service,
-    val time : Time
+    val time : Time,
+    val em : EntityManager
 ) : IntegrationTestSupport() {
 
     @DisplayName("배너를 프록시로 조회한다.")
@@ -46,6 +48,9 @@ class BannerQueryServiceTest @Autowired constructor(
             displayStatus = BannerDisplayStatus.ACTIVE
         )
         bannerRepository.save(banner)
+
+        em.flush()
+        em.clear()
 
         // when
         val findBanner = bannerQueryService.findBannerReferenceFrom(banner.id!!)

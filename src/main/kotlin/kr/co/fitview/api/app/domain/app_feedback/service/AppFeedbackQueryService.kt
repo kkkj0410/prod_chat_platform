@@ -5,7 +5,6 @@ import kr.co.fitview.api.app.domain.app_feedback.repository.AppFeedbackRepositor
 import kr.co.fitview.api.app.domain.member.dto.response.MemberRecommendationAppFeedback
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import kotlin.random.Random
 
 
 @Service
@@ -16,7 +15,7 @@ class AppFeedbackQueryService(
 ) {
 
 
-    fun findAppFeedbackCard(memberId : Long): MemberRecommendationAppFeedback? {
+    fun findActiveAppFeedbackCard(memberId : Long): MemberRecommendationAppFeedback? {
 
         val findDismissLog = recommendationAppFeedbackDismissLogQueryService.findValidDismissLog(memberId)
 

@@ -45,11 +45,11 @@ include::{snippets}/member-address-details/http-response.adoc[]
 include::{snippets}/member-address-details/response-fields.adoc[]
 
 [[member-recommendation]]
-=== 추천 핏버디 API - FAKE
+=== 추천 핏버디 API
 홈 화면 - 추천 핏버디. 회원 좌표 인근 반경안에 있는 회원 조회(정책에 따라, 반경 안에 없는 회원도 조회될 수 있음. 최대 10개 조회)
 API 호출할때마다, 조회되는 회원은 랜덤으로 바뀜
 
-FAKE) meta 필드는 fake 영역(이 외, 진짜 영역). 50% 확률로 appFeedback은 null(x 버튼 누르는 상황을 가짜로 재현한 것)
+-> meta.appFeedback = null 가능 (조건 = 사용자는 [POST] /api/v1/members/recommendations/app-feedbacks/dismiss을 24시간 내 사용)
 
 ==== HTTP Request
 include::{snippets}/member-recommendation/http-request.adoc[]
@@ -62,7 +62,7 @@ include::{snippets}/member-recommendation/response-fields.adoc[]
 
 
 [[app-feedback-recommendation-dismiss-post]]
-=== 앱 사용 설문조사 카드 무시(x버튼) API - FAKE
+=== 앱 사용 설문조사 카드 무시(x버튼) API
 
 ==== HTTP Request
 include::{snippets}/app-feedback-recommendation-dismiss-post/http-request.adoc[]

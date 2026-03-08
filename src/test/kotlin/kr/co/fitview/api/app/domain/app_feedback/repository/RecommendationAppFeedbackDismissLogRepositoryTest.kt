@@ -30,7 +30,7 @@ class RecommendationAppFeedbackDismissLogRepositoryTest @Autowired constructor(
 
         val dismissLog = RecommendationAppFeedbackDismissLog(
             member = member,
-            expiresAt = time.nowLocalDateTime
+            expiresAt = time.nowLocalDateTime.plusSeconds(1)
         )
         recommendationAppFeedbackDismissLogRepository.save(dismissLog)
 
@@ -90,7 +90,7 @@ class RecommendationAppFeedbackDismissLogRepositoryTest @Autowired constructor(
 
         val dismissLog = RecommendationAppFeedbackDismissLog(
             member = member,
-            expiresAt = time.nowLocalDateTime.minusSeconds(1)
+            expiresAt = time.nowLocalDateTime
         )
         recommendationAppFeedbackDismissLogRepository.save(dismissLog)
 
@@ -101,6 +101,6 @@ class RecommendationAppFeedbackDismissLogRepositoryTest @Autowired constructor(
         )
 
         // then
-        assertThat(findDismissLog!!.id).isEqualTo(dismissLog.id!!)
+        assertThat(findDismissLog).isNull()
     }
 }

@@ -18,7 +18,7 @@ class RecommendationAppFeedbackDismissLogQueryService(
     fun findValidDismissLog(memberId: Long) : RecommendationAppFeedbackDismissLog?{
         return recommendationAppFeedbackDismissLogRepository.findFirstByMemberIdAndExpiresAtAfter(
             memberId = memberId,
-            expiresAt = time.nowLocalDateTime.plusDays(1)
+            expiresAt = time.nowLocalDateTime
         )
     }
 

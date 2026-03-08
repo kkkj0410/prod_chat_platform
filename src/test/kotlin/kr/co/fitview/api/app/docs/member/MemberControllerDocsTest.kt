@@ -1,6 +1,5 @@
 package kr.co.fitview.api.app.docs.member
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import kr.co.fitview.api.app.docs.RestDocsHeaders
 import kr.co.fitview.api.app.docs.RestDocsPagination
 import kr.co.fitview.api.app.docs.RestDocsSupport
@@ -403,7 +402,7 @@ class MemberControllerDocsTest : RestDocsSupport() {
                 1L
             )
 
-        given(appFeedbackQueryService.findAppFeedbackCard(any()))
+        given(appFeedbackQueryService.findActiveAppFeedbackCard(any()))
             .willReturn(
                 MemberRecommendationAppFeedback(
                     positionIndex = 2,

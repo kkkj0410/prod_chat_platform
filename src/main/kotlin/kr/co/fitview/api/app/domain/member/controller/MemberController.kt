@@ -6,7 +6,6 @@ import kr.co.fitview.api.app.domain.address.service.AddressService
 import kr.co.fitview.api.app.domain.member.condition.MemberLocalCondition
 import kr.co.fitview.api.app.domain.address.dto.response.AddressResponse
 import kr.co.fitview.api.app.domain.app_feedback.service.AppFeedbackQueryService
-import kr.co.fitview.api.app.domain.app_feedback.service.AppFeedbackService
 import kr.co.fitview.api.app.domain.app_feedback.service.RecommendationAppFeedbackDismissLogService
 import kr.co.fitview.api.app.domain.member.condition.MemberReviewCondition
 import kr.co.fitview.api.app.domain.member.dto.request.MemberUpdateRequest
@@ -27,7 +26,6 @@ import kr.co.fitview.api.app.global.util.SecurityUtil
 import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import software.amazon.awssdk.core.internal.waiters.ResponseOrException.response
 
 
 @RestController
@@ -88,7 +86,7 @@ class MemberController(
     ) : ResponseEntity<MemberRecommendationWithMetaResponse> {
 
         val data = memberQueryService.findRandomMemberWithinRecommendation(securityUtil.getMemberId(), size)
-        val appFeedback = appFeedbackQueryService.findAppFeedbackCard(securityUtil.getMemberId())
+        val appFeedback = appFeedbackQueryService.findActiveAppFeedbackCard(securityUtil.getMemberId())
 
         val response = MemberRecommendationWithMetaResponse.of(
             data = data,
