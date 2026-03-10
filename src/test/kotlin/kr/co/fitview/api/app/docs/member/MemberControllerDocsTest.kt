@@ -1,12 +1,13 @@
 package kr.co.fitview.api.app.docs.member
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import kr.co.fitview.api.app.docs.RestDocsHeaders
 import kr.co.fitview.api.app.docs.RestDocsPagination
 import kr.co.fitview.api.app.docs.RestDocsSupport
 import kr.co.fitview.api.app.domain.address.dto.response.AddressResponse
 import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
 import kr.co.fitview.api.app.domain.address.service.AddressService
+import kr.co.fitview.api.app.domain.app_feedback.service.AppFeedbackQueryService
+import kr.co.fitview.api.app.domain.app_feedback.service.RecommendationAppFeedbackDismissLogService
 import kr.co.fitview.api.app.domain.member.controller.MemberController
 import kr.co.fitview.api.app.domain.member.dto.request.Age
 import kr.co.fitview.api.app.domain.member.dto.request.MemberUpdateRequest
@@ -57,6 +58,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPat
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.time.LocalDate
 import java.time.LocalDateTime
+import kotlin.jvm.java
 
 
 class MemberControllerDocsTest : RestDocsSupport() {
@@ -66,21 +68,25 @@ class MemberControllerDocsTest : RestDocsSupport() {
     private val memberWithdrawReasonService: MemberWithdrawReasonService = mock(MemberWithdrawReasonService::class.java)
     private val memberWithdrawReasonQueryService: MemberWithdrawReasonQueryService = mock(MemberWithdrawReasonQueryService::class.java)
     private val addressService: AddressService = mock(AddressService::class.java)
+    private val appFeedbackQueryService: AppFeedbackQueryService = mock(AppFeedbackQueryService::class.java)
     private val reviewTagCountQueryService: ReviewTagCountQueryService = mock(ReviewTagCountQueryService::class.java)
     private val reviewQueryService: ReviewQueryService = mock(ReviewQueryService::class.java)
+    private val recommendationAppFeedbackDismissLogService: RecommendationAppFeedbackDismissLogService = mock(RecommendationAppFeedbackDismissLogService::class.java)
     private val securityUtil: SecurityUtil = mock(SecurityUtil::class.java)
 
     override fun initController(): Any {
         return MemberController(
-            memberService,
-            memberQueryService,
-            memberWithdrawReasonService,
-            memberWithdrawReasonQueryService,
-            addressService,
-            reviewTagCountQueryService,
-            reviewQueryService,
-            securityUtil,
-            objectMapper
+            memberService = memberService,
+            memberQueryService = memberQueryService,
+            memberWithdrawReasonService = memberWithdrawReasonService,
+            memberWithdrawReasonQueryService = memberWithdrawReasonQueryService,
+            addressService = addressService,
+            reviewTagCountQueryService = reviewTagCountQueryService,
+            reviewQueryService = reviewQueryService,
+            appFeedbackQueryService = appFeedbackQueryService,
+            recommendationAppFeedbackDismissLogService = recommendationAppFeedbackDismissLogService,
+            securityUtil = securityUtil,
+            objectMapper = objectMapper
         )
     }
 
@@ -385,10 +391,22 @@ class MemberControllerDocsTest : RestDocsSupport() {
                         lastWorkoutPartnerRequest = LastWorkoutPartnerRequestResponse(
                             workoutPartnerRequestId = 101L,
                             status = WorkoutPartnerRequestStatus.PENDING,
-//                            isSentByMe = true,
                             chatRoomId = null
                         )
                     )
+                )
+            )
+
+        given(securityUtil.getMemberId())
+            .willReturn(
+                1L
+            )
+
+        given(appFeedbackQueryService.findActiveAppFeedbackCard(any()))
+            .willReturn(
+                MemberRecommendationAppFeedback(
+                    positionIndex = 2,
+                    imageUrl = "https://static-dev.fitview.co.kr/app-feedback/card/9a6bd005-d2cc-432b-81ab-d45ad1a5b86c"
                 )
             )
 
@@ -446,14 +464,21 @@ class MemberControllerDocsTest : RestDocsSupport() {
                         fieldWithPath("data[].lastWorkoutPartnerRequest.status")
                             .type(JsonFieldType.STRING)
                             .description("마지막 운동 파트너 요청 상태 (PENDING: 응답 대기, ACCEPT: 수락됨)"),
-//                        fieldWithPath("data[].lastWorkoutPartnerRequest.isSentByMe")
-//                            .type(JsonFieldType.BOOLEAN)
-//                            .description("해당 운동 파트너 요청을 본인이 보냈는지 여부 (true: 본인 → 상대, false: 상대 → 본인)"),
                         fieldWithPath("data[].lastWorkoutPartnerRequest.chatRoomId")
                             .type(JsonFieldType.NUMBER)
                             .optional()
                             .description("운동 파트너 요청이 ACCEPT + 채팅방 존재 상태일 경우 생성된 채팅방 ID (PENDING 상태에서는 null)"),
 
+                        fieldWithPath("meta.appFeedback")
+                            .type(JsonFieldType.OBJECT)
+                            .description("앱 피드백 설문조사 메타 데이터 (없을 경우 null)")
+                            .optional(),
+                        fieldWithPath("meta.appFeedback.positionIndex")
+                            .type(JsonFieldType.NUMBER)
+                            .description("해당 앱 피드백 설문조사 카드의 index 위치"),
+                        fieldWithPath("meta.appFeedback.imageUrl")
+                            .type(JsonFieldType.STRING)
+                            .description("앱 피드백 설문조사 카드 이미지 url"),
                         )
                 )
             )
@@ -995,6 +1020,41 @@ class MemberControllerDocsTest : RestDocsSupport() {
                             .description("탈퇴 사유 ID"),
                         fieldWithPath("data[].displayText").type(JsonFieldType.STRING)
                             .description("탈퇴 사유 표시 문구")
+                    )
+                )
+            )
+    }
+
+    @DisplayName("추천 앱 피드백 카드 닫기(무시) API")
+    @Test
+    fun recommendationsAppFeedbackDismiss() {
+        // when & then
+        mockMvc.perform(
+            post("/api/v1/members/recommendations/app-feedbacks/dismiss")
+                .header("Authorization", "Bearer jwt-token")
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andDo(
+                document(
+                    "app-feedback-recommendation-dismiss-post",
+                    preprocessRequest(prettyPrint()),
+                    preprocessResponse(prettyPrint()),
+
+                    requestHeaders(
+                        RestDocsHeaders.authorizationHeader(Role.USER)
+                    ),
+
+                    responseFields(
+                        fieldWithPath("status").type(JsonFieldType.NUMBER)
+                            .description("상태"),
+                        fieldWithPath("code").type(JsonFieldType.STRING)
+                            .description("코드"),
+                        fieldWithPath("message").type(JsonFieldType.STRING)
+                            .description("메시지"),
+                        fieldWithPath("data").type(JsonFieldType.STRING)
+                            .description("응답 데이터")
                     )
                 )
             )

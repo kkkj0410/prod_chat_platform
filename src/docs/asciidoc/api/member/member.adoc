@@ -49,6 +49,8 @@ include::{snippets}/member-address-details/response-fields.adoc[]
 홈 화면 - 추천 핏버디. 회원 좌표 인근 반경안에 있는 회원 조회(정책에 따라, 반경 안에 없는 회원도 조회될 수 있음. 최대 10개 조회)
 API 호출할때마다, 조회되는 회원은 랜덤으로 바뀜
 
+-> meta.appFeedback = null 가능 (조건 = 사용자는 [POST] /api/v1/members/recommendations/app-feedbacks/dismiss을 24시간 내 사용)
+
 ==== HTTP Request
 include::{snippets}/member-recommendation/http-request.adoc[]
 include::{snippets}/member-recommendation/request-headers.adoc[]
@@ -57,6 +59,19 @@ include::{snippets}/member-recommendation/query-parameters.adoc[]
 ==== HTTP Response
 include::{snippets}/member-recommendation/http-response.adoc[]
 include::{snippets}/member-recommendation/response-fields.adoc[]
+
+
+[[app-feedback-recommendation-dismiss-post]]
+=== 앱 사용 설문조사 카드 무시(x버튼) API
+
+==== HTTP Request
+include::{snippets}/app-feedback-recommendation-dismiss-post/http-request.adoc[]
+include::{snippets}/app-feedback-recommendation-dismiss-post/request-headers.adoc[]
+
+==== HTTP Response
+include::{snippets}/app-feedback-recommendation-dismiss-post/http-response.adoc[]
+include::{snippets}/app-feedback-recommendation-dismiss-post/response-fields.adoc[]
+
 
 [[member-local]]
 === 우리 동네 핏버디 API
@@ -136,3 +151,6 @@ include::{snippets}/member-withdraw-reason-list/request-headers.adoc[]
 ==== HTTP Response
 include::{snippets}/member-withdraw-reason-list/http-response.adoc[]
 include::{snippets}/member-withdraw-reason-list/response-fields.adoc[]
+
+
+

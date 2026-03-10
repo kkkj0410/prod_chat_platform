@@ -3,10 +3,19 @@ package kr.co.fitview.api.app
 import com.fasterxml.jackson.databind.ObjectMapper
 import kr.co.fitview.api.app.domain.address.controller.AddressController
 import kr.co.fitview.api.app.domain.address.service.AddressService
+import kr.co.fitview.api.app.domain.app_feedback.controller.AdminAppFeedbackController
+import kr.co.fitview.api.app.domain.app_feedback.controller.AppFeedbackController
+import kr.co.fitview.api.app.domain.app_feedback.service.AppFeedbackQueryService
+import kr.co.fitview.api.app.domain.app_feedback.service.AppFeedbackService
+import kr.co.fitview.api.app.domain.app_feedback.service.RecommendationAppFeedbackDismissLogService
 import kr.co.fitview.api.app.domain.auth.controller.AuthController
 import kr.co.fitview.api.app.domain.auth.service.AuthService
 import kr.co.fitview.api.app.domain.auth.service.RefreshTokenService
 import kr.co.fitview.api.app.domain.auth.service.TestAuthService
+import kr.co.fitview.api.app.domain.banner.controller.BannerController
+import kr.co.fitview.api.app.domain.banner.service.BannerDismissLogService
+import kr.co.fitview.api.app.domain.banner.service.BannerQueryService
+import kr.co.fitview.api.app.domain.banner.service.BannerService
 import kr.co.fitview.api.app.domain.chat.controller.ChatController
 import kr.co.fitview.api.app.domain.chat.service.*
 import kr.co.fitview.api.app.domain.dashboard.controller.AdminDashboardController
@@ -88,12 +97,17 @@ import org.springframework.test.web.servlet.MockMvc
     NotificationController::class,
     ReportController::class,
     FavoriteController::class,
+    AppFeedbackController::class,
+    BannerController::class,
+
     AdminDashboardController::class,
     AdminMemberController::class,
     AdminWorkoutPartnerController::class,
     AdminWorkoutController::class,
     AdminReviewController::class,
     AdminReportController::class,
+    AdminAppFeedbackController::class,
+
     HealthController::class,
     GlobalExceptionHandler::class,
 ],
@@ -223,4 +237,23 @@ abstract class ControllerTestSupport {
 
     @MockitoBean
     protected lateinit var favoriteQueryService : FavoriteQueryService
+
+    @MockitoBean
+    protected lateinit var bannerQueryService : BannerQueryService
+
+    @MockitoBean
+    protected lateinit var bannerService : BannerService
+
+    @MockitoBean
+    protected lateinit var appFeedbackService : AppFeedbackService
+
+    @MockitoBean
+    protected lateinit var appFeedbackQueryService : AppFeedbackQueryService
+
+    @MockitoBean
+    protected lateinit var bannerDismissLogService : BannerDismissLogService
+
+    @MockitoBean
+    protected lateinit var recommendationAppFeedbackDismissLogService : RecommendationAppFeedbackDismissLogService
+
 }

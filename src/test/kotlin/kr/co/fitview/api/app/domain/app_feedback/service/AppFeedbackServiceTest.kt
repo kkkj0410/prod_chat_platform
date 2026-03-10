@@ -1,0 +1,204 @@
+package kr.co.fitview.api.app.domain.app_feedback.service
+
+import kr.co.fitview.api.app.IntegrationTestSupport
+import kr.co.fitview.api.app.domain.app_feedback.dto.request.AdminAppFeedbackStatusModifyServiceRequest
+import kr.co.fitview.api.app.domain.app_feedback.dto.request.AppFeedbackAddServiceRequest
+import kr.co.fitview.api.app.domain.app_feedback.dto.request.AppFeedbackPhoneNumberAddServiceRequest
+import kr.co.fitview.api.app.domain.app_feedback.entity.AppFeedback
+import kr.co.fitview.api.app.domain.app_feedback.entity.enums.AppFeedbackCouponStatus
+import kr.co.fitview.api.app.domain.app_feedback.repository.AppFeedbackRepository
+import kr.co.fitview.api.app.domain.auth.repository.RefreshTokenRepository
+import kr.co.fitview.api.app.domain.auth.service.AuthService
+import kr.co.fitview.api.app.domain.member.entity.Member
+import kr.co.fitview.api.app.domain.member.repository.MemberRepository
+import kr.co.fitview.api.app.global.entity.Role
+import kr.co.fitview.api.app.global.exception.GlobalException
+import kr.co.fitview.api.app.global.exception.error.app_feedback.AppFeedbackErrorCode
+import kr.co.fitview.api.app.global.exception.error.member.MemberErrorCode
+import kr.co.fitview.api.app.global.jwt.JwtTokenProvider
+import kr.co.fitview.api.app.global.time.Time
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.assertj.core.api.ThrowingConsumer
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.security.crypto.password.PasswordEncoder
+
+class AppFeedbackServiceTest @Autowired constructor(
+    val appFeedbackService : AppFeedbackService,
+    val appFeedbackRepository : AppFeedbackRepository,
+    val memberRepository : MemberRepository,
+    val time : Time
+) : IntegrationTestSupport() {
+
+    @DisplayName("앱 설문조사를 추가한다.")
+    @Test
+    fun addAppFeedback() {
+        // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(member)
+
+        val request = AppFeedbackAddServiceRequest(
+            rating = 1,
+            painPoint = "painPoint",
+            improvement = "improvement"
+        )
+
+        // when
+        val savedAppFeedback = appFeedbackService.addAppFeedback(
+            request = request,
+            memberId = member.id!!
+        )
+
+        // then
+        assertThat(savedAppFeedback.id).isNotNull
+        assertThat(savedAppFeedback)
+            .extracting(
+                "member.id",
+                "rating",
+                "painPoint",
+                "improvement"
+            )
+            .contains(
+                member.id!!,
+                request.rating,
+                request.painPoint,
+                request.improvement
+            )
+    }
+
+    @DisplayName("쿠폰 발송에 동의한다.")
+    @Test
+    fun applyAppFeedbackForCoupon() {
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(member)
+
+        val appFeedback = AppFeedback.of(
+            member = member,
+            rating = 1,
+            painPoint = "아쉬운점",
+            improvement = "개선점"
+        )
+        appFeedbackRepository.save(appFeedback)
+
+        val request = AppFeedbackPhoneNumberAddServiceRequest(
+            phoneNumber = "01011111111"
+        )
+
+        // when
+        val updatedAppFeedback = appFeedbackService.applyAppFeedbackForCoupon(
+            appFeedbackId = appFeedback.id!!,
+            request = request,
+            memberId = member.id!!
+        )
+
+        // then
+        assertThat(updatedAppFeedback)
+            .extracting(
+                "phoneNumber",
+                "isPrivacyAgreed",
+                "couponStatus"
+            )
+            .contains(
+                request.phoneNumber,
+                true,
+                AppFeedbackCouponStatus.PENDING
+            )
+
+    }
+
+    @DisplayName("앱 설문조사 쿠폰 상태를 변화한다.")
+    @Test
+    fun modifyAppFeedbackCouponStatus() {
+        // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(member)
+
+        val appFeedback = AppFeedback(
+            member = member,
+            rating = 1,
+            painPoint = "아쉬운점",
+            improvement = "개선점",
+            couponStatus = AppFeedbackCouponStatus.PENDING,
+            isPrivacyAgreed = true
+        )
+        appFeedbackRepository.save(appFeedback)
+
+        val request = AdminAppFeedbackStatusModifyServiceRequest(
+            appFeedbackCouponStatus = AppFeedbackCouponStatus.ISSUED
+        )
+
+        // when
+        appFeedbackService.modifyAppFeedbackCouponStatus(
+            appFeedbackId = appFeedback.id!!,
+            request = request
+        )
+
+        // then
+        val appFeedbacks = appFeedbackRepository.findAll()
+        assertThat(appFeedbacks).hasSize(1)
+        assertThat(appFeedbacks[0])
+            .extracting(
+                "id", "couponStatus"
+            )
+            .contains(
+                appFeedback.id!!, AppFeedbackCouponStatus.ISSUED
+            )
+    }
+
+    @DisplayName("앱 설문조사 쿠폰 상태 변경 시, 변경 할 수 없는 상태면 변경하지 않는다.")
+    @Test
+    fun modifyAppFeedbackCouponStatusIsNotChangeCouponStatus() {
+        // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(member)
+
+        val appFeedback = AppFeedback(
+            member = member,
+            rating = 1,
+            painPoint = "아쉬운점",
+            improvement = "개선점",
+            couponStatus = AppFeedbackCouponStatus.NOT_ELIGIBLE,
+            isPrivacyAgreed = true
+        )
+        appFeedbackRepository.save(appFeedback)
+
+        val request = AdminAppFeedbackStatusModifyServiceRequest(
+            appFeedbackCouponStatus = AppFeedbackCouponStatus.ISSUED
+        )
+
+        // when & then
+        assertThatThrownBy {
+            appFeedbackService.modifyAppFeedbackCouponStatus(
+                appFeedbackId = appFeedback.id!!,
+                request = request
+            )
+        }
+            .isInstanceOf(GlobalException::class.java)
+            .satisfies(ThrowingConsumer { ex ->
+                val globalEx = ex as GlobalException
+                assertThat(globalEx.errorCode)
+                    .isEqualTo(AppFeedbackErrorCode.COUPON_STATUS_NOT_ELIGIBLE)
+            })
+    }
+
+
+}

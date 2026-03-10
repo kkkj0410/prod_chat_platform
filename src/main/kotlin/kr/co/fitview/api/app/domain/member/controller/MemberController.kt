@@ -5,6 +5,8 @@ import jakarta.validation.Valid
 import kr.co.fitview.api.app.domain.address.service.AddressService
 import kr.co.fitview.api.app.domain.member.condition.MemberLocalCondition
 import kr.co.fitview.api.app.domain.address.dto.response.AddressResponse
+import kr.co.fitview.api.app.domain.app_feedback.service.AppFeedbackQueryService
+import kr.co.fitview.api.app.domain.app_feedback.service.RecommendationAppFeedbackDismissLogService
 import kr.co.fitview.api.app.domain.member.condition.MemberReviewCondition
 import kr.co.fitview.api.app.domain.member.dto.request.MemberUpdateRequest
 import kr.co.fitview.api.app.domain.member.dto.request.MemberWithdrawRequest
@@ -36,6 +38,8 @@ class MemberController(
     val addressService : AddressService,
     val reviewTagCountQueryService: ReviewTagCountQueryService,
     val reviewQueryService: ReviewQueryService,
+    val appFeedbackQueryService : AppFeedbackQueryService,
+    val recommendationAppFeedbackDismissLogService : RecommendationAppFeedbackDismissLogService,
     val securityUtil : SecurityUtil,
     val objectMapper : ObjectMapper,
 ) {
@@ -79,11 +83,17 @@ class MemberController(
     @GetMapping("/recommendations")
     fun memberRecommendationList(
         @RequestParam(name = "size", defaultValue = "10") size: Int
-    ) : ResponseEntity<ApiResponse<List<MemberRecommendationResponse>>> {
+    ) : ResponseEntity<MemberRecommendationWithMetaResponse> {
 
-        val response = memberQueryService.findRandomMemberWithinRecommendation(securityUtil.getMemberId(), size)
+        val data = memberQueryService.findRandomMemberWithinRecommendation(securityUtil.getMemberId(), size)
+        val appFeedback = appFeedbackQueryService.findActiveAppFeedbackCard(securityUtil.getMemberId())
 
-        return ResponseEntity.ok(ApiResponse.success(response))
+        val response = MemberRecommendationWithMetaResponse.of(
+            data = data,
+            appFeedback = appFeedback
+        )
+
+        return ResponseEntity.ok(response)
     }
 
 
@@ -174,5 +184,14 @@ class MemberController(
         return ResponseEntity.ok(ApiResponse.success(response))
     }
 
+
+    @PostMapping("/recommendations/app-feedbacks/dismiss")
+    fun recommendationsAppFeedbackDismiss(
+    ): ResponseEntity<ApiResponse<*>> {
+
+        recommendationAppFeedbackDismissLogService.addDismissLog(securityUtil.getMemberId())
+
+        return ResponseEntity.ok(ApiResponse.success("ok"))
+    }
 
 }

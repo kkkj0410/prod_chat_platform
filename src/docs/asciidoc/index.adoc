@@ -107,11 +107,28 @@ include::api/favorite/favorite.adoc[]
 include::api/report/adminReport.adoc[]
 
 
-
 [[ADMIN_DASHBOARD]]
 == Admin-Dashboard API
 
 include::api/dashboard/adminDashboard.adoc[]
+
+
+[[BANNER]]
+== Banner API
+
+include::api/banner/banner.adoc[]
+
+
+[[APP_FEEDBACK]]
+== AppFeedback API
+
+include::api/app_feedback/appFeedback.adoc[]
+
+
+[[ADMIN_APP_FEEDBACK]]
+== AdminAppFeedback API
+
+include::api/app_feedback/adminAppFeedback.adoc[]
 
 
 

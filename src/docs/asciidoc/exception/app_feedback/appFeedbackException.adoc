@@ -1,0 +1,11 @@
+[[APP_FEEDBACK_001]]
+=== APP_FEEDBACK_001
+
+==== HTTP Request
+include::{snippets}/APP_FEEDBACK_001/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/APP_FEEDBACK_001/http-response.adoc[]
+include::{snippets}/APP_FEEDBACK_001/response-fields.adoc[]
+
+
