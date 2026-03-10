@@ -6,6 +6,7 @@ import kr.co.fitview.api.app.domain.app_feedback.dto.response.AppFeedbackStatRes
 import kr.co.fitview.api.app.domain.app_feedback.entity.AppFeedback
 import kr.co.fitview.api.app.domain.app_feedback.repository.AppFeedbackRepository
 import kr.co.fitview.api.app.domain.member.dto.response.MemberRecommendationAppFeedback
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.Slice
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
@@ -15,6 +16,9 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 @Transactional(readOnly = true)
 class AppFeedbackQueryService(
+    @Value("\${app-feedback.image-url}")
+    private val appFeedbackImageUrl: String,
+
     private val appFeedbackRepository : AppFeedbackRepository,
     private val recommendationAppFeedbackDismissLogQueryService : RecommendationAppFeedbackDismissLogQueryService
 ) {
@@ -30,7 +34,7 @@ class AppFeedbackQueryService(
 
         return MemberRecommendationAppFeedback(
             positionIndex = 2,
-            imageUrl = "https://static-dev.fitview.co.kr/app-feedback/card/91d4f835-ea2b-492f-a207-06f83dea2c06"
+            imageUrl = appFeedbackImageUrl
         )
     }
 
