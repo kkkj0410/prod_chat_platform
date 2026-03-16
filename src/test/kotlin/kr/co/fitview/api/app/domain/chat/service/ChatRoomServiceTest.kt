@@ -208,11 +208,11 @@ class ChatRoomServiceTest @Autowired constructor(
         //then
         assertThat(content[0])
             .extracting("chatRoomId", "profileImageUrl", "nickname", "isRead")
-            .contains(chatRoom1.id!!, signupRequest1.profileImageUrl, signupRequest1.nickname, true)
+            .contains(chatRoom1.id!!, signupRequest2.profileImageUrl, signupRequest2.nickname, true)
 
         assertThat(content[1])
             .extracting("chatRoomId", "profileImageUrl", "nickname", "isRead")
-            .contains(chatRoom2.id!!, signupRequest1.profileImageUrl, signupRequest1.nickname, true)
+            .contains(chatRoom2.id!!, signupRequest3.profileImageUrl, signupRequest3.nickname, true)
 
         assertThat(content[0].lastChatMessage)
             .extracting(

@@ -25,6 +25,7 @@ import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.enums.Direction
 import kr.co.fitview.api.app.global.slice.SliceWithBefore
 import kr.co.fitview.api.app.global.time.Time
+import kr.co.fitview.api.app.global.util.TestDataFactory
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -111,11 +112,18 @@ class ChatMessageRepositoryTest @Autowired constructor(
         memberRepository.save(other1)
         memberRepository.save(other2)
 
-        val signupRequest = createOAuth2SignupServiceRequest()
-
-        oAuth2Service.signup(signupRequest, me.id!!)
-        oAuth2Service.signup(signupRequest, other1.id!!)
-        oAuth2Service.signup(signupRequest, other2.id!!)
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick1"
+        )
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick2"
+        )
+        val signupRequest3 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick3"
+        )
+        oAuth2Service.signup(signupRequest1, me.id!!)
+        oAuth2Service.signup(signupRequest2, other1.id!!)
+        oAuth2Service.signup(signupRequest3, other2.id!!)
 
         val chatRoom1 = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
         val chatRoom2 = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
@@ -260,10 +268,14 @@ class ChatMessageRepositoryTest @Autowired constructor(
         memberRepository.save(me)
         memberRepository.save(other1)
 
-        val signupRequest = createOAuth2SignupServiceRequest()
-
-        oAuth2Service.signup(signupRequest, me.id!!)
-        oAuth2Service.signup(signupRequest, other1.id!!)
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick1"
+        )
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick2"
+        )
+        oAuth2Service.signup(signupRequest1, me.id!!)
+        oAuth2Service.signup(signupRequest2, other1.id!!)
 
         val chatRoom1 = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
 

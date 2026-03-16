@@ -131,7 +131,7 @@ class MemberQueryServiceTest @Autowired constructor(
         )
         memberRepository.save(other2)
         val signupRequest3 = TestDataFactory.oAuth2SignupRequest(
-            nickname = "updateNick2",
+            nickname = "upNick2",
             profileImageUrl = "updateProfile2"
         )
         oAuth2Service.signup(signupRequest3, other2.id!!)
@@ -233,7 +233,7 @@ class MemberQueryServiceTest @Autowired constructor(
         )
         memberRepository.save(other2)
         val signupRequest3 = TestDataFactory.oAuth2SignupRequest(
-            nickname = "updateNick2",
+            nickname = "upNick2",
             profileImageUrl = "updateProfile2"
         )
         oAuth2Service.signup(signupRequest3, other2.id!!)
@@ -1459,7 +1459,6 @@ class MemberQueryServiceTest @Autowired constructor(
             fullAddress = "fullAddress"
         )
         val signupRequest5 = TestDataFactory.oAuth2SignupRequest(
-            nickname = "nick1",
             address = outAddress2
         )
         oAuth2Service.signup(signupRequest5, member5.id!!)

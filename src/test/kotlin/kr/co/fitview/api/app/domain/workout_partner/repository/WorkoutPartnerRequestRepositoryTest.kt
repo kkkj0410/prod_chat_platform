@@ -35,6 +35,7 @@ import kr.co.fitview.api.app.global.entity.Gender
 import kr.co.fitview.api.app.global.entity.OAuth2Provider
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.time.Time
+import kr.co.fitview.api.app.global.util.TestDataFactory
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.tuple
 import org.junit.jupiter.api.DisplayName
@@ -139,47 +140,47 @@ class WorkoutPartnerRequestRepositoryTest @Autowired constructor(
             .contains(fromMember, toMember, time.nowLocalDateTime)
     }
 
-    fun createOAuth2SignupServiceRequest(
-        profileImageUrl: String = "profileImageUrl",
-        nickname: String = "nickname",
-        gender: Gender = Gender.MALE,
-        birthday: LocalDate = LocalDate.of(2000, 1, 1),
-        height: Int = 170,
-        weight: Int = 65,
-        workoutExperience: MemberWorkoutExperience = MemberWorkoutExperience.JUST_STARTED,
-        workoutStyle: MemberWorkoutStyle = MemberWorkoutStyle.STRENGTH,
-        workoutTimes: List<WorkoutTimeName> = listOf(WorkoutTimeName.WEEKDAY_DAWN, WorkoutTimeName.WEEKDAY_EVENING),
-        workoutGoal: MemberWorkoutGoal = MemberWorkoutGoal.PERFORMANCE_GOAL,
-        workoutImageUrls: List<String> = listOf(
-            "imageUrl1",
-            "imageUrl2",
-        ),
-        intro: String = "intro",
-        address : AddressCreateServiceRequest = AddressCreateServiceRequest(
-            siDo = AddressSiDo.SEOUL,
-            siGunGu = "강남구",
-            eupMyeonDong = "역삼동",
-            lat = 37.4979,
-            lng = 127.0276,
-            fullAddress = "서울특별시 강남구 테헤란로 123"
-        )
-    ): OAuth2SignupServiceRequest {
-        return OAuth2SignupServiceRequest(
-            profileImageUrl = profileImageUrl,
-            nickname = nickname,
-            gender = gender,
-            birthday = birthday,
-            height = height,
-            weight = weight,
-            workoutExperience = workoutExperience,
-            workoutStyle = workoutStyle,
-            workoutTimes = workoutTimes,
-            workoutGoal = workoutGoal,
-            workoutImageUrls = workoutImageUrls,
-            intro = intro,
-            address = address
-        )
-    }
+//    fun createOAuth2SignupServiceRequest(
+//        profileImageUrl: String = "profileImageUrl",
+//        nickname: String = "nickname",
+//        gender: Gender = Gender.MALE,
+//        birthday: LocalDate = LocalDate.of(2000, 1, 1),
+//        height: Int = 170,
+//        weight: Int = 65,
+//        workoutExperience: MemberWorkoutExperience = MemberWorkoutExperience.JUST_STARTED,
+//        workoutStyle: MemberWorkoutStyle = MemberWorkoutStyle.STRENGTH,
+//        workoutTimes: List<WorkoutTimeName> = listOf(WorkoutTimeName.WEEKDAY_DAWN, WorkoutTimeName.WEEKDAY_EVENING),
+//        workoutGoal: MemberWorkoutGoal = MemberWorkoutGoal.PERFORMANCE_GOAL,
+//        workoutImageUrls: List<String> = listOf(
+//            "imageUrl1",
+//            "imageUrl2",
+//        ),
+//        intro: String = "intro",
+//        address : AddressCreateServiceRequest = AddressCreateServiceRequest(
+//            siDo = AddressSiDo.SEOUL,
+//            siGunGu = "강남구",
+//            eupMyeonDong = "역삼동",
+//            lat = 37.4979,
+//            lng = 127.0276,
+//            fullAddress = "서울특별시 강남구 테헤란로 123"
+//        )
+//    ): OAuth2SignupServiceRequest {
+//        return OAuth2SignupServiceRequest(
+//            profileImageUrl = profileImageUrl,
+//            nickname = nickname,
+//            gender = gender,
+//            birthday = birthday,
+//            height = height,
+//            weight = weight,
+//            workoutExperience = workoutExperience,
+//            workoutStyle = workoutStyle,
+//            workoutTimes = workoutTimes,
+//            workoutGoal = workoutGoal,
+//            workoutImageUrls = workoutImageUrls,
+//            intro = intro,
+//            address = address
+//        )
+//    }
 
 
     @DisplayName("회원이 받은 운동 요청을 조회한다.")
@@ -203,9 +204,11 @@ class WorkoutPartnerRequestRepositoryTest @Autowired constructor(
         memberRepository.save(me)
         memberRepository.save(otherMember)
 
-        val signupRequest = createOAuth2SignupServiceRequest()
-        oAuth2Service.signup(signupRequest, me.id!!)
-        oAuth2Service.signup(signupRequest, otherMember.id!!)
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest()
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest()
+
+        oAuth2Service.signup(signupRequest1, me.id!!)
+        oAuth2Service.signup(signupRequest2, otherMember.id!!)
 
         val partnerRequest1 = WorkoutPartnerRequest.of(
             fromMember = otherMember,
@@ -240,7 +243,7 @@ class WorkoutPartnerRequestRepositoryTest @Autowired constructor(
             .isEqualTo(partnerRequest2.id)
 
         assertThat(response1.nickname).isEqualTo(otherMember.nickname)
-        assertThat(response1.profileImageUrl).isEqualTo(signupRequest.profileImageUrl)
+        assertThat(response1.profileImageUrl).isEqualTo(signupRequest1.profileImageUrl)
         assertThat(response1.workoutExperience).isEqualTo(otherMember.workoutExperience)
         assertThat(response1.workoutGoal).isEqualTo(otherMember.workoutGoal)
         assertThat(response1.workoutStyle).isEqualTo(otherMember.workoutStyle)
@@ -273,9 +276,10 @@ class WorkoutPartnerRequestRepositoryTest @Autowired constructor(
         memberRepository.save(me)
         memberRepository.save(otherMember)
 
-        val signupRequest = createOAuth2SignupServiceRequest()
-        oAuth2Service.signup(signupRequest, me.id!!)
-        oAuth2Service.signup(signupRequest, otherMember.id!!)
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest()
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest1, me.id!!)
+        oAuth2Service.signup(signupRequest2, otherMember.id!!)
 
         val partnerRequest1 = WorkoutPartnerRequest.of(
             fromMember = me,
@@ -318,7 +322,7 @@ class WorkoutPartnerRequestRepositoryTest @Autowired constructor(
 
         assertThat(response1.memberId).isEqualTo(otherMember.id!!)
         assertThat(response1.nickname).isEqualTo(otherMember.nickname)
-        assertThat(response1.profileImageUrl).isEqualTo(signupRequest.profileImageUrl)
+        assertThat(response1.profileImageUrl).isEqualTo(signupRequest1.profileImageUrl)
         assertThat(response1.workoutExperience).isEqualTo(otherMember.workoutExperience)
         assertThat(response1.workoutGoal).isEqualTo(otherMember.workoutGoal)
         assertThat(response1.workoutStyle).isEqualTo(otherMember.workoutStyle)
@@ -351,9 +355,11 @@ class WorkoutPartnerRequestRepositoryTest @Autowired constructor(
         memberRepository.save(me)
         memberRepository.save(otherMember)
 
-        val signupRequest = createOAuth2SignupServiceRequest()
-        oAuth2Service.signup(signupRequest, me.id!!)
-        oAuth2Service.signup(signupRequest, otherMember.id!!)
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest()
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest()
+
+        oAuth2Service.signup(signupRequest1, me.id!!)
+        oAuth2Service.signup(signupRequest2, otherMember.id!!)
 
         val partnerRequest1 = WorkoutPartnerRequest.of(
             fromMember = otherMember,
@@ -407,7 +413,7 @@ class WorkoutPartnerRequestRepositoryTest @Autowired constructor(
             .isEqualTo(partnerRequest2.id)
 
         assertThat(response1.nickname).isEqualTo(otherMember.nickname)
-        assertThat(response1.profileImageUrl).isEqualTo(signupRequest.profileImageUrl)
+        assertThat(response1.profileImageUrl).isEqualTo(signupRequest1.profileImageUrl)
         assertThat(response1.workoutExperience).isEqualTo(otherMember.workoutExperience)
         assertThat(response1.workoutGoal).isEqualTo(otherMember.workoutGoal)
         assertThat(response1.workoutStyle).isEqualTo(otherMember.workoutStyle)
@@ -448,9 +454,10 @@ class WorkoutPartnerRequestRepositoryTest @Autowired constructor(
         memberRepository.save(otherMember)
         memberRepository.save(otherMember2)
 
-        val signupRequest = createOAuth2SignupServiceRequest()
-        oAuth2Service.signup(signupRequest, me.id!!)
-        oAuth2Service.signup(signupRequest, otherMember.id!!)
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest()
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest1, me.id!!)
+        oAuth2Service.signup(signupRequest2, otherMember.id!!)
 
 
         val partnerRequest1 = WorkoutPartnerRequest.of(
@@ -501,7 +508,7 @@ class WorkoutPartnerRequestRepositoryTest @Autowired constructor(
             .isEqualTo(partnerRequest3.id)
 
         assertThat(response1.nickname).isEqualTo(otherMember.nickname)
-        assertThat(response1.profileImageUrl).isEqualTo(signupRequest.profileImageUrl)
+        assertThat(response1.profileImageUrl).isEqualTo(signupRequest1.profileImageUrl)
         assertThat(response1.workoutExperience).isEqualTo(otherMember.workoutExperience)
         assertThat(response1.workoutGoal).isEqualTo(otherMember.workoutGoal)
         assertThat(response1.workoutStyle).isEqualTo(otherMember.workoutStyle)
@@ -532,10 +539,10 @@ class WorkoutPartnerRequestRepositoryTest @Autowired constructor(
         memberRepository.save(me)
         memberRepository.save(otherMember)
 
-        val signupMeRequest = createOAuth2SignupServiceRequest()
+        val signupMeRequest = TestDataFactory.oAuth2SignupRequest()
         oAuth2Service.signup(signupMeRequest, me.id!!)
 
-        val signupOtherRequest = createOAuth2SignupServiceRequest(
+        val signupOtherRequest = TestDataFactory.oAuth2SignupRequest(
             nickname = "other",
             workoutExperience = MemberWorkoutExperience.FOUR_TO_SIX_YEARS,
             workoutGoal = MemberWorkoutGoal.BODY_CORRECTION,
@@ -601,10 +608,10 @@ class WorkoutPartnerRequestRepositoryTest @Autowired constructor(
         memberRepository.save(me)
         memberRepository.save(otherMember)
 
-        val signupMeRequest = createOAuth2SignupServiceRequest()
+        val signupMeRequest = TestDataFactory.oAuth2SignupRequest()
         oAuth2Service.signup(signupMeRequest, me.id!!)
 
-        val signupOtherRequest = createOAuth2SignupServiceRequest(
+        val signupOtherRequest = TestDataFactory.oAuth2SignupRequest(
             nickname = "other",
             workoutExperience = MemberWorkoutExperience.FOUR_TO_SIX_YEARS,
             workoutGoal = MemberWorkoutGoal.BODY_CORRECTION,
@@ -670,10 +677,10 @@ class WorkoutPartnerRequestRepositoryTest @Autowired constructor(
         memberRepository.save(me)
         memberRepository.save(otherMember)
 
-        val signupMeRequest = createOAuth2SignupServiceRequest()
+        val signupMeRequest = TestDataFactory.oAuth2SignupRequest()
         oAuth2Service.signup(signupMeRequest, me.id!!)
 
-        val signupOtherRequest = createOAuth2SignupServiceRequest(
+        val signupOtherRequest = TestDataFactory.oAuth2SignupRequest(
             workoutImageUrls = listOf("otherWork1", "otherWork2")
         )
         oAuth2Service.signup(signupOtherRequest, otherMember.id!!)
@@ -731,10 +738,10 @@ class WorkoutPartnerRequestRepositoryTest @Autowired constructor(
         memberRepository.save(me)
         memberRepository.save(otherMember)
 
-        val signupMeRequest = createOAuth2SignupServiceRequest()
+        val signupMeRequest = TestDataFactory.oAuth2SignupRequest()
         oAuth2Service.signup(signupMeRequest, me.id!!)
 
-        val signupOtherRequest = createOAuth2SignupServiceRequest(
+        val signupOtherRequest = TestDataFactory.oAuth2SignupRequest(
             workoutImageUrls = listOf()
         )
         oAuth2Service.signup(signupOtherRequest, otherMember.id!!)
@@ -800,10 +807,13 @@ class WorkoutPartnerRequestRepositoryTest @Autowired constructor(
         memberRepository.save(otherMember2)
 
 
-        val signupRequest = createOAuth2SignupServiceRequest()
-        oAuth2Service.signup(signupRequest, me.id!!)
-        oAuth2Service.signup(signupRequest, otherMember1.id!!)
-        oAuth2Service.signup(signupRequest, otherMember2.id!!)
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest()
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest()
+        val signupRequest3 = TestDataFactory.oAuth2SignupRequest()
+
+        oAuth2Service.signup(signupRequest1, me.id!!)
+        oAuth2Service.signup(signupRequest2, otherMember1.id!!)
+        oAuth2Service.signup(signupRequest3, otherMember2.id!!)
 
         val partnerRequest1 = WorkoutPartnerRequest.of(
             fromMember = otherMember1,
@@ -873,10 +883,10 @@ class WorkoutPartnerRequestRepositoryTest @Autowired constructor(
         memberRepository.save(me)
         memberRepository.save(otherMember)
 
-        val signupMeRequest = createOAuth2SignupServiceRequest()
+        val signupMeRequest = TestDataFactory.oAuth2SignupRequest()
         oAuth2Service.signup(signupMeRequest, me.id!!)
 
-        val signupOtherRequest = createOAuth2SignupServiceRequest(
+        val signupOtherRequest = TestDataFactory.oAuth2SignupRequest(
             workoutImageUrls = listOf()
         )
         oAuth2Service.signup(signupOtherRequest, otherMember.id!!)
@@ -927,10 +937,10 @@ class WorkoutPartnerRequestRepositoryTest @Autowired constructor(
         memberRepository.save(me)
         memberRepository.save(otherMember)
 
-        val signupMeRequest = createOAuth2SignupServiceRequest()
+        val signupMeRequest = TestDataFactory.oAuth2SignupRequest()
         oAuth2Service.signup(signupMeRequest, me.id!!)
 
-        val signupOtherRequest = createOAuth2SignupServiceRequest(
+        val signupOtherRequest = TestDataFactory.oAuth2SignupRequest(
             workoutImageUrls = listOf()
         )
         oAuth2Service.signup(signupOtherRequest, otherMember.id!!)
@@ -987,10 +997,12 @@ class WorkoutPartnerRequestRepositoryTest @Autowired constructor(
         memberRepository.save(member2)
         memberRepository.save(member3)
 
-        val signupRequest = createOAuth2SignupServiceRequest()
-        oAuth2Service.signup(signupRequest, member1.id!!)
-        oAuth2Service.signup(signupRequest, member2.id!!)
-        oAuth2Service.signup(signupRequest, member3.id!!)
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest()
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest()
+        val signupRequest3 = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest1, member1.id!!)
+        oAuth2Service.signup(signupRequest2, member2.id!!)
+        oAuth2Service.signup(signupRequest3, member3.id!!)
 
         val workoutPartnerRequest1 = WorkoutPartnerRequest.of(
             fromMember = member1,
@@ -1125,10 +1137,13 @@ class WorkoutPartnerRequestRepositoryTest @Autowired constructor(
         memberRepository.save(member2)
         memberRepository.save(member3)
 
-        val signupRequest = createOAuth2SignupServiceRequest()
-        oAuth2Service.signup(signupRequest, member1.id!!)
-        oAuth2Service.signup(signupRequest, member2.id!!)
-        oAuth2Service.signup(signupRequest, member3.id!!)
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest()
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest()
+        val signupRequest3 = TestDataFactory.oAuth2SignupRequest()
+
+        oAuth2Service.signup(signupRequest1, member1.id!!)
+        oAuth2Service.signup(signupRequest2, member2.id!!)
+        oAuth2Service.signup(signupRequest3, member3.id!!)
 
         val workoutPartnerRequest1 = WorkoutPartnerRequest.of(
             fromMember = member1,
@@ -1195,10 +1210,12 @@ class WorkoutPartnerRequestRepositoryTest @Autowired constructor(
         memberRepository.save(otherMember1)
         memberRepository.save(otherMember2)
 
-        val signupRequest = createOAuth2SignupServiceRequest()
-        oAuth2Service.signup(signupRequest, meMember.id!!)
-        oAuth2Service.signup(signupRequest, otherMember1.id!!)
-        oAuth2Service.signup(signupRequest, otherMember2.id!!)
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest()
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest()
+        val signupRequest3 = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest1, meMember.id!!)
+        oAuth2Service.signup(signupRequest2, otherMember1.id!!)
+        oAuth2Service.signup(signupRequest3, otherMember2.id!!)
 
         val workoutPartnerRequest1 = WorkoutPartnerRequest.of(
             fromMember = meMember,
@@ -1251,9 +1268,11 @@ class WorkoutPartnerRequestRepositoryTest @Autowired constructor(
         memberRepository.save(meMember)
         memberRepository.save(otherMember)
 
-        val signupRequest = createOAuth2SignupServiceRequest()
-        oAuth2Service.signup(signupRequest, meMember.id!!)
-        oAuth2Service.signup(signupRequest, otherMember.id!!)
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest()
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest()
+
+        oAuth2Service.signup(signupRequest1, meMember.id!!)
+        oAuth2Service.signup(signupRequest2, otherMember.id!!)
 
         val workoutPartnerRequest1 = WorkoutPartnerRequest.of(
             fromMember = meMember,
@@ -1305,9 +1324,11 @@ class WorkoutPartnerRequestRepositoryTest @Autowired constructor(
         memberRepository.save(meMember)
         memberRepository.save(otherMember)
 
-        val signupRequest = createOAuth2SignupServiceRequest()
-        oAuth2Service.signup(signupRequest, meMember.id!!)
-        oAuth2Service.signup(signupRequest, otherMember.id!!)
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest()
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest()
+
+        oAuth2Service.signup(signupRequest1, meMember.id!!)
+        oAuth2Service.signup(signupRequest2, otherMember.id!!)
 
         val workoutPartnerRequest1 = WorkoutPartnerRequest.of(
             fromMember = meMember,

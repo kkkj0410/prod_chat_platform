@@ -69,10 +69,18 @@ class WorkoutPartnerRequestQueryServiceTest @Autowired constructor(
         memberRepository.save(member2)
         memberRepository.save(member3)
 
-        val signupRequest = TestDataFactory.oAuth2SignupRequest()
-        oAuth2Service.signup(signupRequest, member1.id!!)
-        oAuth2Service.signup(signupRequest, member2.id!!)
-        oAuth2Service.signup(signupRequest, member3.id!!)
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick1"
+        )
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick2"
+        )
+        val signupRequest3 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick3"
+        )
+        oAuth2Service.signup(signupRequest1, member1.id!!)
+        oAuth2Service.signup(signupRequest2, member2.id!!)
+        oAuth2Service.signup(signupRequest3, member3.id!!)
 
         val workoutPartnerRequest1 = WorkoutPartnerRequest.of(
             fromMember = member1,
@@ -207,10 +215,18 @@ class WorkoutPartnerRequestQueryServiceTest @Autowired constructor(
         memberRepository.save(otherMember1)
         memberRepository.save(otherMember2)
 
-        val signupRequest = TestDataFactory.oAuth2SignupRequest()
-        oAuth2Service.signup(signupRequest, meMember.id!!)
-        oAuth2Service.signup(signupRequest, otherMember1.id!!)
-        oAuth2Service.signup(signupRequest, otherMember2.id!!)
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick1"
+        )
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick2"
+        )
+        val signupRequest3 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick3"
+        )
+        oAuth2Service.signup(signupRequest1, meMember.id!!)
+        oAuth2Service.signup(signupRequest2, otherMember1.id!!)
+        oAuth2Service.signup(signupRequest3, otherMember2.id!!)
 
         val workoutPartnerRequest1 = WorkoutPartnerRequest.of(
             fromMember = meMember,
@@ -275,10 +291,18 @@ class WorkoutPartnerRequestQueryServiceTest @Autowired constructor(
         memberRepository.save(otherMember2)
         memberRepository.save(otherMember3)
 
-        val signupRequest = TestDataFactory.oAuth2SignupRequest()
-        oAuth2Service.signup(signupRequest, meMember.id!!)
-        oAuth2Service.signup(signupRequest, otherMember1.id!!)
-        oAuth2Service.signup(signupRequest, otherMember2.id!!)
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick1"
+        )
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick2"
+        )
+        val signupRequest3 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick3"
+        )
+        oAuth2Service.signup(signupRequest1, meMember.id!!)
+        oAuth2Service.signup(signupRequest2, otherMember1.id!!)
+        oAuth2Service.signup(signupRequest3, otherMember2.id!!)
 
         val workoutPartnerRequest1 = WorkoutPartnerRequest.of(
             fromMember = meMember,
@@ -343,10 +367,18 @@ class WorkoutPartnerRequestQueryServiceTest @Autowired constructor(
         memberRepository.save(otherMember1)
         memberRepository.save(otherMember2)
 
-        val signupRequest = TestDataFactory.oAuth2SignupRequest()
-        oAuth2Service.signup(signupRequest, meMember.id!!)
-        oAuth2Service.signup(signupRequest, otherMember1.id!!)
-        oAuth2Service.signup(signupRequest, otherMember2.id!!)
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick1"
+        )
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick2"
+        )
+        val signupRequest3 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick3"
+        )
+        oAuth2Service.signup(signupRequest1, meMember.id!!)
+        oAuth2Service.signup(signupRequest2, otherMember1.id!!)
+        oAuth2Service.signup(signupRequest3, otherMember2.id!!)
 
         val workoutPartnerRequest1 = WorkoutPartnerRequest.of(
             fromMember = meMember,
@@ -400,10 +432,18 @@ class WorkoutPartnerRequestQueryServiceTest @Autowired constructor(
         memberRepository.save(otherMember2)
         memberRepository.save(otherMember3)
 
-        val signupRequest = TestDataFactory.oAuth2SignupRequest()
-        oAuth2Service.signup(signupRequest, meMember.id!!)
-        oAuth2Service.signup(signupRequest, otherMember1.id!!)
-        oAuth2Service.signup(signupRequest, otherMember2.id!!)
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick1"
+        )
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick2"
+        )
+        val signupRequest3 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick3"
+        )
+        oAuth2Service.signup(signupRequest1, meMember.id!!)
+        oAuth2Service.signup(signupRequest2, otherMember1.id!!)
+        oAuth2Service.signup(signupRequest3, otherMember2.id!!)
 
         val workoutPartnerRequest1 = WorkoutPartnerRequest.of(
             fromMember = meMember,
