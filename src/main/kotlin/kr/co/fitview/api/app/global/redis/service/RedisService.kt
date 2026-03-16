@@ -19,8 +19,20 @@ class RedisService(
         )
     }
 
+    fun setIfAbsentKey(key: String, value: String, minute: Long): Boolean {
+        return redisClient.setIfAbsent(
+            key = key,
+            value = value,
+            minute = minute
+        )
+    }
+
     fun getKey(key : String) : String?{
         return redisClient.get(key)
+    }
+
+    fun deleteKey(key : String){
+        return redisClient.delete(key)
     }
 
     fun getMemberLocalKey(memberId: Long, seed: Long): Long? {

@@ -3239,4 +3239,49 @@ class MemberRepositoryTest@Autowired constructor(
         assertThat(count).isEqualTo(1)
     }
 
+
+    @DisplayName("회원 닉네임이 있는지 확인한다.")
+    @Test
+    fun existsByNickname() {
+        // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        memberRepository.save(member)
+
+        val request = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nickname"
+        )
+
+        oAuth2Service.signup(
+            request = request,
+            memberId = member.id!!
+        )
+
+        // when
+        val response = memberRepository.existsByNickname(
+            nickname = "nickname"
+        )
+
+        // then
+        assertThat(response).isEqualTo(true)
+    }
+
+    @DisplayName("없는 닉네임이라면 false를 반환한다.")
+    @Test
+    fun existsByNicknameNotExistsNickname() {
+        // given
+
+        // when
+        val response = memberRepository.existsByNickname(
+            nickname = "nickname"
+        )
+
+        // then
+        assertThat(response).isEqualTo(false)
+    }
+
+
 }

@@ -296,6 +296,10 @@ class MemberQueryService(
         return memberRepository.countNotSignupMemberByCreatedAtDate(date)
     }
 
+    fun existsMemberNickname(nickname: String) : Boolean {
+        return memberRepository.existsByNickname(nickname)
+    }
+
     private fun validateDuplicatedEmail(member: Member) {
         findMemberFromEmail(member.email!!)?.let {
             throw GlobalException(MemberErrorCode.MEMBER_DUPLICATE_EMAIL)

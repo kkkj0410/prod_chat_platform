@@ -3,15 +3,10 @@ package kr.co.fitview.api.app.domain.member.service
 import jakarta.persistence.EntityManager
 import jakarta.persistence.EntityNotFoundException
 import kr.co.fitview.api.app.IntegrationTestSupport
-import kr.co.fitview.api.app.domain.address.dto.request.AddressCreateServiceRequest
-import kr.co.fitview.api.app.domain.address.entity.Address
-import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
 import kr.co.fitview.api.app.domain.address.repository.AddressRepository
 import kr.co.fitview.api.app.domain.image.repository.MemberImageRepository
-import kr.co.fitview.api.app.domain.member.condition.MemberLocalCondition
-import kr.co.fitview.api.app.domain.member.dto.request.Age
+import kr.co.fitview.api.app.domain.member.dto.request.MemberReserveNicknameServiceRequest
 import kr.co.fitview.api.app.domain.member.dto.request.MemberUpdateServiceRequest
-import kr.co.fitview.api.app.domain.member.dto.response.enums.ProfileWorkoutPartnerStatus
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.entity.WorkoutTime
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutExperience
@@ -21,12 +16,9 @@ import kr.co.fitview.api.app.domain.member.entity.enums.WorkoutTimeName
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.domain.member.repository.WorkoutTimeRepository
-import kr.co.fitview.api.app.domain.oauth2.dto.request.OAuth2SignupServiceRequest
 import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
-import kr.co.fitview.api.app.global.entity.Gender
 import kr.co.fitview.api.app.global.entity.OAuth2Provider
 import kr.co.fitview.api.app.global.exception.GlobalException
-import kr.co.fitview.api.app.global.exception.error.global.GlobalErrorCode
 import kr.co.fitview.api.app.global.exception.error.member.MemberErrorCode
 import kr.co.fitview.api.app.global.random.RandomCustom
 import kr.co.fitview.api.app.global.util.TestDataFactory
@@ -35,8 +27,8 @@ import org.assertj.core.api.ThrowingConsumer
 import org.hibernate.proxy.HibernateProxy
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.any
 import org.mockito.kotlin.given
+import org.mockito.kotlin.then
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 
@@ -44,11 +36,9 @@ class MemberServiceTest @Autowired constructor(
     val memberService : MemberService,
     val memberRepository : MemberRepository,
     val workoutTimeRepository : WorkoutTimeRepository,
-    val addressRepository: AddressRepository,
     val oAuth2Service : OAuth2Service,
     val memberImageRepository : MemberImageRepository,
     val em : EntityManager,
-    val randomCustom : RandomCustom
 ) : IntegrationTestSupport() {
 
     @DisplayName("사용자 정보를 저장한다")
@@ -679,6 +669,224 @@ class MemberServiceTest @Autowired constructor(
                 "updateWorkoutImageUrl1",
                 "updateWorkoutImageUrl2"
             )
+    }
+
+    @DisplayName("닉네임을 예약한다.")
+    @Test
+    fun reserveNickname() {
+        // given
+        val member = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(member)
+
+        val request = MemberReserveNicknameServiceRequest(
+            nickname = "hello"
+        )
+
+        given(redisClient.setIfAbsent(
+            key = "member:nickname:reserve:hello",
+            value = member.id!!.toString(),
+            minute = 30L
+        )).willReturn(true)
+
+        // when
+        val response = memberService.reserveNickname(
+            memberId = member.id!!,
+            request = request
+        )
+
+        // then
+        assertThat(response.isReserved).isEqualTo(true)
+
+        then(redisClient).should().setIfAbsent(
+            key = "member:nickname:reserve:hello",
+            value = member.id!!.toString(),
+            minute = 30L
+        )
+
+        then(redisClient).should().set(
+            key = "member:nickname:reserve:member:${member.id!!}",
+            value = "hello",
+            minute = 30L
+        )
+    }
+
+    @DisplayName("닉네임 예약 시, 해당 닉네임을 쓰고있는 사람이 있다면 예약을 취소한다.")
+    @Test
+    fun reserveNicknameExistsNickname() {
+        // given
+        val member = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(member)
+
+        val otherMember = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(otherMember)
+
+        val signupRequest = TestDataFactory.oAuth2SignupRequest(
+            nickname = "hello"
+        )
+
+        oAuth2Service.signup(
+            request = signupRequest,
+            memberId = otherMember.id!!
+        )
+
+        val request = MemberReserveNicknameServiceRequest(
+            nickname = "hello"
+        )
+
+        // when
+        val response = memberService.reserveNickname(
+            request = request,
+            memberId = member.id!!
+        )
+
+        // then
+        assertThat(response.isReserved).isEqualTo(false)
+    }
+
+    @DisplayName("닉네임 예약 시, 해당 닉네임을 예약한 사람이 있다면 예약을 취소한다.")
+    @Test
+    fun reserveNicknameReserveNickname() {
+        // given
+        val member = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(member)
+
+        val otherMember = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(otherMember)
+
+        val request = MemberReserveNicknameServiceRequest(
+            nickname = "hello"
+        )
+
+        given(redisClient.get(
+            key = "member:nickname:reserve:hello",
+        )).willReturn(otherMember.id!!.toString())
+
+        // when
+        val response = memberService.reserveNickname(
+            request = request,
+            memberId = member.id!!
+        )
+
+        // then
+        assertThat(response.isReserved).isEqualTo(false)
+
+        then(redisClient).should().get(
+            key = "member:nickname:reserve:hello",
+        )
+    }
+
+    @DisplayName("본인이 이미 예약한 닉네임을 다시 예약 시, 만료 시간을 재갱신한다.")
+    @Test
+    fun reserveNicknameRerollExpire() {
+        // given
+        val member = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(member)
+
+        val request = MemberReserveNicknameServiceRequest(nickname = "hello")
+
+        given(redisClient.get(
+            key = "member:nickname:reserve:hello"
+        )).willReturn(member.id!!.toString())
+
+        // when
+        val response = memberService.reserveNickname(
+            request = request,
+            memberId = member.id!!
+        )
+
+        // then
+        assertThat(response.isReserved).isEqualTo(true)
+
+        then(redisClient).should().get(
+            key = "member:nickname:reserve:hello"
+        )
+        then(redisClient).should().set(
+            key = "member:nickname:reserve:hello",
+            value = member.id!!.toString(),
+            minute = 30L
+        )
+        then(redisClient).should().set(
+            key = "member:nickname:reserve:member:${member.id!!}",
+            value = "hello",
+            minute = 30L
+        )
+    }
+
+    @DisplayName("본인이 닉네임을 예약한 상황에서 다른 닉네임을 예약하면 기존 예약은 취소한다.")
+    @Test
+    fun reserveNicknameDeleteReserve() {
+        // given
+        val member = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(member)
+
+        val request = MemberReserveNicknameServiceRequest(nickname = "hello")
+
+        given(redisClient.get(
+            key = "member:nickname:reserve:member:${member.id!!}"
+        )).willReturn("otherNickname")
+
+        given(redisClient.setIfAbsent(
+            key = "member:nickname:reserve:hello",
+            value = member.id.toString(),
+            minute = 30L
+        )).willReturn(true)
+
+        // when
+        val response = memberService.reserveNickname(
+            request = request,
+            memberId = member.id!!
+        )
+
+        // then
+        assertThat(response.isReserved).isEqualTo(true)
+
+        then(redisClient).should().get(
+            key = "member:nickname:reserve:member:${member.id}"
+        )
+        then(redisClient).should().delete(
+            key = "member:nickname:reserve:otherNickname"
+        )
+        then(redisClient).should().delete(
+            key = "member:nickname:reserve:member:${member.id}"
+        )
+        then(redisClient).should().setIfAbsent(
+            key = "member:nickname:reserve:hello",
+            value = member.id!!.toString(),
+            minute = 30L
+        )
+        then(redisClient).should().set(
+            key = "member:nickname:reserve:member:${member.id!!}",
+            value = "hello",
+            minute = 30L
+        )
     }
 
 }

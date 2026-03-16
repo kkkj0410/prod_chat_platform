@@ -21,8 +21,16 @@ class RedisClient(
         redisTemplate.expire(key, Duration.ofMinutes(minute))
     }
 
+    fun setIfAbsent(key: String, value: String, minute: Long): Boolean {
+        return redisTemplate.opsForValue().setIfAbsent(key, value, Duration.ofMinutes(minute)) == true
+    }
+
     fun get(key: String): String? {
         return redisTemplate.opsForValue().get(key)
+    }
+
+    fun delete(key: String) {
+        redisTemplate.delete(key)
     }
 
     fun convertAndSend(channel : String, message : Any){

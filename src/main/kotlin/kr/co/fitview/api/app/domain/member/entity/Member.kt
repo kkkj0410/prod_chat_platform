@@ -17,7 +17,24 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 
 @Entity
-@Table(name = "member")
+@Table(
+    name = "member",
+    uniqueConstraints = [
+        UniqueConstraint(
+            name = "member_provider_id_provider_active_check_uk",
+            columnNames = ["provider_id", "provider", "_active_check"]
+        ),
+        UniqueConstraint(
+            name = "member_nickname_active_check_uk",
+            columnNames = ["nickname", "_active_check"]
+        )
+    ],
+    indexes = [
+        Index(name = "member_email_idx", columnList = "email"),
+        Index(name = "member_created_at_idx", columnList = "created_at"),
+        Index(name = "member_member_withdraw_reason_fk", columnList = "member_withdraw_reason_id")
+    ]
+)
 class Member(
 
     @Column(name = "email", nullable = false, length = 100)

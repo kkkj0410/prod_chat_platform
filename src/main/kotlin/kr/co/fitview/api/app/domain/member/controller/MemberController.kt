@@ -8,6 +8,7 @@ import kr.co.fitview.api.app.domain.address.dto.response.AddressResponse
 import kr.co.fitview.api.app.domain.app_feedback.service.AppFeedbackQueryService
 import kr.co.fitview.api.app.domain.app_feedback.service.RecommendationAppFeedbackDismissLogService
 import kr.co.fitview.api.app.domain.member.condition.MemberReviewCondition
+import kr.co.fitview.api.app.domain.member.dto.request.MemberReserveNicknameRequest
 import kr.co.fitview.api.app.domain.member.dto.request.MemberUpdateRequest
 import kr.co.fitview.api.app.domain.member.dto.request.MemberWithdrawRequest
 import kr.co.fitview.api.app.domain.member.dto.response.*
@@ -192,6 +193,22 @@ class MemberController(
         recommendationAppFeedbackDismissLogService.addDismissLog(securityUtil.getMemberId())
 
         return ResponseEntity.ok(ApiResponse.success("ok"))
+    }
+
+    @PostMapping("/nicknames/reserve")
+    fun memberReserveNickname(
+
+        @Valid
+        @RequestBody
+        request : MemberReserveNicknameRequest
+
+    ): ResponseEntity<ApiResponse<MemberReserveNicknameResponse>> {
+        val response = memberService.reserveNickname(
+            memberId = securityUtil.getMemberId(),
+            request = request.toServiceRequest()
+        )
+
+        return ResponseEntity.ok(ApiResponse.success(response))
     }
 
 }
