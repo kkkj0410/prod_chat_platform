@@ -3242,7 +3242,7 @@ class MemberRepositoryTest@Autowired constructor(
 
     @DisplayName("회원 닉네임이 있는지 확인한다.")
     @Test
-    fun existsByNickname() {
+    fun existsByNicknameAndDeletedAtIsNull() {
         // given
         val member = Member(
             email = "email",
@@ -3261,7 +3261,7 @@ class MemberRepositoryTest@Autowired constructor(
         )
 
         // when
-        val response = memberRepository.existsByNickname(
+        val response = memberRepository.existsByNicknameAndDeletedAtIsNull(
             nickname = "nickname"
         )
 
@@ -3271,11 +3271,11 @@ class MemberRepositoryTest@Autowired constructor(
 
     @DisplayName("없는 닉네임이라면 false를 반환한다.")
     @Test
-    fun existsByNicknameNotExistsNickname() {
+    fun existsByNicknameNotExistsNicknameAndDeletedAtIsNull() {
         // given
 
         // when
-        val response = memberRepository.existsByNickname(
+        val response = memberRepository.existsByNicknameAndDeletedAtIsNull(
             nickname = "nickname"
         )
 

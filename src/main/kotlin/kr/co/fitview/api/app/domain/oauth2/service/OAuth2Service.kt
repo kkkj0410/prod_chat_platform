@@ -103,6 +103,15 @@ class OAuth2Service(
         if (nickname.length > 10) {
             throw GlobalException(MemberErrorCode.MEMBER_NICKNAME_TOO_LONG)
         }
+
+        if (nickname.startsWith("dup")) {
+            throw GlobalException(MemberErrorCode.MEMBER_DUPLICATE_NICKNAME)
+        }
+
+        val isExistsNickname = memberQueryService.existsMemberNickname(nickname)
+        if (isExistsNickname){
+            throw GlobalException(MemberErrorCode.MEMBER_DUPLICATE_NICKNAME)
+        }
     }
 
     private fun validateHeight(height : Int) {

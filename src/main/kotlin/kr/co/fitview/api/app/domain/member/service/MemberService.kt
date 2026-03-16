@@ -10,6 +10,7 @@ import kr.co.fitview.api.app.domain.member.entity.enums.WorkoutTimeName
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
 import kr.co.fitview.api.app.domain.member.repository.WorkoutTimeRepository
 import kr.co.fitview.api.app.global.exception.GlobalException
+import kr.co.fitview.api.app.global.exception.error.global.GlobalErrorCode
 import kr.co.fitview.api.app.global.exception.error.member.MemberErrorCode
 import kr.co.fitview.api.app.global.redis.service.RedisService
 import kr.co.fitview.api.app.global.time.Time
@@ -128,6 +129,10 @@ class MemberService(
 
 
     fun reserveNickname(memberId: Long, request: MemberReserveNicknameServiceRequest): MemberReserveNicknameResponse {
+        val findMember = memberQueryService.findMemberFromId(memberId)
+            ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
+        if(findMember.isSignup!!) return MemberReserveNicknameResponse(isReserved = false)
+
         val isExistsNickname = memberQueryService.existsMemberNickname(request.nickname)
         if (isExistsNickname) return MemberReserveNicknameResponse(isReserved = false)
 

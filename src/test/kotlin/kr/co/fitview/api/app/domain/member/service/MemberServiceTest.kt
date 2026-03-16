@@ -714,6 +714,45 @@ class MemberServiceTest @Autowired constructor(
         )
     }
 
+    @DisplayName("닉네임을 예약 시, 이미 회원가입 한 회원이 닉네임을 예약하면 예약에 실패한다.")
+    @Test
+    fun reserveNicknameAlreadySignup() {
+        // given
+        val member = Member(
+            email = "email1",
+            password = "password1",
+            role = Role.USER,
+        )
+        memberRepository.save(member)
+
+        val signupRequest = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nickname"
+        )
+        oAuth2Service.signup(
+            request = signupRequest,
+            memberId = member.id!!
+        )
+
+        val request = MemberReserveNicknameServiceRequest(
+            nickname = "hello"
+        )
+
+        given(redisClient.setIfAbsent(
+            key = "member:nickname:reserve:hello",
+            value = member.id!!.toString(),
+            minute = 30L
+        )).willReturn(true)
+
+        // when
+        val response = memberService.reserveNickname(
+            memberId = member.id!!,
+            request = request
+        )
+
+        // then
+        assertThat(response.isReserved).isEqualTo(false)
+    }
+
     @DisplayName("닉네임 예약 시, 해당 닉네임을 쓰고있는 사람이 있다면 예약을 취소한다.")
     @Test
     fun reserveNicknameExistsNickname() {

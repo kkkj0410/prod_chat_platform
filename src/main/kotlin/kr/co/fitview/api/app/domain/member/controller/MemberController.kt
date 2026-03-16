@@ -197,12 +197,11 @@ class MemberController(
 
     @PostMapping("/nicknames/reserve")
     fun memberReserveNickname(
-
         @Valid
         @RequestBody
         request : MemberReserveNicknameRequest
-
     ): ResponseEntity<ApiResponse<MemberReserveNicknameResponse>> {
+
         val response = memberService.reserveNickname(
             memberId = securityUtil.getMemberId(),
             request = request.toServiceRequest()
