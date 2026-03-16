@@ -65,11 +65,19 @@ class ChatMessageQueryServiceTest @Autowired constructor(
         memberRepository.save(other1)
         memberRepository.save(other2)
 
-        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick1"
+        )
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick2"
+        )
+        val signupRequest3 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick3"
+        )
 
-        oAuth2Service.signup(signupRequest, me.id!!)
-        oAuth2Service.signup(signupRequest, other1.id!!)
-        oAuth2Service.signup(signupRequest, other2.id!!)
+        oAuth2Service.signup(signupRequest1, me.id!!)
+        oAuth2Service.signup(signupRequest2, other1.id!!)
+        oAuth2Service.signup(signupRequest3, other2.id!!)
 
         val chatRoom1 = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
         val chatRoom2 = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))

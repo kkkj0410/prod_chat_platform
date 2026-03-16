@@ -30,7 +30,6 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
 import kotlin.math.cos
-import kotlin.random.Random
 
 
 @Service
@@ -294,6 +293,10 @@ class MemberQueryService(
 
     fun countNotSignupMemberFromCreatedAtDate(date : LocalDate) : Int{
         return memberRepository.countNotSignupMemberByCreatedAtDate(date)
+    }
+
+    fun existsMemberNickname(nickname: String) : Boolean {
+        return memberRepository.existsByNicknameAndDeletedAtIsNull(nickname)
     }
 
     private fun validateDuplicatedEmail(member: Member) {

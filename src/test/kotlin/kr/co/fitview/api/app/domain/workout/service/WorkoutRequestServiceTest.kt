@@ -827,9 +827,14 @@ class WorkoutRequestServiceTest @Autowired constructor(
         memberRepository.save(me)
         memberRepository.save(other)
 
-        val signupRequest = TestDataFactory.oAuth2SignupRequest()
-        oAuth2Service.signup(signupRequest, me.id!!)
-        oAuth2Service.signup(signupRequest, other.id!!)
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick1"
+        )
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick2"
+        )
+        oAuth2Service.signup(signupRequest1, me.id!!)
+        oAuth2Service.signup(signupRequest2, other.id!!)
 
         val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
 
@@ -897,9 +902,14 @@ class WorkoutRequestServiceTest @Autowired constructor(
         memberRepository.save(me)
         memberRepository.save(other)
 
-        val signupRequest = TestDataFactory.oAuth2SignupRequest()
-        oAuth2Service.signup(signupRequest, me.id!!)
-        oAuth2Service.signup(signupRequest, other.id!!)
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick1"
+        )
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick2"
+        )
+        oAuth2Service.signup(signupRequest1, me.id!!)
+        oAuth2Service.signup(signupRequest2, other.id!!)
 
         val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
 
@@ -969,9 +979,14 @@ class WorkoutRequestServiceTest @Autowired constructor(
         memberRepository.save(me)
         memberRepository.save(other)
 
-        val signupRequest = TestDataFactory.oAuth2SignupRequest()
-        oAuth2Service.signup(signupRequest, me.id!!)
-        oAuth2Service.signup(signupRequest, other.id!!)
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick1"
+        )
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick2"
+        )
+        oAuth2Service.signup(signupRequest1, me.id!!)
+        oAuth2Service.signup(signupRequest2, other.id!!)
 
         val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
 
@@ -1033,9 +1048,14 @@ class WorkoutRequestServiceTest @Autowired constructor(
         memberRepository.save(me)
         memberRepository.save(other)
 
-        val signupRequest = TestDataFactory.oAuth2SignupRequest()
-        oAuth2Service.signup(signupRequest, me.id!!)
-        oAuth2Service.signup(signupRequest, other.id!!)
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick1"
+        )
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick2"
+        )
+        oAuth2Service.signup(signupRequest1, me.id!!)
+        oAuth2Service.signup(signupRequest2, other.id!!)
 
         val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
 
@@ -1097,9 +1117,14 @@ class WorkoutRequestServiceTest @Autowired constructor(
         memberRepository.save(me)
         memberRepository.save(other)
 
-        val signupRequest = TestDataFactory.oAuth2SignupRequest()
-        oAuth2Service.signup(signupRequest, me.id!!)
-        oAuth2Service.signup(signupRequest, other.id!!)
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick1"
+        )
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick2"
+        )
+        oAuth2Service.signup(signupRequest1, me.id!!)
+        oAuth2Service.signup(signupRequest2, other.id!!)
 
         val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
 
@@ -1161,9 +1186,14 @@ class WorkoutRequestServiceTest @Autowired constructor(
         memberRepository.save(me)
         memberRepository.save(other)
 
-        val signupRequest = TestDataFactory.oAuth2SignupRequest()
-        oAuth2Service.signup(signupRequest, me.id!!)
-        oAuth2Service.signup(signupRequest, other.id!!)
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick1"
+        )
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick2"
+        )
+        oAuth2Service.signup(signupRequest1, me.id!!)
+        oAuth2Service.signup(signupRequest2, other.id!!)
 
         val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
 
@@ -1227,9 +1257,14 @@ class WorkoutRequestServiceTest @Autowired constructor(
         memberRepository.save(me)
         memberRepository.save(other)
 
-        val signupRequest = TestDataFactory.oAuth2SignupRequest()
-        oAuth2Service.signup(signupRequest, me.id!!)
-        oAuth2Service.signup(signupRequest, other.id!!)
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick1"
+        )
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick2"
+        )
+        oAuth2Service.signup(signupRequest1, me.id!!)
+        oAuth2Service.signup(signupRequest2, other.id!!)
 
         val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
 
@@ -1303,9 +1338,14 @@ class WorkoutRequestServiceTest @Autowired constructor(
         memberRepository.save(me)
         memberRepository.save(other)
 
-        val signupRequest = TestDataFactory.oAuth2SignupRequest()
-        oAuth2Service.signup(signupRequest, me.id!!)
-        oAuth2Service.signup(signupRequest, other.id!!)
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick1"
+        )
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick2"
+        )
+        oAuth2Service.signup(signupRequest1, me.id!!)
+        oAuth2Service.signup(signupRequest2, other.id!!)
 
         val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
 
@@ -1369,9 +1409,14 @@ class WorkoutRequestServiceTest @Autowired constructor(
         memberRepository.save(me)
         memberRepository.save(other)
 
-        val signupRequest = TestDataFactory.oAuth2SignupRequest()
-        oAuth2Service.signup(signupRequest, me.id!!)
-        oAuth2Service.signup(signupRequest, other.id!!)
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick1"
+        )
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick2"
+        )
+        oAuth2Service.signup(signupRequest1, me.id!!)
+        oAuth2Service.signup(signupRequest2, other.id!!)
 
         val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
 
@@ -1434,9 +1479,14 @@ class WorkoutRequestServiceTest @Autowired constructor(
         memberRepository.save(me)
         memberRepository.save(other)
 
-        val signupRequest = TestDataFactory.oAuth2SignupRequest()
-        oAuth2Service.signup(signupRequest, me.id!!)
-        oAuth2Service.signup(signupRequest, other.id!!)
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick1"
+        )
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick2"
+        )
+        oAuth2Service.signup(signupRequest1, me.id!!)
+        oAuth2Service.signup(signupRequest2, other.id!!)
 
         val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
 
@@ -1498,9 +1548,14 @@ class WorkoutRequestServiceTest @Autowired constructor(
         memberRepository.save(me)
         memberRepository.save(other)
 
-        val signupRequest = TestDataFactory.oAuth2SignupRequest()
-        oAuth2Service.signup(signupRequest, me.id!!)
-        oAuth2Service.signup(signupRequest, other.id!!)
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick1"
+        )
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick2"
+        )
+        oAuth2Service.signup(signupRequest1, me.id!!)
+        oAuth2Service.signup(signupRequest2, other.id!!)
 
         val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
 
@@ -1562,9 +1617,14 @@ class WorkoutRequestServiceTest @Autowired constructor(
         memberRepository.save(me)
         memberRepository.save(other)
 
-        val signupRequest = TestDataFactory.oAuth2SignupRequest()
-        oAuth2Service.signup(signupRequest, me.id!!)
-        oAuth2Service.signup(signupRequest, other.id!!)
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick1"
+        )
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick2"
+        )
+        oAuth2Service.signup(signupRequest1, me.id!!)
+        oAuth2Service.signup(signupRequest2, other.id!!)
 
         val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
 
@@ -2017,9 +2077,14 @@ class WorkoutRequestServiceTest @Autowired constructor(
         memberRepository.save(me)
         memberRepository.save(other)
 
-        val signupRequest = TestDataFactory.oAuth2SignupRequest()
-        oAuth2Service.signup(signupRequest, me.id!!)
-        oAuth2Service.signup(signupRequest, other.id!!)
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick1"
+        )
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick2"
+        )
+        oAuth2Service.signup(signupRequest1, me.id!!)
+        oAuth2Service.signup(signupRequest2, other.id!!)
 
         val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
 
@@ -2083,9 +2148,14 @@ class WorkoutRequestServiceTest @Autowired constructor(
         memberRepository.save(me)
         memberRepository.save(other)
 
-        val signupRequest = TestDataFactory.oAuth2SignupRequest()
-        oAuth2Service.signup(signupRequest, me.id!!)
-        oAuth2Service.signup(signupRequest, other.id!!)
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick1"
+        )
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick2"
+        )
+        oAuth2Service.signup(signupRequest1, me.id!!)
+        oAuth2Service.signup(signupRequest2, other.id!!)
 
         val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
 
@@ -2151,9 +2221,14 @@ class WorkoutRequestServiceTest @Autowired constructor(
         memberRepository.save(me)
         memberRepository.save(other)
 
-        val signupRequest = TestDataFactory.oAuth2SignupRequest()
-        oAuth2Service.signup(signupRequest, me.id!!)
-        oAuth2Service.signup(signupRequest, other.id!!)
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick1"
+        )
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick2"
+        )
+        oAuth2Service.signup(signupRequest1, me.id!!)
+        oAuth2Service.signup(signupRequest2, other.id!!)
 
         val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
 
@@ -2217,9 +2292,14 @@ class WorkoutRequestServiceTest @Autowired constructor(
         memberRepository.save(me)
         memberRepository.save(other)
 
-        val signupRequest = TestDataFactory.oAuth2SignupRequest()
-        oAuth2Service.signup(signupRequest, me.id!!)
-        oAuth2Service.signup(signupRequest, other.id!!)
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick1"
+        )
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick2"
+        )
+        oAuth2Service.signup(signupRequest1, me.id!!)
+        oAuth2Service.signup(signupRequest2, other.id!!)
 
         val chatRoom = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
 

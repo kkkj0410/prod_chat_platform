@@ -91,12 +91,15 @@ class FavoriteRepositoryTest @Autowired constructor(
         memberRepository.save(other3)
 
         val other1SignupData = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick1",
             workoutImageUrls = null
         )
         val other2SignupData = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick2",
             workoutImageUrls = listOf("hello")
         )
         val other3SignupData = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick3",
             workoutImageUrls = listOf("hello2")
         )
         oAuth2Service.signup(other1SignupData, other1.id!!)
@@ -222,12 +225,15 @@ class FavoriteRepositoryTest @Autowired constructor(
         memberRepository.save(other3)
 
         val other1SignupData = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick1",
             workoutImageUrls = null
         )
         val other2SignupData = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick2",
             workoutImageUrls = listOf("hello")
         )
         val other3SignupData = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick3",
             workoutImageUrls = listOf("hello2")
         )
         oAuth2Service.signup(other1SignupData, other1.id!!)

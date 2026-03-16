@@ -19,10 +19,12 @@ enum class MemberErrorCode(
         "008",
         "Cannot recover account",
         "삭제된 회원 계정을 복구할 수 없음. 이미 동일한 정보로 계정이 존재함"
+    ),
+    MEMBER_DUPLICATE_NICKNAME(
+        "009",
+        "Nickname already exists",
+        "해당 닉네임(별명)은 이미 사용 중이라 설정(또는 수정)할 수 없음"
     )
-
-
-
 
 
 
