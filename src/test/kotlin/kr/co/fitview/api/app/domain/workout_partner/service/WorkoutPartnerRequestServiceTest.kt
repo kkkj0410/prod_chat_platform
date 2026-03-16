@@ -1232,7 +1232,7 @@ class WorkoutPartnerRequestServiceTest @Autowired constructor(
 
         // then
         assertThat(slice.content).hasSize(1)
-
+//
         val response1 = slice.content[0]
 
         assertThat(response1.workoutPartnerRequestId)
