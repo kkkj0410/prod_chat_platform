@@ -306,7 +306,7 @@ class NotificationRepositoryTest @Autowired constructor(
             nickname = "nick3",
             profileImageUrl = "profile3"
         )
-        oAuth2Service.signup(signupRequest2, notInMember3.id!!)
+        oAuth2Service.signup(signupRequest3, notInMember3.id!!)
 
         val memberIds = listOf(member.id!!, member2.id!!)
 

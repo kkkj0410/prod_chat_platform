@@ -151,11 +151,19 @@ class ChatRoomRepositoryTest @Autowired constructor(
         memberRepository.save(other1)
         memberRepository.save(other2)
 
-        val signupRequest = createOAuth2SignupServiceRequest()
+        val signupRequest1 = createOAuth2SignupServiceRequest(
+            nickname = "nick1"
+        )
+        val signupRequest2 = createOAuth2SignupServiceRequest(
+            nickname = "nick2"
+        )
+        val signupRequest3 = createOAuth2SignupServiceRequest(
+            nickname = "nick3"
+        )
 
-        oAuth2Service.signup(signupRequest, me.id!!)
-        oAuth2Service.signup(signupRequest, other1.id!!)
-        oAuth2Service.signup(signupRequest, other2.id!!)
+        oAuth2Service.signup(signupRequest1, me.id!!)
+        oAuth2Service.signup(signupRequest2, other1.id!!)
+        oAuth2Service.signup(signupRequest3, other2.id!!)
 
         val chatRoom1 = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
         chatRoom1.updateLastMessageAt(time.nowLocalDateTime)
@@ -196,8 +204,8 @@ class ChatRoomRepositoryTest @Autowired constructor(
         assertThat(response)
             .extracting("chatRoomId", "profileImageUrl", "nickname")
             .containsExactlyInAnyOrder(
-                tuple(chatRoom1.id!!, signupRequest.profileImageUrl, other1.nickname),
-                tuple(chatRoom2.id!!, signupRequest.profileImageUrl, other2.nickname),
+                tuple(chatRoom1.id!!, signupRequest2.profileImageUrl, other1.nickname),
+                tuple(chatRoom2.id!!, signupRequest3.profileImageUrl, other2.nickname),
             )
     }
 
@@ -224,11 +232,19 @@ class ChatRoomRepositoryTest @Autowired constructor(
         memberRepository.save(other1)
         memberRepository.save(other2)
 
-        val signupRequest = createOAuth2SignupServiceRequest()
+        val signupRequest1 = createOAuth2SignupServiceRequest(
+            nickname = "nick1"
+        )
+        val signupRequest2 = createOAuth2SignupServiceRequest(
+            nickname = "nick2"
+        )
+        val signupRequest3 = createOAuth2SignupServiceRequest(
+            nickname = "nick3"
+        )
 
-        oAuth2Service.signup(signupRequest, me.id!!)
-        oAuth2Service.signup(signupRequest, other1.id!!)
-        oAuth2Service.signup(signupRequest, other2.id!!)
+        oAuth2Service.signup(signupRequest1, me.id!!)
+        oAuth2Service.signup(signupRequest2, other1.id!!)
+        oAuth2Service.signup(signupRequest3, other2.id!!)
 
         val chatRoom1 = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
         val chatRoom2 = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
@@ -286,11 +302,11 @@ class ChatRoomRepositoryTest @Autowired constructor(
         // then
         assertThat(response[0])
             .extracting("chatRoomId", "profileImageUrl", "nickname")
-            .contains(chatRoom2.id!!, signupRequest.profileImageUrl, other2.nickname)
+            .contains(chatRoom2.id!!, signupRequest3.profileImageUrl, other2.nickname)
 
         assertThat(response[1])
             .extracting("chatRoomId", "profileImageUrl", "nickname")
-            .contains(chatRoom1.id!!, signupRequest.profileImageUrl, other1.nickname)
+            .contains(chatRoom1.id!!, signupRequest2.profileImageUrl, other1.nickname)
     }
 
     @DisplayName("채팅방 목록 조회 시, 최근 메시지 업데이트 시간이 주어지면 해당 시간보다 더 옛날 채팅방을 가져온다.")
@@ -316,11 +332,19 @@ class ChatRoomRepositoryTest @Autowired constructor(
         memberRepository.save(other1)
         memberRepository.save(other2)
 
-        val signupRequest = createOAuth2SignupServiceRequest()
+        val signupRequest1 = createOAuth2SignupServiceRequest(
+            nickname = "nick1"
+        )
+        val signupRequest2 = createOAuth2SignupServiceRequest(
+            nickname = "nick2"
+        )
+        val signupRequest3 = createOAuth2SignupServiceRequest(
+            nickname = "nick3"
+        )
 
-        oAuth2Service.signup(signupRequest, me.id!!)
-        oAuth2Service.signup(signupRequest, other1.id!!)
-        oAuth2Service.signup(signupRequest, other2.id!!)
+        oAuth2Service.signup(signupRequest1, me.id!!)
+        oAuth2Service.signup(signupRequest2, other1.id!!)
+        oAuth2Service.signup(signupRequest3, other2.id!!)
 
         val chatRoom1 = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
         val chatRoom2 = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
@@ -364,7 +388,7 @@ class ChatRoomRepositoryTest @Autowired constructor(
         // then
         assertThat(response[0])
             .extracting("chatRoomId", "profileImageUrl", "nickname")
-            .contains(chatRoom2.id!!, signupRequest.profileImageUrl, other2.nickname)
+            .contains(chatRoom2.id!!, signupRequest3.profileImageUrl, other2.nickname)
 
     }
 
@@ -391,11 +415,19 @@ class ChatRoomRepositoryTest @Autowired constructor(
         memberRepository.save(other1)
         memberRepository.save(other2)
 
-        val signupRequest = createOAuth2SignupServiceRequest()
+        val signupRequest1 = createOAuth2SignupServiceRequest(
+            nickname = "nick1"
+        )
+        val signupRequest2 = createOAuth2SignupServiceRequest(
+            nickname = "nick2"
+        )
+        val signupRequest3 = createOAuth2SignupServiceRequest(
+            nickname = "nick3"
+        )
 
-        oAuth2Service.signup(signupRequest, me.id!!)
-        oAuth2Service.signup(signupRequest, other1.id!!)
-        oAuth2Service.signup(signupRequest, other2.id!!)
+        oAuth2Service.signup(signupRequest1, me.id!!)
+        oAuth2Service.signup(signupRequest2, other1.id!!)
+        oAuth2Service.signup(signupRequest3, other2.id!!)
 
         val chatRoom1 = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
         val chatRoom2 = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
@@ -473,7 +505,7 @@ class ChatRoomRepositoryTest @Autowired constructor(
         assertThat(response)
             .extracting("chatRoomId", "profileImageUrl", "nickname")
             .containsExactlyInAnyOrder(
-                tuple(chatRoom1.id!!, signupRequest.profileImageUrl, other1.nickname),
+                tuple(chatRoom1.id!!, signupRequest2.profileImageUrl, other1.nickname),
             )
     }
 
@@ -502,9 +534,19 @@ class ChatRoomRepositoryTest @Autowired constructor(
 
         val signupRequest = createOAuth2SignupServiceRequest()
 
-        oAuth2Service.signup(signupRequest, me.id!!)
-        oAuth2Service.signup(signupRequest, other1.id!!)
-        oAuth2Service.signup(signupRequest, other2.id!!)
+        val signupRequest1 = createOAuth2SignupServiceRequest(
+            nickname = "nick1"
+        )
+        val signupRequest2 = createOAuth2SignupServiceRequest(
+            nickname = "nick2"
+        )
+        val signupRequest3 = createOAuth2SignupServiceRequest(
+            nickname = "nick3"
+        )
+
+        oAuth2Service.signup(signupRequest1, me.id!!)
+        oAuth2Service.signup(signupRequest2, other1.id!!)
+        oAuth2Service.signup(signupRequest3, other2.id!!)
 
         val chatRoom1 = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
         val chatRoom2 = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
@@ -638,11 +680,19 @@ class ChatRoomRepositoryTest @Autowired constructor(
         memberRepository.save(other1)
         memberRepository.save(other2)
 
-        val signupRequest = createOAuth2SignupServiceRequest()
+        val signupRequest1 = createOAuth2SignupServiceRequest(
+            nickname = "nick1"
+        )
+        val signupRequest2 = createOAuth2SignupServiceRequest(
+            nickname = "nick2"
+        )
+        val signupRequest3 = createOAuth2SignupServiceRequest(
+            nickname = "nick3"
+        )
 
-        oAuth2Service.signup(signupRequest, me.id!!)
-        oAuth2Service.signup(signupRequest, other1.id!!)
-        oAuth2Service.signup(signupRequest, other2.id!!)
+        oAuth2Service.signup(signupRequest1, me.id!!)
+        oAuth2Service.signup(signupRequest2, other1.id!!)
+        oAuth2Service.signup(signupRequest3, other2.id!!)
 
         val chatRoom1 = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
         chatRoom1.updateLastMessageAt(time.nowLocalDateTime)
@@ -686,7 +736,7 @@ class ChatRoomRepositoryTest @Autowired constructor(
         assertThat(response)
             .extracting("chatRoomId", "profileImageUrl", "nickname")
             .containsExactlyInAnyOrder(
-                tuple(chatRoom1.id!!, signupRequest.profileImageUrl, other1.nickname),
+                tuple(chatRoom1.id!!, signupRequest2.profileImageUrl, other1.nickname),
             )
     }
 

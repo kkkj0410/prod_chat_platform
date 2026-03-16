@@ -11,8 +11,10 @@ import kr.co.fitview.api.app.domain.review.entity.ReviewCategory
 import kr.co.fitview.api.app.domain.review.entity.ReviewTag
 import kr.co.fitview.api.app.global.entity.Gender
 import java.time.LocalDate
+import java.util.concurrent.atomic.AtomicLong
 
 object TestDataFactory {
+
 
     fun oAuth2SignupRequest(
         profileImageUrl: String = "profileImageUrl",

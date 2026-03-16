@@ -132,10 +132,14 @@ class ReviewQueryServiceTest @Autowired constructor(
         memberRepository.save(me)
         memberRepository.save(other)
 
-        val signupRequest = TestDataFactory.oAuth2SignupRequest()
+        val signupRequest = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick1"
+        )
         oAuth2Service.signup(signupRequest, me.id!!)
 
-        val signupRequest2 = TestDataFactory.oAuth2SignupRequest()
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick2"
+        )
         oAuth2Service.signup(signupRequest2, other.id!!)
 
         val chatRoom = ChatRoom(ChatRoomType.PRIVATE)
