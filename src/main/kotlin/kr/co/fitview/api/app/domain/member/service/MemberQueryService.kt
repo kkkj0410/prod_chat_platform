@@ -130,7 +130,8 @@ class MemberQueryService(
     fun findRandomMemberWithinLocal(
         memberId: Long,
         condition: MemberLocalCondition,
-        seed: Long
+        seed: Long,
+        maxSize : Int
     ): Page<MemberLocalResponse> {
 
         val randomMemberId: Long = createRandomMemberId(memberId, seed)
@@ -138,11 +139,17 @@ class MemberQueryService(
         val findAddress = addressService.findAddressEntityFrom(memberId)
         val boundingBox = createBoundingBox(findAddress!!, condition.radiusKm)
 
-        val findMembers = memberRepository.findMemberWithinLocal(memberId, randomMemberId, boundingBox, condition)
+        val findMembers = memberRepository.findMemberWithinLocal(
+            memberId = memberId,
+            randomMemberId = randomMemberId,
+            boundingBox = boundingBox,
+            condition = condition,
+            maxSize = maxSize
+        )
         val shuffledMembers = randomCustom.shuffled(seed, findMembers).toMutableList()
 
-        if(findMembers.size < 100){
-            val remainSize = 100 - findMembers.size
+        if(findMembers.size < maxSize){
+            val remainSize = maxSize - findMembers.size
 
             val findMemberIds = findMembers.map{it.memberId}
 

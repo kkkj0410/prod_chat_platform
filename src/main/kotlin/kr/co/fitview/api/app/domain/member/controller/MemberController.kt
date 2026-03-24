@@ -120,7 +120,13 @@ class MemberController(
             )
         )
 
-        val response = memberQueryService.findRandomMemberWithinLocal(securityUtil.getMemberId(), condition, seed)
+        val response = memberQueryService.findRandomMemberWithinLocal(
+            memberId = securityUtil.getMemberId(),
+            condition = condition,
+            seed = seed,
+            maxSize = 300
+        )
+
 
         return ResponseEntity.ok(ApiResponse.successWithPagination(response))
     }
