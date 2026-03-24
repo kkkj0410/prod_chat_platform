@@ -446,7 +446,7 @@ class OAuth2ServiceTest @Autowired constructor(
     }
 
     @DisplayName("테스트 용도 - dup prefix를 가지는 닉네임은 일부러 중복 오류를 낸다. FE 테스트 용도")
-    @CsvSource("dup, dup1, dup123")
+    @CsvSource("dup, dup1, dup123, dup니")
     @ParameterizedTest
     fun signupDuplicatedNicknameDup(nickname : String) {
         // given

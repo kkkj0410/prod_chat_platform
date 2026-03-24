@@ -486,7 +486,7 @@ class MemberRepositoryTest@Autowired constructor(
         )
 
         // when
-        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member5.id!!, boundingBox, condition)
+        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member5.id!!, boundingBox, condition, 100)
 
         // then
         assertThat(response)
@@ -643,7 +643,7 @@ class MemberRepositoryTest@Autowired constructor(
         )
 
         // when
-        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member2.id!!, boundingBox, condition)
+        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member2.id!!, boundingBox, condition, 100)
 
         // then
         assertThat(response).hasSize(3)
@@ -759,7 +759,7 @@ class MemberRepositoryTest@Autowired constructor(
         )
 
         // when
-        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member3.id!!, boundingBox, condition)
+        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member3.id!!, boundingBox, condition, 100)
 
         // then
         assertThat(response).hasSize(2)
@@ -874,7 +874,7 @@ class MemberRepositoryTest@Autowired constructor(
         )
 
         // when
-        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member3.id!!, boundingBox, condition)
+        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member3.id!!, boundingBox, condition, 100)
 
         // then
         assertThat(response).hasSize(2)
@@ -978,7 +978,7 @@ class MemberRepositoryTest@Autowired constructor(
         )
 
         // when
-        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member3.id!!, boundingBox, condition)
+        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member3.id!!, boundingBox, condition, 100)
 
         // then
         assertThat(response).hasSize(2)
@@ -1081,7 +1081,7 @@ class MemberRepositoryTest@Autowired constructor(
         )
 
         // when
-        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member3.id!!, boundingBox, condition)
+        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member3.id!!, boundingBox, condition, 100)
 
         // then
         assertThat(response).hasSize(2)
@@ -1187,7 +1187,7 @@ class MemberRepositoryTest@Autowired constructor(
         )
 
         // when
-        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member3.id!!, boundingBox, condition)
+        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member3.id!!, boundingBox, condition, 100)
 
         // then
         assertThat(response).hasSize(2)
@@ -1271,7 +1271,7 @@ class MemberRepositoryTest@Autowired constructor(
         )
 
         // when
-        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member2.id!!, boundingBox, condition)
+        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member2.id!!, boundingBox, condition, 100)
 
         // then
         assertThat(response).hasSize(1)
@@ -1351,7 +1351,7 @@ class MemberRepositoryTest@Autowired constructor(
         )
 
         // when
-        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member2.id!!, boundingBox, condition)
+        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member2.id!!, boundingBox, condition, 100)
 
         // then
         assertThat(response).hasSize(1)
@@ -1433,7 +1433,7 @@ class MemberRepositoryTest@Autowired constructor(
         )
 
         // when
-        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member2.id!!, boundingBox, condition)
+        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member2.id!!, boundingBox, condition, 100)
 
         // then
         assertThat(response).hasSize(1)
@@ -1513,7 +1513,7 @@ class MemberRepositoryTest@Autowired constructor(
         )
 
         // when
-        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member2.id!!, boundingBox, condition)
+        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member2.id!!, boundingBox, condition, 100)
 
         // then
         assertThat(response).hasSize(1)
@@ -1598,7 +1598,7 @@ class MemberRepositoryTest@Autowired constructor(
         )
 
         // when
-        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member2.id!!,boundingBox, condition)
+        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member2.id!!,boundingBox, condition, 100)
 
         // then
         assertThat(response).hasSize(1)

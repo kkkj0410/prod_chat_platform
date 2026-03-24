@@ -796,7 +796,8 @@ class MemberQueryServiceTest @Autowired constructor(
         val response = memberQueryService.findRandomMemberWithinLocal(
             memberId = baseMember.id!!,
             condition = condition,
-            seed = 123L
+            seed = 123L,
+            maxSize = 100
         )
 
         // then
@@ -984,7 +985,7 @@ class MemberQueryServiceTest @Autowired constructor(
         )
 
         // when
-        val response = memberQueryService.findRandomMemberWithinLocal(baseMember.id!!, condition, 123L)
+        val response = memberQueryService.findRandomMemberWithinLocal(baseMember.id!!, condition, 123L, 100)
 
         // then
         assertThat(response)
@@ -1159,7 +1160,7 @@ class MemberQueryServiceTest @Autowired constructor(
         )
 
         // when
-        val response = memberQueryService.findRandomMemberWithinLocal(baseMember.id!!, condition, 123L)
+        val response = memberQueryService.findRandomMemberWithinLocal(baseMember.id!!, condition, 123L, 100)
 
         // then
         assertThat(response)
@@ -1307,7 +1308,8 @@ class MemberQueryServiceTest @Autowired constructor(
         val response = memberQueryService.findRandomMemberWithinLocal(
             memberId = baseMember.id!!,
             condition = condition,
-            seed = seed
+            seed = seed,
+            maxSize = 100
         )
 
         // then
@@ -1497,7 +1499,8 @@ class MemberQueryServiceTest @Autowired constructor(
         val response = memberQueryService.findRandomMemberWithinLocal(
             memberId = baseMember.id!!,
             condition = condition,
-            seed = seed
+            seed = seed,
+            maxSize = 100
         )
 
         // then
@@ -1631,7 +1634,8 @@ class MemberQueryServiceTest @Autowired constructor(
         val response = memberQueryService.findRandomMemberWithinLocal(
             memberId = baseMember.id!!,
             condition = condition,
-            seed = seed
+            seed = seed,
+            maxSize = 100
         )
 
         // then

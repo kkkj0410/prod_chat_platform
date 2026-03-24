@@ -9,7 +9,7 @@ import org.springframework.data.domain.Slice
 import java.time.LocalDate
 
 interface MemberRepositoryCustom {
-    fun findMemberWithinLocal(memberId: Long, randomMemberId : Long, boundingBox : BoundingBox, condition: MemberLocalCondition) : List<MemberLocalResponse>
+    fun findMemberWithinLocal(memberId: Long, randomMemberId : Long, boundingBox : BoundingBox, condition: MemberLocalCondition, maxSize : Int) : List<MemberLocalResponse>
 
     fun findMemberProfileByDeletedAtIsNull(memberId: Long): MemberProfileResponse?
 

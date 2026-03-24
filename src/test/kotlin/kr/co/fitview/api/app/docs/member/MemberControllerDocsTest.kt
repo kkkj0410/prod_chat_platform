@@ -529,7 +529,7 @@ class MemberControllerDocsTest : RestDocsSupport() {
             10L
         )
 
-        given(memberQueryService.findRandomMemberWithinLocal(any(), any(), any()))
+        given(memberQueryService.findRandomMemberWithinLocal(any(), any(), any(), any()))
             .willReturn(mockPage)
 
         // when & then
