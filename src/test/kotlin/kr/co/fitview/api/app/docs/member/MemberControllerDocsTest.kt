@@ -1113,6 +1113,7 @@ class MemberControllerDocsTest : RestDocsSupport() {
                             [false 케이스]
                             - 회원가입한 회원이 해당 닉네임을 사용 중인 경우.
                             - 다른 회원이 해당 닉네임을 예약 중인 경우.
+                            - 이미 회원가입한 회원이 닉네임을 예약하는 경우.
                         """.trimIndent())
                     )
                 )
