@@ -445,34 +445,6 @@ class OAuth2ServiceTest @Autowired constructor(
             })
     }
 
-    @DisplayName("테스트 용도 - dup prefix를 가지는 닉네임은 일부러 중복 오류를 낸다. FE 테스트 용도")
-    @CsvSource("dup, dup1, dup123, dup니")
-    @ParameterizedTest
-    fun signupDuplicatedNicknameDup(nickname : String) {
-        // given
-        val member = Member(
-            email = "email",
-            password = "password",
-            role = Role.USER,
-        )
-        val savedMember = memberRepository.save(member)
-
-        val request = createOAuth2SignupServiceRequest(
-            nickname = nickname
-        )
-
-        // when & then
-        assertThatThrownBy {
-            oAuth2Service.signup(request, savedMember.id!!)
-        }
-            .isInstanceOf(GlobalException::class.java)
-            .satisfies(ThrowingConsumer { ex ->
-                val globalEx = ex as GlobalException
-                assertThat(globalEx.errorCode)
-                    .isEqualTo(MemberErrorCode.MEMBER_DUPLICATE_NICKNAME)
-            })
-    }
-
     @DisplayName("소셜 로그인 회원가입 시, 키 제한은 0~300이다.")
     @CsvSource("-1, 301, 1000")
     @ParameterizedTest
