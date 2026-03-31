@@ -5,6 +5,7 @@ import kr.co.fitview.api.app.docs.RestDocsHeaders
 import kr.co.fitview.api.app.domain.address.dto.response.AddressResponse
 import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
 import kr.co.fitview.api.app.domain.member.dto.request.Age
+import kr.co.fitview.api.app.domain.member.dto.request.MemberReserveNicknameRequest
 import kr.co.fitview.api.app.domain.member.dto.request.MemberUpdateRequest
 import kr.co.fitview.api.app.domain.member.dto.request.MemberWithdrawRequest
 import kr.co.fitview.api.app.domain.member.dto.response.*
@@ -341,7 +342,7 @@ class MemberControllerTest : ControllerTestSupport() {
             10L
         )
 
-        given(memberQueryService.findRandomMemberWithinLocal(any(), any(), any()))
+        given(memberQueryService.findRandomMemberWithinLocal(any(), any(), any(), any()))
             .willReturn(mockPage)
 
         // when // then
@@ -618,4 +619,51 @@ class MemberControllerTest : ControllerTestSupport() {
             .andDo(print())
             .andExpect(status().isOk())
     }
+
+    @DisplayName("닉네임을 예약한다.")
+    @Test
+    fun reserveNickname() {
+        // given
+        val request = MemberReserveNicknameRequest(nickname = "hello")
+
+        given(memberService.reserveNickname(any(), any()))
+            .willReturn(MemberReserveNicknameResponse(isReserved = true))
+
+        // when // then
+        mockMvc.perform(
+            post("/api/v1/members/nicknames/reserve")
+                .header("Authorization", "Bearer jwt-token")
+                .content(objectMapper.writeValueAsString(request))
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").exists())
+            .andExpect(jsonPath("$.code").value("ok"))
+            .andExpect(jsonPath("$.message").value("ok"))
+            .andExpect(jsonPath("$.data.isReserved").value(true))
+    }
+
+    @DisplayName("닉네임 예약 시, 닉네임은 필수다.")
+    @Test
+    fun reserveNicknameRequiredNickname() {
+        // given
+        val request = MemberReserveNicknameRequest(nickname = "")
+
+        // when // then
+        mockMvc.perform(
+            post("/api/v1/members/nicknames/reserve")
+                .header("Authorization", "Bearer jwt-token")
+                .content(objectMapper.writeValueAsString(request))
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andDo(print())
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value(RequestErrorCode.REQ_FIELD_NOT_VALID.code))
+            .andExpect(jsonPath("$.status").value("400"))
+            .andExpect(jsonPath("$.message").value("nickname is required"))
+            .andExpect(jsonPath("$.data").isEmpty())
+    }
+
+
 }

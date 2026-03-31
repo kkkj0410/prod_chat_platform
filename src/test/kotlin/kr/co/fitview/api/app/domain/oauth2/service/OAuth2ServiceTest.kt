@@ -32,6 +32,7 @@ import kr.co.fitview.api.app.global.exception.error.oauth2.OAuth2ErrorCode
 import kr.co.fitview.api.app.global.id.IdGenerator
 import kr.co.fitview.api.app.global.jwt.JwtTokenProvider
 import kr.co.fitview.api.app.global.time.Time
+import kr.co.fitview.api.app.global.util.TestDataFactory
 import org.assertj.core.api.Assertions.*
 import org.assertj.core.api.ThrowingConsumer
 import org.junit.jupiter.api.DisplayName
@@ -399,6 +400,48 @@ class OAuth2ServiceTest @Autowired constructor(
                 val globalEx = ex as GlobalException
                 assertThat(globalEx.errorCode)
                     .isEqualTo(MemberErrorCode.MEMBER_NICKNAME_TOO_LONG)
+            })
+    }
+
+    @DisplayName("소셜 로그인 회원가입 시, 별명을 이미 사용하는 회원이 있다면 회원가입에 실패한다.")
+    @Test
+    fun signupDuplicatedNickname() {
+        // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        val savedMember = memberRepository.save(member)
+
+        val otherMember = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        memberRepository.save(otherMember)
+
+        val signupRequest = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nickname"
+        )
+        oAuth2Service.signup(
+            request = signupRequest,
+            memberId = otherMember.id!!
+        )
+
+        val request = createOAuth2SignupServiceRequest(
+            nickname = "nickname"
+        )
+
+        // when & then
+        assertThatThrownBy {
+            oAuth2Service.signup(request, savedMember.id!!)
+        }
+            .isInstanceOf(GlobalException::class.java)
+            .satisfies(ThrowingConsumer { ex ->
+                val globalEx = ex as GlobalException
+                assertThat(globalEx.errorCode)
+                    .isEqualTo(MemberErrorCode.MEMBER_DUPLICATE_NICKNAME)
             })
     }
 

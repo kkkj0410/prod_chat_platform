@@ -152,5 +152,16 @@ include::{snippets}/member-withdraw-reason-list/request-headers.adoc[]
 include::{snippets}/member-withdraw-reason-list/http-response.adoc[]
 include::{snippets}/member-withdraw-reason-list/response-fields.adoc[]
 
+[[member-nickname-reserve]]
+=== 회원 닉네임 예약 API
+
+==== HTTP Request
+include::{snippets}/member-nickname-reserve/http-request.adoc[]
+include::{snippets}/member-nickname-reserve/request-headers.adoc[]
+
+==== HTTP Response
+include::{snippets}/member-nickname-reserve/http-response.adoc[]
+include::{snippets}/member-nickname-reserve/response-fields.adoc[]
+
 
 

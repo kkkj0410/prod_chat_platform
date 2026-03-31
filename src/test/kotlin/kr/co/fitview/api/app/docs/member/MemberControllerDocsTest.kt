@@ -10,6 +10,7 @@ import kr.co.fitview.api.app.domain.app_feedback.service.AppFeedbackQueryService
 import kr.co.fitview.api.app.domain.app_feedback.service.RecommendationAppFeedbackDismissLogService
 import kr.co.fitview.api.app.domain.member.controller.MemberController
 import kr.co.fitview.api.app.domain.member.dto.request.Age
+import kr.co.fitview.api.app.domain.member.dto.request.MemberReserveNicknameRequest
 import kr.co.fitview.api.app.domain.member.dto.request.MemberUpdateRequest
 import kr.co.fitview.api.app.domain.member.dto.response.*
 import kr.co.fitview.api.app.domain.member.dto.response.enums.ProfileWorkoutPartnerStatus
@@ -528,7 +529,7 @@ class MemberControllerDocsTest : RestDocsSupport() {
             10L
         )
 
-        given(memberQueryService.findRandomMemberWithinLocal(any(), any(), any()))
+        given(memberQueryService.findRandomMemberWithinLocal(any(), any(), any(), any()))
             .willReturn(mockPage)
 
         // when & then
@@ -1055,6 +1056,65 @@ class MemberControllerDocsTest : RestDocsSupport() {
                             .description("메시지"),
                         fieldWithPath("data").type(JsonFieldType.STRING)
                             .description("응답 데이터")
+                    )
+                )
+            )
+    }
+
+    @DisplayName("닉네임 예약 API")
+    @Test
+    fun reserveNickname() {
+        // given
+        val request = MemberReserveNicknameRequest(nickname = "hello")
+
+        given(memberService.reserveNickname(any(), any()))
+            .willReturn(MemberReserveNicknameResponse(isReserved = true))
+
+        // when // then
+        mockMvc.perform(
+            post("/api/v1/members/nicknames/reserve")
+                .header("Authorization", "Bearer jwt-token")
+                .content(objectMapper.writeValueAsString(request))
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andDo(
+                document(
+                    "member-nickname-reserve",
+                    preprocessRequest(prettyPrint()),
+                    preprocessResponse(prettyPrint()),
+
+                    requestHeaders(
+                        RestDocsHeaders.authorizationHeader(Role.USER)
+                    ),
+
+                    requestFields(
+                        fieldWithPath("nickname").type(JsonFieldType.STRING)
+                            .description("예약할 닉네임")
+                    ),
+
+                    responseFields(
+                        fieldWithPath("status").type(JsonFieldType.NUMBER)
+                            .description("상태"),
+                        fieldWithPath("code").type(JsonFieldType.STRING)
+                            .description("코드"),
+                        fieldWithPath("message").type(JsonFieldType.STRING)
+                            .description("메시지"),
+                        fieldWithPath("data").type(JsonFieldType.OBJECT)
+                            .description("응답 데이터"),
+                        fieldWithPath("data.isReserved").type(JsonFieldType.BOOLEAN)
+                            .description("""
+                            닉네임 예약 성공 여부.
+                            [true 케이스]
+                            - 닉네임을 예약한다.
+                            - 이미 해당 회원이 동일 닉네임을 예약했던 경우, 예약 시간을 다시 처음 예약 시간으로 되돌린다.
+                            - 이미 해당 회원이 다른 닉네임을 예약했던 경우, 기존 닉네임 예약을 취소하고 해당 닉네임을 예약한다.
+                            [false 케이스]
+                            - 회원가입한 회원이 해당 닉네임을 사용 중인 경우.
+                            - 다른 회원이 해당 닉네임을 예약 중인 경우.
+                            - 이미 회원가입한 회원이 닉네임을 예약하는 경우.
+                        """.trimIndent())
                     )
                 )
             )

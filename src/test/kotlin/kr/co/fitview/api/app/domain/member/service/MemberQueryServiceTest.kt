@@ -131,8 +131,8 @@ class MemberQueryServiceTest @Autowired constructor(
         )
         memberRepository.save(other2)
         val signupRequest3 = TestDataFactory.oAuth2SignupRequest(
-            nickname = "updateNick",
-            profileImageUrl = "updateProfile"
+            nickname = "upNick2",
+            profileImageUrl = "updateProfile2"
         )
         oAuth2Service.signup(signupRequest3, other2.id!!)
 
@@ -233,8 +233,8 @@ class MemberQueryServiceTest @Autowired constructor(
         )
         memberRepository.save(other2)
         val signupRequest3 = TestDataFactory.oAuth2SignupRequest(
-            nickname = "updateNick",
-            profileImageUrl = "updateProfile"
+            nickname = "upNick2",
+            profileImageUrl = "updateProfile2"
         )
         oAuth2Service.signup(signupRequest3, other2.id!!)
 
@@ -796,7 +796,8 @@ class MemberQueryServiceTest @Autowired constructor(
         val response = memberQueryService.findRandomMemberWithinLocal(
             memberId = baseMember.id!!,
             condition = condition,
-            seed = 123L
+            seed = 123L,
+            maxSize = 100
         )
 
         // then
@@ -984,7 +985,7 @@ class MemberQueryServiceTest @Autowired constructor(
         )
 
         // when
-        val response = memberQueryService.findRandomMemberWithinLocal(baseMember.id!!, condition, 123L)
+        val response = memberQueryService.findRandomMemberWithinLocal(baseMember.id!!, condition, 123L, 100)
 
         // then
         assertThat(response)
@@ -1159,7 +1160,7 @@ class MemberQueryServiceTest @Autowired constructor(
         )
 
         // when
-        val response = memberQueryService.findRandomMemberWithinLocal(baseMember.id!!, condition, 123L)
+        val response = memberQueryService.findRandomMemberWithinLocal(baseMember.id!!, condition, 123L, 100)
 
         // then
         assertThat(response)
@@ -1307,7 +1308,8 @@ class MemberQueryServiceTest @Autowired constructor(
         val response = memberQueryService.findRandomMemberWithinLocal(
             memberId = baseMember.id!!,
             condition = condition,
-            seed = seed
+            seed = seed,
+            maxSize = 100
         )
 
         // then
@@ -1497,7 +1499,8 @@ class MemberQueryServiceTest @Autowired constructor(
         val response = memberQueryService.findRandomMemberWithinLocal(
             memberId = baseMember.id!!,
             condition = condition,
-            seed = seed
+            seed = seed,
+            maxSize = 100
         )
 
         // then
@@ -1631,7 +1634,8 @@ class MemberQueryServiceTest @Autowired constructor(
         val response = memberQueryService.findRandomMemberWithinLocal(
             memberId = baseMember.id!!,
             condition = condition,
-            seed = seed
+            seed = seed,
+            maxSize = 100
         )
 
         // then
@@ -1720,6 +1724,7 @@ class MemberQueryServiceTest @Autowired constructor(
         )
         memberRepository.save(notMatchMember1)
         val signupRequest5 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick1",
             workoutExperience = MemberWorkoutExperience.JUST_STARTED,
             workoutStyle = MemberWorkoutStyle.PERFORMANCE,
             workoutGoal = MemberWorkoutGoal.STRENGTH_GAIN,
@@ -2082,5 +2087,47 @@ class MemberQueryServiceTest @Autowired constructor(
         assertThat(count).isEqualTo(1)
     }
 
+    @DisplayName("회원 닉네임이 있는지 확인한다.")
+    @Test
+    fun existsMemberNickname() {
+        // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        memberRepository.save(member)
+
+        val request = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nickname"
+        )
+
+        oAuth2Service.signup(
+            request = request,
+            memberId = member.id!!
+        )
+
+        // when
+        val response = memberQueryService.existsMemberNickname(
+            nickname = "nickname"
+        )
+
+        // then
+        assertThat(response).isEqualTo(true)
+    }
+
+    @DisplayName("없는 닉네임이라면 false를 반환한다.")
+    @Test
+    fun existsMemberNicknameNotExistsNickname() {
+        // given
+
+        // when
+        val response = memberQueryService.existsMemberNickname(
+            nickname = "nickname"
+        )
+
+        // then
+        assertThat(response).isEqualTo(false)
+    }
 
 }

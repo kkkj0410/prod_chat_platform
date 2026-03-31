@@ -53,10 +53,10 @@ class MemberRepositoryImpl(
         memberId: Long,
         randomMemberId: Long,
         boundingBox: BoundingBox,
-        condition: MemberLocalCondition
+        condition: MemberLocalCondition,
+        maxSize : Int
     ): List<MemberLocalResponse> {
 
-        val MAX_FETCH = 100
 
         val left = findMemberWithinLocalByCondition(
             randomMemberId,
@@ -64,10 +64,10 @@ class MemberRepositoryImpl(
             boundingBox,
             condition,
             isFromRandom = true,
-            size = MAX_FETCH
+            size = maxSize
         )
 
-        val remain = MAX_FETCH - left.size
+        val remain = maxSize - left.size
 
         val right =
             if (remain > 0)
@@ -84,7 +84,7 @@ class MemberRepositoryImpl(
 
         val combined = left + right
 
-        return combined.take(MAX_FETCH)
+        return combined.take(maxSize)
     }
 
 

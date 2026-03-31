@@ -486,7 +486,7 @@ class MemberRepositoryTest@Autowired constructor(
         )
 
         // when
-        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member5.id!!, boundingBox, condition)
+        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member5.id!!, boundingBox, condition, 100)
 
         // then
         assertThat(response)
@@ -643,7 +643,7 @@ class MemberRepositoryTest@Autowired constructor(
         )
 
         // when
-        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member2.id!!, boundingBox, condition)
+        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member2.id!!, boundingBox, condition, 100)
 
         // then
         assertThat(response).hasSize(3)
@@ -759,7 +759,7 @@ class MemberRepositoryTest@Autowired constructor(
         )
 
         // when
-        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member3.id!!, boundingBox, condition)
+        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member3.id!!, boundingBox, condition, 100)
 
         // then
         assertThat(response).hasSize(2)
@@ -874,7 +874,7 @@ class MemberRepositoryTest@Autowired constructor(
         )
 
         // when
-        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member3.id!!, boundingBox, condition)
+        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member3.id!!, boundingBox, condition, 100)
 
         // then
         assertThat(response).hasSize(2)
@@ -921,6 +921,7 @@ class MemberRepositoryTest@Autowired constructor(
             fullAddress = "fullAddress"
         )
         val signupRequest1 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick1",
             workoutStyle = MemberWorkoutStyle.STRENGTH,
             address = inAddress1
         )
@@ -942,6 +943,7 @@ class MemberRepositoryTest@Autowired constructor(
             fullAddress = "fullAddress"
         )
         val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick2",
             workoutStyle = MemberWorkoutStyle.PERFORMANCE,
             address = inAddress2
         )
@@ -976,7 +978,7 @@ class MemberRepositoryTest@Autowired constructor(
         )
 
         // when
-        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member3.id!!, boundingBox, condition)
+        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member3.id!!, boundingBox, condition, 100)
 
         // then
         assertThat(response).hasSize(2)
@@ -1079,7 +1081,7 @@ class MemberRepositoryTest@Autowired constructor(
         )
 
         // when
-        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member3.id!!, boundingBox, condition)
+        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member3.id!!, boundingBox, condition, 100)
 
         // then
         assertThat(response).hasSize(2)
@@ -1126,6 +1128,7 @@ class MemberRepositoryTest@Autowired constructor(
         )
         val koreanAgeTwentiesMidExceed = time.nowLocalDate.minusYears(Age.TWENTIES_MID.max.toLong())
         val signupRequest1 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick1",
             birthday = koreanAgeTwentiesMidExceed,
             address = inAddress1
         )
@@ -1148,6 +1151,7 @@ class MemberRepositoryTest@Autowired constructor(
         )
         val koreanAgeTwentiesMid = time.nowLocalDate.minusYears(Age.TWENTIES_MID.max.toLong() - 1)
         val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick2",
             birthday = koreanAgeTwentiesMid,
             address = inAddress2
         )
@@ -1183,7 +1187,7 @@ class MemberRepositoryTest@Autowired constructor(
         )
 
         // when
-        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member3.id!!, boundingBox, condition)
+        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member3.id!!, boundingBox, condition, 100)
 
         // then
         assertThat(response).hasSize(2)
@@ -1232,6 +1236,7 @@ class MemberRepositoryTest@Autowired constructor(
             fullAddress = "fullAddress"
         )
         val signupRequest1 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick1",
             height = 169,
             address = inAddress1
         )
@@ -1253,6 +1258,7 @@ class MemberRepositoryTest@Autowired constructor(
             fullAddress = "fullAddress"
         )
         val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick2",
             height = 170,
             address = inAddress2
         )
@@ -1265,7 +1271,7 @@ class MemberRepositoryTest@Autowired constructor(
         )
 
         // when
-        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member2.id!!, boundingBox, condition)
+        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member2.id!!, boundingBox, condition, 100)
 
         // then
         assertThat(response).hasSize(1)
@@ -1345,7 +1351,7 @@ class MemberRepositoryTest@Autowired constructor(
         )
 
         // when
-        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member2.id!!, boundingBox, condition)
+        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member2.id!!, boundingBox, condition, 100)
 
         // then
         assertThat(response).hasSize(1)
@@ -1392,6 +1398,7 @@ class MemberRepositoryTest@Autowired constructor(
             fullAddress = "fullAddress"
         )
         val signupRequest1 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick1",
             weight = 49,
             address = inAddress1
         )
@@ -1413,6 +1420,7 @@ class MemberRepositoryTest@Autowired constructor(
             fullAddress = "fullAddress"
         )
         val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick2",
             weight = 50,
             address = inAddress2
         )
@@ -1425,7 +1433,7 @@ class MemberRepositoryTest@Autowired constructor(
         )
 
         // when
-        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member2.id!!, boundingBox, condition)
+        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member2.id!!, boundingBox, condition, 100)
 
         // then
         assertThat(response).hasSize(1)
@@ -1505,7 +1513,7 @@ class MemberRepositoryTest@Autowired constructor(
         )
 
         // when
-        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member2.id!!, boundingBox, condition)
+        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member2.id!!, boundingBox, condition, 100)
 
         // then
         assertThat(response).hasSize(1)
@@ -1590,7 +1598,7 @@ class MemberRepositoryTest@Autowired constructor(
         )
 
         // when
-        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member2.id!!,boundingBox, condition)
+        val response = memberRepository.findMemberWithinLocal(baseMember.id!!, member2.id!!,boundingBox, condition, 100)
 
         // then
         assertThat(response).hasSize(1)
@@ -1747,6 +1755,7 @@ class MemberRepositoryTest@Autowired constructor(
         )
         memberRepository.save(notMatchMember1)
         val signupRequest5 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick5",
             workoutExperience = MemberWorkoutExperience.JUST_STARTED,
             workoutStyle = MemberWorkoutStyle.PERFORMANCE,
             workoutGoal = MemberWorkoutGoal.STRENGTH_GAIN
@@ -2427,7 +2436,7 @@ class MemberRepositoryTest@Autowired constructor(
         )
         memberRepository.save(other)
         val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
-            nickname = "updateNick",
+            nickname = "upNick1",
             profileImageUrl = "updateProfile"
         )
         oAuth2Service.signup(signupRequest2, other.id!!)
@@ -2453,7 +2462,7 @@ class MemberRepositoryTest@Autowired constructor(
         )
         memberRepository.save(other2)
         val signupRequest3 = TestDataFactory.oAuth2SignupRequest(
-            nickname = "updateNick",
+            nickname = "upNick2",
             profileImageUrl = "updateProfile"
         )
         oAuth2Service.signup(signupRequest3, other2.id!!)
@@ -2505,7 +2514,7 @@ class MemberRepositoryTest@Autowired constructor(
         )
         memberRepository.save(other)
         val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
-            nickname = "updateNick",
+            nickname = "upNick2",
             profileImageUrl = "updateProfile"
         )
         oAuth2Service.signup(signupRequest2, other.id!!)
@@ -2517,7 +2526,7 @@ class MemberRepositoryTest@Autowired constructor(
         )
         memberRepository.save(other2)
         val signupRequest3 = TestDataFactory.oAuth2SignupRequest(
-            nickname = "updateNick",
+            nickname = "upNick3",
             profileImageUrl = "updateProfile"
         )
         oAuth2Service.signup(signupRequest3, other2.id!!)
@@ -2898,10 +2907,13 @@ class MemberRepositoryTest@Autowired constructor(
         memberRepository.save(member1)
         memberRepository.save(member2)
 
-        val signupRequest1 = TestDataFactory.oAuth2SignupRequest()
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick1",
+        )
         oAuth2Service.signup(signupRequest1, member1.id!!)
 
         val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick2",
             workoutImageUrls = null
         )
         oAuth2Service.signup(signupRequest2, member2.id!!)
@@ -2984,10 +2996,13 @@ class MemberRepositoryTest@Autowired constructor(
         memberRepository.save(member1)
         memberRepository.save(member2)
 
-        val signupRequest1 = TestDataFactory.oAuth2SignupRequest()
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick1",
+        )
         oAuth2Service.signup(signupRequest1, member1.id!!)
 
         val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nick2",
             workoutImageUrls = null
         )
         oAuth2Service.signup(signupRequest2, member2.id!!)
@@ -3238,5 +3253,50 @@ class MemberRepositoryTest@Autowired constructor(
         // then
         assertThat(count).isEqualTo(1)
     }
+
+
+    @DisplayName("회원 닉네임이 있는지 확인한다.")
+    @Test
+    fun existsByNicknameAndDeletedAtIsNull() {
+        // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        memberRepository.save(member)
+
+        val request = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nickname"
+        )
+
+        oAuth2Service.signup(
+            request = request,
+            memberId = member.id!!
+        )
+
+        // when
+        val response = memberRepository.existsByNicknameAndDeletedAtIsNull(
+            nickname = "nickname"
+        )
+
+        // then
+        assertThat(response).isEqualTo(true)
+    }
+
+    @DisplayName("없는 닉네임이라면 false를 반환한다.")
+    @Test
+    fun existsByNicknameNotExistsNicknameAndDeletedAtIsNull() {
+        // given
+
+        // when
+        val response = memberRepository.existsByNicknameAndDeletedAtIsNull(
+            nickname = "nickname"
+        )
+
+        // then
+        assertThat(response).isEqualTo(false)
+    }
+
 
 }

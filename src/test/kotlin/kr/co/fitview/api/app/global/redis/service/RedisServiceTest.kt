@@ -109,4 +109,49 @@ class RedisServiceTest @Autowired constructor(
             minute = 30L
         )
     }
+
+
+    @DisplayName("캐시에 key가 존재하지 않으면 값을 저장하고 true를 반환한다.")
+    @Test
+    fun setIfAbsentKeySuccess() {
+        // given
+        val key = "reserveKey"
+        val value = "member123"
+        val minute = 30L
+
+        given(redisClient.setIfAbsent(key, value, minute)).willReturn(true)
+
+        // when
+        val isSaved = redisService.setIfAbsentKey(
+            key = key,
+            value = value,
+            minute = minute
+        )
+
+        // then
+        assertThat(isSaved).isTrue()
+        then(redisClient).should().setIfAbsent(key, value, minute)
+    }
+
+    @DisplayName("캐시에 이미 key가 존재하면 값을 저장하지 않고 false를 반환한다.")
+    @Test
+    fun setIfAbsentKeyFail() {
+        // given
+        val key = "reserveKey"
+        val value = "member123"
+        val minute = 30L
+
+        given(redisClient.setIfAbsent(key, value, minute)).willReturn(false)
+
+        // when
+        val isSaved = redisService.setIfAbsentKey(
+            key = key,
+            value = value,
+            minute = minute
+        )
+
+        // then
+        assertThat(isSaved).isFalse()
+        then(redisClient).should().setIfAbsent(key, value, minute)
+    }
 }
