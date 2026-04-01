@@ -19,6 +19,9 @@ class AppFeedbackQueryService(
     @Value("\${app-feedback.image-url}")
     private val appFeedbackImageUrl: String,
 
+    @Value("\${app-feedback.svg-image-url}")
+    private val appFeedbackSvgImageUrl: String,
+
     private val appFeedbackRepository : AppFeedbackRepository,
     private val recommendationAppFeedbackDismissLogQueryService : RecommendationAppFeedbackDismissLogQueryService
 ) {
@@ -34,7 +37,8 @@ class AppFeedbackQueryService(
 
         return MemberRecommendationAppFeedback(
             positionIndex = 2,
-            imageUrl = appFeedbackImageUrl
+            imageUrl = appFeedbackImageUrl,
+            svgImageUrl = appFeedbackSvgImageUrl
         )
     }
 

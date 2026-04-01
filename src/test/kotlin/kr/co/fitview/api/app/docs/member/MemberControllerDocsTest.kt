@@ -407,7 +407,8 @@ class MemberControllerDocsTest : RestDocsSupport() {
             .willReturn(
                 MemberRecommendationAppFeedback(
                     positionIndex = 2,
-                    imageUrl = "https://static-dev.fitview.co.kr/app-feedback/card/9a6bd005-d2cc-432b-81ab-d45ad1a5b86c"
+                    imageUrl = "https://static-dev.fitview.co.kr/app-feedback/card/9a6bd005-d2cc-432b-81ab-d45ad1a5b86c",
+                    svgImageUrl = "https://static-dev.fitview.co.kr/app-feedback/card/c2725d87-e51b-423e-bb0c-c0c01308865d"
                 )
             )
 
@@ -479,7 +480,10 @@ class MemberControllerDocsTest : RestDocsSupport() {
                             .description("해당 앱 피드백 설문조사 카드의 index 위치"),
                         fieldWithPath("meta.appFeedback.imageUrl")
                             .type(JsonFieldType.STRING)
-                            .description("앱 피드백 설문조사 카드 이미지 url"),
+                            .description("앱 피드백 설문조사 카드 이미지 url (PNG 파일)"),
+                        fieldWithPath("meta.appFeedback.svgImageUrl")
+                            .type(JsonFieldType.STRING)
+                            .description("앱 피드백 설문조사 카드 이미지 url (SVG 파일)"),
                         )
                 )
             )

@@ -268,7 +268,8 @@ class MemberControllerTest : ControllerTestSupport() {
             .willReturn(
                 MemberRecommendationAppFeedback(
                     positionIndex = 2,
-                    imageUrl = "imageUrl"
+                    imageUrl = "imageUrl",
+                    svgImageUrl = "svgImageUrl"
                 )
             )
 
@@ -304,6 +305,8 @@ class MemberControllerTest : ControllerTestSupport() {
 
             .andExpect(jsonPath("$.meta.appFeedback.positionIndex").value(2))
             .andExpect(jsonPath("$.meta.appFeedback.imageUrl").value("imageUrl"))
+            .andExpect(jsonPath("$.meta.appFeedback.svgImageUrl").value("svgImageUrl"))
+
     }
 
     @DisplayName("우리 동네 핏버디(주소 인근 회원 조회)를 조회한다")
