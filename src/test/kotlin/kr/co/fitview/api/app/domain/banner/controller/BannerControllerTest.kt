@@ -27,7 +27,7 @@ class BannerControllerTest : ControllerTestSupport() {
         given(bannerQueryService.findActiveBanners(any()))
             .willReturn(
                 listOf(
-                    BannerActiveResponse(
+                    BannerActiveResponse.General(
                         bannerId = 1,
                         type = BannerType.APP_FEEDBACK,
                         imageUrl = "imageUrl"
