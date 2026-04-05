@@ -1,13 +1,17 @@
 package kr.co.fitview.api.app.domain.workout_reward.service
 
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardPolicyResponse
+import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardStampMeResponse
+import kr.co.fitview.api.app.global.random.RandomCustom
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 
 @Service
 @Transactional(readOnly = true)
-class WorkoutRewardQueryService {
+class WorkoutRewardQueryService(
+    private val randomCustom : RandomCustom
+) {
 
     fun findWorkoutRewardPolicy(): WorkoutRewardPolicyResponse {
 
@@ -72,6 +76,21 @@ class WorkoutRewardQueryService {
                 "쿠폰은 리워드 달성 후 1회만 지급돼요",
                 "악용 사례 확인 시 지급이 제한될 수 있어요."
             )
+        )
+    }
+
+    fun findWorkoutRewardStamp(
+        seed: Long = System.currentTimeMillis()
+    ) : WorkoutRewardStampMeResponse{
+
+        val count = randomCustom.nextLong(
+            seed = seed,
+            from = 0L,
+            until = 6L
+        )
+
+        return WorkoutRewardStampMeResponse(
+            stampCount = count.toInt()
         )
     }
 

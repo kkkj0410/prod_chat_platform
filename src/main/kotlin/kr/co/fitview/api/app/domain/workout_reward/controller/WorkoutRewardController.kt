@@ -22,6 +22,7 @@ import kr.co.fitview.api.app.domain.review.dto.response.ReviewTagCountResponse
 import kr.co.fitview.api.app.domain.review.service.ReviewQueryService
 import kr.co.fitview.api.app.domain.review.service.ReviewTagCountQueryService
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardPolicyResponse
+import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardStampMeResponse
 import kr.co.fitview.api.app.domain.workout_reward.service.WorkoutRewardQueryService
 import kr.co.fitview.api.app.global.dto.ApiResponse
 import kr.co.fitview.api.app.global.dto.SuccessCursorAtPagedResponse
@@ -48,6 +49,13 @@ class WorkoutRewardController(
         return ResponseEntity.ok(ApiResponse.success(response))
     }
 
+    @GetMapping("/stamps/me")
+    fun workoutRewardStampDetails(): ResponseEntity<ApiResponse<WorkoutRewardStampMeResponse>> {
+
+        val response = workoutRewardQueryService.findWorkoutRewardStamp()
+
+        return ResponseEntity.ok(ApiResponse.success(response))
+    }
 
 
 

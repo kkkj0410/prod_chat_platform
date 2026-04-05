@@ -4,11 +4,13 @@ import kr.co.fitview.api.app.docs.RestDocsHeaders
 import kr.co.fitview.api.app.docs.RestDocsSupport
 import kr.co.fitview.api.app.domain.workout_reward.controller.WorkoutRewardController
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardPolicyResponse
+import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardStampMeResponse
 import kr.co.fitview.api.app.domain.workout_reward.service.WorkoutRewardQueryService
 import kr.co.fitview.api.app.global.entity.Role
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
+import org.mockito.kotlin.any
 import org.mockito.kotlin.given
 import org.springframework.http.MediaType
 import org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders
@@ -121,6 +123,52 @@ class WorkoutRewardControllerDocsTest : RestDocsSupport() {
 
                         fieldWithPath("data.policyNotices").type(JsonFieldType.ARRAY)
                             .description("정책 유의사항 문구 목록 (String 배열)")
+                    )
+                )
+            )
+    }
+
+    @DisplayName("내 운동 보상 리워드 스탬프 조회 API")
+    @Test
+    fun workoutRewardStampDetails() {
+        // given
+        val response = WorkoutRewardStampMeResponse(
+            stampCount = 3
+        )
+
+        given(workoutRewardQueryService.findWorkoutRewardStamp(any()))
+            .willReturn(response)
+
+        // when & then
+        mockMvc.perform(
+            get("/api/v1/workout-rewards/stamps/me")
+                .header("Authorization", "Bearer jwt-token")
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andDo(
+                document(
+                    "workout-reward-stamp-me-get",
+                    preprocessRequest(prettyPrint()),
+                    preprocessResponse(prettyPrint()),
+
+                    requestHeaders(
+                        RestDocsHeaders.authorizationHeader(Role.USER)
+                    ),
+
+                    responseFields(
+                        fieldWithPath("status").type(JsonFieldType.NUMBER)
+                            .description("상태"),
+                        fieldWithPath("code").type(JsonFieldType.STRING)
+                            .description("코드"),
+                        fieldWithPath("message").type(JsonFieldType.STRING)
+                            .description("에러 메시지"),
+                        fieldWithPath("data").type(JsonFieldType.OBJECT)
+                            .description("응답 데이터"),
+
+                        fieldWithPath("data.stampCount").type(JsonFieldType.NUMBER)
+                            .description("현재 적립된 스탬프 개수 (0부터 5 사이의 값)")
                     )
                 )
             )
