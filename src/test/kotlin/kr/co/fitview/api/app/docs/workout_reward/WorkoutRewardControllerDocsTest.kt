@@ -3,10 +3,12 @@ package kr.co.fitview.api.app.docs.workout_reward
 import kr.co.fitview.api.app.docs.RestDocsHeaders
 import kr.co.fitview.api.app.docs.RestDocsSupport
 import kr.co.fitview.api.app.domain.workout_reward.controller.WorkoutRewardController
+import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardCouponStatusResponse
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardPolicyResponse
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardStampMeResponse
 import kr.co.fitview.api.app.domain.workout_reward.service.WorkoutRewardQueryService
 import kr.co.fitview.api.app.global.entity.Role
+import kr.co.fitview.api.app.global.util.SecurityUtil
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
@@ -27,8 +29,14 @@ class WorkoutRewardControllerDocsTest : RestDocsSupport() {
     private val workoutRewardQueryService: WorkoutRewardQueryService =
         mock(WorkoutRewardQueryService::class.java)
 
+    private val securityUtil: SecurityUtil =
+        mock(SecurityUtil::class.java)
+
     override fun initController(): Any {
-        return WorkoutRewardController(workoutRewardQueryService)
+        return WorkoutRewardController(
+            workoutRewardQueryService = workoutRewardQueryService,
+            securityUtil = securityUtil
+        )
     }
 
     @DisplayName("운동 보상 리워드 정책 조회 API")
@@ -169,6 +177,60 @@ class WorkoutRewardControllerDocsTest : RestDocsSupport() {
 
                         fieldWithPath("data.stampCount").type(JsonFieldType.NUMBER)
                             .description("현재 적립된 스탬프 개수 (0부터 5 사이의 값)")
+                    )
+                )
+            )
+    }
+
+    @DisplayName("활성화된 리워드 쿠폰 상태 조회 API")
+    @Test
+    fun workoutRewardCouponActive() {
+        // given
+        // 1. SecurityUtil 모킹 (필수: 컨트롤러 내부에서 사용 중)
+        given(securityUtil.getMemberId()).willReturn(1L)
+
+        // 2. 가짜 응답 데이터 생성 (예시로 하나는 받을 수 있고, 하나는 아직 못 받는 상태)
+        val response = WorkoutRewardCouponStatusResponse(
+            firstCouponStatus = WorkoutRewardCouponStatusResponse.CouponStatus.CLAIMABLE,
+            secondCouponStatus = WorkoutRewardCouponStatusResponse.CouponStatus.UNAVAILABLE
+        )
+
+        // 3. 서비스 로직 모킹
+        given(workoutRewardQueryService.findWorkoutRewardCouponStatus(any()))
+            .willReturn(response)
+
+        // when & then
+        mockMvc.perform(
+            get("/api/v1/workout-rewards/coupons/active")
+                .header("Authorization", "Bearer jwt-token")
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andDo(
+                document(
+                    "workout-reward-coupon-active-get",
+                    preprocessRequest(prettyPrint()),
+                    preprocessResponse(prettyPrint()),
+
+                    requestHeaders(
+                        RestDocsHeaders.authorizationHeader(Role.USER)
+                    ),
+
+                    responseFields(
+                        fieldWithPath("status").type(JsonFieldType.NUMBER)
+                            .description("상태"),
+                        fieldWithPath("code").type(JsonFieldType.STRING)
+                            .description("코드"),
+                        fieldWithPath("message").type(JsonFieldType.STRING)
+                            .description("에러 메시지"),
+                        fieldWithPath("data").type(JsonFieldType.OBJECT)
+                            .description("응답 데이터"),
+
+                        fieldWithPath("data.firstCouponStatus").type(JsonFieldType.STRING)
+                            .description("첫 번째 쿠폰 상태 (CLAIMABLE: 받을 수 있음, UNAVAILABLE: 받을 수 없음, CLAIMED: 이미 받음)"),
+                        fieldWithPath("data.secondCouponStatus").type(JsonFieldType.STRING)
+                            .description("두 번째 쿠폰 상태 (CLAIMABLE: 받을 수 있음, UNAVAILABLE: 받을 수 없음, CLAIMED: 이미 받음)")
                     )
                 )
             )

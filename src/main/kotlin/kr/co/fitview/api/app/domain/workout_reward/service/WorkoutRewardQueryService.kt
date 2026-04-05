@@ -1,5 +1,6 @@
 package kr.co.fitview.api.app.domain.workout_reward.service
 
+import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardCouponStatusResponse
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardPolicyResponse
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardStampMeResponse
 import kr.co.fitview.api.app.global.random.RandomCustom
@@ -91,6 +92,13 @@ class WorkoutRewardQueryService(
 
         return WorkoutRewardStampMeResponse(
             stampCount = count.toInt()
+        )
+    }
+
+    fun findWorkoutRewardCouponStatus(memberId: Long): WorkoutRewardCouponStatusResponse {
+        return WorkoutRewardCouponStatusResponse(
+            firstCouponStatus = WorkoutRewardCouponStatusResponse.CouponStatus.entries.random(),
+            secondCouponStatus = WorkoutRewardCouponStatusResponse.CouponStatus.entries.random()
         )
     }
 

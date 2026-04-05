@@ -21,6 +21,7 @@ import kr.co.fitview.api.app.domain.review.dto.response.ReviewResponse
 import kr.co.fitview.api.app.domain.review.dto.response.ReviewTagCountResponse
 import kr.co.fitview.api.app.domain.review.service.ReviewQueryService
 import kr.co.fitview.api.app.domain.review.service.ReviewTagCountQueryService
+import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardCouponStatusResponse
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardPolicyResponse
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardStampMeResponse
 import kr.co.fitview.api.app.domain.workout_reward.service.WorkoutRewardQueryService
@@ -38,7 +39,8 @@ import kotlin.random.Random
 @RestController
 @RequestMapping("/api/v1/workout-rewards")
 class WorkoutRewardController(
-    private val workoutRewardQueryService: WorkoutRewardQueryService
+    private val workoutRewardQueryService: WorkoutRewardQueryService,
+    private val securityUtil : SecurityUtil
 ) {
 
     @GetMapping("/policy")
@@ -57,6 +59,13 @@ class WorkoutRewardController(
         return ResponseEntity.ok(ApiResponse.success(response))
     }
 
+    @GetMapping("/coupons/active")
+    fun workoutRewardCouponActive(): ResponseEntity<ApiResponse<WorkoutRewardCouponStatusResponse>> {
+
+        val response = workoutRewardQueryService.findWorkoutRewardCouponStatus(securityUtil.getMemberId())
+
+        return ResponseEntity.ok(ApiResponse.success(response))
+    }
 
 
 }
