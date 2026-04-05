@@ -4,6 +4,7 @@ import jakarta.validation.Valid
 import kr.co.fitview.api.app.domain.review.dto.request.ReviewCreateRequest
 import kr.co.fitview.api.app.domain.review.dto.response.ReviewCategoryResponse
 import kr.co.fitview.api.app.domain.review.service.ReviewService
+import kr.co.fitview.api.app.domain.workout_history.dto.response.WorkoutHistoryRecentResponse
 import kr.co.fitview.api.app.domain.workout_history.dto.response.WorkoutHistoryReviewStatusResponse
 import kr.co.fitview.api.app.domain.workout_history.service.WorkoutHistoryQueryService
 import kr.co.fitview.api.app.domain.workout_history.service.WorkoutHistoryService
@@ -28,6 +29,16 @@ class WorkoutHistoryController(
     ): ResponseEntity<ApiResponse<WorkoutHistoryReviewStatusResponse>>
     {
         val response = workoutHistoryQueryService.findWorkoutHistoryReviewStatus(securityUtil.getMemberId(), workoutHistoryId)
+
+        return ResponseEntity.ok(ApiResponse.success(response))
+    }
+
+    @GetMapping("/recent")
+    fun workoutHistoryRecentList(
+
+    ): ResponseEntity<ApiResponse<List<WorkoutHistoryRecentResponse>>>
+    {
+        val response = workoutHistoryQueryService.findWorkoutHistoryRecentList(securityUtil.getMemberId())
 
         return ResponseEntity.ok(ApiResponse.success(response))
     }
