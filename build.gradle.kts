@@ -109,6 +109,9 @@ dependencies {
 	//프로메테우스
 	implementation ("org.springframework.boot:spring-boot-starter-actuator")
 	implementation ("io.micrometer:micrometer-registry-prometheus")
+
+	//sqids - 회원 id -> 코드 변환 용도
+	implementation("org.sqids:sqids:0.1.0")
 }
 
 kotlin {
