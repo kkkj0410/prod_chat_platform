@@ -95,3 +95,9 @@ include::exception/report/reportException.adoc[]
 == <APP_FEEDBACK>
 
 include::exception/app_feedback/appFeedbackException.adoc[]
+
+
+[[INVITATION]]
+== <INVITATION>
+
+include::exception/invitation/invitationException.adoc[]

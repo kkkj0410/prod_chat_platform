@@ -1,0 +1,31 @@
+[[invitation-me]]
+=== 본인 초대 코드 조회 API
+
+==== HTTP Request
+include::{snippets}/invitation-me/http-request.adoc[]
+include::{snippets}/invitation-me/request-headers.adoc[]
+
+==== HTTP Response
+include::{snippets}/invitation-me/http-response.adoc[]
+include::{snippets}/invitation-me/response-fields.adoc[]
+
+
+[[invitation-workout-partner-add]]
+=== 초대 코드로 운동 파트너 성립 API
+
+-> 주요 에러
+
+없는 회원 초대 코드 사용(INVITATION_001)
+
+이미 운동 파트너 관계(WORKOUT_PARTNER_002)
+
+자기 자신을 운동 파트너로 맺을 수 없음(WORKOUT_PARTNER_004)
+
+==== HTTP Request
+include::{snippets}/invitation-workout-partner-add/http-request.adoc[]
+include::{snippets}/invitation-workout-partner-add/request-fields.adoc[]
+include::{snippets}/invitation-workout-partner-add/request-headers.adoc[]
+
+==== HTTP Response
+include::{snippets}/invitation-workout-partner-add/http-response.adoc[]
+include::{snippets}/invitation-workout-partner-add/response-fields.adoc[]

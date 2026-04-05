@@ -27,6 +27,7 @@ import kr.co.fitview.api.app.domain.fcm.controller.FcmController
 import kr.co.fitview.api.app.domain.fcm.service.FcmTokenService
 import kr.co.fitview.api.app.domain.image.controller.ImageController
 import kr.co.fitview.api.app.domain.image.service.S3Service
+import kr.co.fitview.api.app.domain.invitation.service.InvitationService
 import kr.co.fitview.api.app.domain.member.controller.AdminMemberController
 import kr.co.fitview.api.app.domain.member.controller.MemberController
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
@@ -65,6 +66,7 @@ import kr.co.fitview.api.app.global.exception.GlobalExceptionHandler
 import kr.co.fitview.api.app.global.filter.JwtAuthenticationFilter
 import kr.co.fitview.api.app.global.health.HealthController
 import kr.co.fitview.api.app.global.security.JwtAuthenticationEntryPoint
+import kr.co.fitview.api.app.global.sqids.service.SqidsService
 import kr.co.fitview.api.app.global.util.SecurityUtil
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
@@ -255,5 +257,11 @@ abstract class ControllerTestSupport {
 
     @MockitoBean
     protected lateinit var recommendationAppFeedbackDismissLogService : RecommendationAppFeedbackDismissLogService
+
+    @MockitoBean
+    protected lateinit var sqidsService: SqidsService
+
+    @MockitoBean
+    protected lateinit var invitationService: InvitationService
 
 }
