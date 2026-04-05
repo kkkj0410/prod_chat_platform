@@ -99,13 +99,6 @@ class WorkoutRewardQueryService(
     }
     fun findWorkoutRewardCouponStatus(memberId: Long): WorkoutRewardCouponStatusResponse {
 
-        // 0, 1, 2 중 하나의 난수 발생 (원하는 확률에 따라 범위를 조정하세요. 예: nextInt(0, 10))
-        when (Random.nextInt(0, 3)) {
-            0 -> throw GlobalException(WorkoutRewardErrorCode.ALREADY_COUPON_REQUESTED)
-            1 -> throw GlobalException(WorkoutRewardErrorCode.COUPON_CONDITION_NOT_MET)
-            // 2가 나오면 when 블록을 무사히 통과하여 아래의 정상 응답을 반환합니다.
-        }
-
         return WorkoutRewardCouponStatusResponse(
             firstCouponStatus = WorkoutRewardCouponStatusResponse.CouponStatus.entries.random(),
             secondCouponStatus = WorkoutRewardCouponStatusResponse.CouponStatus.entries.random()

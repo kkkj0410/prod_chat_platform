@@ -21,10 +21,12 @@ import kr.co.fitview.api.app.domain.review.dto.response.ReviewResponse
 import kr.co.fitview.api.app.domain.review.dto.response.ReviewTagCountResponse
 import kr.co.fitview.api.app.domain.review.service.ReviewQueryService
 import kr.co.fitview.api.app.domain.review.service.ReviewTagCountQueryService
+import kr.co.fitview.api.app.domain.workout_reward.dto.request.WorkoutRewardClaimRequest
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardCouponStatusResponse
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardPolicyResponse
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardStampMeResponse
 import kr.co.fitview.api.app.domain.workout_reward.service.WorkoutRewardQueryService
+import kr.co.fitview.api.app.domain.workout_reward.service.WorkoutRewardService
 import kr.co.fitview.api.app.global.dto.ApiResponse
 import kr.co.fitview.api.app.global.dto.SuccessCursorAtPagedResponse
 import kr.co.fitview.api.app.global.dto.SuccessPagedResponse
@@ -39,6 +41,7 @@ import kotlin.random.Random
 @RestController
 @RequestMapping("/api/v1/workout-rewards")
 class WorkoutRewardController(
+    private val workoutRewardService : WorkoutRewardService,
     private val workoutRewardQueryService: WorkoutRewardQueryService,
     private val securityUtil : SecurityUtil
 ) {
@@ -65,6 +68,22 @@ class WorkoutRewardController(
         val response = workoutRewardQueryService.findWorkoutRewardCouponStatus(securityUtil.getMemberId())
 
         return ResponseEntity.ok(ApiResponse.success(response))
+    }
+
+    @PostMapping("/claims")
+    fun workoutRewardClaim(
+        @RequestBody
+        @Valid
+        request : WorkoutRewardClaimRequest
+
+    ): ResponseEntity<ApiResponse<*>>{
+
+        workoutRewardService.addWorkoutRewardClaim(
+            memberId = securityUtil.getMemberId(),
+            request = request.toServiceRequest()
+        )
+
+        return ResponseEntity.ok(ApiResponse.success("ok"))
     }
 
 

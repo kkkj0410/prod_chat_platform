@@ -3,10 +3,12 @@ package kr.co.fitview.api.app.docs.workout_reward
 import kr.co.fitview.api.app.docs.RestDocsHeaders
 import kr.co.fitview.api.app.docs.RestDocsSupport
 import kr.co.fitview.api.app.domain.workout_reward.controller.WorkoutRewardController
+import kr.co.fitview.api.app.domain.workout_reward.dto.request.WorkoutRewardClaimRequest
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardCouponStatusResponse
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardPolicyResponse
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardStampMeResponse
 import kr.co.fitview.api.app.domain.workout_reward.service.WorkoutRewardQueryService
+import kr.co.fitview.api.app.domain.workout_reward.service.WorkoutRewardService
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.util.SecurityUtil
 import org.junit.jupiter.api.DisplayName
@@ -21,6 +23,7 @@ import org.springframework.restdocs.operation.preprocess.Preprocessors.*
 import org.springframework.restdocs.payload.JsonFieldType
 import org.springframework.restdocs.payload.PayloadDocumentation.*
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
@@ -32,8 +35,12 @@ class WorkoutRewardControllerDocsTest : RestDocsSupport() {
     private val securityUtil: SecurityUtil =
         mock(SecurityUtil::class.java)
 
+    private val workoutRewardService: WorkoutRewardService =
+        mock(WorkoutRewardService::class.java)
+
     override fun initController(): Any {
         return WorkoutRewardController(
+            workoutRewardService = workoutRewardService,
             workoutRewardQueryService = workoutRewardQueryService,
             securityUtil = securityUtil
         )
@@ -231,6 +238,65 @@ class WorkoutRewardControllerDocsTest : RestDocsSupport() {
                             .description("첫 번째 쿠폰 상태 (CLAIMABLE: 받을 수 있음, UNAVAILABLE: 받을 수 없음, CLAIMED: 이미 받음)"),
                         fieldWithPath("data.secondCouponStatus").type(JsonFieldType.STRING)
                             .description("두 번째 쿠폰 상태 (CLAIMABLE: 받을 수 있음, UNAVAILABLE: 받을 수 없음, CLAIMED: 이미 받음)")
+                    )
+                )
+            )
+    }
+
+    @DisplayName("운동 리워드 쿠폰 발급 요청 API")
+    @Test
+    fun workoutRewardClaim() {
+        // given
+        // 1. SecurityUtil 모킹
+        given(securityUtil.getMemberId()).willReturn(1L)
+
+        // 2. 요청(Request) 데이터 생성
+        val request = WorkoutRewardClaimRequest(
+            phoneNumber = "01012345678",
+            workoutRewardCouponType = WorkoutRewardClaimRequest.CouponType.BAEMIN,
+            workoutRewardCouponLevel = WorkoutRewardClaimRequest.CouponLevel.FIRST
+        )
+
+        // 참고: workoutRewardService.addWorkoutRewardClaim()은 반환형이 없는(Unit/void) 함수이므로
+        // 별도의 given(willReturn) 처리를 하지 않아도 Mockito가 기본적으로 무시(pass)하고 넘어갑니다.
+
+        // when & then
+        mockMvc.perform(
+            post("/api/v1/workout-rewards/claims")
+                .header("Authorization", "Bearer jwt-token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)) // JSON 직렬화
+        )
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andDo(
+                document(
+                    "workout-reward-claim-post",
+                    preprocessRequest(prettyPrint()),
+                    preprocessResponse(prettyPrint()),
+
+                    requestHeaders(
+                        RestDocsHeaders.authorizationHeader(Role.USER)
+                    ),
+
+                    requestFields(
+                        fieldWithPath("phoneNumber").type(JsonFieldType.STRING)
+                            .description("전화번호 (예: 01012345678)"),
+                        fieldWithPath("workoutRewardCouponType").type(JsonFieldType.STRING)
+                            .description("요청할 쿠폰 브랜드 타입 (BAEMIN, NAVER_PAY, COUPANG, GS25, EMART, STARBUCKS)"),
+                        fieldWithPath("workoutRewardCouponLevel").type(JsonFieldType.STRING)
+                            .description("요청할 쿠폰 레벨 (FIRST, SECOND)")
+                    ),
+
+                    responseFields(
+                        fieldWithPath("status").type(JsonFieldType.NUMBER)
+                            .description("상태"),
+                        fieldWithPath("code").type(JsonFieldType.STRING)
+                            .description("코드"),
+                        fieldWithPath("message").type(JsonFieldType.STRING)
+                            .description("에러 메시지"),
+                        fieldWithPath("data").type(JsonFieldType.STRING)
+                            .description("응답 데이터")
                     )
                 )
             )
