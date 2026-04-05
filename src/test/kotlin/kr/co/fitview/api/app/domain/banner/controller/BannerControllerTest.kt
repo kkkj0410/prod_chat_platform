@@ -30,7 +30,6 @@ class BannerControllerTest : ControllerTestSupport() {
                     BannerActiveResponse.General(
                         bannerId = 1,
                         type = BannerType.APP_FEEDBACK,
-                        imageUrl = "imageUrl"
                     )
                 )
             )
@@ -49,7 +48,6 @@ class BannerControllerTest : ControllerTestSupport() {
             .andExpect(jsonPath("$.data.length()").value(1))
             .andExpect(jsonPath("$.data[0].bannerId").value(1))
             .andExpect(jsonPath("$.data[0].type").value(BannerType.APP_FEEDBACK.name))
-            .andExpect(jsonPath("$.data[0].imageUrl").value("imageUrl"))
     }
 
     @DisplayName("배너 닫기 저장 API")
