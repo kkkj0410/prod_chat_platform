@@ -9,3 +9,17 @@ include::{snippets}/workout-history-review-status/path-parameters.adoc[]
 ==== HTTP Response
 include::{snippets}/workout-history-review-status/http-response.adoc[]
 include::{snippets}/workout-history-review-status/response-fields.adoc[]
+
+
+[[workout-history-recent-list-get]]
+=== 운동 리워드 - 함께한 운동 기록 API - FAKE
+
+FAKE) 0~5개의 운동 기록이 랜덤으로 조회됨
+
+==== HTTP Request
+include::{snippets}/workout-history-recent-list-get/http-request.adoc[]
+include::{snippets}/workout-history-recent-list-get/request-headers.adoc[]
+
+==== HTTP Response
+include::{snippets}/workout-history-recent-list-get/http-response.adoc[]
+include::{snippets}/workout-history-recent-list-get/response-fields.adoc[]

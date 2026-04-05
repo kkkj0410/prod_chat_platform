@@ -1,5 +1,6 @@
 package kr.co.fitview.api.app.domain.workout_reward.service
 
+import kr.co.fitview.api.app.domain.workout_reward.dto.response.AdminWorkoutRewardClaimResponse
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardCouponStatusResponse
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardPolicyResponse
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardStampMeResponse
@@ -8,6 +9,7 @@ import kr.co.fitview.api.app.global.exception.workout_reward.WorkoutRewardErrorC
 import kr.co.fitview.api.app.global.random.RandomCustom
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
 import kotlin.random.Random
 
 
@@ -104,5 +106,7 @@ class WorkoutRewardQueryService(
             secondCouponStatus = WorkoutRewardCouponStatusResponse.CouponStatus.entries.random()
         )
     }
+
+
 
 }
