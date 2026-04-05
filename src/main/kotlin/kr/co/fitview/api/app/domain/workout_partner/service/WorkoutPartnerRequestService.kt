@@ -71,7 +71,15 @@ class WorkoutPartnerRequestService(
 
         val savedWorkoutPartnerRequest =  workoutPartnerRequestRepository.save(workoutPartnerRequest)
 
-        return addWorkoutPartner(savedWorkoutPartnerRequest)
+        val savedWorkoutPartner = addWorkoutPartner(savedWorkoutPartnerRequest)
+
+        sendStompAcceptWorkoutPartnerRequest(savedWorkoutPartnerRequest)
+
+        sendFcmNotificationAcceptWorkoutPartnerRequest(savedWorkoutPartnerRequest.getFromMemberId(), savedWorkoutPartnerRequest.getToMemberId())
+
+        sendNotificationAcceptWorkoutPartnerRequest(savedWorkoutPartnerRequest, savedWorkoutPartner.id!!)
+
+        return savedWorkoutPartner
     }
 
     fun getRandomPartnerContentByShuffle(seed: Long): WorkoutPartnerRequestContent {
