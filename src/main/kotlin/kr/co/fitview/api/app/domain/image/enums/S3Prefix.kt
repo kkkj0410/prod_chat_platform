@@ -9,7 +9,9 @@ enum class S3Prefix(
     MEMBER_PROFILE("member/profile", "회원 프로필 사진"),
     MEMBER_WORKOUT("member/workout", "회원 운동 사진"),
     APP_FEEDBACK_BANNER("app-feedback/banner", "앱 피드백 배너 사진"),
-    APP_FEEDBACK_CARD("app-feedback/card", "앱 피드백 카드 사진")
+    APP_FEEDBACK_CARD("app-feedback/card", "앱 피드백 카드 사진"),
+    WORKOUT_REWARD_ICON("workout-reward/icon", "운동 리워드 보상 브랜드 아이콘"),
+    WORKOUT_REWARD_CARD("workout-reward/card", "운동 리워드 보상 카드")
 
     ;
 

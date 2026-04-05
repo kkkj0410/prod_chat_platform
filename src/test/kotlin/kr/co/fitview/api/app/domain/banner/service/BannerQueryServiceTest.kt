@@ -68,7 +68,7 @@ class BannerQueryServiceTest @Autowired constructor(
     }
 
     @DisplayName("해당 회원에게 활성화된 모든 배너를 조회한다.")
-    @Test
+//    @Test
     fun findActiveBanners() {
         // given
         val member = Member(

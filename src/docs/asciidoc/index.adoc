@@ -137,3 +137,15 @@ include::api/app_feedback/adminAppFeedback.adoc[]
 include::api/invitation/invitation.adoc[]
 
 
+[[WORKOUT_REWARD]]
+== WorkoutReward API
+
+include::api/workout_reward/workoutReward.adoc[]
+
+
+[[ADMIN_WORKOUT_REWARD]]
+== AdminWorkoutReward API
+
+include::api/workout_reward/adminWorkoutReward.adoc[]
+
+

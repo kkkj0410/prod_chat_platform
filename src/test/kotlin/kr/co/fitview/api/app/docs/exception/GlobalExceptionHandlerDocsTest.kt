@@ -24,6 +24,7 @@ import kr.co.fitview.api.app.global.exception.error.security.SecurityErrorCode
 import kr.co.fitview.api.app.global.exception.error.term.TermErrorCode
 import kr.co.fitview.api.app.global.exception.error.workout_partner.WorkoutPartnerErrorCode
 import kr.co.fitview.api.app.global.exception.error.workout_request.WorkoutRequestErrorCode
+import kr.co.fitview.api.app.global.exception.workout_reward.WorkoutRewardErrorCode
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
@@ -113,7 +114,8 @@ class GlobalExceptionHandlerDocsTest  : RestDocsSupport() {
                     ReviewErrorCode.entries +
                     ReportErrorCode.entries +
                     AppFeedbackErrorCode.entries +
-                    InvitationErrorCode.entries
+                    InvitationErrorCode.entries +
+                    WorkoutRewardErrorCode.entries
         }
     }
 
