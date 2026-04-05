@@ -34,7 +34,8 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 @Transactional(readOnly = true)
 class WorkoutPartnerRequestService(
-    private val workoutPartnerRepository: WorkoutPartnerRepository,
+    private val workoutPartnerService : WorkoutPartnerService,
+    private val workoutPartnerQueryService : WorkoutPartnerQueryService,
     private val workoutPartnerRequestRepository : WorkoutPartnerRequestRepository,
     private val memberQueryService : MemberQueryService,
     private val publisher: ApplicationEventPublisher,
@@ -71,7 +72,7 @@ class WorkoutPartnerRequestService(
 
         val savedWorkoutPartnerRequest =  workoutPartnerRequestRepository.save(workoutPartnerRequest)
 
-        val savedWorkoutPartner = addWorkoutPartner(savedWorkoutPartnerRequest)
+        val savedWorkoutPartner = workoutPartnerService.addWorkoutPartner(savedWorkoutPartnerRequest)
 
         sendStompAcceptWorkoutPartnerRequest(savedWorkoutPartnerRequest)
 
@@ -146,7 +147,7 @@ class WorkoutPartnerRequestService(
 
             findWorkoutPartnerRequest.accept()
 
-            val savedWorkoutPartner = addWorkoutPartner(findWorkoutPartnerRequest)
+            val savedWorkoutPartner = workoutPartnerService.addWorkoutPartner(findWorkoutPartnerRequest)
 
             sendStompAcceptWorkoutPartnerRequest(findWorkoutPartnerRequest)
 
@@ -176,14 +177,6 @@ class WorkoutPartnerRequestService(
 
         memberQueryService.findMemberFromId(otherMemberId)
             ?: throw GlobalException(WorkoutPartnerErrorCode.PARTNER_WITHDRAWN)
-    }
-
-    @Transactional
-    fun addWorkoutPartner(workoutPartnerRequest: WorkoutPartnerRequest) : WorkoutPartner{
-        val workoutPartner =
-            WorkoutPartner.of(workoutPartnerRequest.fromMember!!, workoutPartnerRequest.toMember!!)
-
-        return workoutPartnerRepository.save(workoutPartner)
     }
 
 
@@ -393,8 +386,8 @@ class WorkoutPartnerRequestService(
         memberOneId: Long,
         memberTwoId: Long
     ) {
-        workoutPartnerRepository
-            .findByOrderedMemberOneIdAndMemberTwoIdAndDeletedAtIsNull(memberOneId, memberTwoId)
+        workoutPartnerQueryService
+            .findWorkoutPartnerFrom(memberOneId, memberTwoId)
             ?.let { throw GlobalException(WorkoutPartnerErrorCode.ALREADY_PARTNER_ACCEPTED) }
     }
 
