@@ -1222,12 +1222,18 @@ class WorkoutPartnerRequestServiceTest @Autowired constructor(
         )
         memberRepository.save(fromMember)
 
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest1 , fromMember.id!!)
+
         val toMember = Member(
             email = "email",
             password = "password",
             role = Role.USER
         )
         memberRepository.save(toMember)
+
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest2 , toMember.id!!)
 
 
         // when
@@ -1335,5 +1341,111 @@ class WorkoutPartnerRequestServiceTest @Autowired constructor(
             })
     }
 
+    @DisplayName("운동 파트너 즉시 성립시, 실시간 알람을 양측에 보낸다.")
+    @Test
+    fun addWorkoutPartnerDirectlyStomp() {
+        // given
+        val fromMember = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(fromMember)
+
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest1 , fromMember.id!!)
+
+        val toMember = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(toMember)
+
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest2 , toMember.id!!)
+
+
+        // when
+        workoutPartnerRequestService.addWorkoutPartnerDirectly(
+            fromMemberId = fromMember.id!!,
+            toMemberId = toMember.id!!
+        )
+
+        // then
+        val count = events.stream(StompEventAcceptWorkoutPartnerDepth1::class.java).count()
+        assertThat(count).isEqualTo(2)
+    }
+
+    @DisplayName("운동 파트너 즉시 성립시, 푸시 알람을 보낸다.")
+    @Test
+    fun addWorkoutPartnerDirectlyFcm() {
+        // given
+        val fromMember = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(fromMember)
+
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest1 , fromMember.id!!)
+
+        val toMember = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(toMember)
+
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest2 , toMember.id!!)
+
+
+        // when
+        workoutPartnerRequestService.addWorkoutPartnerDirectly(
+            fromMemberId = fromMember.id!!,
+            toMemberId = toMember.id!!
+        )
+
+        // then
+        val count = events.stream(EventFcmWorkoutPartnerAccept::class.java).count()
+        assertThat(count).isEqualTo(2)
+    }
+
+    @DisplayName("운동 파트너 즉시 성립시, 양측에 인앱 알람을 저장한다.")
+    @Test
+    fun addWorkoutPartnerDirectlyNotification() {
+        // given
+        val fromMember = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(fromMember)
+
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest1 , fromMember.id!!)
+
+        val toMember = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(toMember)
+
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest2 , toMember.id!!)
+
+        // when
+        workoutPartnerRequestService.addWorkoutPartnerDirectly(
+            fromMemberId = fromMember.id!!,
+            toMemberId = toMember.id!!
+        )
+
+        // then
+        val count = events.stream(EventWorkoutPartnerAccept::class.java).count()
+        assertThat(count).isEqualTo(2)
+    }
 
 }

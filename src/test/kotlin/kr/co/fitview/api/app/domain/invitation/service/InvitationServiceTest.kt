@@ -15,6 +15,7 @@ import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.invitation.InvitationErrorCode
 import kr.co.fitview.api.app.global.sqids.service.SqidsService
+import kr.co.fitview.api.app.global.util.TestDataFactory
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.*
@@ -28,7 +29,8 @@ class InvitationServiceTest @Autowired constructor(
     private val invitationService: InvitationService,
     private val sqidsService: SqidsService,
     private val memberRepository: MemberRepository,
-    private val workoutPartnerRequestRepository: WorkoutPartnerRequestRepository
+    private val workoutPartnerRequestRepository: WorkoutPartnerRequestRepository,
+    private val oAuth2Service : OAuth2Service
 
 ) : IntegrationTestSupport() {
 
@@ -43,12 +45,18 @@ class InvitationServiceTest @Autowired constructor(
         )
         memberRepository.save(fromMember)
 
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest1 , fromMember.id!!)
+
         val toMember = Member(
             email = "email",
             password = "password",
             role = Role.USER
         )
         memberRepository.save(toMember)
+
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest()
+        oAuth2Service.signup(signupRequest2, toMember.id!!)
 
         val toMemberCode = sqidsService.encode(toMember.id!!)
 
