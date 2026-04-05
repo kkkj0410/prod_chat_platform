@@ -131,4 +131,9 @@ include::api/app_feedback/appFeedback.adoc[]
 include::api/app_feedback/adminAppFeedback.adoc[]
 
 
+[[INVITATION]]
+== Invitation API
+
+include::api/invitation/invitation.adoc[]
+
 
