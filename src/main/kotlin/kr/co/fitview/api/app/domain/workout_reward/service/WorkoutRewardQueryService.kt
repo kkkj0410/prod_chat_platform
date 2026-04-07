@@ -54,11 +54,13 @@ class WorkoutRewardQueryService(
 
 
     fun findWorkoutRewardStamp(
+        memberId : Long,
         startDate: LocalDate = LocalDate.of(2026, 4, 7),
         limit : Int = 5
     ) : WorkoutRewardStampMeResponse{
 
         val count = reviewQueryService.countDistinctDailyReviewFrom(
+            memberId = memberId,
             startDate = startDate,
             limit = limit
         ).toInt()
@@ -69,6 +71,9 @@ class WorkoutRewardQueryService(
     }
 
     fun findWorkoutRewardCouponStatus(memberId: Long): WorkoutRewardCouponStatusResponse {
+
+        // 쿠폰 신청 확인
+        // 쿠폰 신청 없으면 리뷰 갱신 횟수 확인
 
         return WorkoutRewardCouponStatusResponse(
             firstCouponStatus = WorkoutRewardCouponStatusResponse.CouponStatus.entries.random(),

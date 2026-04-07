@@ -4,6 +4,7 @@ import kr.co.fitview.api.app.ControllerTestSupport
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardStampMeResponse
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
 import org.mockito.kotlin.given
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
@@ -22,7 +23,10 @@ class WorkoutRewardControllerTest  : ControllerTestSupport(){
             stampCount = 5,
         )
 
-        given(workoutRewardQueryService.findWorkoutRewardStamp())
+        given(securityUtil.getMemberId())
+            .willReturn(1L)
+
+        given(workoutRewardQueryService.findWorkoutRewardStamp(any(), any(), any()))
             .willReturn(response)
 
         // when & then

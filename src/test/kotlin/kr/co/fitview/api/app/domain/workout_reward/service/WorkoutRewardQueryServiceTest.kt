@@ -199,6 +199,7 @@ class WorkoutRewardQueryServiceTest @Autowired constructor(
 
         // when
         val response = workoutRewardQueryService.findWorkoutRewardStamp(
+            memberId = member1.id!!,
             startDate = time.nowLocalDate,
             limit = 5
         )

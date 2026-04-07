@@ -151,7 +151,10 @@ class WorkoutRewardControllerDocsTest : RestDocsSupport() {
             stampCount = 3
         )
 
-        given(workoutRewardQueryService.findWorkoutRewardStamp(any(), any()))
+        given(securityUtil.getMemberId())
+            .willReturn(1L)
+
+        given(workoutRewardQueryService.findWorkoutRewardStamp(any(), any(), any()))
             .willReturn(response)
 
         // when & then

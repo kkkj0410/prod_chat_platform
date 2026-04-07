@@ -57,7 +57,9 @@ class WorkoutRewardController(
     @GetMapping("/stamps/me")
     fun workoutRewardStampDetails(): ResponseEntity<ApiResponse<WorkoutRewardStampMeResponse>> {
 
-        val response = workoutRewardQueryService.findWorkoutRewardStamp()
+        val response = workoutRewardQueryService.findWorkoutRewardStamp(
+            memberId = securityUtil.getMemberId()
+        )
 
         return ResponseEntity.ok(ApiResponse.success(response))
     }

@@ -1399,6 +1399,7 @@ class ReviewRepositoryTest @Autowired constructor(
 
         // when
         val count = reviewRepository.countDistinctDailyReviewBy(
+            memberId = member1.id!!,
             startDate = time.nowLocalDate,
             limit = 5
         )
@@ -1557,6 +1558,7 @@ class ReviewRepositoryTest @Autowired constructor(
 
         // when
         val count = reviewRepository.countDistinctDailyReviewBy(
+            memberId = member1.id!!,
             startDate = time.nowLocalDate.plusDays(1),
             limit = 5
         )
@@ -1715,6 +1717,7 @@ class ReviewRepositoryTest @Autowired constructor(
 
         // when
         val count = reviewRepository.countDistinctDailyReviewBy(
+            memberId = member1.id!!,
             startDate = time.nowLocalDate,
             limit = 1
         )
@@ -1873,6 +1876,7 @@ class ReviewRepositoryTest @Autowired constructor(
 
         // when
         val count = reviewRepository.countDistinctDailyReviewBy(
+            memberId = member1.id!!,
             startDate = time.nowLocalDate,
             limit = 5
         )
@@ -2031,6 +2035,7 @@ class ReviewRepositoryTest @Autowired constructor(
 
         // when
         val count = reviewRepository.countDistinctDailyReviewBy(
+            memberId = member1.id!!,
             startDate = time.nowLocalDate,
             limit = 5
         )

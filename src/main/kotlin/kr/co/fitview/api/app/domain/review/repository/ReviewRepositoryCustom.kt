@@ -16,5 +16,5 @@ interface ReviewRepositoryCustom {
 
     fun findAllReviewBy(condition: AdminReviewCondition): Slice<AdminReviewResponse>
 
-    fun countDistinctDailyReviewBy(startDate: LocalDate, limit: Int): Long
+    fun countDistinctDailyReviewBy(memberId : Long, startDate: LocalDate, limit: Int): Long
 }

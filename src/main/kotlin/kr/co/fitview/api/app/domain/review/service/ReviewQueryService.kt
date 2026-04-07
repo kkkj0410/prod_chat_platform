@@ -30,10 +30,11 @@ class ReviewQueryService(
     }
 
     fun countDistinctDailyReviewFrom(
+        memberId : Long,
         startDate: LocalDate,
         limit : Int
     ) : Long{
-        return reviewRepository.countDistinctDailyReviewBy(startDate, limit)
+        return reviewRepository.countDistinctDailyReviewBy(memberId, startDate, limit)
     }
 
 

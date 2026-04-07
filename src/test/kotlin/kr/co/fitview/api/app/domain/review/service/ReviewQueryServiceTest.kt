@@ -397,6 +397,7 @@ class ReviewQueryServiceTest @Autowired constructor(
 
         // when
         val count = reviewQueryService.countDistinctDailyReviewFrom(
+            memberId = member1.id!!,
             startDate = time.nowLocalDate,
             limit = 5
         )

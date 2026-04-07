@@ -185,7 +185,7 @@ class ReviewRepositoryImpl(
     }
 
 
-    override fun countDistinctDailyReviewBy(startDate: LocalDate, limit: Int): Long {
+    override fun countDistinctDailyReviewBy(memberId : Long, startDate: LocalDate, limit: Int): Long {
 
         val completedDate = Expressions.dateTemplate(
             LocalDate::class.java,
@@ -198,6 +198,7 @@ class ReviewRepositoryImpl(
             .from(review)
             .join(review.workoutHistory, workoutHistory)
             .where(
+                review.fromMember.id.eq(memberId),
                 review.postedAt.goe(startDate.atStartOfDay()),
                 review.deletedAt.isNull,
                 workoutHistory.deletedAt.isNull
