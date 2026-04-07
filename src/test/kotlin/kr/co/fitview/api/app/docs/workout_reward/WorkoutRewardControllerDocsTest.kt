@@ -65,9 +65,9 @@ class WorkoutRewardControllerDocsTest : RestDocsSupport() {
             coupons = listOf(
                 WorkoutRewardPolicyResponse.Coupon(
                     type = WorkoutRewardPolicyResponse.CouponType.BAEMIN,
-                    iconImageUrl = "https://static-dev.fitview.co.kr/workout-reward/icon/5b492e56-4bad-4aab-ae39-b21f47d8c995",
-                    firstCardImageUrl = "https://static-dev.fitview.co.kr/workout-reward/card/cf44c0f6-3faa-411d-9016-1abb28914f1e",
-                    secondCardImageUrl = "https://static-dev.fitview.co.kr/workout-reward/card/17e2d851-5ea4-4fbe-a7a4-7ae098e03563"
+                    iconPngImageUrl = "https://static-dev.fitview.co.kr/workout-reward/icon/5b492e56-4bad-4aab-ae39-b21f47d8c995",
+                    firstCardPngImageUrl = "https://static-dev.fitview.co.kr/workout-reward/card/cf44c0f6-3faa-411d-9016-1abb28914f1e",
+                    secondCardPngImageUrl = "https://static-dev.fitview.co.kr/workout-reward/card/17e2d851-5ea4-4fbe-a7a4-7ae098e03563"
                 )
             ),
             policyNotices = listOf(
@@ -129,11 +129,11 @@ class WorkoutRewardControllerDocsTest : RestDocsSupport() {
                             .description("리워드 쿠폰 브랜드 목록"),
                         fieldWithPath("data.coupons[].type").type(JsonFieldType.STRING)
                             .description("쿠폰 브랜드 타입 (EMART, BAEMIN, GS25, STARBUCKS, COUPANG, NAVER_PAY)"),
-                        fieldWithPath("data.coupons[].iconImageUrl").type(JsonFieldType.STRING)
+                        fieldWithPath("data.coupons[].iconPngImageUrl").type(JsonFieldType.STRING)
                             .description("브랜드 아이콘 이미지 URL"),
-                        fieldWithPath("data.coupons[].firstCardImageUrl").type(JsonFieldType.STRING)
+                        fieldWithPath("data.coupons[].firstCardPngImageUrl").type(JsonFieldType.STRING)
                             .description("첫 번째 달성 카드 이미지 URL"),
-                        fieldWithPath("data.coupons[].secondCardImageUrl").type(JsonFieldType.STRING)
+                        fieldWithPath("data.coupons[].secondCardPngImageUrl").type(JsonFieldType.STRING)
                             .description("두 번째 달성 카드 이미지 URL"),
 
                         fieldWithPath("data.policyNotices").type(JsonFieldType.ARRAY)
