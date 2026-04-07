@@ -18,9 +18,9 @@ data class WorkoutRewardPolicyResponse(
 
     data class Coupon(
         val type: CouponType,
-        val iconImageUrl: String,
-        val firstCardImageUrl: String,
-        val secondCardImageUrl: String
+        val iconPngImageUrl: String,
+        val firstCardPngImageUrl: String,
+        val secondCardPngImageUrl: String
     )
 
     enum class CouponType {
