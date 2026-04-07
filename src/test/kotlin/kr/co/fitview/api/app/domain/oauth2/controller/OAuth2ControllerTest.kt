@@ -379,7 +379,7 @@ class OAuth2ControllerTest : ControllerTestSupport(){
     }
 
     @ParameterizedTest(name = "소셜 회원가입 시, 회원 주소의 시/도가 규정에 맞지 않으면 요청을 거부한다.")
-    @CsvSource("없는시도", "서울특별시", "부산광역시", "강원특별자치도")
+    @CsvSource("없는시도", "서울특별시", "부산광역시", "강원특별자치")
     fun oAuth2SignupInvalidAddressSiDo(invalidSiDo : String) {
         // given
         val request = createOAuth2SignupRequestMap(siDo = invalidSiDo)
