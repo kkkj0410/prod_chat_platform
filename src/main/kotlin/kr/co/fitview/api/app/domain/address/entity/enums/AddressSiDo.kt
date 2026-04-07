@@ -14,16 +14,24 @@ enum class AddressSiDo(@get:JsonValue val fullName: String) {
     DAEJEON("대전"),
     GWANGJU("광주"),
     ULSAN("울산"),
-    SEJONG("세종"),
+    SEJONG("세종특별자치시"),
     GYEONGGI("경기"),
     CHUNGBUK("충북"),
     CHUNGNAM("충남"),
     JEONNAM("전남"),
-    JEONBUK("전북"),
+    JEONBUK("전북특별자치도"),
     GYEONGBUK("경북"),
     GYEONGNAM("경남"),
-    GANGWON("강원"),
-    JEJU("제주");
+    GANGWON("강원특별자치도"),
+    JEJU("제주특별자치도")
+
+
+    // 2026.4.7 - 기획상 아래 네이밍이 맞지만, 모바일 앱과의 불일치 문제로 인해 임시로 아래 네이밍을 쓰지 않음
+    //    JEJU("제주")
+    //    SEJONG("세종"),
+    //    JEONBUK("전북"),
+    //    GANGWON("강원"),
+    ;
 
 
     companion object {
