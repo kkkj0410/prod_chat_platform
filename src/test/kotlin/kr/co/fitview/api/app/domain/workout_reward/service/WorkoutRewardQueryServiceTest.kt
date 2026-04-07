@@ -208,6 +208,47 @@ class WorkoutRewardQueryServiceTest @Autowired constructor(
         assertThat(response.stampCount).isEqualTo(2)
     }
 
+    @DisplayName("리워드 보상 쿠폰 상태 조회 - 모두 지급 가능")
+    @Test
+    fun findWorkoutRewardCouponStatusAllClaimable() {
+        // given
+
+        // when
+
+        // then
+    }
+
+    @DisplayName("리워드 보상 쿠폰 상태 조회 - 이미 신청한 상태")
+    @Test
+    fun findWorkoutRewardCouponStatusAllClaimed() {
+        // given
+
+        // when
+
+        // then
+    }
+
+    @DisplayName("리워드 보상 쿠폰 상태 조회 - 조건 미충족으로 쿠폰 지급을 할 수 없는 상태")
+    @Test
+    fun findWorkoutRewardCouponStatusAllUnavailable() {
+        // given
+
+        // when
+
+        // then
+    }
+
+    @DisplayName("리워드 보상 쿠폰 상태 조회 - 조건 미충족으로 1개 쿠폰 지급을 할 수 없는 상태 + 1개는 이미 신청한 상태")
+    @Test
+    fun findWorkoutRewardCouponStatusOneClaimedOneUnavailable() {
+        // given
+
+        // when
+
+        // then
+    }
+
+
 
 
 }

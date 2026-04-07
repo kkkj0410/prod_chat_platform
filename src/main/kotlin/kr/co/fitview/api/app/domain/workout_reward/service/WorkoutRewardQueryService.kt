@@ -4,6 +4,7 @@ import kr.co.fitview.api.app.domain.review.service.ReviewQueryService
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardCouponStatusResponse
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardPolicyResponse
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardStampMeResponse
+import kr.co.fitview.api.app.domain.workout_reward.repository.WorkoutRewardClaimRepository
 import kr.co.fitview.api.app.global.random.RandomCustom
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -16,6 +17,7 @@ class WorkoutRewardQueryService(
     private val randomCustom : RandomCustom,
     private val workoutRewardImage : WorkoutRewardImage,
     private val reviewQueryService: ReviewQueryService,
+    private val workoutRewardClaimRepository: WorkoutRewardClaimRepository
 ) {
 
 
@@ -73,7 +75,13 @@ class WorkoutRewardQueryService(
     fun findWorkoutRewardCouponStatus(memberId: Long): WorkoutRewardCouponStatusResponse {
 
         // 쿠폰 신청 확인
+        val findWorkoutRewardClaims = workoutRewardClaimRepository.findAllByMemberId(memberId)
+
+
+
         // 쿠폰 신청 없으면 리뷰 갱신 횟수 확인
+
+
 
         return WorkoutRewardCouponStatusResponse(
             firstCouponStatus = WorkoutRewardCouponStatusResponse.CouponStatus.entries.random(),
