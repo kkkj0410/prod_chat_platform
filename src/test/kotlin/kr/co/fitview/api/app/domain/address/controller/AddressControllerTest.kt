@@ -127,7 +127,7 @@ class AddressControllerTest : ControllerTestSupport() {
     }
 
     @ParameterizedTest(name = "회원 주소 수정 시, 시/도가 규정에 맞지 않으면 요청을 거부한다.")
-    @CsvSource("없는시도", "서울특별시", "부산광역시", "강원특별자치도")
+    @CsvSource("없는시도", "서울특별시", "부산광역시", "강원특별자치")
     fun addressModifyInvalidSiDo(invalidSiDo : String) {
         val member = Member(
             email = "email1",
