@@ -59,6 +59,9 @@ import kr.co.fitview.api.app.domain.workout_partner.controller.AdminWorkoutPartn
 import kr.co.fitview.api.app.domain.workout_partner.controller.WorkoutPartnerController
 import kr.co.fitview.api.app.domain.workout_partner.service.WorkoutPartnerRequestQueryService
 import kr.co.fitview.api.app.domain.workout_partner.service.WorkoutPartnerRequestService
+import kr.co.fitview.api.app.domain.workout_reward.controller.WorkoutRewardController
+import kr.co.fitview.api.app.domain.workout_reward.service.WorkoutRewardQueryService
+import kr.co.fitview.api.app.domain.workout_reward.service.WorkoutRewardService
 import kr.co.fitview.api.app.global.config.JacksonConfig
 import kr.co.fitview.api.app.global.config.SecurityConfig
 import kr.co.fitview.api.app.global.config.TestSecurityConfig
@@ -101,6 +104,7 @@ import org.springframework.test.web.servlet.MockMvc
     FavoriteController::class,
     AppFeedbackController::class,
     BannerController::class,
+    WorkoutRewardController::class,
 
     AdminDashboardController::class,
     AdminMemberController::class,
@@ -263,5 +267,11 @@ abstract class ControllerTestSupport {
 
     @MockitoBean
     protected lateinit var invitationService: InvitationService
+
+    @MockitoBean
+    protected lateinit var workoutRewardService: WorkoutRewardService
+
+    @MockitoBean
+    protected lateinit var workoutRewardQueryService: WorkoutRewardQueryService
 
 }

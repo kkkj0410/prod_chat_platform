@@ -1,18 +1,21 @@
 package kr.co.fitview.api.app.domain.workout_reward.service
 
+import kr.co.fitview.api.app.domain.review.service.ReviewQueryService
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardCouponStatusResponse
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardPolicyResponse
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardStampMeResponse
 import kr.co.fitview.api.app.global.random.RandomCustom
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDate
 
 
 @Service
 @Transactional(readOnly = true)
 class WorkoutRewardQueryService(
     private val randomCustom : RandomCustom,
-    private val workoutRewardImage : WorkoutRewardImage
+    private val workoutRewardImage : WorkoutRewardImage,
+    private val reviewQueryService: ReviewQueryService,
 ) {
 
 
@@ -51,19 +54,20 @@ class WorkoutRewardQueryService(
 
 
     fun findWorkoutRewardStamp(
-        seed: Long = System.currentTimeMillis()
+        startDate: LocalDate = LocalDate.of(2026, 4, 7),
+        limit : Int = 5
     ) : WorkoutRewardStampMeResponse{
 
-        val count = randomCustom.nextLong(
-            seed = seed,
-            from = 0L,
-            until = 6L
-        )
+        val count = reviewQueryService.countDistinctDailyReviewFrom(
+            startDate = startDate,
+            limit = limit
+        ).toInt()
 
         return WorkoutRewardStampMeResponse(
-            stampCount = count.toInt()
+            stampCount = count
         )
     }
+
     fun findWorkoutRewardCouponStatus(memberId: Long): WorkoutRewardCouponStatusResponse {
 
         return WorkoutRewardCouponStatusResponse(
