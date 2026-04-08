@@ -5,8 +5,8 @@ data class WorkoutRewardCouponStatusResponse(
     val secondCouponStatus: CouponStatus
 ) {
     enum class CouponStatus {
-        CLAIMABLE,   // 받을 수 있음 (조건 충족)
-        UNAVAILABLE, // 받을 수 없음 (조건 미충족)
-        CLAIMED      // 이미 받음
+        CLAIMABLE,
+        UNAVAILABLE,
+        CLAIMED
     }
 }

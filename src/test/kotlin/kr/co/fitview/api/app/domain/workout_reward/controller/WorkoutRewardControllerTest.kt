@@ -1,6 +1,7 @@
 package kr.co.fitview.api.app.domain.workout_reward.controller
 
 import kr.co.fitview.api.app.ControllerTestSupport
+import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardCouponStatusResponse
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardStampMeResponse
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -42,5 +43,34 @@ class WorkoutRewardControllerTest  : ControllerTestSupport(){
             .andExpect(jsonPath("$.message").value("ok"))
 
             .andExpect(jsonPath("$.data.stampCount").value(5))
+    }
+
+    @DisplayName("활성화된 리워드 쿠폰 상태 조회 API")
+    @Test
+    fun workoutRewardCouponActive() {
+        // given
+        given(securityUtil.getMemberId()).willReturn(1L)
+
+        val response = WorkoutRewardCouponStatusResponse(
+            firstCouponStatus = WorkoutRewardCouponStatusResponse.CouponStatus.CLAIMABLE,
+            secondCouponStatus = WorkoutRewardCouponStatusResponse.CouponStatus.UNAVAILABLE
+        )
+
+        given(workoutRewardQueryService.findWorkoutRewardCouponStatus(any()))
+            .willReturn(response)
+
+        // when & then
+        mockMvc.perform(
+            get("/api/v1/workout-rewards/coupons/active")
+                .header("Authorization", "Bearer jwt-token")
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.code").value("ok"))
+            .andExpect(jsonPath("$.status").value("200"))
+            .andExpect(jsonPath("$.message").value("ok"))
+            .andExpect(jsonPath("$.data.firstCouponStatus").value("CLAIMABLE"))
+            .andExpect(jsonPath("$.data.secondCouponStatus").value("UNAVAILABLE"))
     }
 }

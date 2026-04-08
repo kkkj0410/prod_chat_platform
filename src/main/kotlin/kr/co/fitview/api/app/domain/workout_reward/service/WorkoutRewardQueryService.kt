@@ -4,6 +4,7 @@ import kr.co.fitview.api.app.domain.review.service.ReviewQueryService
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardCouponStatusResponse
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardPolicyResponse
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardStampMeResponse
+import kr.co.fitview.api.app.domain.workout_reward.entity.enums.WorkoutRewardClaimWorkoutCount
 import kr.co.fitview.api.app.domain.workout_reward.repository.WorkoutRewardClaimRepository
 import kr.co.fitview.api.app.global.random.RandomCustom
 import org.springframework.stereotype.Service
@@ -74,18 +75,41 @@ class WorkoutRewardQueryService(
 
     fun findWorkoutRewardCouponStatus(memberId: Long): WorkoutRewardCouponStatusResponse {
 
-        // 쿠폰 신청 확인
-        val findWorkoutRewardClaims = workoutRewardClaimRepository.findAllByMemberId(memberId)
+        val findWorkoutRewardClaims = workoutRewardClaimRepository.findAllByMemberId(
+            memberId = memberId
+        )
 
+        val firstClaim = findWorkoutRewardClaims.find {
+            it.workoutCount == WorkoutRewardClaimWorkoutCount.FIRST
+        }
+        val secondClaim = findWorkoutRewardClaims.find {
+            it.workoutCount == WorkoutRewardClaimWorkoutCount.SECOND
+        }
 
+        if (firstClaim != null && secondClaim != null) {
+            return WorkoutRewardCouponStatusResponse(
+                firstCouponStatus = WorkoutRewardCouponStatusResponse.CouponStatus.CLAIMED,
+                secondCouponStatus = WorkoutRewardCouponStatusResponse.CouponStatus.CLAIMED
+            )
+        }
 
-        // 쿠폰 신청 없으면 리뷰 갱신 횟수 확인
+        val reviewCount = findWorkoutRewardStamp(memberId = memberId).stampCount
 
+        val firstCouponStatus = when {
+            firstClaim != null -> WorkoutRewardCouponStatusResponse.CouponStatus.CLAIMED
+            reviewCount >= WorkoutRewardClaimWorkoutCount.FIRST.value -> WorkoutRewardCouponStatusResponse.CouponStatus.CLAIMABLE
+            else               -> WorkoutRewardCouponStatusResponse.CouponStatus.UNAVAILABLE
+        }
 
+        val secondCouponStatus = when {
+            secondClaim != null -> WorkoutRewardCouponStatusResponse.CouponStatus.CLAIMED
+            reviewCount >= WorkoutRewardClaimWorkoutCount.SECOND.value -> WorkoutRewardCouponStatusResponse.CouponStatus.CLAIMABLE
+            else                -> WorkoutRewardCouponStatusResponse.CouponStatus.UNAVAILABLE
+        }
 
         return WorkoutRewardCouponStatusResponse(
-            firstCouponStatus = WorkoutRewardCouponStatusResponse.CouponStatus.entries.random(),
-            secondCouponStatus = WorkoutRewardCouponStatusResponse.CouponStatus.entries.random()
+            firstCouponStatus = firstCouponStatus,
+            secondCouponStatus = secondCouponStatus
         )
     }
 
