@@ -4,6 +4,7 @@ import jakarta.validation.Valid
 import kr.co.fitview.api.app.domain.workout_reward.condition.AdminWorkoutRewardCondition
 import kr.co.fitview.api.app.domain.workout_reward.dto.request.AdminWorkoutRewardCouponStatusRequest
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.AdminWorkoutRewardClaimResponse
+import kr.co.fitview.api.app.domain.workout_reward.entity.enums.WorkoutRewardClaimCouponStatus
 import kr.co.fitview.api.app.domain.workout_reward.service.WorkoutRewardQueryService
 import kr.co.fitview.api.app.domain.workout_reward.service.WorkoutRewardService
 import kr.co.fitview.api.app.global.dto.ApiResponse
@@ -59,8 +60,8 @@ class AdminWorkoutRewardController(
                 // 이제 LocalDateTime이므로 .minusHours()가 잘 작동합니다!
                 createdAt = baseTime.minusHours(index.toLong() + 1),
                 coupon = AdminWorkoutRewardClaimResponse.CouponStatusInfo(
-                    status = if (isPending) AdminWorkoutRewardClaimResponse.CouponProcessStatus.PENDING else AdminWorkoutRewardClaimResponse.CouponProcessStatus.ISSUED,
-                    statusLabel = if (isPending) "대기중" else "발송 완료"
+                    status = if (isPending) WorkoutRewardClaimCouponStatus.PENDING else WorkoutRewardClaimCouponStatus.ISSUED,
+                    statusLabel = if (isPending) WorkoutRewardClaimCouponStatus.PENDING.displayName else WorkoutRewardClaimCouponStatus.ISSUED.displayName
                 )
             )
         }

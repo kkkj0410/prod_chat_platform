@@ -5,6 +5,7 @@ import kr.co.fitview.api.app.docs.RestDocsSupport
 import kr.co.fitview.api.app.domain.workout_reward.controller.AdminWorkoutRewardController
 import kr.co.fitview.api.app.domain.workout_reward.dto.request.AdminWorkoutRewardCouponStatusRequest
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.AdminWorkoutRewardClaimResponse
+import kr.co.fitview.api.app.domain.workout_reward.entity.enums.WorkoutRewardClaimCouponStatus
 import kr.co.fitview.api.app.domain.workout_reward.service.WorkoutRewardQueryService
 import kr.co.fitview.api.app.domain.workout_reward.service.WorkoutRewardService
 import kr.co.fitview.api.app.global.entity.Role
@@ -62,8 +63,8 @@ class AdminWorkoutRewardControllerDocsTest : RestDocsSupport() {
             phoneNumber = "01011111111",
             createdAt = fixedTime,
             coupon = AdminWorkoutRewardClaimResponse.CouponStatusInfo(
-                status = AdminWorkoutRewardClaimResponse.CouponProcessStatus.PENDING,
-                statusLabel = "대기중"
+                status = WorkoutRewardClaimCouponStatus.PENDING,
+                statusLabel = WorkoutRewardClaimCouponStatus.PENDING.displayName
             )
         )
 
@@ -75,8 +76,8 @@ class AdminWorkoutRewardControllerDocsTest : RestDocsSupport() {
             phoneNumber = "01022222222",
             createdAt = fixedTime.minusHours(1),
             coupon = AdminWorkoutRewardClaimResponse.CouponStatusInfo(
-                status = AdminWorkoutRewardClaimResponse.CouponProcessStatus.ISSUED,
-                statusLabel = "발송 완료"
+                status = WorkoutRewardClaimCouponStatus.ISSUED,
+                statusLabel = WorkoutRewardClaimCouponStatus.ISSUED.displayName
             )
         )
 
@@ -168,7 +169,7 @@ class AdminWorkoutRewardControllerDocsTest : RestDocsSupport() {
         // given
         val workoutRewardClaimId = 1L
         val request = AdminWorkoutRewardCouponStatusRequest(
-            workoutRewardCouponStatus = AdminWorkoutRewardCouponStatusRequest.CouponProcessStatus.ISSUED
+            workoutRewardCouponStatus = WorkoutRewardClaimCouponStatus.ISSUED
         )
 
         // when & then

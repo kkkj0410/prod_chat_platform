@@ -1,5 +1,6 @@
 package kr.co.fitview.api.app.domain.workout_reward.dto.response
 
+import kr.co.fitview.api.app.domain.workout_reward.entity.enums.WorkoutRewardClaimCouponStatus
 import java.time.LocalDateTime
 
 
@@ -13,11 +14,8 @@ data class AdminWorkoutRewardClaimResponse(
     val coupon: CouponStatusInfo
 ) {
     data class CouponStatusInfo(
-        val status: CouponProcessStatus,
+        val status: WorkoutRewardClaimCouponStatus,
         val statusLabel: String
     )
 
-    enum class CouponProcessStatus {
-        PENDING, ISSUED
-    }
 }

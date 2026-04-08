@@ -504,7 +504,8 @@ class WorkoutRewardQueryServiceTest @Autowired constructor(
             phoneNumber = "01011111111",
             workoutCount = WorkoutRewardClaimWorkoutCount.FIRST,
             isPrivacyAgreed = true,
-            couponStatus = WorkoutRewardClaimCouponStatus.PENDING
+            couponStatus = WorkoutRewardClaimCouponStatus.PENDING,
+            couponType = WorkoutRewardClaimCouponType.BAEMIN
         )
         workoutRewardClaimRepository.save(workoutRewardClaim)
 
@@ -658,7 +659,8 @@ class WorkoutRewardQueryServiceTest @Autowired constructor(
             phoneNumber = "01011111111",
             workoutCount = WorkoutRewardClaimWorkoutCount.FIRST,
             isPrivacyAgreed = true,
-            couponStatus = WorkoutRewardClaimCouponStatus.PENDING
+            couponStatus = WorkoutRewardClaimCouponStatus.PENDING,
+            couponType = WorkoutRewardClaimCouponType.BAEMIN
         )
         workoutRewardClaimRepository.save(workoutRewardClaim)
 

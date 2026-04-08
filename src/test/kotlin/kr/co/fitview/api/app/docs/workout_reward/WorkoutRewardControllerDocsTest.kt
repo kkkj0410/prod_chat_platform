@@ -8,6 +8,7 @@ import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardCou
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardPolicyResponse
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardStampMeResponse
 import kr.co.fitview.api.app.domain.workout_reward.entity.enums.WorkoutRewardClaimCouponType
+import kr.co.fitview.api.app.domain.workout_reward.entity.enums.WorkoutRewardClaimWorkoutCount
 import kr.co.fitview.api.app.domain.workout_reward.service.WorkoutRewardQueryService
 import kr.co.fitview.api.app.domain.workout_reward.service.WorkoutRewardService
 import kr.co.fitview.api.app.global.entity.Role
@@ -257,8 +258,8 @@ class WorkoutRewardControllerDocsTest : RestDocsSupport() {
         // 2. 요청(Request) 데이터 생성
         val request = WorkoutRewardClaimRequest(
             phoneNumber = "01012345678",
-            workoutRewardCouponType = WorkoutRewardClaimRequest.CouponType.BAEMIN,
-            workoutRewardCouponLevel = WorkoutRewardClaimRequest.CouponLevel.FIRST
+            workoutRewardCouponType = WorkoutRewardClaimCouponType.BAEMIN,
+            workoutRewardCouponLevel = WorkoutRewardClaimWorkoutCount.FIRST
         )
 
         // 참고: workoutRewardService.addWorkoutRewardClaim()은 반환형이 없는(Unit/void) 함수이므로
