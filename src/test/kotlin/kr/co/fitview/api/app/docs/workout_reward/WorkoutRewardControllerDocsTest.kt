@@ -7,6 +7,7 @@ import kr.co.fitview.api.app.domain.workout_reward.dto.request.WorkoutRewardClai
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardCouponStatusResponse
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardPolicyResponse
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardStampMeResponse
+import kr.co.fitview.api.app.domain.workout_reward.entity.enums.WorkoutRewardClaimCouponType
 import kr.co.fitview.api.app.domain.workout_reward.service.WorkoutRewardQueryService
 import kr.co.fitview.api.app.domain.workout_reward.service.WorkoutRewardService
 import kr.co.fitview.api.app.global.entity.Role
@@ -64,7 +65,7 @@ class WorkoutRewardControllerDocsTest : RestDocsSupport() {
             ),
             coupons = listOf(
                 WorkoutRewardPolicyResponse.Coupon(
-                    type = WorkoutRewardPolicyResponse.CouponType.BAEMIN,
+                    type = WorkoutRewardClaimCouponType.BAEMIN,
                     iconPngImageUrl = "https://static-dev.fitview.co.kr/workout-reward/icon/5b492e56-4bad-4aab-ae39-b21f47d8c995",
                     firstCardPngImageUrl = "https://static-dev.fitview.co.kr/workout-reward/card/cf44c0f6-3faa-411d-9016-1abb28914f1e",
                     secondCardPngImageUrl = "https://static-dev.fitview.co.kr/workout-reward/card/17e2d851-5ea4-4fbe-a7a4-7ae098e03563"

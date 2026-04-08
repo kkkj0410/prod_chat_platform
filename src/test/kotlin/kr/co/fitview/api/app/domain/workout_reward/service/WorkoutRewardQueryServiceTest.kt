@@ -28,6 +28,7 @@ import kr.co.fitview.api.app.domain.workout_partner.repository.WorkoutPartnerRep
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardCouponStatusResponse
 import kr.co.fitview.api.app.domain.workout_reward.entity.WorkoutRewardClaim
 import kr.co.fitview.api.app.domain.workout_reward.entity.enums.WorkoutRewardClaimCouponStatus
+import kr.co.fitview.api.app.domain.workout_reward.entity.enums.WorkoutRewardClaimCouponType
 import kr.co.fitview.api.app.domain.workout_reward.entity.enums.WorkoutRewardClaimWorkoutCount
 import kr.co.fitview.api.app.domain.workout_reward.repository.WorkoutRewardClaimRepository
 import kr.co.fitview.api.app.global.entity.Role
@@ -54,6 +55,45 @@ class WorkoutRewardQueryServiceTest @Autowired constructor(
     private val oAuth2Service : OAuth2Service,
     private val time : Time
 ) : IntegrationTestSupport(){
+
+
+    @DisplayName("운동 리워드 정책 조회")
+    @Test
+    fun findWorkoutRewardPolicy() {
+        // given & when
+        val response = workoutRewardQueryService.findWorkoutRewardPolicy()
+
+        // then
+        assertThat(response.isActive).isTrue()
+
+        assertThat(response.stamp.first.price).isEqualTo(5000)
+        assertThat(response.stamp.first.priceDisplayName).isEqualTo("5천원")
+        assertThat(response.stamp.second.price).isEqualTo(10000)
+        assertThat(response.stamp.second.priceDisplayName).isEqualTo("1만원")
+
+        assertThat(response.coupons).hasSize(6)
+        assertThat(response.coupons.map { it.type }).containsExactly(
+            WorkoutRewardClaimCouponType.BAEMIN,
+            WorkoutRewardClaimCouponType.NAVER_PAY,
+            WorkoutRewardClaimCouponType.COUPANG,
+            WorkoutRewardClaimCouponType.GS25,
+            WorkoutRewardClaimCouponType.EMART,
+            WorkoutRewardClaimCouponType.STARBUCKS
+        )
+
+        response.coupons.forEach { coupon ->
+            assertThat(coupon.iconPngImageUrl).contains("/workout-reward/icon/")
+            assertThat(coupon.firstCardPngImageUrl).contains("/workout-reward/card/")
+            assertThat(coupon.secondCardPngImageUrl).contains("/workout-reward/card/")
+        }
+
+        assertThat(response.policyNotices).containsExactly(
+            "같은 날 여러번 운동해도 스탬프는 1개만 적립돼요.",
+            "후기를 작성해야 스탬프가 적립돼요",
+            "쿠폰은 리워드 달성 후 1회만 지급돼요",
+            "악용 사례 확인 시 지급이 제한될 수 있어요."
+        )
+    }
 
     @DisplayName("시작일부터 각 일자별 리뷰 개수를 조회한다.")
     @Test

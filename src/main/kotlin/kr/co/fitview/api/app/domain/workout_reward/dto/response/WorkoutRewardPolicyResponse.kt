@@ -1,5 +1,7 @@
 package kr.co.fitview.api.app.domain.workout_reward.dto.response
 
+import kr.co.fitview.api.app.domain.workout_reward.entity.enums.WorkoutRewardClaimCouponType
+
 data class WorkoutRewardPolicyResponse(
     val isActive: Boolean,
     val stamp: Stamp,
@@ -17,18 +19,11 @@ data class WorkoutRewardPolicyResponse(
     )
 
     data class Coupon(
-        val type: CouponType,
+        val type: WorkoutRewardClaimCouponType,
         val iconPngImageUrl: String,
         val firstCardPngImageUrl: String,
         val secondCardPngImageUrl: String
     )
 
-    enum class CouponType {
-        BAEMIN,
-        NAVER_PAY,
-        COUPANG,
-        GS25,
-        EMART,
-        STARBUCKS
-    }
+
 }

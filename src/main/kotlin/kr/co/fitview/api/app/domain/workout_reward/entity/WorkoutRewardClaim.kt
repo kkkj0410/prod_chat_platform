@@ -17,6 +17,7 @@ import jakarta.validation.constraints.Size
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.workout_reward.converter.WorkoutRewardClaimWorkoutCountConverter
 import kr.co.fitview.api.app.domain.workout_reward.entity.enums.WorkoutRewardClaimCouponStatus
+import kr.co.fitview.api.app.domain.workout_reward.entity.enums.WorkoutRewardClaimCouponType
 import kr.co.fitview.api.app.domain.workout_reward.entity.enums.WorkoutRewardClaimWorkoutCount
 import kr.co.fitview.api.app.global.entity.BaseAuditEntity
 import kr.co.fitview.api.app.global.entity.BaseEntity
@@ -50,6 +51,12 @@ open class WorkoutRewardClaim(
     @Enumerated(EnumType.STRING)
     @Column(name = "coupon_status", nullable = false, length = 50)
     open var couponStatus: WorkoutRewardClaimCouponStatus? = null,
+
+    @Size(max = 30)
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name = "coupon_type", nullable = false, length = 30)
+    open var couponType: WorkoutRewardClaimCouponType? = null,
 
     ) : BaseAuditEntity() {
 

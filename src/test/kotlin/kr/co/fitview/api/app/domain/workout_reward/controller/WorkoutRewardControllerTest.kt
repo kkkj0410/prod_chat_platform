@@ -2,7 +2,9 @@ package kr.co.fitview.api.app.domain.workout_reward.controller
 
 import kr.co.fitview.api.app.ControllerTestSupport
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardCouponStatusResponse
+import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardPolicyResponse
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardStampMeResponse
+import kr.co.fitview.api.app.domain.workout_reward.entity.enums.WorkoutRewardClaimCouponType
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
@@ -15,6 +17,62 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 class WorkoutRewardControllerTest  : ControllerTestSupport(){
 
+    @DisplayName("운동 보상 리워드 정책 조회 API")
+    @Test
+    fun workoutRewardPolicyDetails() {
+        // given
+        val response = WorkoutRewardPolicyResponse(
+            isActive = true,
+            stamp = WorkoutRewardPolicyResponse.Stamp(
+                first = WorkoutRewardPolicyResponse.StampDetail(
+                    price = 5000,
+                    priceDisplayName = "5천원"
+                ),
+                second = WorkoutRewardPolicyResponse.StampDetail(
+                    price = 10000,
+                    priceDisplayName = "1만원"
+                )
+            ),
+            coupons = listOf(
+                WorkoutRewardPolicyResponse.Coupon(
+                    type = WorkoutRewardClaimCouponType.BAEMIN,
+                    iconPngImageUrl = "https://static-dev.fitview.co.kr/workout-reward/icon/5b492e56-4bad-4aab-ae39-b21f47d8c995",
+                    firstCardPngImageUrl = "https://static-dev.fitview.co.kr/workout-reward/card/cf44c0f6-3faa-411d-9016-1abb28914f1e",
+                    secondCardPngImageUrl = "https://static-dev.fitview.co.kr/workout-reward/card/17e2d851-5ea4-4fbe-a7a4-7ae098e03563"
+                )
+            ),
+            policyNotices = listOf(
+                "같은 날 여러번 운동해도 스탬프는 1개만 적립돼요.",
+                "후기를 작성해야 스탬프가 적립돼요"
+            )
+        )
+
+        given(workoutRewardQueryService.findWorkoutRewardPolicy())
+            .willReturn(response)
+
+        // when & then
+        mockMvc.perform(
+            get("/api/v1/workout-rewards/policy")
+                .header("Authorization", "Bearer jwt-token")
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.code").value("ok"))
+            .andExpect(jsonPath("$.status").value("200"))
+            .andExpect(jsonPath("$.message").value("ok"))
+            .andExpect(jsonPath("$.data.isActive").value(true))
+            .andExpect(jsonPath("$.data.stamp.first.price").value(5000))
+            .andExpect(jsonPath("$.data.stamp.first.priceDisplayName").value("5천원"))
+            .andExpect(jsonPath("$.data.stamp.second.price").value(10000))
+            .andExpect(jsonPath("$.data.stamp.second.priceDisplayName").value("1만원"))
+            .andExpect(jsonPath("$.data.coupons[0].type").value("BAEMIN"))
+            .andExpect(jsonPath("$.data.coupons[0].iconPngImageUrl").value("https://static-dev.fitview.co.kr/workout-reward/icon/5b492e56-4bad-4aab-ae39-b21f47d8c995"))
+            .andExpect(jsonPath("$.data.coupons[0].firstCardPngImageUrl").value("https://static-dev.fitview.co.kr/workout-reward/card/cf44c0f6-3faa-411d-9016-1abb28914f1e"))
+            .andExpect(jsonPath("$.data.coupons[0].secondCardPngImageUrl").value("https://static-dev.fitview.co.kr/workout-reward/card/17e2d851-5ea4-4fbe-a7a4-7ae098e03563"))
+            .andExpect(jsonPath("$.data.policyNotices[0]").value("같은 날 여러번 운동해도 스탬프는 1개만 적립돼요."))
+            .andExpect(jsonPath("$.data.policyNotices[1]").value("후기를 작성해야 스탬프가 적립돼요"))
+    }
 
     @DisplayName("운동 리워드 스탬프 현황 조회 API")
     @Test

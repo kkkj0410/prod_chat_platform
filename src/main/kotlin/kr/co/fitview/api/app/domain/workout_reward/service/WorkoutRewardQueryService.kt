@@ -4,6 +4,7 @@ import kr.co.fitview.api.app.domain.review.service.ReviewQueryService
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardCouponStatusResponse
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardPolicyResponse
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardStampMeResponse
+import kr.co.fitview.api.app.domain.workout_reward.entity.enums.WorkoutRewardClaimCouponType
 import kr.co.fitview.api.app.domain.workout_reward.entity.enums.WorkoutRewardClaimWorkoutCount
 import kr.co.fitview.api.app.domain.workout_reward.repository.WorkoutRewardClaimRepository
 import kr.co.fitview.api.app.global.random.RandomCustom
@@ -15,7 +16,6 @@ import java.time.LocalDate
 @Service
 @Transactional(readOnly = true)
 class WorkoutRewardQueryService(
-    private val randomCustom : RandomCustom,
     private val workoutRewardImage : WorkoutRewardImage,
     private val reviewQueryService: ReviewQueryService,
     private val workoutRewardClaimRepository: WorkoutRewardClaimRepository
@@ -23,7 +23,7 @@ class WorkoutRewardQueryService(
 
 
     fun findWorkoutRewardPolicy(): WorkoutRewardPolicyResponse {
-        val allCoupons = WorkoutRewardPolicyResponse.CouponType.entries.map { type ->
+        val allCoupons = WorkoutRewardClaimCouponType.entries.map { type ->
             val images = workoutRewardImage.getImageSet(type)
             WorkoutRewardPolicyResponse.Coupon(
                 type = type,
