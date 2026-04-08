@@ -63,7 +63,7 @@ open class WorkoutRewardClaim(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "workout_reward_claim_id", nullable = false)
-    open var id: Long = 0L
+    open var id: Long? = null
 
 
 }

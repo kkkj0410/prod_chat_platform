@@ -1,6 +1,8 @@
 package kr.co.fitview.api.app.domain.workout_reward.service
 
 import kr.co.fitview.api.app.domain.review.service.ReviewQueryService
+import kr.co.fitview.api.app.domain.workout_reward.condition.AdminWorkoutRewardCondition
+import kr.co.fitview.api.app.domain.workout_reward.dto.response.AdminWorkoutRewardClaimResponse
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardCouponStatusResponse
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardPolicyResponse
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardStampMeResponse
@@ -8,6 +10,7 @@ import kr.co.fitview.api.app.domain.workout_reward.entity.enums.WorkoutRewardCla
 import kr.co.fitview.api.app.domain.workout_reward.entity.enums.WorkoutRewardClaimWorkoutCount
 import kr.co.fitview.api.app.domain.workout_reward.repository.WorkoutRewardClaimRepository
 import kr.co.fitview.api.app.global.random.RandomCustom
+import org.springframework.data.domain.Slice
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
@@ -114,5 +117,26 @@ class WorkoutRewardQueryService(
     }
 
 
+    fun findAllWorkoutReward(condition: AdminWorkoutRewardCondition): Slice<AdminWorkoutRewardClaimResponse> {
+        return workoutRewardClaimRepository.findAllWorkoutRewardBy(condition)
+            .map { c ->
+                val couponName = when (c.workoutCount!!) {
+                    WorkoutRewardClaimWorkoutCount.FIRST -> c.couponType!!.firstDisplayName
+                    WorkoutRewardClaimWorkoutCount.SECOND -> c.couponType!!.secondDisplayName
+                }
+                AdminWorkoutRewardClaimResponse(
+                    workoutRewardClaimId = c.id!!,
+                    nickname = c.member!!.nickname!!,
+                    stampLevelDisplayName = c.couponStatus!!.displayName,
+                    couponName = couponName,
+                    phoneNumber = c.phoneNumber!!,
+                    createdAt = c.createdAt!!,
+                    coupon = AdminWorkoutRewardClaimResponse.CouponStatusInfo(
+                        status = c.couponStatus!!,
+                        statusLabel = c.couponStatus!!.displayName
+                    )
+                )
+            }
+    }
 
 }

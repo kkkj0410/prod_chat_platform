@@ -4,10 +4,9 @@ import kr.co.fitview.api.app.domain.workout_reward.condition.AdminWorkoutRewardC
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.AdminWorkoutRewardClaimResponse
 import kr.co.fitview.api.app.domain.workout_reward.entity.WorkoutRewardClaim
 import org.springframework.data.domain.Slice
-import org.springframework.data.jpa.repository.JpaRepository
 
-interface WorkoutRewardClaimRepository : JpaRepository<WorkoutRewardClaim, Long>, WorkoutRewardClaimRepositoryCustom {
+interface WorkoutRewardClaimRepositoryCustom {
 
-    fun findAllByMemberId(memberId: Long) : List<WorkoutRewardClaim>
+    fun findAllWorkoutRewardBy(condition: AdminWorkoutRewardCondition): Slice<WorkoutRewardClaim>
 
 }

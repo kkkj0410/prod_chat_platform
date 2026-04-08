@@ -262,8 +262,6 @@ class WorkoutRewardControllerDocsTest : RestDocsSupport() {
             workoutRewardCouponLevel = WorkoutRewardClaimWorkoutCount.FIRST
         )
 
-        // 참고: workoutRewardService.addWorkoutRewardClaim()은 반환형이 없는(Unit/void) 함수이므로
-        // 별도의 given(willReturn) 처리를 하지 않아도 Mockito가 기본적으로 무시(pass)하고 넘어갑니다.
 
         // when & then
         mockMvc.perform(

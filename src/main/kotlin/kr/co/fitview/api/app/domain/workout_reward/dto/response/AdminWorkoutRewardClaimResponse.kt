@@ -17,5 +17,4 @@ data class AdminWorkoutRewardClaimResponse(
         val status: WorkoutRewardClaimCouponStatus,
         val statusLabel: String
     )
-
 }

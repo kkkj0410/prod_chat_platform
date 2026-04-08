@@ -59,6 +59,7 @@ import kr.co.fitview.api.app.domain.workout_partner.controller.AdminWorkoutPartn
 import kr.co.fitview.api.app.domain.workout_partner.controller.WorkoutPartnerController
 import kr.co.fitview.api.app.domain.workout_partner.service.WorkoutPartnerRequestQueryService
 import kr.co.fitview.api.app.domain.workout_partner.service.WorkoutPartnerRequestService
+import kr.co.fitview.api.app.domain.workout_reward.controller.AdminWorkoutRewardController
 import kr.co.fitview.api.app.domain.workout_reward.controller.WorkoutRewardController
 import kr.co.fitview.api.app.domain.workout_reward.service.WorkoutRewardQueryService
 import kr.co.fitview.api.app.domain.workout_reward.service.WorkoutRewardService
@@ -113,6 +114,7 @@ import org.springframework.test.web.servlet.MockMvc
     AdminReviewController::class,
     AdminReportController::class,
     AdminAppFeedbackController::class,
+    AdminWorkoutRewardController::class,
 
     HealthController::class,
     GlobalExceptionHandler::class,
