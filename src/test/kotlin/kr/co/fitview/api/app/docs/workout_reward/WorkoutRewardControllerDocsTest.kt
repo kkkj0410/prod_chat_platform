@@ -7,6 +7,8 @@ import kr.co.fitview.api.app.domain.workout_reward.dto.request.WorkoutRewardClai
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardCouponStatusResponse
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardPolicyResponse
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardStampMeResponse
+import kr.co.fitview.api.app.domain.workout_reward.entity.enums.WorkoutRewardClaimCouponType
+import kr.co.fitview.api.app.domain.workout_reward.entity.enums.WorkoutRewardClaimWorkoutCount
 import kr.co.fitview.api.app.domain.workout_reward.service.WorkoutRewardQueryService
 import kr.co.fitview.api.app.domain.workout_reward.service.WorkoutRewardService
 import kr.co.fitview.api.app.global.entity.Role
@@ -15,6 +17,7 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.given
 import org.springframework.http.MediaType
 import org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders
@@ -64,7 +67,7 @@ class WorkoutRewardControllerDocsTest : RestDocsSupport() {
             ),
             coupons = listOf(
                 WorkoutRewardPolicyResponse.Coupon(
-                    type = WorkoutRewardPolicyResponse.CouponType.BAEMIN,
+                    type = WorkoutRewardClaimCouponType.BAEMIN,
                     iconPngImageUrl = "https://static-dev.fitview.co.kr/workout-reward/icon/5b492e56-4bad-4aab-ae39-b21f47d8c995",
                     firstCardPngImageUrl = "https://static-dev.fitview.co.kr/workout-reward/card/cf44c0f6-3faa-411d-9016-1abb28914f1e",
                     secondCardPngImageUrl = "https://static-dev.fitview.co.kr/workout-reward/card/17e2d851-5ea4-4fbe-a7a4-7ae098e03563"
@@ -151,7 +154,10 @@ class WorkoutRewardControllerDocsTest : RestDocsSupport() {
             stampCount = 3
         )
 
-        given(workoutRewardQueryService.findWorkoutRewardStamp(any()))
+        given(securityUtil.getMemberId())
+            .willReturn(1L)
+
+        given(workoutRewardQueryService.findWorkoutRewardStamp(any(), anyOrNull(), any()))
             .willReturn(response)
 
         // when & then
@@ -193,16 +199,13 @@ class WorkoutRewardControllerDocsTest : RestDocsSupport() {
     @Test
     fun workoutRewardCouponActive() {
         // given
-        // 1. SecurityUtil 모킹 (필수: 컨트롤러 내부에서 사용 중)
         given(securityUtil.getMemberId()).willReturn(1L)
 
-        // 2. 가짜 응답 데이터 생성 (예시로 하나는 받을 수 있고, 하나는 아직 못 받는 상태)
         val response = WorkoutRewardCouponStatusResponse(
             firstCouponStatus = WorkoutRewardCouponStatusResponse.CouponStatus.CLAIMABLE,
             secondCouponStatus = WorkoutRewardCouponStatusResponse.CouponStatus.UNAVAILABLE
         )
 
-        // 3. 서비스 로직 모킹
         given(workoutRewardQueryService.findWorkoutRewardCouponStatus(any()))
             .willReturn(response)
 
@@ -245,20 +248,16 @@ class WorkoutRewardControllerDocsTest : RestDocsSupport() {
 
     @DisplayName("운동 리워드 쿠폰 발급 요청 API")
     @Test
-    fun workoutRewardClaim() {
+    fun workoutRewardClaimAdd() {
         // given
-        // 1. SecurityUtil 모킹
         given(securityUtil.getMemberId()).willReturn(1L)
 
-        // 2. 요청(Request) 데이터 생성
         val request = WorkoutRewardClaimRequest(
             phoneNumber = "01012345678",
-            workoutRewardCouponType = WorkoutRewardClaimRequest.CouponType.BAEMIN,
-            workoutRewardCouponLevel = WorkoutRewardClaimRequest.CouponLevel.FIRST
+            workoutRewardCouponType = WorkoutRewardClaimCouponType.BAEMIN,
+            workoutRewardCouponLevel = WorkoutRewardClaimWorkoutCount.FIRST
         )
 
-        // 참고: workoutRewardService.addWorkoutRewardClaim()은 반환형이 없는(Unit/void) 함수이므로
-        // 별도의 given(willReturn) 처리를 하지 않아도 Mockito가 기본적으로 무시(pass)하고 넘어갑니다.
 
         // when & then
         mockMvc.perform(

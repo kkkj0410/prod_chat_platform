@@ -5,6 +5,8 @@ import kr.co.fitview.api.app.docs.RestDocsSupport
 import kr.co.fitview.api.app.domain.workout_reward.controller.AdminWorkoutRewardController
 import kr.co.fitview.api.app.domain.workout_reward.dto.request.AdminWorkoutRewardCouponStatusRequest
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.AdminWorkoutRewardClaimResponse
+import kr.co.fitview.api.app.domain.workout_reward.entity.enums.WorkoutRewardClaimCouponStatus
+import kr.co.fitview.api.app.domain.workout_reward.entity.enums.WorkoutRewardClaimWorkoutCount
 import kr.co.fitview.api.app.domain.workout_reward.service.WorkoutRewardQueryService
 import kr.co.fitview.api.app.domain.workout_reward.service.WorkoutRewardService
 import kr.co.fitview.api.app.global.entity.Role
@@ -12,6 +14,8 @@ import kr.co.fitview.api.app.global.util.SecurityUtil
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
+import org.mockito.kotlin.any
+import org.mockito.kotlin.given
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.SliceImpl
 import org.springframework.http.MediaType
@@ -62,8 +66,8 @@ class AdminWorkoutRewardControllerDocsTest : RestDocsSupport() {
             phoneNumber = "01011111111",
             createdAt = fixedTime,
             coupon = AdminWorkoutRewardClaimResponse.CouponStatusInfo(
-                status = AdminWorkoutRewardClaimResponse.CouponProcessStatus.PENDING,
-                statusLabel = "대기중"
+                status = WorkoutRewardClaimCouponStatus.PENDING,
+                statusLabel = WorkoutRewardClaimCouponStatus.PENDING.displayName
             )
         )
 
@@ -75,8 +79,8 @@ class AdminWorkoutRewardControllerDocsTest : RestDocsSupport() {
             phoneNumber = "01022222222",
             createdAt = fixedTime.minusHours(1),
             coupon = AdminWorkoutRewardClaimResponse.CouponStatusInfo(
-                status = AdminWorkoutRewardClaimResponse.CouponProcessStatus.ISSUED,
-                statusLabel = "발송 완료"
+                status = WorkoutRewardClaimCouponStatus.ISSUED,
+                statusLabel = WorkoutRewardClaimCouponStatus.ISSUED.displayName
             )
         )
 
@@ -85,6 +89,9 @@ class AdminWorkoutRewardControllerDocsTest : RestDocsSupport() {
             PageRequest.of(0, 10),
             false
         )
+
+        given(workoutRewardQueryService.findAllWorkoutReward(any()))
+            .willReturn(sliceResponse)
 
 
         // when & then
@@ -142,7 +149,7 @@ class AdminWorkoutRewardControllerDocsTest : RestDocsSupport() {
                         fieldWithPath("data.content[].nickname").type(JsonFieldType.STRING)
                             .description("사용자 닉네임"),
                         fieldWithPath("data.content[].stampLevelDisplayName").type(JsonFieldType.STRING)
-                            .description("달성 스탬프 기준 (3회 / 5회)"),
+                            .description("달성 스탬프 기준 " + WorkoutRewardClaimWorkoutCount.allDescription()),
                         fieldWithPath("data.content[].couponName").type(JsonFieldType.STRING)
                             .description("신청한 쿠폰 상품명"),
                         fieldWithPath("data.content[].phoneNumber").type(JsonFieldType.STRING)
@@ -150,13 +157,12 @@ class AdminWorkoutRewardControllerDocsTest : RestDocsSupport() {
                         fieldWithPath("data.content[].createdAt").type(JsonFieldType.STRING)
                             .description("신청 일시 (예: 2026-03-08T10:00:00)"),
 
-                        // Coupon 상세 상태
                         fieldWithPath("data.content[].coupon").type(JsonFieldType.OBJECT)
                             .description("쿠폰 처리 상태 정보"),
                         fieldWithPath("data.content[].coupon.status").type(JsonFieldType.STRING)
-                            .description("상태 코드 (PENDING: 대기중, ISSUED: 발송 완료)"),
+                            .description("상태 코드 " + WorkoutRewardClaimCouponStatus.allDescription()),
                         fieldWithPath("data.content[].coupon.statusLabel").type(JsonFieldType.STRING)
-                            .description("상태 한글 라벨 (대기중, 발송 완료)")
+                            .description("상태 한글 라벨 " + WorkoutRewardClaimCouponStatus.allDescription())
                     )
                 )
             )
@@ -168,7 +174,7 @@ class AdminWorkoutRewardControllerDocsTest : RestDocsSupport() {
         // given
         val workoutRewardClaimId = 1L
         val request = AdminWorkoutRewardCouponStatusRequest(
-            workoutRewardCouponStatus = AdminWorkoutRewardCouponStatusRequest.CouponProcessStatus.ISSUED
+            workoutRewardCouponStatus = WorkoutRewardClaimCouponStatus.ISSUED
         )
 
         // when & then

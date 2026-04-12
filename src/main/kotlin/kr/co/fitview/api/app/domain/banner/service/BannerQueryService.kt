@@ -36,34 +36,9 @@ class BannerQueryService(
                     type = it.bannerType!!,
                 )
             }
-        }.toMutableList()
-
-        if (Random.nextBoolean()) {
-            responses.add(
-                BannerActiveResponse.General(
-                    bannerId = 2L,
-                    type = BannerType.WORKOUT_REWARD
-                )
-            )
         }
 
         return responses
-
-//        return findBanners.map {
-//            when (it.bannerType) {
-//                BannerType.APP_FEEDBACK -> BannerActiveResponse.AppFeedback(
-//                    bannerId = it.id!!,
-//                    type = it.bannerType!!,
-//                    imageUrl = it.getImageUrl(),
-//                    svgImageUrl = bannerAppFeedbackSvgImageUrl
-//                )
-//                else -> BannerActiveResponse.General(
-//                    bannerId = it.id!!,
-//                    type = it.bannerType!!,
-//                )
-//            }
-//        }
-
     }
 
     fun findBannerReferenceFrom(bannerId : Long) : Banner {

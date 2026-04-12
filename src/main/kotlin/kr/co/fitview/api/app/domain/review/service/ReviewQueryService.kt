@@ -9,6 +9,7 @@ import kr.co.fitview.api.app.domain.review.repository.ReviewRepository
 import org.springframework.data.domain.Slice
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDate
 
 
 @Service
@@ -26,6 +27,14 @@ class ReviewQueryService(
 
     fun findAllReviewFrom(condition: AdminReviewCondition) : Slice<AdminReviewResponse>{
         return reviewRepository.findAllReviewBy(condition)
+    }
+
+    fun countDistinctDailyReviewFrom(
+        memberId : Long,
+        startDate: LocalDate,
+        limit : Int
+    ) : Long{
+        return reviewRepository.countDistinctDailyReviewBy(memberId, startDate, limit)
     }
 
 
