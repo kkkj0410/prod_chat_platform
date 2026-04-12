@@ -10,7 +10,6 @@ import kr.co.fitview.api.app.domain.workout_reward.entity.WorkoutRewardClaim
 import kr.co.fitview.api.app.domain.workout_reward.entity.enums.WorkoutRewardClaimCouponType
 import kr.co.fitview.api.app.domain.workout_reward.entity.enums.WorkoutRewardClaimWorkoutCount
 import kr.co.fitview.api.app.domain.workout_reward.repository.WorkoutRewardClaimRepository
-import kr.co.fitview.api.app.global.random.RandomCustom
 import org.springframework.data.domain.Slice
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -20,7 +19,7 @@ import java.time.LocalDate
 @Service
 @Transactional(readOnly = true)
 class WorkoutRewardQueryService(
-    private val workoutRewardImage : WorkoutRewardImage,
+    private val workoutRewardPolicyProvider : WorkoutRewardPolicyProvider,
     private val reviewQueryService: ReviewQueryService,
     private val workoutRewardClaimRepository: WorkoutRewardClaimRepository
 ) {
@@ -28,7 +27,7 @@ class WorkoutRewardQueryService(
 
     fun findWorkoutRewardPolicy(): WorkoutRewardPolicyResponse {
         val allCoupons = WorkoutRewardClaimCouponType.entries.map { type ->
-            val images = workoutRewardImage.getImageSet(type)
+            val images = workoutRewardPolicyProvider.getImageSet(type)
             WorkoutRewardPolicyResponse.Coupon(
                 type = type,
                 iconPngImageUrl = images.iconPngImageUrl,
@@ -62,13 +61,15 @@ class WorkoutRewardQueryService(
 
     fun findWorkoutRewardStamp(
         memberId : Long,
-        startDate: LocalDate = LocalDate.of(2026, 4, 7),
+        startDate: LocalDate? = null,
         limit : Int = 5
     ) : WorkoutRewardStampMeResponse{
 
+        val targetStartDate = startDate ?: workoutRewardPolicyProvider.startDate
+
         val count = reviewQueryService.countDistinctDailyReviewFrom(
             memberId = memberId,
-            startDate = startDate,
+            startDate = targetStartDate,
             limit = limit
         ).toInt()
 

@@ -1,12 +1,14 @@
 package kr.co.fitview.api.app.domain.workout_reward.service
 
-import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardPolicyResponse
 import kr.co.fitview.api.app.domain.workout_reward.entity.enums.WorkoutRewardClaimCouponType
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
+import java.time.LocalDate
 
 @Component
-class WorkoutRewardImage(
+class WorkoutRewardPolicyProvider(
+    @Value("\${workout-reward.policy.start-date}")
+    val startDate: LocalDate,
     @Value("\${workout-reward.coupons.BAEMIN.icon-png-image-url}")
     val baeminIconPngImageUrl: String,
     @Value("\${workout-reward.coupons.BAEMIN.first-card-png-image-url}")
@@ -50,6 +52,7 @@ class WorkoutRewardImage(
     val starbucksSecondCardPngImageUrl: String,
 
 ) {
+
     fun getImageSet(type: WorkoutRewardClaimCouponType): CouponImageSet {
         return when (type) {
             WorkoutRewardClaimCouponType.BAEMIN -> CouponImageSet(baeminIconPngImageUrl, baeminFirstCardPngImageUrl, baeminSecondCardPngImageUrl)

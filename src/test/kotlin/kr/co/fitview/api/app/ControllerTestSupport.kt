@@ -61,6 +61,7 @@ import kr.co.fitview.api.app.domain.workout_partner.service.WorkoutPartnerReques
 import kr.co.fitview.api.app.domain.workout_partner.service.WorkoutPartnerRequestService
 import kr.co.fitview.api.app.domain.workout_reward.controller.AdminWorkoutRewardController
 import kr.co.fitview.api.app.domain.workout_reward.controller.WorkoutRewardController
+import kr.co.fitview.api.app.domain.workout_reward.service.WorkoutRewardPolicyProvider
 import kr.co.fitview.api.app.domain.workout_reward.service.WorkoutRewardQueryService
 import kr.co.fitview.api.app.domain.workout_reward.service.WorkoutRewardService
 import kr.co.fitview.api.app.global.config.JacksonConfig
@@ -275,5 +276,8 @@ abstract class ControllerTestSupport {
 
     @MockitoBean
     protected lateinit var workoutRewardQueryService: WorkoutRewardQueryService
+
+    @MockitoBean
+    protected lateinit var workoutRewardPolicyProvider: WorkoutRewardPolicyProvider
 
 }

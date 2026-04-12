@@ -9,11 +9,13 @@ import kr.co.fitview.api.app.domain.workout_history.dto.response.WorkoutHistoryR
 import kr.co.fitview.api.app.domain.workout_history.dto.response.enums.WorkoutHistoryReviewStatus
 import kr.co.fitview.api.app.domain.workout_history.entity.WorkoutHistory
 import kr.co.fitview.api.app.domain.workout_history.repository.WorkoutHistoryRepository
+import kr.co.fitview.api.app.domain.workout_reward.service.WorkoutRewardPolicyProvider
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.global.GlobalErrorCode
 import kr.co.fitview.api.app.global.time.Time
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDate
 import java.time.LocalDateTime
 import kotlin.random.Random
 
@@ -23,6 +25,7 @@ import kotlin.random.Random
 class WorkoutHistoryQueryService(
     private val workoutHistoryRepository: WorkoutHistoryRepository,
     private val reviewQueryService : ReviewQueryService,
+    private val workoutRewardPolicyProvider : WorkoutRewardPolicyProvider,
     private val time : Time
 ) {
 
@@ -60,22 +63,20 @@ class WorkoutHistoryQueryService(
         return workoutHistoryRepository.existsByChatRoomIdAndDeletedAtIsNull(chatRoomId)
     }
 
-    fun findWorkoutHistoryRecentList(memberId: Long): List<WorkoutHistoryRecentResponse> {
+    fun findWorkoutHistoryRecentList(
+        memberId: Long,
+        startDate : LocalDate? = null,
+        limit : Int = 5
+    ): List<WorkoutHistoryRecentResponse> {
 
-        // 0부터 5 사이의 랜덤한 개수 추출 (0 이상 6 미만)
-        val randomCount = Random.nextInt(0, 6)
+        val targetStartDate = startDate ?: workoutRewardPolicyProvider.startDate
 
-        // randomCount가 0이면 빈 리스트가 반환되고, 1 이상이면 그 개수만큼 객체가 생성됩니다.
-        return List(randomCount) { index ->
-            WorkoutHistoryRecentResponse(
-                workoutHistoryId = (index + 1).toLong(),
-                nickname = "스폰지밥${index + 1}",
-                // 현재 시간 기준으로 1일씩, 2일씩 과거로 설정 (그럴싸한 더미 데이터)
-                completedAt = LocalDateTime.now().minusDays(index.toLong()),
-                // 후기 작성 여부도 true/false 랜덤으로 발생
-                isReviewed = Random.nextBoolean()
-            )
-        }
+        return workoutHistoryRepository.findAllWorkoutHistoryBy(
+            memberId = memberId,
+            startDate = targetStartDate,
+            limit = limit
+        )
+
     }
 
     private fun isExpired(findWorkoutHistory: WorkoutHistory) =
