@@ -240,6 +240,37 @@ class WorkoutRewardClaimRepositoryTest @Autowired constructor(
             )
     }
 
+    @DisplayName("특정 회원의 운동 리워드 신청 현황을 조회한다.")
+    @Test
+    fun findByMemberIdAndWorkoutCount() {
+        // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(member)
+
+        val workoutRewardClaim = WorkoutRewardClaim(
+            member = member,
+            phoneNumber = "01011111111",
+            workoutCount = WorkoutRewardClaimWorkoutCount.FIRST,
+            isPrivacyAgreed = true,
+            couponStatus = WorkoutRewardClaimCouponStatus.PENDING,
+            couponType = WorkoutRewardClaimCouponType.BAEMIN
+        )
+        workoutRewardClaimRepository.save(workoutRewardClaim)
+
+        // when
+        val findWorkoutRewardClaim = workoutRewardClaimRepository.findByMemberIdAndWorkoutCount(
+            memberId = member.id!!,
+            workoutCount = WorkoutRewardClaimWorkoutCount.FIRST
+        )
+
+        // then
+        assertThat(findWorkoutRewardClaim!!.id).isEqualTo(workoutRewardClaim.id)
+    }
+
 
 
 }

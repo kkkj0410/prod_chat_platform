@@ -1,16 +1,20 @@
 package kr.co.fitview.api.app.domain.workout_reward.controller
 
 import kr.co.fitview.api.app.ControllerTestSupport
+import kr.co.fitview.api.app.domain.workout_reward.dto.request.WorkoutRewardClaimRequest
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardCouponStatusResponse
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardPolicyResponse
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardStampMeResponse
 import kr.co.fitview.api.app.domain.workout_reward.entity.enums.WorkoutRewardClaimCouponType
+import kr.co.fitview.api.app.domain.workout_reward.entity.enums.WorkoutRewardClaimWorkoutCount
+import kr.co.fitview.api.app.global.exception.error.request.RequestErrorCode
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.given
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
@@ -130,5 +134,105 @@ class WorkoutRewardControllerTest  : ControllerTestSupport(){
             .andExpect(jsonPath("$.message").value("ok"))
             .andExpect(jsonPath("$.data.firstCouponStatus").value("CLAIMABLE"))
             .andExpect(jsonPath("$.data.secondCouponStatus").value("UNAVAILABLE"))
+    }
+
+    @DisplayName("운동 리워드 쿠폰 발급 요청 API")
+    @Test
+    fun workoutRewardClaimAdd() {
+        // given
+        val request = WorkoutRewardClaimRequest(
+            phoneNumber = "01012345678",
+            workoutRewardCouponType = WorkoutRewardClaimCouponType.BAEMIN,
+            workoutRewardCouponLevel = WorkoutRewardClaimWorkoutCount.FIRST
+        )
+
+        // when & then
+        mockMvc.perform(
+            post("/api/v1/workout-rewards/claims")
+                .header("Authorization", "Bearer jwt-token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request))
+        )
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.code").value("ok"))
+            .andExpect(jsonPath("$.status").value("200"))
+            .andExpect(jsonPath("$.message").value("ok"))
+            .andExpect(jsonPath("$.data").value("ok"))
+    }
+
+    @DisplayName("운동 리워드 쿠폰 발급 요청 시, 전화번호는 필수다.")
+    @Test
+    fun workoutRewardClaimAddRequiredPhoneNumber() {
+        // given
+        val request = WorkoutRewardClaimRequest(
+            phoneNumber = "",
+            workoutRewardCouponType = WorkoutRewardClaimCouponType.BAEMIN,
+            workoutRewardCouponLevel = WorkoutRewardClaimWorkoutCount.FIRST
+        )
+
+        // when // then
+        mockMvc.perform(
+            post("/api/v1/workout-rewards/claims")
+                .header("Authorization", "Bearer jwt-token")
+                .content(objectMapper.writeValueAsString(request))
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andDo(print())
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value(RequestErrorCode.REQ_FIELD_NOT_VALID.code))
+            .andExpect(jsonPath("$.status").value("400"))
+            .andExpect(jsonPath("$.message").value("phoneNumber is required"))
+            .andExpect(jsonPath("$.data").isEmpty())
+    }
+
+    @DisplayName("운동 리워드 쿠폰 발급 요청 시, 쿠폰 타입(브랜드)은 필수다.")
+    @Test
+    fun workoutRewardClaimAddRequiredCouponType() {
+        // given
+        val request = WorkoutRewardClaimRequest(
+            phoneNumber = "01012345678",
+            workoutRewardCouponType = null,
+            workoutRewardCouponLevel = WorkoutRewardClaimWorkoutCount.FIRST
+        )
+
+        // when // then
+        mockMvc.perform(
+            post("/api/v1/workout-rewards/claims")
+                .header("Authorization", "Bearer jwt-token")
+                .content(objectMapper.writeValueAsString(request))
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andDo(print())
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value(RequestErrorCode.REQ_FIELD_NOT_VALID.code))
+            .andExpect(jsonPath("$.status").value("400"))
+            .andExpect(jsonPath("$.message").value("workoutRewardCouponType is required"))
+            .andExpect(jsonPath("$.data").isEmpty())
+    }
+
+    @DisplayName("운동 리워드 쿠폰 발급 요청 시, 쿠폰 달성 레벨은 필수다.")
+    @Test
+    fun workoutRewardClaimAddRequiredCouponLevel() {
+        // given
+        val request = WorkoutRewardClaimRequest(
+            phoneNumber = "01012345678",
+            workoutRewardCouponType = WorkoutRewardClaimCouponType.BAEMIN,
+            workoutRewardCouponLevel = null
+        )
+
+        // when // then
+        mockMvc.perform(
+            post("/api/v1/workout-rewards/claims")
+                .header("Authorization", "Bearer jwt-token")
+                .content(objectMapper.writeValueAsString(request))
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andDo(print())
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value(RequestErrorCode.REQ_FIELD_NOT_VALID.code))
+            .andExpect(jsonPath("$.status").value("400"))
+            .andExpect(jsonPath("$.message").value("workoutRewardCouponLevel is required"))
+            .andExpect(jsonPath("$.data").isEmpty())
     }
 }

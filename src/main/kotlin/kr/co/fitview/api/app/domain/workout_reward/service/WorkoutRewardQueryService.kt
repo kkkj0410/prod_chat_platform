@@ -6,6 +6,7 @@ import kr.co.fitview.api.app.domain.workout_reward.dto.response.AdminWorkoutRewa
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardCouponStatusResponse
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardPolicyResponse
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardStampMeResponse
+import kr.co.fitview.api.app.domain.workout_reward.entity.WorkoutRewardClaim
 import kr.co.fitview.api.app.domain.workout_reward.entity.enums.WorkoutRewardClaimCouponType
 import kr.co.fitview.api.app.domain.workout_reward.entity.enums.WorkoutRewardClaimWorkoutCount
 import kr.co.fitview.api.app.domain.workout_reward.repository.WorkoutRewardClaimRepository
@@ -113,6 +114,13 @@ class WorkoutRewardQueryService(
         return WorkoutRewardCouponStatusResponse(
             firstCouponStatus = firstCouponStatus,
             secondCouponStatus = secondCouponStatus
+        )
+    }
+
+    fun findWorkoutRewardClaimFrom(memberId : Long, workoutCount : WorkoutRewardClaimWorkoutCount) : WorkoutRewardClaim? {
+        return workoutRewardClaimRepository.findByMemberIdAndWorkoutCount(
+            memberId = memberId,
+            workoutCount = workoutCount
         )
     }
 

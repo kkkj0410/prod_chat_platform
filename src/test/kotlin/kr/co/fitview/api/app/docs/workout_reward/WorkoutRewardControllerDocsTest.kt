@@ -198,16 +198,13 @@ class WorkoutRewardControllerDocsTest : RestDocsSupport() {
     @Test
     fun workoutRewardCouponActive() {
         // given
-        // 1. SecurityUtil 모킹 (필수: 컨트롤러 내부에서 사용 중)
         given(securityUtil.getMemberId()).willReturn(1L)
 
-        // 2. 가짜 응답 데이터 생성 (예시로 하나는 받을 수 있고, 하나는 아직 못 받는 상태)
         val response = WorkoutRewardCouponStatusResponse(
             firstCouponStatus = WorkoutRewardCouponStatusResponse.CouponStatus.CLAIMABLE,
             secondCouponStatus = WorkoutRewardCouponStatusResponse.CouponStatus.UNAVAILABLE
         )
 
-        // 3. 서비스 로직 모킹
         given(workoutRewardQueryService.findWorkoutRewardCouponStatus(any()))
             .willReturn(response)
 
@@ -250,12 +247,10 @@ class WorkoutRewardControllerDocsTest : RestDocsSupport() {
 
     @DisplayName("운동 리워드 쿠폰 발급 요청 API")
     @Test
-    fun workoutRewardClaim() {
+    fun workoutRewardClaimAdd() {
         // given
-        // 1. SecurityUtil 모킹
         given(securityUtil.getMemberId()).willReturn(1L)
 
-        // 2. 요청(Request) 데이터 생성
         val request = WorkoutRewardClaimRequest(
             phoneNumber = "01012345678",
             workoutRewardCouponType = WorkoutRewardClaimCouponType.BAEMIN,

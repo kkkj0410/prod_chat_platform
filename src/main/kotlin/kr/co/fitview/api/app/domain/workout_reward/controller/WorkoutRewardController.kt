@@ -73,7 +73,7 @@ class WorkoutRewardController(
     }
 
     @PostMapping("/claims")
-    fun workoutRewardClaim(
+    fun workoutRewardClaimAdd(
         @RequestBody
         @Valid
         request : WorkoutRewardClaimRequest
