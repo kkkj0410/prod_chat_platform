@@ -17,6 +17,7 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.given
 import org.springframework.http.MediaType
 import org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders
@@ -156,7 +157,7 @@ class WorkoutRewardControllerDocsTest : RestDocsSupport() {
         given(securityUtil.getMemberId())
             .willReturn(1L)
 
-        given(workoutRewardQueryService.findWorkoutRewardStamp(any(), any(), any()))
+        given(workoutRewardQueryService.findWorkoutRewardStamp(any(), anyOrNull(), any()))
             .willReturn(response)
 
         // when & then

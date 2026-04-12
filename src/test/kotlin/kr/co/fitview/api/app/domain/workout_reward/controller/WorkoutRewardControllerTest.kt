@@ -11,6 +11,7 @@ import kr.co.fitview.api.app.global.exception.error.request.RequestErrorCode
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.given
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
@@ -89,7 +90,7 @@ class WorkoutRewardControllerTest  : ControllerTestSupport(){
         given(securityUtil.getMemberId())
             .willReturn(1L)
 
-        given(workoutRewardQueryService.findWorkoutRewardStamp(any(), any(), any()))
+        given(workoutRewardQueryService.findWorkoutRewardStamp(any(), anyOrNull(), any()))
             .willReturn(response)
 
         // when & then
