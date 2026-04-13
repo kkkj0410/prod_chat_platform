@@ -23,6 +23,7 @@ import kr.co.fitview.api.app.domain.workout_history.entity.WorkoutHistory
 import kr.co.fitview.api.app.domain.workout_history.repository.WorkoutHistoryRepository
 import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartner
 import kr.co.fitview.api.app.domain.workout_partner.repository.WorkoutPartnerRepository
+import kr.co.fitview.api.app.domain.workout_reward.dto.request.AdminWorkoutRewardCouponStatusServiceRequest
 import kr.co.fitview.api.app.domain.workout_reward.dto.request.WorkoutRewardClaimServiceRequest
 import kr.co.fitview.api.app.domain.workout_reward.entity.WorkoutRewardClaim
 import kr.co.fitview.api.app.domain.workout_reward.entity.enums.WorkoutRewardClaimCouponStatus
@@ -575,6 +576,51 @@ class WorkoutRewardServiceTest @Autowired constructor(
                 assertThat(globalEx.errorCode)
                     .isEqualTo(WorkoutRewardErrorCode.COUPON_CONDITION_NOT_MET)
             })
+    }
+
+    @DisplayName("운동 리워드 요청 쿠폰 상태를 변환한다.")
+    @Test
+    fun modifyWorkoutRewardClaimStatus() {
+        // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(member)
+
+        val workoutRewardClaim = WorkoutRewardClaim(
+            member = member,
+            phoneNumber = "01011111111",
+            workoutCount = WorkoutRewardClaimWorkoutCount.FIRST,
+            isPrivacyAgreed = true,
+            couponStatus = WorkoutRewardClaimCouponStatus.PENDING,
+            couponType = WorkoutRewardClaimCouponType.BAEMIN
+        )
+        workoutRewardClaimRepository.save(workoutRewardClaim)
+
+        val request = AdminWorkoutRewardCouponStatusServiceRequest(
+            workoutRewardCouponStatus = WorkoutRewardClaimCouponStatus.ISSUED
+        )
+
+        // when
+        workoutRewardService.modifyWorkoutRewardClaimStatus(
+            workoutRewardClaimId = workoutRewardClaim.id!!,
+            request = request
+        )
+
+        // then
+        val findWorkoutRewards = workoutRewardClaimRepository.findAll()
+        assertThat(findWorkoutRewards).hasSize(1)
+        assertThat(findWorkoutRewards[0])
+            .extracting(
+                "id",
+                "couponStatus"
+            )
+            .contains(
+                workoutRewardClaim.id!!,
+                WorkoutRewardClaimCouponStatus.ISSUED
+            )
     }
 
 }

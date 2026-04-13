@@ -65,5 +65,9 @@ open class WorkoutRewardClaim(
     @Column(name = "workout_reward_claim_id", nullable = false)
     open var id: Long? = null
 
+    fun updateCouponStatus(couponStatus : WorkoutRewardClaimCouponStatus) : WorkoutRewardClaim {
+        this.couponStatus = couponStatus
 
+        return this
+    }
 }

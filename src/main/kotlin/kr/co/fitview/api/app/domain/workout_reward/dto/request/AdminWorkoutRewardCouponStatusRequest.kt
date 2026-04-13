@@ -8,4 +8,12 @@ data class AdminWorkoutRewardCouponStatusRequest(
 
     @field:NotNull(message = "workoutRewardCouponStatus is required")
     val workoutRewardCouponStatus: WorkoutRewardClaimCouponStatus?
-)
+){
+
+    fun toServiceRequest() : AdminWorkoutRewardCouponStatusServiceRequest{
+        return AdminWorkoutRewardCouponStatusServiceRequest(
+            workoutRewardCouponStatus = workoutRewardCouponStatus!!
+        )
+    }
+
+}

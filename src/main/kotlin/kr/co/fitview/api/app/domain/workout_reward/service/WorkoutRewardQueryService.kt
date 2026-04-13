@@ -11,6 +11,7 @@ import kr.co.fitview.api.app.domain.workout_reward.entity.enums.WorkoutRewardCla
 import kr.co.fitview.api.app.domain.workout_reward.entity.enums.WorkoutRewardClaimWorkoutCount
 import kr.co.fitview.api.app.domain.workout_reward.repository.WorkoutRewardClaimRepository
 import org.springframework.data.domain.Slice
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
@@ -125,6 +126,9 @@ class WorkoutRewardQueryService(
         )
     }
 
+    fun findWorkoutRewardClaimFrom(workoutRewardClaimId : Long) : WorkoutRewardClaim? {
+        return workoutRewardClaimRepository.findByIdOrNull(workoutRewardClaimId)
+    }
 
     fun findAllWorkoutReward(condition: AdminWorkoutRewardCondition): Slice<AdminWorkoutRewardClaimResponse> {
         return workoutRewardClaimRepository.findAllWorkoutRewardBy(condition)

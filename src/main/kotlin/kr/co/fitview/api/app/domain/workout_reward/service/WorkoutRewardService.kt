@@ -1,12 +1,14 @@
 package kr.co.fitview.api.app.domain.workout_reward.service
 
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
+import kr.co.fitview.api.app.domain.workout_reward.dto.request.AdminWorkoutRewardCouponStatusServiceRequest
 import kr.co.fitview.api.app.domain.workout_reward.dto.request.WorkoutRewardClaimServiceRequest
 import kr.co.fitview.api.app.domain.workout_reward.entity.WorkoutRewardClaim
 import kr.co.fitview.api.app.domain.workout_reward.entity.enums.WorkoutRewardClaimCouponStatus
 import kr.co.fitview.api.app.domain.workout_reward.entity.enums.WorkoutRewardClaimWorkoutCount
 import kr.co.fitview.api.app.domain.workout_reward.repository.WorkoutRewardClaimRepository
 import kr.co.fitview.api.app.global.exception.GlobalException
+import kr.co.fitview.api.app.global.exception.error.global.GlobalErrorCode
 import kr.co.fitview.api.app.global.exception.workout_reward.WorkoutRewardErrorCode
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -63,6 +65,20 @@ class WorkoutRewardService(
         if (currentStampCount < couponLevel.value) {
             throw GlobalException(WorkoutRewardErrorCode.COUPON_CONDITION_NOT_MET)
         }
+    }
+
+    fun modifyWorkoutRewardClaimStatus(
+        workoutRewardClaimId: Long,
+        request: AdminWorkoutRewardCouponStatusServiceRequest
+    ) : WorkoutRewardClaim {
+
+        val findWorkoutRewardClaim = workoutRewardQueryService.findWorkoutRewardClaimFrom(
+            workoutRewardClaimId = workoutRewardClaimId
+        ) ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
+
+        return findWorkoutRewardClaim.updateCouponStatus(
+            couponStatus = request.workoutRewardCouponStatus
+        )
     }
 
 

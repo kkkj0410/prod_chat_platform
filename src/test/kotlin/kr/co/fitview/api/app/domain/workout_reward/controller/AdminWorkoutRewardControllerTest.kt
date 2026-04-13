@@ -2,6 +2,7 @@ package kr.co.fitview.api.app.domain.workout_reward.controller
 
 
 import kr.co.fitview.api.app.ControllerTestSupport
+import kr.co.fitview.api.app.domain.workout_reward.dto.request.AdminWorkoutRewardCouponStatusRequest
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.AdminWorkoutRewardClaimResponse
 import kr.co.fitview.api.app.domain.workout_reward.entity.enums.WorkoutRewardClaimCouponStatus
 import org.junit.jupiter.api.DisplayName
@@ -12,6 +13,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.SliceImpl
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
@@ -90,4 +92,24 @@ class AdminWorkoutRewardControllerTest  : ControllerTestSupport(){
             .andExpect(jsonPath("$.data.pagination.hasNext").value(false))
     }
 
+
+    @DisplayName("어드민 리워드 쿠폰 상태 변경 API")
+    @Test
+    fun updateWorkoutRewardCouponStatus() {
+        // given
+        val workoutRewardClaimId = 1L
+
+        val request = AdminWorkoutRewardCouponStatusRequest(
+            workoutRewardCouponStatus = WorkoutRewardClaimCouponStatus.ISSUED
+        )
+
+        mockMvc.perform(
+            post("/api/v1/admins/workout-rewards/claims/{workoutRewardClaimId}/coupon-status", workoutRewardClaimId)
+                .header("Authorization", "Bearer admin-jwt-token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request))
+        )
+            .andDo(print())
+            .andExpect(status().isOk())
+    }
 }
