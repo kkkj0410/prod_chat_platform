@@ -38,9 +38,6 @@ class AdminWorkoutRewardControllerDocsTest : RestDocsSupport() {
     private val workoutRewardQueryService: WorkoutRewardQueryService =
         mock(WorkoutRewardQueryService::class.java)
 
-    private val securityUtil: SecurityUtil =
-        mock(SecurityUtil::class.java)
-
     private val workoutRewardService: WorkoutRewardService =
         mock(WorkoutRewardService::class.java)
 
@@ -48,7 +45,6 @@ class AdminWorkoutRewardControllerDocsTest : RestDocsSupport() {
         return AdminWorkoutRewardController(
             workoutRewardService = workoutRewardService,
             workoutRewardQueryService = workoutRewardQueryService,
-            securityUtil = securityUtil
         )
     }
 

@@ -26,7 +26,6 @@ import kotlin.random.Random
 class AdminWorkoutRewardController(
     private val workoutRewardService : WorkoutRewardService,
     private val workoutRewardQueryService: WorkoutRewardQueryService,
-    private val securityUtil : SecurityUtil
 ) {
 
     @GetMapping("")
@@ -51,6 +50,10 @@ class AdminWorkoutRewardController(
         request: AdminWorkoutRewardCouponStatusRequest
     ): ResponseEntity<ApiResponse<String>> {
 
+        workoutRewardService.modifyWorkoutRewardClaimStatus(
+            workoutRewardClaimId = workoutRewardClaimId,
+            request = request.toServiceRequest()
+        )
 
         return ResponseEntity.ok(ApiResponse.success("ok"))
     }
