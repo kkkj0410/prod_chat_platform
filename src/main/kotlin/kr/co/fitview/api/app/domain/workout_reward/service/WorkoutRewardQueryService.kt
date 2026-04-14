@@ -1,24 +1,34 @@
 package kr.co.fitview.api.app.domain.workout_reward.service
 
+import kr.co.fitview.api.app.domain.review.service.ReviewQueryService
+import kr.co.fitview.api.app.domain.workout_reward.condition.AdminWorkoutRewardCondition
+import kr.co.fitview.api.app.domain.workout_reward.dto.response.AdminWorkoutRewardClaimResponse
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardCouponStatusResponse
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardPolicyResponse
 import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardStampMeResponse
-import kr.co.fitview.api.app.global.random.RandomCustom
+import kr.co.fitview.api.app.domain.workout_reward.entity.WorkoutRewardClaim
+import kr.co.fitview.api.app.domain.workout_reward.entity.enums.WorkoutRewardClaimCouponType
+import kr.co.fitview.api.app.domain.workout_reward.entity.enums.WorkoutRewardClaimWorkoutCount
+import kr.co.fitview.api.app.domain.workout_reward.repository.WorkoutRewardClaimRepository
+import org.springframework.data.domain.Slice
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDate
 
 
 @Service
 @Transactional(readOnly = true)
 class WorkoutRewardQueryService(
-    private val randomCustom : RandomCustom,
-    private val workoutRewardImage : WorkoutRewardImage
+    private val workoutRewardPolicyProvider : WorkoutRewardPolicyProvider,
+    private val reviewQueryService: ReviewQueryService,
+    private val workoutRewardClaimRepository: WorkoutRewardClaimRepository
 ) {
 
 
     fun findWorkoutRewardPolicy(): WorkoutRewardPolicyResponse {
-        val allCoupons = WorkoutRewardPolicyResponse.CouponType.entries.map { type ->
-            val images = workoutRewardImage.getImageSet(type)
+        val allCoupons = WorkoutRewardClaimCouponType.entries.map { type ->
+            val images = workoutRewardPolicyProvider.getImageSet(type)
             WorkoutRewardPolicyResponse.Coupon(
                 type = type,
                 iconPngImageUrl = images.iconPngImageUrl,
@@ -51,27 +61,95 @@ class WorkoutRewardQueryService(
 
 
     fun findWorkoutRewardStamp(
-        seed: Long = System.currentTimeMillis()
+        memberId : Long,
+        startDate: LocalDate? = null,
+        limit : Int = 5
     ) : WorkoutRewardStampMeResponse{
 
-        val count = randomCustom.nextLong(
-            seed = seed,
-            from = 0L,
-            until = 6L
-        )
+        val targetStartDate = startDate ?: workoutRewardPolicyProvider.startDate
+
+        val count = reviewQueryService.countDistinctDailyReviewFrom(
+            memberId = memberId,
+            startDate = targetStartDate,
+            limit = limit
+        ).toInt()
 
         return WorkoutRewardStampMeResponse(
-            stampCount = count.toInt()
+            stampCount = count
         )
     }
+
     fun findWorkoutRewardCouponStatus(memberId: Long): WorkoutRewardCouponStatusResponse {
 
+        val findWorkoutRewardClaims = workoutRewardClaimRepository.findAllByMemberId(
+            memberId = memberId
+        )
+
+        val firstClaim = findWorkoutRewardClaims.find {
+            it.workoutCount == WorkoutRewardClaimWorkoutCount.FIRST
+        }
+        val secondClaim = findWorkoutRewardClaims.find {
+            it.workoutCount == WorkoutRewardClaimWorkoutCount.SECOND
+        }
+
+        if (firstClaim != null && secondClaim != null) {
+            return WorkoutRewardCouponStatusResponse(
+                firstCouponStatus = WorkoutRewardCouponStatusResponse.CouponStatus.CLAIMED,
+                secondCouponStatus = WorkoutRewardCouponStatusResponse.CouponStatus.CLAIMED
+            )
+        }
+
+        val reviewCount = findWorkoutRewardStamp(memberId = memberId).stampCount
+
+        val firstCouponStatus = when {
+            firstClaim != null -> WorkoutRewardCouponStatusResponse.CouponStatus.CLAIMED
+            reviewCount >= WorkoutRewardClaimWorkoutCount.FIRST.value -> WorkoutRewardCouponStatusResponse.CouponStatus.CLAIMABLE
+            else               -> WorkoutRewardCouponStatusResponse.CouponStatus.UNAVAILABLE
+        }
+
+        val secondCouponStatus = when {
+            secondClaim != null -> WorkoutRewardCouponStatusResponse.CouponStatus.CLAIMED
+            reviewCount >= WorkoutRewardClaimWorkoutCount.SECOND.value -> WorkoutRewardCouponStatusResponse.CouponStatus.CLAIMABLE
+            else                -> WorkoutRewardCouponStatusResponse.CouponStatus.UNAVAILABLE
+        }
+
         return WorkoutRewardCouponStatusResponse(
-            firstCouponStatus = WorkoutRewardCouponStatusResponse.CouponStatus.entries.random(),
-            secondCouponStatus = WorkoutRewardCouponStatusResponse.CouponStatus.entries.random()
+            firstCouponStatus = firstCouponStatus,
+            secondCouponStatus = secondCouponStatus
         )
     }
 
+    fun findWorkoutRewardClaimFrom(memberId : Long, workoutCount : WorkoutRewardClaimWorkoutCount) : WorkoutRewardClaim? {
+        return workoutRewardClaimRepository.findByMemberIdAndWorkoutCount(
+            memberId = memberId,
+            workoutCount = workoutCount
+        )
+    }
 
+    fun findWorkoutRewardClaimFrom(workoutRewardClaimId : Long) : WorkoutRewardClaim? {
+        return workoutRewardClaimRepository.findByIdOrNull(workoutRewardClaimId)
+    }
+
+    fun findAllWorkoutReward(condition: AdminWorkoutRewardCondition): Slice<AdminWorkoutRewardClaimResponse> {
+        return workoutRewardClaimRepository.findAllWorkoutRewardBy(condition)
+            .map { c ->
+                val couponName = when (c.workoutCount!!) {
+                    WorkoutRewardClaimWorkoutCount.FIRST -> c.couponType!!.firstDisplayName
+                    WorkoutRewardClaimWorkoutCount.SECOND -> c.couponType!!.secondDisplayName
+                }
+                AdminWorkoutRewardClaimResponse(
+                    workoutRewardClaimId = c.id!!,
+                    nickname = c.member!!.nickname!!,
+                    stampLevelDisplayName = c.couponStatus!!.displayName,
+                    couponName = couponName,
+                    phoneNumber = c.phoneNumber!!,
+                    createdAt = c.createdAt!!,
+                    coupon = AdminWorkoutRewardClaimResponse.CouponStatusInfo(
+                        status = c.couponStatus!!,
+                        statusLabel = c.couponStatus!!.displayName
+                    )
+                )
+            }
+    }
 
 }

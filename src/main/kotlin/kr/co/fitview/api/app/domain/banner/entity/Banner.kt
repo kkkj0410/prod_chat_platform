@@ -24,9 +24,8 @@ import java.time.Instant
 @Table(name = "banner")
 open class Banner(
 
-    @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "image_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "image_id")
     open var image: Image? = null,
 
     @Size(max = 50)

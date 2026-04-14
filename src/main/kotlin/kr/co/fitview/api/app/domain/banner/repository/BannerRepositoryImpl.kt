@@ -22,7 +22,7 @@ class BannerRepositoryImpl(
 
         return queryFactory
             .selectFrom(banner)
-            .join(banner.image, image).fetchJoin()
+            .leftJoin(banner.image, image).fetchJoin()
             .leftJoin(bannerDismissLog).on(
                 bannerDismissLog.banner.id.eq(banner.id),
                 bannerDismissLog.member.id.eq(memberId)

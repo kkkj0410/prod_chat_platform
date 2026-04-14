@@ -44,6 +44,7 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.given
 import org.springframework.data.domain.*
 import org.springframework.http.MediaType
@@ -130,10 +131,8 @@ class WorkoutHistoryControllerDocsTest : RestDocsSupport() {
     @Test
     fun workoutHistoryRecentList() {
         // given
-        // 1. 컨트롤러 내부에서 호출되는 securityUtil 모킹
         given(securityUtil.getMemberId()).willReturn(1L)
 
-        // 2. 응답으로 내려줄 가짜 리스트 생성
         val responseList = listOf(
             WorkoutHistoryRecentResponse(
                 workoutHistoryId = 2L,
@@ -149,8 +148,7 @@ class WorkoutHistoryControllerDocsTest : RestDocsSupport() {
             )
         )
 
-        // 3. 서비스 호출 모킹 (any()를 사용하여 어떤 값이 들어가도 responseList 반환)
-        given(workoutHistoryQueryService.findWorkoutHistoryRecentList(any()))
+        given(workoutHistoryQueryService.findWorkoutHistoryRecentList(any(), anyOrNull(), any()))
             .willReturn(responseList)
 
         // when & then

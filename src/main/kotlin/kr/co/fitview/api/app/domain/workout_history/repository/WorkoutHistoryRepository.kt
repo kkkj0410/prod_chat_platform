@@ -1,5 +1,6 @@
 package kr.co.fitview.api.app.domain.workout_history.repository
 
+import kr.co.fitview.api.app.domain.workout_history.dto.response.WorkoutHistoryRecentResponse
 import kr.co.fitview.api.app.domain.workout_history.entity.WorkoutHistory
 import org.springframework.data.jpa.repository.JpaRepository
 
