@@ -12,33 +12,37 @@ import java.time.LocalDate
 @Service
 @Transactional(readOnly = true)
 class ActiveMemberStatQueryService(
-    private val memberQueryService : MemberQueryService,
-    private val activeMemberStatRepository : ActiveMemberStatRepository,
+    private val memberQueryService: MemberQueryService,
+    private val activeMemberStatRepository: ActiveMemberStatRepository,
 ) {
 
 
-    fun findActiveMemberStatFrom(statDate : LocalDate, memberId : Long) : ActiveMemberStat? {
+    fun findActiveMemberStatFrom(statDate: LocalDate, memberId: Long): ActiveMemberStat? {
         return activeMemberStatRepository.findByStatDateAndMemberId(statDate, memberId)
     }
 
-    fun countDailyActiveMembers(statDate: LocalDate): Long{
+    fun countDailyActiveMembers(statDate: LocalDate): Long {
         return activeMemberStatRepository.countActiveMemberStatByStatDate(statDate)
     }
 
-    fun countActiveMemberBetween(startDate: LocalDate, endDate : LocalDate): Long {
+    fun countActiveMemberBetween(startDate: LocalDate, endDate: LocalDate): Long {
         return activeMemberStatRepository.countActiveMemberStatByStatDateBetween(startDate, endDate)
     }
 
     fun calculateRetention(
-        baseDate : LocalDate,
+        baseDate: LocalDate,
         day: Int,
-    ) : RetentionResultResponse {
+    ): RetentionResultResponse {
 
         val signupDate = baseDate.minusDays(day.toLong())
 
         val signupMembers = memberQueryService.findSignupMemberIdsFrom(signupDate)
 
-        if (signupMembers.isEmpty()) return 0.0
+        if (signupMembers.isEmpty()) return RetentionResultResponse(
+            retentionRate = 0.0,
+            signupCount = 0,
+            comebackCount = 0
+        )
 
         val signupCount = signupMembers.size
 
@@ -51,6 +55,7 @@ class ActiveMemberStatQueryService(
             retentionRate = comebackMemberCount.toDouble() / signupCount.toDouble(),
             signupCount = signupCount,
             comebackCount = comebackMemberCount
-        )    }
+        )
+    }
 
 }

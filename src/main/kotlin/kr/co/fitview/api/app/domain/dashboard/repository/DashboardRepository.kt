@@ -9,6 +9,7 @@ import kr.co.fitview.api.app.domain.member.entity.QMember
 import kr.co.fitview.api.app.domain.member.entity.QMember.member
 import kr.co.fitview.api.app.domain.report.entity.QReport.report
 import kr.co.fitview.api.app.domain.review.entity.QReview.review
+import kr.co.fitview.api.app.domain.workout.entity.QWorkoutRequest.workoutRequest
 import kr.co.fitview.api.app.domain.workout_history.entity.QWorkoutHistory.workoutHistory
 import kr.co.fitview.api.app.domain.workout_partner.entity.QWorkoutPartner.workoutPartner
 import kr.co.fitview.api.app.global.entity.Role
@@ -44,11 +45,11 @@ class DashboardRepository(
                             workoutPartner.createdAt.goe(start)
                                 .and(workoutPartner.createdAt.lt(end))
                         ),
-                    JPAExpressions.select(workoutHistory.count())
-                        .from(workoutHistory)
+                    JPAExpressions.select(workoutRequest.count())
+                        .from(workoutRequest)
                         .where(
-                            workoutHistory.createdAt.goe(start)
-                                .and(workoutHistory.createdAt.lt(end))
+                            workoutRequest.createdAt.goe(start)
+                                .and(workoutRequest.createdAt.lt(end))
                         ),
                     JPAExpressions.select(review.count())
                         .from(review)
