@@ -22,8 +22,28 @@ class ActiveMemberStatQueryService(
         return activeMemberStatRepository.countActiveMemberStatByStatDate(statDate)
     }
 
-    fun countMonthlyActiveMembers(startDate: LocalDate, endDate : LocalDate): Long {
+    fun countActiveMemberBetween(startDate: LocalDate, endDate : LocalDate): Long {
         return activeMemberStatRepository.countActiveMemberStatByStatDateBetween(startDate, endDate)
+    }
+
+    fun calculateRetention(
+        baseDate : LocalDate,
+        day: Int,
+    ) : Double {
+
+        TODO()
+
+//        val signupDate = baseDate.minusDays(day.toLong())
+//        val signupCount = memberQueryService.countSignupMemberFromCreatedAtDate(signupDate)
+//
+//        val signupMembers = memberQueryService.findSignupMemberIds(signupDate)
+//        val comebackCount = activeMemberStatRepository.countByMemberIdsAndDate(
+//            memberIds = signupMembers,
+//            activeDate = baseDate
+//        )
+//
+//
+//        return comebackMemberCount / signupCount
     }
 
 }

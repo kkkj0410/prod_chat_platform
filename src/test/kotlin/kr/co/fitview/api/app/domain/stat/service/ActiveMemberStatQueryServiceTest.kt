@@ -102,7 +102,7 @@ class ActiveMemberStatQueryServiceTest @Autowired constructor(
 
     @DisplayName("이번달 활성 회원 개수를 조회한다.")
     @Test
-    fun countMonthlyActiveMembers() {
+    fun countActiveMemberBetween() {
         // given
         val member = Member(
             email = "email",
@@ -147,7 +147,7 @@ class ActiveMemberStatQueryServiceTest @Autowired constructor(
         val startDate = time.nowLocalDate.withDayOfMonth(1)
         val endDate = time.nowLocalDate
         // when
-        val count = activeMemberStatQueryService.countMonthlyActiveMembers(
+        val count = activeMemberStatQueryService.countActiveMemberBetween(
             startDate = startDate,
             endDate = endDate
         )

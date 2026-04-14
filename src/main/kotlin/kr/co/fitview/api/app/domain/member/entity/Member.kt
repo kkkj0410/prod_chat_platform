@@ -60,6 +60,9 @@ class Member(
     @Column(name = "is_signup", nullable = false)
     var isSignup: Boolean? = false,
 
+    @Column(name = "signup_at", nullable = true)
+    var signupAt: LocalDateTime? = null,
+
     @Size(max = 100)
     @Column(name = "nickname", length = 100)
     var nickname: String? = null,

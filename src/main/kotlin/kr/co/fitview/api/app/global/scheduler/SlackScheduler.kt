@@ -32,13 +32,27 @@ class SlackScheduler(
     )
     @Transactional
     fun sendSlack() {
-        val endDate = time.nowLocalDate.minusDays(1)
-        val startDate = endDate.withDayOfMonth(1)
+        val currentDate = time.nowLocalDate // 4.10
+
+        val endDate = currentDate.minusDays(1)
 
         val dau = activeMemberStatQueryService.countDailyActiveMembers(endDate)
-        val mau = activeMemberStatQueryService.countMonthlyActiveMembers(
-            startDate = startDate,
+
+        val startWauDate = endDate.minusDays(6)
+        val wauRolling = activeMemberStatQueryService.countActiveMemberBetween(
+            startDate = startWauDate,
             endDate = endDate
+        )
+
+        val startMonthDate = endDate.withDayOfMonth(1)
+        val mau = activeMemberStatQueryService.countActiveMemberBetween(
+            startDate = startMonthDate,
+            endDate = endDate
+        )
+
+        val d1Retention = activeMemberStatQueryService.calculateRetention(
+            baseDate = endDate,
+            day = 1
         )
 
         val countYesterdayMemberCount = memberQueryService.countMemberFromCreatedAtDate(endDate)
@@ -60,18 +74,19 @@ class SlackScheduler(
         }
 
         val message = """
-|📊 FITVIEW 일일 리포트
+|📝 FITVIEW 일일 리포트 ($currentDate)
 |
-|👤 활성 사용자
+|📊 활성 사용자
 |- DAU ($endDate): ${dau}명
-|- MAU ($startDate ~ $endDate): ${mau}명
+|- WAU ($startWauDate ~ ${endDate}): ${wauRolling}명
+|- MAU ($startMonthDate ~ $endDate): ${mau}명
 |
-|📱 유입
+|📥 유입 및 전환
 |- 계정 생성 ($endDate): ${countYesterdayMemberCount}명
 |- 회원가입 완료: ${countYesterdayMemberCount - countYesterdayNotSignupMemberCount}명
 |- 회원가입 미완료: ${countYesterdayNotSignupMemberCount}명
 |
-|🚀 Top 10 API 호출 ($endDate)
+|🔝 Top 10 API 호출 ($endDate)
 |$apiStatMessage
 """.trimMargin()
 
