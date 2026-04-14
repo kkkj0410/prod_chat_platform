@@ -14,7 +14,6 @@ import kr.co.fitview.api.app.domain.workout_partner.repository.WorkoutPartnerReq
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.invitation.InvitationErrorCode
-import kr.co.fitview.api.app.global.sqids.service.SqidsService
 import kr.co.fitview.api.app.global.util.TestDataFactory
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
@@ -27,7 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired
 class InvitationServiceTest @Autowired constructor(
 
     private val invitationService: InvitationService,
-    private val sqidsService: SqidsService,
+    private val invitationCodeProvider: InvitationCodeProvider,
     private val memberRepository: MemberRepository,
     private val workoutPartnerRequestRepository: WorkoutPartnerRequestRepository,
     private val oAuth2Service : OAuth2Service
@@ -58,7 +57,7 @@ class InvitationServiceTest @Autowired constructor(
         val signupRequest2 = TestDataFactory.oAuth2SignupRequest()
         oAuth2Service.signup(signupRequest2, toMember.id!!)
 
-        val toMemberCode = sqidsService.encode(toMember.id!!)
+        val toMemberCode = invitationCodeProvider.encode(toMember.id!!)
 
         val request = InvitationWorkoutPartnerServiceRequest(
             invitationCode = toMemberCode
@@ -110,7 +109,7 @@ class InvitationServiceTest @Autowired constructor(
         )
         memberRepository.save(fromMember)
 
-        val toMemberCode = sqidsService.encode(100L)
+        val toMemberCode = invitationCodeProvider.encode(100L)
 
         val request = InvitationWorkoutPartnerServiceRequest(
             invitationCode = toMemberCode

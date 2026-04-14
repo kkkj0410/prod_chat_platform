@@ -4,9 +4,9 @@ import kr.co.fitview.api.app.docs.RestDocsHeaders
 import kr.co.fitview.api.app.docs.RestDocsSupport
 import kr.co.fitview.api.app.domain.invitation.controller.InvitationController
 import kr.co.fitview.api.app.domain.invitation.dto.request.InvitationWorkoutPartnerRequest
+import kr.co.fitview.api.app.domain.invitation.service.InvitationCodeProvider
 import kr.co.fitview.api.app.domain.invitation.service.InvitationService
 import kr.co.fitview.api.app.global.entity.Role
-import kr.co.fitview.api.app.global.sqids.service.SqidsService
 import kr.co.fitview.api.app.global.util.SecurityUtil
 import org.junit.jupiter.api.DisplayName
 import org.mockito.Mockito.mock
@@ -43,11 +43,15 @@ import java.time.LocalDateTime
 class InvitationControllerDocsTest : RestDocsSupport() {
 
     private val securityUtil: SecurityUtil = mock(SecurityUtil::class.java)
-    private val sqidsService: SqidsService = mock(SqidsService::class.java)
+    private val invitationCodeProvider: InvitationCodeProvider = mock(InvitationCodeProvider::class.java)
     private val invitationService: InvitationService = mock(InvitationService::class.java)
 
     override fun initController(): Any {
-        return InvitationController(securityUtil, sqidsService, invitationService)
+        return InvitationController(
+            securityUtil = securityUtil,
+            invitationCodeProvider = invitationCodeProvider,
+            invitationService = invitationService
+        )
     }
 
     @DisplayName("내 초대 코드 조회 API")
@@ -55,7 +59,7 @@ class InvitationControllerDocsTest : RestDocsSupport() {
     fun invitationDetails() {
         // given
         given(securityUtil.getMemberId()).willReturn(1L)
-        given(sqidsService.encode(any())).willReturn("123ABC")
+        given(invitationCodeProvider.encode(any())).willReturn("123456")
 
         // when & then
         mockMvc.perform(
@@ -85,7 +89,7 @@ class InvitationControllerDocsTest : RestDocsSupport() {
                         fieldWithPath("data").type(JsonFieldType.OBJECT)
                             .description("응답 데이터"),
                         fieldWithPath("data.invitationCode").type(JsonFieldType.STRING)
-                            .description("초대 코드 (인코딩된 memberId)")
+                            .description("초대 코드 (인코딩된 memberId) - 초대 코드는 숫자로 제한")
                     )
                 )
             )

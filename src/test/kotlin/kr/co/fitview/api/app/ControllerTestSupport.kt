@@ -71,7 +71,6 @@ import kr.co.fitview.api.app.global.exception.GlobalExceptionHandler
 import kr.co.fitview.api.app.global.filter.JwtAuthenticationFilter
 import kr.co.fitview.api.app.global.health.HealthController
 import kr.co.fitview.api.app.global.security.JwtAuthenticationEntryPoint
-import kr.co.fitview.api.app.global.sqids.service.SqidsService
 import kr.co.fitview.api.app.global.util.SecurityUtil
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
@@ -264,9 +263,6 @@ abstract class ControllerTestSupport {
 
     @MockitoBean
     protected lateinit var recommendationAppFeedbackDismissLogService : RecommendationAppFeedbackDismissLogService
-
-    @MockitoBean
-    protected lateinit var sqidsService: SqidsService
 
     @MockitoBean
     protected lateinit var invitationService: InvitationService

@@ -6,7 +6,6 @@ import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartner
 import kr.co.fitview.api.app.domain.workout_partner.service.WorkoutPartnerRequestService
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.invitation.InvitationErrorCode
-import kr.co.fitview.api.app.global.sqids.service.SqidsService
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -14,14 +13,14 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 @Transactional
 class InvitationService(
-    private val sqidsService: SqidsService,
+    private val invitationCodeProvider : InvitationCodeProvider,
     private val workoutPartnerRequestService: WorkoutPartnerRequestService,
     private val memberQueryService: MemberQueryService,
 ) {
 
     fun processWorkoutPartner(memberId: Long, request: InvitationWorkoutPartnerServiceRequest): WorkoutPartner {
 
-        val toMemberId = sqidsService.decode(request.invitationCode)
+        val toMemberId = invitationCodeProvider.decode(request.invitationCode)
 
         memberQueryService.findMemberFromId(toMemberId)
             ?: throw GlobalException(InvitationErrorCode.INVITATION_MEMBER_NOT_FOUND)
