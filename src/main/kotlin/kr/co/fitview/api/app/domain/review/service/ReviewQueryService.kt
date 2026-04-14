@@ -9,6 +9,8 @@ import kr.co.fitview.api.app.domain.review.repository.ReviewRepository
 import org.springframework.data.domain.Slice
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDate
+import java.time.LocalTime
 
 
 @Service
@@ -26,6 +28,13 @@ class ReviewQueryService(
 
     fun findAllReviewFrom(condition: AdminReviewCondition) : Slice<AdminReviewResponse>{
         return reviewRepository.findAllReviewBy(condition)
+    }
+
+    fun countReviewFrom(targetDate: LocalDate): Int {
+        val startOfDay = targetDate.atStartOfDay()
+        val endOfDay = targetDate.atTime(LocalTime.MAX)
+
+        return reviewRepository.countByCreatedAtBetween(startOfDay, endOfDay).toInt()
     }
 
 
