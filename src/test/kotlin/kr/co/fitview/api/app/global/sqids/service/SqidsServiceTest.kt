@@ -27,6 +27,21 @@ class SqidsServiceTest @Autowired constructor(
         assertThat(code.length).isEqualTo(6)
     }
 
+    @Test
+    fun findMaxPk() {
+        var pk = 1L
+        while (true) {
+            try {
+                val encoded = sqidsService.encode(pk)
+                pk++
+            } catch (e: IllegalStateException) {
+                println("초과 시작 PK: $pk")
+                println("직전 최대 PK: ${pk - 1}")
+                break
+            }
+        }
+    }
+
     @DisplayName("PK가 10억 7천만을 초과하면 6자리를 넘어 예외를 던진다")
     @Test
     fun encodeOverLimit() {
