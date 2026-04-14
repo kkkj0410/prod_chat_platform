@@ -1,7 +1,6 @@
 package kr.co.fitview.api.app.domain.workout_partner.service
 
 import kr.co.fitview.api.app.domain.chat.service.ChatRoomQueryService
-import kr.co.fitview.api.app.domain.chat.service.ChatRoomService
 import kr.co.fitview.api.app.domain.member.dto.response.WorkoutPartnerStatusResponse
 import kr.co.fitview.api.app.domain.member.dto.response.enums.ProfileWorkoutPartnerStatus
 import kr.co.fitview.api.app.domain.workout_partner.entity.enums.WorkoutPartnerRequestStatus
@@ -9,6 +8,8 @@ import kr.co.fitview.api.app.domain.workout_partner.repository.WorkoutPartnerRep
 import kr.co.fitview.api.app.domain.workout_partner.repository.findByOrderedMemberOneIdAndMemberTwoIdAndDeletedAtIsNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDate
+import java.time.LocalTime
 
 
 @Service
@@ -42,6 +43,13 @@ class WorkoutPartnerQueryService(
     fun isWorkoutPartnerFrom(fromMemberId: Long, toMemberId: Long): Boolean {
         val findWorkoutPartner = workoutPartnerRepository.findByOrderedMemberOneIdAndMemberTwoIdAndDeletedAtIsNull(fromMemberId, toMemberId)
         return isNotNull(findWorkoutPartner)
+    }
+
+    fun countWorkoutPartnerFrom(targetDate: LocalDate): Int {
+        val startOfDay = targetDate.atStartOfDay()
+        val endOfDay = targetDate.atTime(LocalTime.MAX)
+
+        return workoutPartnerRepository.countByCreatedAtBetweenAndDeletedAtIsNull(startOfDay, endOfDay).toInt()
     }
 
     private fun getPartnerStatusResponse(fromMemberId: Long, toMemberId: Long): WorkoutPartnerStatusResponse? {
@@ -93,5 +101,6 @@ class WorkoutPartnerQueryService(
 
     private fun isNull(value: Any?) =
         value == null
+
 
 }

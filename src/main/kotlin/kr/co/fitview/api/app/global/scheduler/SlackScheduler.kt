@@ -4,6 +4,8 @@ import kr.co.fitview.api.app.domain.member.service.MemberQueryService
 import kr.co.fitview.api.app.domain.stat.enums.ApiStatPathMeta
 import kr.co.fitview.api.app.domain.stat.service.ActiveMemberStatQueryService
 import kr.co.fitview.api.app.domain.stat.service.ApiStatQueryService
+import kr.co.fitview.api.app.domain.workout_partner.service.WorkoutPartnerQueryService
+import kr.co.fitview.api.app.domain.workout_partner.service.WorkoutPartnerRequestQueryService
 import kr.co.fitview.api.app.global.slack.SlackNotifier
 import kr.co.fitview.api.app.global.time.Time
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock
@@ -17,6 +19,8 @@ class SlackScheduler(
     private val activeMemberStatQueryService : ActiveMemberStatQueryService,
     private val apiStatQueryService : ApiStatQueryService,
     private val memberQueryService : MemberQueryService,
+    private val workoutPartnerRequestQueryService : WorkoutPartnerRequestQueryService,
+    private val workoutPartnerQueryService : WorkoutPartnerQueryService,
     private val slackNotifier: SlackNotifier,
     private val time : Time
 ) {
@@ -38,13 +42,11 @@ class SlackScheduler(
         val endDate = currentDate.minusDays(1)
 
         val dau = activeMemberStatQueryService.countDailyActiveMembers(endDate)
-
         val startWauDate = endDate.minusDays(6)
         val wauRolling = activeMemberStatQueryService.countActiveMemberBetween(
             startDate = startWauDate,
             endDate = endDate
         )
-
         val startMonthDate = endDate.withDayOfMonth(1)
         val mau = activeMemberStatQueryService.countActiveMemberBetween(
             startDate = startMonthDate,
@@ -55,20 +57,22 @@ class SlackScheduler(
             baseDate = endDate,
             day = 1
         )
-
         val d7Retention = activeMemberStatQueryService.calculateRetention(
             baseDate = endDate,
             day = 7
         )
-
         val d1RetentionRate = (d1Retention.retentionRate * 100).roundToInt()
-
         val d7RetentionRate = (d7Retention.retentionRate * 100).roundToInt()
+
+        val workoutPartnerRequestCount = workoutPartnerRequestQueryService.countWorkoutPartnerRequestFrom(endDate)
+
+        val workoutPartnerCount = workoutPartnerQueryService.countWorkoutPartnerFrom(endDate)
+
 
         val countYesterdayMemberCount = memberQueryService.countMemberFromCreatedAtDate(endDate)
         val countYesterdayNotSignupMemberCount = memberQueryService.countNotSignupMemberFromCreatedAtDate(endDate)
 
-        val limit = 10
+        val limit = 5
         val findApiStats = apiStatQueryService.findTopApiStatFrom(endDate, limit)
 
         val apiStatMessage = if (findApiStats.isEmpty()) {
@@ -78,7 +82,6 @@ class SlackScheduler(
                 val description = ApiStatPathMeta.getDescription(stat.method!!, stat.path!!)
             """
 |${index + 1}. $description - ${stat.count}회
-|   -> [${stat.method}] ${stat.path}
             """.trimMargin()
             }.joinToString("\n")
         }
@@ -95,12 +98,20 @@ class SlackScheduler(
 |- D1 리텐션 (${endDate.minusDays(1)} 가입자 대상): ${d1RetentionRate}% (${d1Retention.signupCount}명 중 ${d1Retention.comebackCount}명 재방문)
 |- D7 리텐션 (${endDate.minusDays(7)} 가입자 대상): ${d7RetentionRate}% (${d7Retention.signupCount}명 중 ${d7Retention.comebackCount}명 재방문)
 |
+|📈 사용자 행동
+|
+|- 핏버디 요청건 수: ${workoutPartnerRequestCount}건
+|- 핏버디 매칭건 수: ${workoutPartnerCount}건
+|- 운동 약속건 수: 00건
+|- 후기 작성건 수: 00건
+|- 신고 접수건 수: 00건
+|
 |📥 유입 및 전환
 |- 계정 생성 ($endDate): ${countYesterdayMemberCount}명
 |- 회원가입 완료: ${countYesterdayMemberCount - countYesterdayNotSignupMemberCount}명
 |- 회원가입 미완료: ${countYesterdayNotSignupMemberCount}명
 |
-|🔝 Top 10 API 호출 ($endDate)
+|🔝 Top 5 API 호출 ($endDate)
 |$apiStatMessage
 """.trimMargin()
 
