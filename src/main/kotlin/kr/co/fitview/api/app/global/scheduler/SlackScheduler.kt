@@ -10,6 +10,7 @@ import net.javacrumbs.shedlock.spring.annotation.SchedulerLock
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
+import kotlin.math.roundToInt
 
 @Component
 class SlackScheduler(
@@ -55,6 +56,15 @@ class SlackScheduler(
             day = 1
         )
 
+        val d7Retention = activeMemberStatQueryService.calculateRetention(
+            baseDate = endDate,
+            day = 7
+        )
+
+        val d1RetentionRate = (d1Retention.retentionRate * 100).roundToInt()
+
+        val d7RetentionRate = (d7Retention.retentionRate * 100).roundToInt()
+
         val countYesterdayMemberCount = memberQueryService.countMemberFromCreatedAtDate(endDate)
         val countYesterdayNotSignupMemberCount = memberQueryService.countNotSignupMemberFromCreatedAtDate(endDate)
 
@@ -80,6 +90,10 @@ class SlackScheduler(
 |- DAU ($endDate): ${dau}명
 |- WAU ($startWauDate ~ ${endDate}): ${wauRolling}명
 |- MAU ($startMonthDate ~ $endDate): ${mau}명
+|
+||📈 리텐션 (재방문율)
+|- D1 리텐션 (${endDate.minusDays(1)} 가입자 대상): ${d1RetentionRate}% (${d1Retention.signupCount}명 중 ${d1Retention.comebackCount}명 재방문)
+|- D7 리텐션 (${endDate.minusDays(7)} 가입자 대상): ${d7RetentionRate}% (${d7Retention.signupCount}명 중 ${d7Retention.comebackCount}명 재방문)
 |
 |📥 유입 및 전환
 |- 계정 생성 ($endDate): ${countYesterdayMemberCount}명

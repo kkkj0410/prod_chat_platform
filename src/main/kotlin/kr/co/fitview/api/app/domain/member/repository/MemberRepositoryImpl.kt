@@ -40,6 +40,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Slice
 import org.springframework.data.domain.SliceImpl
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 
 class MemberRepositoryImpl(
@@ -848,4 +849,15 @@ class MemberRepositoryImpl(
             )
             .fetchOne()?.toInt() ?: 0
     }
+
+    override fun findMemberIdsBySignupAtBetween(start: LocalDateTime, end: LocalDateTime): List<Long> {
+        return queryFactory
+            .select(member.id)
+            .from(member)
+            .where(
+                member.signupAt.between(start, end)
+            )
+            .fetch()
+    }
+
 }

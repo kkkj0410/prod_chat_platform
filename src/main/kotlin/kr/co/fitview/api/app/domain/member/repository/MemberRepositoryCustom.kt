@@ -7,6 +7,7 @@ import kr.co.fitview.api.app.domain.member.dto.response.*
 import kr.co.fitview.api.app.domain.member.entity.Member
 import org.springframework.data.domain.Slice
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 interface MemberRepositoryCustom {
     fun findMemberWithinLocal(memberId: Long, randomMemberId : Long, boundingBox : BoundingBox, condition: MemberLocalCondition, maxSize : Int) : List<MemberLocalResponse>
@@ -44,5 +45,7 @@ interface MemberRepositoryCustom {
     fun countMemberByCreatedAtDate(date: LocalDate): Int
 
     fun countNotSignupMemberByCreatedAtDate(date: LocalDate): Int
+
+    fun findMemberIdsBySignupAtBetween(start: LocalDateTime, end: LocalDateTime): List<Long>
 
 }

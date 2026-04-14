@@ -29,6 +29,7 @@ import org.springframework.data.domain.Slice
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
+import java.time.LocalTime
 import kotlin.math.cos
 
 
@@ -304,6 +305,13 @@ class MemberQueryService(
 
     fun existsMemberNickname(nickname: String) : Boolean {
         return memberRepository.existsByNicknameAndDeletedAtIsNull(nickname)
+    }
+
+    fun findSignupMemberIdsFrom(signupDate: LocalDate): List<Long> {
+        return memberRepository.findMemberIdsBySignupAtBetween(
+            start = signupDate.atStartOfDay(),
+            end = signupDate.atTime(LocalTime.MAX)
+        )
     }
 
     private fun validateDuplicatedEmail(member: Member) {

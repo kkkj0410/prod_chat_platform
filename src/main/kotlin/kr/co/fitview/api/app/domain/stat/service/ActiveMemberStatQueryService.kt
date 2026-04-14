@@ -1,5 +1,7 @@
 package kr.co.fitview.api.app.domain.stat.service
 
+import kr.co.fitview.api.app.domain.member.service.MemberQueryService
+import kr.co.fitview.api.app.domain.stat.dto.response.RetentionResultResponse
 import kr.co.fitview.api.app.domain.stat.entity.ActiveMemberStat
 import kr.co.fitview.api.app.domain.stat.repository.ActiveMemberStatRepository
 import org.springframework.stereotype.Service
@@ -10,6 +12,7 @@ import java.time.LocalDate
 @Service
 @Transactional(readOnly = true)
 class ActiveMemberStatQueryService(
+    private val memberQueryService : MemberQueryService,
     private val activeMemberStatRepository : ActiveMemberStatRepository,
 ) {
 
@@ -29,21 +32,25 @@ class ActiveMemberStatQueryService(
     fun calculateRetention(
         baseDate : LocalDate,
         day: Int,
-    ) : Double {
+    ) : RetentionResultResponse {
 
-        TODO()
+        val signupDate = baseDate.minusDays(day.toLong())
 
-//        val signupDate = baseDate.minusDays(day.toLong())
-//        val signupCount = memberQueryService.countSignupMemberFromCreatedAtDate(signupDate)
-//
-//        val signupMembers = memberQueryService.findSignupMemberIds(signupDate)
-//        val comebackCount = activeMemberStatRepository.countByMemberIdsAndDate(
-//            memberIds = signupMembers,
-//            activeDate = baseDate
-//        )
-//
-//
-//        return comebackMemberCount / signupCount
-    }
+        val signupMembers = memberQueryService.findSignupMemberIdsFrom(signupDate)
+
+        if (signupMembers.isEmpty()) return 0.0
+
+        val signupCount = signupMembers.size
+
+        val comebackMemberCount = activeMemberStatRepository.countByMemberIdsAndDate(
+            memberIds = signupMembers,
+            activeDate = baseDate
+        )
+
+        return RetentionResultResponse(
+            retentionRate = comebackMemberCount.toDouble() / signupCount.toDouble(),
+            signupCount = signupCount,
+            comebackCount = comebackMemberCount
+        )    }
 
 }
