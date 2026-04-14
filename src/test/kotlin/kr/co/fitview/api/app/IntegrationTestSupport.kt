@@ -7,7 +7,6 @@ import kr.co.fitview.api.app.global.network.NetworkService
 import kr.co.fitview.api.app.global.redis.config.TestRedisConfig
 import kr.co.fitview.api.app.global.redis.service.RedisClient
 import kr.co.fitview.api.app.global.slack.SlackNotifier
-import kr.co.fitview.api.app.global.sqids.config.TestSqidsConfig
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
@@ -23,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional
 @Import(
     TestJwtConfig::class,
     TestRedisConfig::class,
-    TestSqidsConfig::class
 )
 @Transactional
 @RecordApplicationEvents
