@@ -212,9 +212,30 @@ class SlackSchedulerTest @Autowired constructor(
             path = ApiStatPathMeta.MEMBERS_LOCAL.path,
             count = 300L
         )
+        val apiStat4 = ApiStat(
+            statDate = yesterday,
+            method = ApiStatPathMeta.MEMBERS_REVIEWS.method,
+            path = ApiStatPathMeta.MEMBERS_REVIEWS.path,
+            count = 400L
+        )
+        val apiStat5 = ApiStat(
+            statDate = yesterday,
+            method = ApiStatPathMeta.MEMBERS_REVIEWS_TAGS.method,
+            path = ApiStatPathMeta.MEMBERS_REVIEWS_TAGS.path,
+            count = 500L
+        )
+        val apiStat6 = ApiStat(
+            statDate = yesterday,
+            method = ApiStatPathMeta.MEMBERS_RECOMMENDATIONS.method,
+            path = ApiStatPathMeta.MEMBERS_RECOMMENDATIONS.path,
+            count = 600L
+        )
         apiStatRepository.save(apiStat1)
         apiStatRepository.save(apiStat2)
         apiStatRepository.save(apiStat3)
+        apiStatRepository.save(apiStat4)
+        apiStatRepository.save(apiStat5)
+        apiStatRepository.save(apiStat6)
 
         //when
         slackScheduler.sendSlack()
@@ -252,9 +273,11 @@ class SlackSchedulerTest @Autowired constructor(
 - 회원가입 미완료: 1명
 
 🔝 Top 5 API 호출 ($yesterday)
-1. 우리 동네 핏버디 조회 - 300회
-2. 설명 없음 - 200회
-3. 설명 없음 - 100회
+1. 추천 핏버디 조회 - 600회
+2. 회원 프로필 서브 후기 조회 - 500회
+3. 회원 프로필 후기 조회 - 400회
+4. 우리 동네 핏버디 조회 - 300회
+5. 설명 없음 - 200회
 """.trimIndent()
 
         assertThat(actual).isEqualTo(expected)

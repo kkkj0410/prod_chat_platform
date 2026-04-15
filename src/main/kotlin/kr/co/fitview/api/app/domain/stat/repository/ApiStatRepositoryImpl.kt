@@ -15,7 +15,7 @@ class ApiStatRepositoryImpl(
     override fun findApiStatTop(statDate: LocalDate, limit: Int): List<ApiStat> {
 
         val excludedMetas = ApiStatPathMeta.entries
-            .filter { !it.isInclude }
+            .filter { !it.isSignificantStat }
 
         val excludeBuilder = BooleanBuilder()
 

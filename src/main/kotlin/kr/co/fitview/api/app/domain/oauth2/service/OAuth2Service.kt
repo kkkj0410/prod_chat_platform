@@ -15,6 +15,7 @@ import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.member.MemberErrorCode
 import kr.co.fitview.api.app.global.exception.error.oauth2.OAuth2ErrorCode
 import kr.co.fitview.api.app.global.jwt.JwtTokenProvider
+import kr.co.fitview.api.app.global.time.Time
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -31,7 +32,8 @@ class OAuth2Service(
     private val imageService: ImageService,
     private val memberQueryService : MemberQueryService,
     private val memberService: MemberService,
-    private val addressService: AddressService
+    private val addressService: AddressService,
+    private val time : Time
 ) {
 
     @Transactional
@@ -95,6 +97,7 @@ class OAuth2Service(
             workoutGoal = request.workoutGoal
             intro = request.intro
             isSignup = true
+            signupAt = time.nowLocalDateTime
         }
 
     }
