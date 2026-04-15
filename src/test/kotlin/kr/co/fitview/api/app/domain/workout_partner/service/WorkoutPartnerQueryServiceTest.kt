@@ -22,6 +22,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import java.time.LocalDate
 
 class WorkoutPartnerQueryServiceTest @Autowired constructor(
     val workoutPartnerQueryService : WorkoutPartnerQueryService,
@@ -438,9 +439,67 @@ class WorkoutPartnerQueryServiceTest @Autowired constructor(
         assertThat(response).isFalse()
     }
 
+    @DisplayName("특정날 운동 파트너 개수를 조회한다.")
+    @Test
+    fun countWorkoutPartnerFrom() {
+        // given
+        val targetDate = LocalDate.of(2050, 5, 25)
+        val startTime = targetDate.atStartOfDay()
+        val endTime = targetDate.atTime(23, 59, 59)
+        val beforeTarget = startTime.minusSeconds(1)
+
+        val member1 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        val member2 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        val member3 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        memberRepository.save(member1)
+        memberRepository.save(member2)
+        memberRepository.save(member3)
+
+        val workoutPartner1 = WorkoutPartner.of(
+            memberOne = member1,
+            memberTwo = member2
+        )
+        workoutPartner1.createdAt = startTime
+        workoutPartnerRepository.save(workoutPartner1)
+
+        val workoutPartner2 = WorkoutPartner.of(
+            memberOne = member1,
+            memberTwo = member3
+        )
+        workoutPartner2.createdAt = endTime
+        workoutPartnerRepository.save(workoutPartner2)
+
+        val workoutPartner3 = WorkoutPartner.of(
+            memberOne = member2,
+            memberTwo = member3
+        )
+        workoutPartner3.createdAt = beforeTarget
+        workoutPartnerRepository.save(workoutPartner3)
+
+        // when
+        val response = workoutPartnerQueryService.countWorkoutPartnerFrom(
+            targetDate = targetDate
+        )
+
+        // then
+        assertThat(response).isEqualTo(2)
+    }
+
     @DisplayName("회원 간의 운동 파트너 여부를 확인한다.")
     @Test
-    fun findByOrderedMemberOneIdAndMemberTwoIdAndDeletedAtIsNull() {
+    fun findWorkoutPartnerFrom() {
         // given
         val member1 = Member(
             email = "email",

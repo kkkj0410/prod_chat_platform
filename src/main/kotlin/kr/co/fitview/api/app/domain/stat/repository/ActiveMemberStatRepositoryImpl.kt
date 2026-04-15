@@ -37,5 +37,19 @@ class ActiveMemberStatRepositoryImpl(
             .fetchOne() ?: 0L
     }
 
+    override fun countByMemberIdsAndDate(
+        memberIds: List<Long>,
+        activeDate: LocalDate
+    ) : Long {
+        return queryFactory
+            .select(activeMemberStat.count())
+            .from(activeMemberStat)
+            .where(
+                activeMemberStat.statDate.eq(activeDate),
+                activeMemberStat.member.id.`in`(memberIds)
+            )
+            .fetchOne() ?: 0L
+    }
+
 
 }

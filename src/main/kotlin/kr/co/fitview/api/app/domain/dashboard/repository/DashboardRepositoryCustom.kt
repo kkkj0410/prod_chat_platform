@@ -5,7 +5,5 @@ import kr.co.fitview.api.app.domain.dashboard.dto.response.AdminDashboardTotal
 import java.time.LocalDate
 
 interface DashboardRepositoryCustom {
-    fun findDashboardByDay(targetDate: LocalDate) : AdminDashboardToday?
-
     fun findDashboardByTotal(): AdminDashboardTotal?
 }

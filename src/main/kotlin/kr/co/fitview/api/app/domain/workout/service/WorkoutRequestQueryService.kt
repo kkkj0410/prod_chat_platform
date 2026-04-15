@@ -10,6 +10,8 @@ import org.springframework.data.domain.Slice
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDate
+import java.time.LocalTime
 
 @Service
 @Transactional(readOnly = true)
@@ -49,6 +51,13 @@ class WorkoutRequestQueryService(
 
     fun findWorkoutRequestDetail(workoutRequestId: Long) : AdminDetailWorkoutRequestResponse {
         return workoutRequestRepository.findWorkoutRequestDetailBy(workoutRequestId)
+    }
+
+    fun countWorkoutRequestFrom(targetDate: LocalDate) : Int{
+        val startOfDay = targetDate.atStartOfDay()
+        val endOfDay = targetDate.atTime(LocalTime.MAX)
+
+        return workoutRequestRepository.countByRequestedAtBetween(startOfDay, endOfDay).toInt()
     }
 
 }

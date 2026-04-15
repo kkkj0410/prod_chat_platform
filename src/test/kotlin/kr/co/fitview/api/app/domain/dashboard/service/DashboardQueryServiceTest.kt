@@ -26,6 +26,8 @@ import kr.co.fitview.api.app.domain.workout.entity.enums.WorkoutRequestStatus
 import kr.co.fitview.api.app.domain.workout.repository.WorkoutRequestRepository
 import kr.co.fitview.api.app.domain.workout_history.entity.WorkoutHistory
 import kr.co.fitview.api.app.domain.workout_history.repository.WorkoutHistoryRepository
+import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartner
+import kr.co.fitview.api.app.domain.workout_partner.repository.WorkoutPartnerRepository
 import kr.co.fitview.api.app.global.entity.OAuth2Provider
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.time.Time
@@ -39,6 +41,7 @@ class DashboardQueryServiceTest @Autowired constructor(
     val chatMessageRepository: ChatMessageRepository,
     val chatParticipantRepository: ChatParticipantRepository,
     val chatRoomRepository: ChatRoomRepository,
+    val workoutPartnerRepository: WorkoutPartnerRepository,
     val workoutRequestRepository: WorkoutRequestRepository,
     val workoutHistoryRepository : WorkoutHistoryRepository,
     val oAuth2Service: OAuth2Service,
@@ -73,6 +76,18 @@ class DashboardQueryServiceTest @Autowired constructor(
         memberRepository.save(member1)
         memberRepository.save(member2)
         memberRepository.save(member3)
+
+        val workoutPartner1 = WorkoutPartner.of(
+            memberOne = member1,
+            memberTwo = member2
+        )
+        workoutPartnerRepository.save(workoutPartner1)
+
+        val workoutPartner2 = WorkoutPartner.of(
+            memberOne = member1,
+            memberTwo = member3
+        )
+        workoutPartnerRepository.save(workoutPartner2)
 
         val chatRoom1 = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
         val chatRoom2 = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
@@ -112,7 +127,7 @@ class DashboardQueryServiceTest @Autowired constructor(
             status = WorkoutRequestStatus.PENDING,
             location = "location",
             scheduledAt = time.nowLocalDateTime.plusHours(24),
-            requestedAt = time.nowLocalDateTime.minusHours(3)
+            requestedAt = time.nowLocalDateTime
         )
         chatRoom2.updateLastMessageAt(time.nowLocalDateTime.minusHours(3))
 
@@ -189,9 +204,9 @@ class DashboardQueryServiceTest @Autowired constructor(
 
         // then
         assertThat(response)
-            .extracting("memberCount", "workoutPartnerCount", "workoutHistoryCount", "reviewCount", "reportCount")
+            .extracting("memberCount", "workoutPartnerCount", "workoutRequestCount", "reviewCount", "reportCount")
             .contains(
-                3L, 1L, 1L, 2L, 2L
+                3L, 2L, 1L, 2L, 2L
             )
     }
 
@@ -406,7 +421,7 @@ class DashboardQueryServiceTest @Autowired constructor(
             .extracting(
                 "today.memberCount",
                 "today.workoutPartnerCount",
-                "today.workoutHistoryCount",
+                "today.workoutRequestCount",
                 "today.reviewCount",
                 "today.reportCount",
                 "total.memberCount",

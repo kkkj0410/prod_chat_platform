@@ -11,6 +11,8 @@ import kr.co.fitview.api.app.global.time.Time
 import org.springframework.data.domain.Slice
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDate
+import java.time.LocalTime
 
 
 @Service
@@ -52,6 +54,13 @@ class WorkoutPartnerRequestQueryService(
 
     fun findAllWorkoutPartnerRequestFrom(condition: AdminWorkoutPartnerRequestCondition): Slice<AdminWorkoutPartnerRequestResponse> {
         return workoutPartnerRequestRepository.findAllWorkoutPartnerRequestBy(condition)
+    }
+
+    fun countWorkoutPartnerRequestFrom(targetDate: LocalDate): Int {
+        val startOfDay = targetDate.atStartOfDay()
+        val endOfDay = targetDate.atTime(LocalTime.MAX)
+
+        return workoutPartnerRequestRepository.countByRequestedAtBetween(startOfDay, endOfDay).toInt()
     }
 
     private fun isNotExpire24Hour(workoutPartnerRequest: WorkoutPartnerRequest) =
