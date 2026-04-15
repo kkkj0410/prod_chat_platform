@@ -499,7 +499,7 @@ class WorkoutPartnerQueryServiceTest @Autowired constructor(
 
     @DisplayName("회원 간의 운동 파트너 여부를 확인한다.")
     @Test
-    fun findByOrderedMemberOneIdAndMemberTwoIdAndDeletedAtIsNull() {
+    fun findWorkoutPartnerFrom() {
         // given
         val member1 = Member(
             email = "email",
