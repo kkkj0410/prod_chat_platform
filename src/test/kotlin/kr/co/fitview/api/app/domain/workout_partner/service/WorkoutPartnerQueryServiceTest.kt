@@ -15,6 +15,7 @@ import kr.co.fitview.api.app.domain.workout_partner.entity.enums.WorkoutPartnerR
 import kr.co.fitview.api.app.domain.workout_partner.entity.enums.WorkoutPartnerRequestStatus
 import kr.co.fitview.api.app.domain.workout_partner.repository.WorkoutPartnerRepository
 import kr.co.fitview.api.app.domain.workout_partner.repository.WorkoutPartnerRequestRepository
+import kr.co.fitview.api.app.domain.workout_partner.repository.findByOrderedMemberOneIdAndMemberTwoIdAndDeletedAtIsNull
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.time.Time
 import org.assertj.core.api.Assertions.assertThat
@@ -494,6 +495,36 @@ class WorkoutPartnerQueryServiceTest @Autowired constructor(
 
         // then
         assertThat(response).isEqualTo(2)
+    }
+
+    @DisplayName("회원 간의 운동 파트너 여부를 확인한다.")
+    @Test
+    fun findByOrderedMemberOneIdAndMemberTwoIdAndDeletedAtIsNull() {
+        // given
+        val member1 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        val member2 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        memberRepository.save(member1)
+        memberRepository.save(member2)
+
+        val workoutPartner = WorkoutPartner.of(member1, member2)
+        workoutPartnerRepository.save(workoutPartner)
+
+        // when
+        val findWorkoutPartner = workoutPartnerQueryService.findWorkoutPartnerFrom(member1.id!!, member2.id!!)
+
+        // then
+        assertThat(findWorkoutPartner!!.id).isNotNull()
+        assertThat(findWorkoutPartner)
+            .extracting("memberOne", "memberTwo")
+            .contains(member1, member2)
     }
 
 }

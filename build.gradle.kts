@@ -109,6 +109,7 @@ dependencies {
 	//프로메테우스
 	implementation ("org.springframework.boot:spring-boot-starter-actuator")
 	implementation ("io.micrometer:micrometer-registry-prometheus")
+
 }
 
 kotlin {

@@ -1,0 +1,11 @@
+[[INVITATION_001]]
+=== INVITATION_001
+
+==== HTTP Request
+include::{snippets}/INVITATION_001/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/INVITATION_001/http-response.adoc[]
+include::{snippets}/INVITATION_001/response-fields.adoc[]
+
+

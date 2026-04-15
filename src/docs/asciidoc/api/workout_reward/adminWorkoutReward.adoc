@@ -1,0 +1,26 @@
+[[admin-workout-reward-list-get]]
+=== 어드민 운동 리워드 쿠폰 요청 조회 API
+
+==== HTTP Request
+include::{snippets}/admin-workout-reward-list-get/http-request.adoc[]
+include::{snippets}/admin-workout-reward-list-get/request-headers.adoc[]
+include::{snippets}/admin-workout-reward-list-get/query-parameters.adoc[]
+
+
+==== HTTP Response
+include::{snippets}/admin-workout-reward-list-get/http-response.adoc[]
+include::{snippets}/admin-workout-reward-list-get/response-fields.adoc[]
+
+
+[[admin-workout-reward-coupon-status-update]]
+=== 어드민 운동 리워드 쿠폰 상태 변경 API
+
+==== HTTP Request
+include::{snippets}/admin-workout-reward-coupon-status-update/http-request.adoc[]
+include::{snippets}/admin-workout-reward-coupon-status-update/request-headers.adoc[]
+include::{snippets}/admin-workout-reward-coupon-status-update/path-parameters.adoc[]
+
+
+==== HTTP Response
+include::{snippets}/admin-workout-reward-list-get/http-response.adoc[]
+include::{snippets}/admin-workout-reward-list-get/response-fields.adoc[]

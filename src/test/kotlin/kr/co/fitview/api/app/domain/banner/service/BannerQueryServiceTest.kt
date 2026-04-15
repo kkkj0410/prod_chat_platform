@@ -4,6 +4,7 @@ import jakarta.persistence.EntityManager
 import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.auth.repository.RefreshTokenRepository
 import kr.co.fitview.api.app.domain.auth.service.RefreshTokenQueryService
+import kr.co.fitview.api.app.domain.banner.dto.response.BannerActiveResponse
 import kr.co.fitview.api.app.domain.banner.entity.Banner
 import kr.co.fitview.api.app.domain.banner.entity.enums.BannerDisplayStatus
 import kr.co.fitview.api.app.domain.banner.entity.enums.BannerType
@@ -90,14 +91,9 @@ class BannerQueryServiceTest @Autowired constructor(
         )
         bannerRepository.save(banner1)
 
-        val image2 = Image(
-            url = "url"
-        )
-        imageRepository.save(image2)
-
         val banner2 = Banner(
-            image = image2,
-            bannerType = BannerType.ETC,
+            image = null,
+            bannerType = BannerType.WORKOUT_REWARD,
             displayStatus = BannerDisplayStatus.ACTIVE
         )
         bannerRepository.save(banner2)
@@ -107,15 +103,12 @@ class BannerQueryServiceTest @Autowired constructor(
 
         // then
         assertThat(findBanners).hasSize(2)
-        assertThat(findBanners)
-            .extracting(
-                "bannerId",
-                "type",
-                "imageUrl"
-            )
-            .contains(
-                tuple(banner1.id!!, banner1.bannerType, image1.url),
-                tuple(banner2.id!!, banner2.bannerType, image2.url),
-            )
+
+        val resultBanner1 = findBanners.find { it.bannerId == banner1.id } as BannerActiveResponse.AppFeedback
+        assertThat(resultBanner1.type).isEqualTo(banner1.bannerType)
+        assertThat(resultBanner1.imageUrl).isEqualTo(image1.url)
+
+        val resultBanner2 = findBanners.find { it.bannerId == banner2.id } as BannerActiveResponse.General
+        assertThat(resultBanner2.type).isEqualTo(banner2.bannerType)
     }
 }

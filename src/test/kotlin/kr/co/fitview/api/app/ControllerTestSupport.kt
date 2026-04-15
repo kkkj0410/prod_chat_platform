@@ -27,6 +27,7 @@ import kr.co.fitview.api.app.domain.fcm.controller.FcmController
 import kr.co.fitview.api.app.domain.fcm.service.FcmTokenService
 import kr.co.fitview.api.app.domain.image.controller.ImageController
 import kr.co.fitview.api.app.domain.image.service.S3Service
+import kr.co.fitview.api.app.domain.invitation.service.InvitationService
 import kr.co.fitview.api.app.domain.member.controller.AdminMemberController
 import kr.co.fitview.api.app.domain.member.controller.MemberController
 import kr.co.fitview.api.app.domain.member.service.MemberQueryService
@@ -58,6 +59,11 @@ import kr.co.fitview.api.app.domain.workout_partner.controller.AdminWorkoutPartn
 import kr.co.fitview.api.app.domain.workout_partner.controller.WorkoutPartnerController
 import kr.co.fitview.api.app.domain.workout_partner.service.WorkoutPartnerRequestQueryService
 import kr.co.fitview.api.app.domain.workout_partner.service.WorkoutPartnerRequestService
+import kr.co.fitview.api.app.domain.workout_reward.controller.AdminWorkoutRewardController
+import kr.co.fitview.api.app.domain.workout_reward.controller.WorkoutRewardController
+import kr.co.fitview.api.app.domain.workout_reward.service.WorkoutRewardPolicyProvider
+import kr.co.fitview.api.app.domain.workout_reward.service.WorkoutRewardQueryService
+import kr.co.fitview.api.app.domain.workout_reward.service.WorkoutRewardService
 import kr.co.fitview.api.app.global.config.JacksonConfig
 import kr.co.fitview.api.app.global.config.SecurityConfig
 import kr.co.fitview.api.app.global.config.TestSecurityConfig
@@ -99,6 +105,7 @@ import org.springframework.test.web.servlet.MockMvc
     FavoriteController::class,
     AppFeedbackController::class,
     BannerController::class,
+    WorkoutRewardController::class,
 
     AdminDashboardController::class,
     AdminMemberController::class,
@@ -107,6 +114,7 @@ import org.springframework.test.web.servlet.MockMvc
     AdminReviewController::class,
     AdminReportController::class,
     AdminAppFeedbackController::class,
+    AdminWorkoutRewardController::class,
 
     HealthController::class,
     GlobalExceptionHandler::class,
@@ -255,5 +263,17 @@ abstract class ControllerTestSupport {
 
     @MockitoBean
     protected lateinit var recommendationAppFeedbackDismissLogService : RecommendationAppFeedbackDismissLogService
+
+    @MockitoBean
+    protected lateinit var invitationService: InvitationService
+
+    @MockitoBean
+    protected lateinit var workoutRewardService: WorkoutRewardService
+
+    @MockitoBean
+    protected lateinit var workoutRewardQueryService: WorkoutRewardQueryService
+
+    @MockitoBean
+    protected lateinit var workoutRewardPolicyProvider: WorkoutRewardPolicyProvider
 
 }

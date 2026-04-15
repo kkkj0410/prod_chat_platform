@@ -9,3 +9,19 @@ include::{snippets}/workout-history-review-status/path-parameters.adoc[]
 ==== HTTP Response
 include::{snippets}/workout-history-review-status/http-response.adoc[]
 include::{snippets}/workout-history-review-status/response-fields.adoc[]
+
+
+[[workout-history-recent-list-get]]
+=== 운동 리워드 - 함께한 운동 기록 API
+
+- 5개 제한으로 함께한 운동 기록 조회
+
+- stampCount가 유효한 2026.4.7 부터의 운동 기록만 조회
+
+==== HTTP Request
+include::{snippets}/workout-history-recent-list-get/http-request.adoc[]
+include::{snippets}/workout-history-recent-list-get/request-headers.adoc[]
+
+==== HTTP Response
+include::{snippets}/workout-history-recent-list-get/http-response.adoc[]
+include::{snippets}/workout-history-recent-list-get/response-fields.adoc[]
