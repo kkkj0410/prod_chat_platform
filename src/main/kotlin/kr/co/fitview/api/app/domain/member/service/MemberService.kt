@@ -131,7 +131,7 @@ class MemberService(
     fun reserveNickname(memberId: Long, request: MemberReserveNicknameServiceRequest): MemberReserveNicknameResponse {
         val findMember = memberQueryService.findMemberFromId(memberId)
             ?: throw GlobalException(GlobalErrorCode.ENTITY_NOT_FOUND)
-        if(findMember.isSignup!!) return MemberReserveNicknameResponse(isReserved = false)
+        if(findMember.signupAt != null) return MemberReserveNicknameResponse(isReserved = false)
 
         val isExistsNickname = memberQueryService.existsMemberNickname(request.nickname)
         if (isExistsNickname) return MemberReserveNicknameResponse(isReserved = false)
