@@ -763,7 +763,7 @@ class MemberRepositoryImpl(
             .from(member)
             .join(member.mutableAddresses, address)
             .where(
-                member.isSignup.isTrue,
+                member.signupAt.isNotNull,
                 member.role.eq(Role.USER),
                 member.provider.isNotNull,
                 address.deletedAt.isNull,
@@ -845,7 +845,7 @@ class MemberRepositoryImpl(
                 member.createdAt.goe(start),
                 member.createdAt.lt(end),
                 member.role.eq(Role.USER),
-                member.isSignup.eq(false),
+                member.signupAt.isNull
             )
             .fetchOne()?.toInt() ?: 0
     }
