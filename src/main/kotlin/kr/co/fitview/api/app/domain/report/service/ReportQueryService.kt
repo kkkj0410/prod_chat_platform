@@ -8,6 +8,8 @@ import kr.co.fitview.api.app.global.time.Time
 import org.springframework.data.domain.Slice
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDate
+import java.time.LocalTime
 
 
 @Service
@@ -20,5 +22,11 @@ class ReportQueryService(
         return reportRepository.findAllReportBy(condition)
     }
 
+    fun countReportFrom(targetDate : LocalDate) : Int{
+        val startOfDay = targetDate.atStartOfDay()
+        val endOfDay = targetDate.atTime(LocalTime.MAX)
+
+        return reportRepository.countByReportedAtBetween(startOfDay, endOfDay).toInt()
+    }
 
 }

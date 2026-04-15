@@ -304,8 +304,8 @@ class OAuth2ServiceTest @Autowired constructor(
 
         // then
         assertThat(responseMember)
-            .extracting("nickname", "gender", "birthday", "height", "isSignup", "gender")
-            .contains(request.nickname, request.gender, request.birthday, request.height, true, request.gender)
+            .extracting("nickname", "gender", "birthday", "height", "isSignup", "signupAt", "gender")
+            .contains(request.nickname, request.gender, request.birthday, request.height, true, time.nowLocalDateTime, request.gender)
 
         val findTerms = termRepository.findAllByMemberId(memberId)
         assertThat(findTerms)

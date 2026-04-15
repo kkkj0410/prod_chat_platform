@@ -25,7 +25,7 @@ class AdminDashboardControllerTest  : ControllerTestSupport(){
         val today = AdminDashboardToday(
             memberCount = 5,
             workoutPartnerCount = 2,
-            workoutHistoryCount = 12,
+            workoutRequestCount = 12,
             reviewCount = 3,
             reportCount = 1
         )

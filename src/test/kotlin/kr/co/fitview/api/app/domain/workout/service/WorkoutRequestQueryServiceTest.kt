@@ -33,6 +33,7 @@ import org.hibernate.proxy.HibernateProxy
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import java.time.LocalDate
 
 class WorkoutRequestQueryServiceTest @Autowired constructor(
     val workoutRequestRepository : WorkoutRequestRepository,
@@ -772,5 +773,107 @@ class WorkoutRequestQueryServiceTest @Autowired constructor(
                 workoutRequest1.id!!,
                 workoutRequest2.id!!
             )
+    }
+
+    @DisplayName("특정날 운동 요청 개수를 조회한다.")
+    @Test
+    fun countWorkoutRequestFrom() {
+        // given
+        val targetDate = LocalDate.of(2050, 5, 25)
+        val startTime = targetDate.atStartOfDay()
+        val endTime = targetDate.atTime(23, 59, 59)
+        val beforeTarget = startTime.minusSeconds(1)
+
+        val member1 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        val member2 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        memberRepository.save(member1)
+        memberRepository.save(member2)
+
+        val workoutPartner1 = WorkoutPartner.of(
+            memberOne = member1,
+            memberTwo = member2
+        )
+        workoutPartnerRepository.save(workoutPartner1)
+
+        val chatRoom1 = chatRoomRepository.save(ChatRoom(ChatRoomType.PRIVATE))
+
+        val chatParticipant1 = ChatParticipant(
+            chatRoom1,
+            member1
+        )
+        val chatParticipant2 = ChatParticipant(
+            chatRoom1,
+            member2
+        )
+        chatParticipantRepository.save(chatParticipant1)
+        chatParticipantRepository.save(chatParticipant2)
+
+        val chatMessage1 = ChatMessage.ofWorkoutRequest(
+            member = member1,
+            chatRoom = chatRoom1,
+            sentAt = startTime
+        )
+        chatMessageRepository.save(chatMessage1)
+
+        val workoutRequest1 = WorkoutRequest.of(
+            chatMessage = chatMessage1,
+            fromMember = member1,
+            toMember = member2,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = startTime
+        )
+        workoutRequestRepository.save(workoutRequest1)
+
+
+        val chatMessage2 = ChatMessage.ofWorkoutRequest(
+            member = member1,
+            chatRoom = chatRoom1,
+            sentAt = endTime
+        )
+        chatMessageRepository.save(chatMessage2)
+
+        val workoutRequest2 = WorkoutRequest.of(
+            chatMessage = chatMessage2,
+            fromMember = member1,
+            toMember = member2,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = endTime
+        )
+        workoutRequestRepository.save(workoutRequest2)
+
+        val chatMessage3 = ChatMessage.ofWorkoutRequest(
+            member = member1,
+            chatRoom = chatRoom1,
+            sentAt = beforeTarget
+        )
+        chatMessageRepository.save(chatMessage3)
+
+        val workoutRequest3 = WorkoutRequest.of(
+            chatMessage = chatMessage3,
+            fromMember = member1,
+            toMember = member2,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = beforeTarget
+        )
+        workoutRequestRepository.save(workoutRequest3)
+
+        // when
+        val response = workoutRequestQueryService.countWorkoutRequestFrom(
+            targetDate = targetDate
+        )
+
+        // then
+        assertThat(response).isEqualTo(2)
     }
 }

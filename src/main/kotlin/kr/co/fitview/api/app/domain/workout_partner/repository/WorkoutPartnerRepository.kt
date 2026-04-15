@@ -2,11 +2,14 @@ package kr.co.fitview.api.app.domain.workout_partner.repository
 
 import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartner
 import org.springframework.data.jpa.repository.JpaRepository
+import java.time.LocalDateTime
 
 interface WorkoutPartnerRepository : JpaRepository<WorkoutPartner, Long> {
 
 
     fun findByMemberOneIdAndMemberTwoIdAndDeletedAtIsNull(memberOneId: Long, memberTwoId: Long): WorkoutPartner?
+
+    fun countByCreatedAtBetweenAndDeletedAtIsNull(start: LocalDateTime, end: LocalDateTime): Long
 
 }
 

@@ -3298,5 +3298,50 @@ class MemberRepositoryTest@Autowired constructor(
         assertThat(response).isEqualTo(false)
     }
 
+    @DisplayName("특정 기간에 회원가입한 회원들의 id를 모두 가져온다.")
+    @Test
+    fun findMemberIdsBySignupAtBetween() {
+        // given
+        val member1 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+            isSignup = true,
+            signupAt = time.nowLocalDateTime.minusDays(1)
+        )
+        memberRepository.save(member1)
+
+        val member2 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+            isSignup = true,
+            signupAt = time.nowLocalDateTime.minusDays(2)
+        )
+        memberRepository.save(member2)
+
+        val member3 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+            isSignup = true,
+            signupAt = time.nowLocalDateTime.minusDays(3)
+        )
+        memberRepository.save(member3)
+
+
+        // when
+        val findMemberIds = memberRepository.findMemberIdsBySignupAtBetween(
+            start = time.nowLocalDateTime.minusDays(2),
+            end = time.nowLocalDateTime.minusDays(1),
+        )
+
+        // then
+        assertThat(findMemberIds).hasSize(2)
+        assertThat(findMemberIds).containsExactlyInAnyOrder(
+            member1.id,
+            member2.id
+        )
+    }
 
 }
