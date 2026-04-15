@@ -34,7 +34,7 @@ class ReviewQueryService(
         val startOfDay = targetDate.atStartOfDay()
         val endOfDay = targetDate.atTime(LocalTime.MAX)
 
-        return reviewRepository.countByCreatedAtBetween(startOfDay, endOfDay).toInt()
+        return reviewRepository.countByPostedAtBetween(startOfDay, endOfDay).toInt()
     }
 
 

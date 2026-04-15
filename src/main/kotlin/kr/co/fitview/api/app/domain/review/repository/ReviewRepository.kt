@@ -8,5 +8,5 @@ interface ReviewRepository : JpaRepository<Review, Long>, ReviewRepositoryCustom
 
     fun findByFromMemberIdAndWorkoutHistoryIdAndDeletedAtIsNull(memberId: Long, workoutHistoryId: Long): Review?
 
-    fun countByCreatedAtBetween(start: LocalDateTime, end: LocalDateTime) : Long
+    fun countByPostedAtBetween(start: LocalDateTime, end: LocalDateTime) : Long
 }
