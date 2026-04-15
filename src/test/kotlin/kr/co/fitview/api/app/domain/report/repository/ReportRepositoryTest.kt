@@ -30,6 +30,7 @@ import org.assertj.core.api.Assertions.tuple
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import java.time.LocalDate
 
 class ReportRepositoryTest @Autowired constructor(
     val reportReasonRepository: ReportReasonRepository,
@@ -272,5 +273,131 @@ class ReportRepositoryTest @Autowired constructor(
         assertThat(response.content).hasSize(1)
         assertThat(response.content[0].reportId).isEqualTo(report1.id!!)
         assertThat(response.hasNext()).isEqualTo(false)
+    }
+
+
+    @DisplayName("특정 범위 신고 개수를 조회한다.")
+    @Test
+    fun countByReportedAtBetween() {
+        // given
+        val targetDate = LocalDate.of(2050, 5, 25)
+        val startTime = targetDate.atStartOfDay()
+        val endTime = targetDate.atTime(23, 59, 59)
+        val beforeTarget = startTime.minusSeconds(1)
+
+        //given
+        val member1 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        val member2 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        val member3 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(member1)
+        memberRepository.save(member2)
+        memberRepository.save(member3)
+
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "member1"
+        )
+        oAuth2Service.signup(signupRequest1, member1.id!!)
+
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "member2"
+        )
+        oAuth2Service.signup(signupRequest2, member2.id!!)
+
+        val signupRequest3 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "member3"
+        )
+        oAuth2Service.signup(signupRequest3, member3.id!!)
+
+
+        val chatRoom = ChatRoom(ChatRoomType.PRIVATE)
+        chatRoomRepository.save(chatRoom)
+
+        val participant1 = ChatParticipant(
+            chatRoom = chatRoom,
+            member = member1
+        )
+        val participant2 = ChatParticipant(
+            chatRoom = chatRoom,
+            member = member3
+        )
+        chatParticipantRepository.save(participant1)
+        chatParticipantRepository.save(participant2)
+
+        val memberReport1 = ReportReason(
+            targetType = ReportTargetType.MEMBER,
+            reasonType = ReportReasonType.OTHER,
+            displayText = "memberDisplay1",
+            seq = 100
+        )
+        val chatReport1 = ReportReason(
+            targetType = ReportTargetType.CHAT_ROOM,
+            reasonType = ReportReasonType.INAPPROPRIATE_REQUEST,
+            displayText = "chatDisplay1",
+            seq = 100
+        )
+
+        reportReasonRepository.save(memberReport1)
+        reportReasonRepository.save(chatReport1)
+
+        val report1 = Report(
+            member = member1,
+            reportReason = memberReport1,
+            targetType = ReportTargetType.MEMBER,
+            reportedAt = startTime
+        )
+        val report2 = Report(
+            member = member3,
+            reportReason = chatReport1,
+            targetType = ReportTargetType.CHAT_ROOM,
+            reportedAt = endTime
+        )
+        val report3 = Report(
+            member = member3,
+            reportReason = chatReport1,
+            targetType = ReportTargetType.CHAT_ROOM,
+            reportedAt = beforeTarget
+        )
+        reportRepository.save(report1)
+        reportRepository.save(report2)
+        reportRepository.save(report3)
+
+        val memberChildReport1 = MemberReport(
+            report = report1,
+            member = member2
+        )
+        memberReportRepository.save(memberChildReport1)
+
+        val chatChildReport1 = ChatRoomReport(
+            report = report2,
+            chatRoom = chatRoom
+        )
+        chatRoomReportRepository.save(chatChildReport1)
+
+        val chatChildReport2 = ChatRoomReport(
+            report = report3,
+            chatRoom = chatRoom
+        )
+        chatRoomReportRepository.save(chatChildReport2)
+
+        // when
+        val response = reportRepository.countByReportedAtBetween(
+            start = startTime,
+            end = endTime
+        )
+
+        // then
+        assertThat(response).isEqualTo(2)
     }
 }

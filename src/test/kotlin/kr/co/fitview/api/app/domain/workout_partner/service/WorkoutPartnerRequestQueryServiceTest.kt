@@ -27,10 +27,11 @@ import kr.co.fitview.api.app.global.time.Time
 import kr.co.fitview.api.app.global.util.TestDataFactory
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.tuple
-import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import java.time.LocalDate
+import java.time.LocalDateTime
 
 class WorkoutPartnerRequestQueryServiceTest @Autowired constructor(
     val workoutPartnerRequestQueryService: WorkoutPartnerRequestQueryService,
@@ -476,4 +477,45 @@ class WorkoutPartnerRequestQueryServiceTest @Autowired constructor(
     }
 
 
+    @DisplayName("특정날의 운동 파트너 요청 개수를 조회한다 - 경계값 테스트")
+    @Test
+    fun countWorkoutPartnerRequestFrom() {
+        val targetDate = LocalDate.of(2050, 5, 25)
+        val startTime = targetDate.atStartOfDay()
+        val endTime = targetDate.atTime(23, 59, 59)
+        val beforeTarget = startTime.minusSeconds(1)
+
+        // given
+        val member1 = Member(email = "email1", password = "password", role = Role.USER)
+        val member2 = Member(email = "email2", password = "password", role = Role.USER)
+        memberRepository.saveAll(listOf(member1, member2))
+
+        val request1 = WorkoutPartnerRequest.of(
+            fromMember = member1,
+            toMember = member2,
+            now = startTime,
+            content = WorkoutPartnerRequestContent.BURN
+        )
+        val request2 = WorkoutPartnerRequest.of(
+            fromMember = member1,
+            toMember = member2,
+            now = endTime,
+            content = WorkoutPartnerRequestContent.BURN
+        )
+        val request3 = WorkoutPartnerRequest.of(
+            fromMember = member1,
+            toMember = member2,
+            now = beforeTarget,
+            content = WorkoutPartnerRequestContent.BURN
+        )
+        workoutPartnerRequestRepository.saveAll(listOf(request1, request2, request3))
+
+        // when
+        val response = workoutPartnerRequestQueryService.countWorkoutPartnerRequestFrom(
+            targetDate = targetDate
+        )
+
+        // then
+        assertThat(response).isEqualTo(2)
+    }
 }

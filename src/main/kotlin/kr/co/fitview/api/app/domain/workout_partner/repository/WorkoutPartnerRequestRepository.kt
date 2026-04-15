@@ -17,7 +17,7 @@ interface WorkoutPartnerRequestRepository : JpaRepository<WorkoutPartnerRequest,
         toMemberId : Long
     ) : WorkoutPartnerRequest?
 
-    fun countByRequestedAtBetween(startedAt: LocalDateTime, endedAt: LocalDateTime): Long
+    fun countByRequestedAtBetween(start: LocalDateTime, end: LocalDateTime): Long
 
 
 }

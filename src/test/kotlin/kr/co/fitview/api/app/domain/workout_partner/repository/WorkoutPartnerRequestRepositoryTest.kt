@@ -1362,4 +1362,47 @@ class WorkoutPartnerRequestRepositoryTest @Autowired constructor(
                 tuple(workoutPartnerRequest2.id!!, otherMember, meMember),
             )
     }
+
+    @DisplayName("특정 범위 운동 파트너 요청 개수를 조회한다")
+    @Test
+    fun countByRequestedAtBetween() {
+        val targetDate = LocalDate.of(2050, 5, 25)
+        val startTime = targetDate.atStartOfDay()
+        val endTime = targetDate.atTime(23, 59, 59)
+        val beforeTarget = startTime.minusSeconds(1)
+
+        // given
+        val member1 = Member(email = "email1", password = "password", role = Role.USER)
+        val member2 = Member(email = "email2", password = "password", role = Role.USER)
+        memberRepository.saveAll(listOf(member1, member2))
+
+        val request1 = WorkoutPartnerRequest.of(
+            fromMember = member1,
+            toMember = member2,
+            now = startTime,
+            content = WorkoutPartnerRequestContent.BURN
+        )
+        val request2 = WorkoutPartnerRequest.of(
+            fromMember = member1,
+            toMember = member2,
+            now = endTime,
+            content = WorkoutPartnerRequestContent.BURN
+        )
+        val request3 = WorkoutPartnerRequest.of(
+            fromMember = member1,
+            toMember = member2,
+            now = beforeTarget,
+            content = WorkoutPartnerRequestContent.BURN
+        )
+        workoutPartnerRequestRepository.saveAll(listOf(request1, request2, request3))
+
+        // when
+        val response = workoutPartnerRequestRepository.countByRequestedAtBetween(
+            start = startTime,
+            end = endTime
+        )
+
+        // then
+        assertThat(response).isEqualTo(2)
+    }
 }

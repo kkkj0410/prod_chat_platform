@@ -33,6 +33,7 @@ import org.assertj.core.api.Assertions.tuple
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import java.time.LocalDate
 import java.time.ZoneId
 
 class ReviewRepositoryTest @Autowired constructor(
@@ -1248,4 +1249,132 @@ class ReviewRepositoryTest @Autowired constructor(
         assertThat(response.content[0].reviewId).isEqualTo(review.id!!)
         assertThat(response.hasNext()).isEqualTo(false)
     }
+
+    @DisplayName("특정 범위 리뷰 개수를 조회한다.")
+    @Test
+    fun countByPostedAtBetween() {
+        // given
+        val targetDate = LocalDate.of(2050, 5, 25)
+        val startTime = targetDate.atStartOfDay()
+        val endTime = targetDate.atTime(23, 59, 59)
+        val beforeTarget = startTime.minusSeconds(1)
+
+        val member1 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        val member2 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+        )
+        memberRepository.save(member1)
+        memberRepository.save(member2)
+
+        val chatRoom = ChatRoom(ChatRoomType.PRIVATE)
+        chatRoomRepository.save(chatRoom)
+
+        val chatMessage = ChatMessage(
+            member = member1,
+            chatRoom = chatRoom,
+            type = ChatMessageType.WORKOUT_REQUEST,
+            content = "content",
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessage)
+
+        val workoutRequest = WorkoutRequest.of(
+            chatMessage = chatMessage,
+            fromMember = member1,
+            toMember = member2,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime
+        )
+        workoutRequestRepository.save(workoutRequest)
+
+        val workoutHistory = WorkoutHistory(
+            chatRoom = chatRoom,
+            workoutRequest = workoutRequest,
+            memberOne = member1,
+            memberTwo = member2,
+            completedAt = time.nowLocalDateTime
+        )
+        workoutHistoryRepository.save(workoutHistory)
+
+        val chatMessage2 = ChatMessage(
+            member = member1,
+            chatRoom = chatRoom,
+            type = ChatMessageType.WORKOUT_REQUEST,
+            content = "content",
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessage2)
+
+        val workoutRequest2 = WorkoutRequest.of(
+            chatMessage = chatMessage2,
+            fromMember = member1,
+            toMember = member2,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime
+        )
+        workoutRequestRepository.save(workoutRequest2)
+
+        val workoutHistory2 = WorkoutHistory(
+            chatRoom = chatRoom,
+            workoutRequest = workoutRequest2,
+            memberOne = member1,
+            memberTwo = member2,
+            completedAt = time.nowLocalDateTime
+        )
+        workoutHistoryRepository.save(workoutHistory2)
+
+        val review1 = Review(
+            fromMember = member1,
+            toMember = member2,
+            workoutHistory = workoutHistory,
+            isPrivate = false,
+            type = ReviewType.GOOD,
+            score = 2.0,
+            content = "content",
+            postedAt = startTime
+        )
+        reviewRepository.save(review1)
+
+        val review2 = Review(
+            fromMember = member2,
+            toMember = member1,
+            workoutHistory = workoutHistory,
+            isPrivate = false,
+            type = ReviewType.GOOD,
+            score = 2.0,
+            content = "content",
+            postedAt = endTime
+        )
+        reviewRepository.save(review2)
+
+        val review3 = Review(
+            fromMember = member1,
+            toMember = member2,
+            workoutHistory = workoutHistory2,
+            isPrivate = false,
+            type = ReviewType.GOOD,
+            score = 2.0,
+            content = "content",
+            postedAt = beforeTarget
+        )
+        reviewRepository.save(review3)
+
+        // when
+        val response = reviewRepository.countByPostedAtBetween(
+            start = startTime,
+            end = endTime
+        )
+
+        // then
+        assertThat(response).isEqualTo(2)
+    }
+
 }
