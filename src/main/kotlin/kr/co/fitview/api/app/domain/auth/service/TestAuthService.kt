@@ -19,6 +19,7 @@ import kr.co.fitview.api.app.global.exception.error.auth.AuthErrorCode
 import kr.co.fitview.api.app.global.exception.error.member.MemberErrorCode
 import kr.co.fitview.api.app.global.exception.error.oauth2.OAuth2ErrorCode
 import kr.co.fitview.api.app.global.jwt.JwtTokenProvider
+import kr.co.fitview.api.app.global.time.Time
 import org.springframework.http.HttpHeaders
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
@@ -34,7 +35,8 @@ class TestAuthService(
     val refreshTokenService: RefreshTokenService,
     private val termService: TermService,
     private val imageService: ImageService,
-    private val addressService: AddressService
+    private val addressService: AddressService,
+    private val time : Time
 ) {
 
     @Transactional
@@ -54,7 +56,7 @@ class TestAuthService(
             email = request.email,
             password = encryptedPassword,
             role = Role.USER,
-            isSignup = true,
+            signupAt = time.nowLocalDateTime,
             nickname = request.nickname,
             gender = request.gender,
             birthday = request.birthday,

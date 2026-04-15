@@ -18,6 +18,7 @@ import kr.co.fitview.api.app.global.jwt.JwtTokenProvider
 import kr.co.fitview.api.app.global.time.Time
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
 
 
 @Service
@@ -57,7 +58,7 @@ class OAuth2Service(
         val accessToken = jwtTokenProvider.createAccessToken(findMember!!.id!!, findMember.role!!)
         val refreshToken = refreshTokenService.issueMobileRefreshToken(findMember.id!!, request.deviceId)
 
-        return OAuth2LoginResponse(accessToken, refreshToken, findMember.isSignup!!)
+        return OAuth2LoginResponse(accessToken, refreshToken, findMember.signupAt != null)
     }
 
     @Transactional
@@ -72,7 +73,7 @@ class OAuth2Service(
 
         val findMember = memberQueryService.findMemberOrElseThrow(memberId)
 
-        validateIsSignup(findMember.isSignup!!)
+        validateSignupAt(findMember.signupAt)
 
         termService.addRequiredTerms(findMember)
 
@@ -96,7 +97,6 @@ class OAuth2Service(
             workoutStyle = request.workoutStyle
             workoutGoal = request.workoutGoal
             intro = request.intro
-            isSignup = true
             signupAt = time.nowLocalDateTime
         }
 
@@ -131,8 +131,8 @@ class OAuth2Service(
         }
     }
 
-    private fun validateIsSignup(isSignup : Boolean) {
-        if (isSignup) {
+    private fun validateSignupAt(signupAt : LocalDateTime?) {
+        if (signupAt != null) {
             throw GlobalException(OAuth2ErrorCode.DUPLICATE_SOCIAL_MEMBER)
         }
     }

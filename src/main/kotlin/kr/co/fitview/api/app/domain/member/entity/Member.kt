@@ -55,10 +55,10 @@ class Member(
     @Column(name = "provider_id", length = 100)
     var providerId: String? = null,
 
-    @NotNull
-    @ColumnDefault("0")
-    @Column(name = "is_signup", nullable = false)
-    var isSignup: Boolean? = false,
+//    @NotNull
+//    @ColumnDefault("0")
+//    @Column(name = "is_signup", nullable = false)
+//    var isSignup: Boolean? = false,
 
     @Column(name = "signup_at", nullable = true)
     var signupAt: LocalDateTime? = null,

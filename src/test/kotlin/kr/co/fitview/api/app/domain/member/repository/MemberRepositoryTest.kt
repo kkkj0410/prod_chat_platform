@@ -3208,14 +3208,14 @@ class MemberRepositoryTest@Autowired constructor(
             password = "password",
             role = Role.USER,
             provider = OAuth2Provider.APPLE,
-            isSignup = true
+            signupAt = time.nowLocalDateTime
         )
         val member2 = Member(
             email = "email",
             password = "password",
             role = Role.USER,
             provider = null,
-            isSignup = false
+            signupAt = null
         )
         memberRepository.save(member1)
         memberRepository.save(member2)
@@ -3236,13 +3236,13 @@ class MemberRepositoryTest@Autowired constructor(
             password = "password",
             role = Role.USER,
             provider = OAuth2Provider.APPLE,
-            isSignup = false
+            signupAt = null
         )
         val admin = Member(
             email = "email",
             password = "password",
             role = Role.ADMIN,
-            isSignup = false
+            signupAt = null
         )
         memberRepository.save(member1)
         memberRepository.save(admin)
@@ -3306,7 +3306,6 @@ class MemberRepositoryTest@Autowired constructor(
             email = "email",
             password = "password",
             role = Role.USER,
-            isSignup = true,
             signupAt = time.nowLocalDateTime.minusDays(1)
         )
         memberRepository.save(member1)
@@ -3315,7 +3314,6 @@ class MemberRepositoryTest@Autowired constructor(
             email = "email",
             password = "password",
             role = Role.USER,
-            isSignup = true,
             signupAt = time.nowLocalDateTime.minusDays(2)
         )
         memberRepository.save(member2)
@@ -3324,7 +3322,6 @@ class MemberRepositoryTest@Autowired constructor(
             email = "email",
             password = "password",
             role = Role.USER,
-            isSignup = true,
             signupAt = time.nowLocalDateTime.minusDays(3)
         )
         memberRepository.save(member3)
