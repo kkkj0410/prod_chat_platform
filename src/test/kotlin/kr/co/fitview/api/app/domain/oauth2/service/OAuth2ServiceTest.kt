@@ -356,7 +356,7 @@ class OAuth2ServiceTest @Autowired constructor(
             email = "email",
             password = "password",
             role = Role.USER,
-            isSignup = true
+            signupAt = time.nowLocalDateTime
         )
         val savedMember = memberRepository.save(member)
 

@@ -165,7 +165,6 @@ class ActiveMemberStatQueryServiceTest @Autowired constructor(
             email = "email",
             password = "password",
             role = Role.USER,
-            isSignup = true,
             signupAt = time.nowLocalDateTime.minusDays(1)
         )
         memberRepository.save(member1)
@@ -174,7 +173,6 @@ class ActiveMemberStatQueryServiceTest @Autowired constructor(
             email = "email",
             password = "password",
             role = Role.USER,
-            isSignup = true,
             signupAt = time.nowLocalDateTime.minusDays(1)
         )
         memberRepository.save(member2)
@@ -183,7 +181,6 @@ class ActiveMemberStatQueryServiceTest @Autowired constructor(
             email = "email",
             password = "password",
             role = Role.USER,
-            isSignup = true,
             signupAt = time.nowLocalDateTime.minusDays(1)
         )
         memberRepository.save(member3)

@@ -81,7 +81,6 @@ class SlackSchedulerTest @Autowired constructor(
             email = "email1",
             password = "password1",
             role = Role.USER,
-            isSignup = true,
             signupAt = time.nowLocalDateTime.minusDays(2)
         )
         member1.createdAt = time.nowLocalDateTime.minusDays(2)
@@ -90,7 +89,6 @@ class SlackSchedulerTest @Autowired constructor(
             email = "email2",
             password = "password2",
             role = Role.USER,
-            isSignup = true,
             signupAt = time.nowLocalDateTime.minusDays(2)
         )
         member2.createdAt = time.nowLocalDateTime.minusDays(2)
@@ -99,7 +97,7 @@ class SlackSchedulerTest @Autowired constructor(
             email = "email3",
             password = "password3",
             role = Role.USER,
-            isSignup = false,
+            signupAt = null
         )
         notSignupMember.createdAt = time.nowLocalDateTime.minusDays(1)
 
