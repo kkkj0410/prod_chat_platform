@@ -8,6 +8,7 @@ import kr.co.fitview.api.app.domain.stat.repository.ActiveMemberStatRepository
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.time.Time
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -156,5 +157,74 @@ class ActiveMemberStatQueryServiceTest @Autowired constructor(
         assertThat(count).isEqualTo(2L)
     }
 
+    @DisplayName("회원 복귀 리텐션을 계산한다.")
+    @Test
+    fun calculateRetention() {
+        // given
+        val member1 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+            isSignup = true,
+            signupAt = time.nowLocalDateTime.minusDays(1)
+        )
+        memberRepository.save(member1)
+
+        val member2 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+            isSignup = true,
+            signupAt = time.nowLocalDateTime.minusDays(1)
+        )
+        memberRepository.save(member2)
+
+        val member3 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+            isSignup = true,
+            signupAt = time.nowLocalDateTime.minusDays(1)
+        )
+        memberRepository.save(member3)
+
+        val activeMemberStat1 = ActiveMemberStat.of(
+            member = member1,
+            statDate = time.nowLocalDate
+        )
+        activeMemberStatRepository.save(activeMemberStat1)
+
+        val activeMemberStat2 = ActiveMemberStat.of(
+            member = member2,
+            statDate = time.nowLocalDate
+        )
+        activeMemberStatRepository.save(activeMemberStat2)
+
+        // when
+        val response = activeMemberStatQueryService.calculateRetention(
+            baseDate = time.nowLocalDate,
+            day = 1
+        )
+
+        // then
+        assertThat(response.retentionRate).isCloseTo(0.66, within(0.01))
+        assertThat(response.signupCount).isEqualTo(3L)
+        assertThat(response.comebackCount).isEqualTo(2L)
+    }
+
+    @DisplayName("회원 복귀 리텐션 계산 시, 회원이 없으면 0을 반환한다.")
+    @Test
+    fun calculateRetentionNone() {
+        // given & when
+        val response = activeMemberStatQueryService.calculateRetention(
+            baseDate = time.nowLocalDate,
+            day = 1
+        )
+
+        // then
+        assertThat(response.retentionRate).isCloseTo(0.0, within(0.01))
+        assertThat(response.signupCount).isEqualTo(0L)
+        assertThat(response.comebackCount).isEqualTo(0L)
+    }
 
 }
