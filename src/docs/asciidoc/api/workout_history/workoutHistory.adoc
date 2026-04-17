@@ -16,7 +16,7 @@ include::{snippets}/workout-history-review-status/response-fields.adoc[]
 
 - 5개 제한으로 함께한 운동 기록 조회
 
-- stampCount가 유효한 2026.4.7 부터의 운동 기록만 조회
+- stampCount가 유효한 2026.4.17 부터의 운동 기록만 조회
 
 ==== HTTP Request
 include::{snippets}/workout-history-recent-list-get/http-request.adoc[]
