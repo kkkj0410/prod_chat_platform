@@ -26,7 +26,7 @@ class ReportService(
         val report = Report(
             member = findMember,
             reportReason = findReportReason,
-            targetType = ReportTargetType.CHAT_ROOM,
+            targetType = targetType,
             description = description,
             reportedAt = time.nowLocalDateTime
         )

@@ -44,6 +44,7 @@ import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
 import kr.co.fitview.api.app.domain.report.controller.AdminReportController
 import kr.co.fitview.api.app.domain.report.controller.ReportController
 import kr.co.fitview.api.app.domain.report.service.ChatRoomReportService
+import kr.co.fitview.api.app.domain.report.service.MemberReportService
 import kr.co.fitview.api.app.domain.report.service.ReportQueryService
 import kr.co.fitview.api.app.domain.report.service.ReportReasonQueryService
 import kr.co.fitview.api.app.domain.review.controller.AdminReviewController
@@ -280,5 +281,8 @@ abstract class ControllerTestSupport {
 
     @MockitoBean
     protected lateinit var workoutRewardPolicyProvider: WorkoutRewardPolicyProvider
+
+    @MockitoBean
+    protected lateinit var memberReportService: MemberReportService
 
 }
