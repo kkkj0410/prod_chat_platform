@@ -79,7 +79,7 @@ class MemberReportServiceTest @Autowired constructor(
         assertThat(findMemberReport[0].member).isEqualTo(other)
     }
 
-    @DisplayName("상대 회원 신고 시, 회원 신고 유형 메시지로 신고하지 아니면 신고를 받지 않는다.")
+    @DisplayName("상대 회원 신고 시, 회원 신고 유형 메시지로 신고하지 않으면 신고를 받지 않는다.")
     @Test
     fun addMemberReportNotTargetTypeIsMember() {
         // given

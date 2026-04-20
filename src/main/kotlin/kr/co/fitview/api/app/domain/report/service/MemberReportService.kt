@@ -18,9 +18,6 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 @Transactional(readOnly = true)
 class MemberReportService(
-    private val chatRoomReportRepository: ChatRoomReportRepository,
-    private val chatRoomQueryService: ChatRoomQueryService,
-    private val chatParticipantQueryService: ChatParticipantQueryService,
     private val memberReportRepository : MemberReportRepository,
     private val reportReasonQueryService: ReportReasonQueryService,
     private val reportService: ReportService,
