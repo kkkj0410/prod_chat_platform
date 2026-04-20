@@ -16,4 +16,6 @@ interface MemberRepository : JpaRepository<Member, Long>, MemberRepositoryCustom
 
     fun existsByNicknameAndDeletedAtIsNull(nickname: String) : Boolean
 
+    fun findByIdAndSignupAtIsNotNullAndDeletedAtIsNull(memberId: Long): Member?
+
 }

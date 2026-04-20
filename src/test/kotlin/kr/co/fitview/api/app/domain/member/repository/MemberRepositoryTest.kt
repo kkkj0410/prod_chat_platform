@@ -3341,4 +3341,23 @@ class MemberRepositoryTest@Autowired constructor(
         )
     }
 
+    @DisplayName("회원가입한 활성화 회원을 조회한다.")
+    @Test
+    fun findByIdAndSignupAtIsNotNullAndDeletedAtIsNull() {
+        // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+            signupAt = time.nowLocalDateTime
+        )
+        memberRepository.save(member)
+
+        // when
+        val findMember = memberRepository.findByIdAndSignupAtIsNotNullAndDeletedAtIsNull(member.id!!)
+
+        // then
+        assertThat(findMember!!.id!!).isEqualTo(member.id!!)
+    }
+
 }

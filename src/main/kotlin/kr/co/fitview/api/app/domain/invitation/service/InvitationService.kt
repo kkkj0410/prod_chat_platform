@@ -22,7 +22,7 @@ class InvitationService(
 
         val toMemberId = invitationCodeProvider.decode(request.invitationCode)
 
-        memberQueryService.findMemberFromId(toMemberId)
+        memberQueryService.findMemberFromIdAndSignup(toMemberId)
             ?: throw GlobalException(InvitationErrorCode.INVITATION_MEMBER_NOT_FOUND)
 
         return workoutPartnerRequestService.addWorkoutPartnerDirectly(
