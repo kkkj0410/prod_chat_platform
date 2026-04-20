@@ -55,6 +55,10 @@ class MemberQueryService(
         return memberRepository.findByIdAndDeletedAtIsNull(memberId)
     }
 
+    fun findMemberFromIdAndSignup(memberId : Long) : Member?{
+        return memberRepository.findByIdAndSignupAtIsNotNullAndDeletedAtIsNull(memberId)
+    }
+
     fun findChatMemberFromOrElseThrow(memberId : Long, chatRoomId: Long): ChatMemberProfileResponse {
         val response = memberRepository.findMemberByPrivateChatRoomId(memberId, chatRoomId)
             ?: throw GlobalException(MemberErrorCode.MEMBER_NOT_FOUND)

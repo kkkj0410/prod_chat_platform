@@ -126,4 +126,39 @@ class InvitationServiceTest @Autowired constructor(
         ).isEqualTo(InvitationErrorCode.INVITATION_MEMBER_NOT_FOUND)
     }
 
+    @DisplayName("운동 파트너 즉시 성립 시, 상대 회원은 회원가입이 되어있어야한다.")
+    @Test
+    fun processWorkoutPartnerNotSignupCode() {
+        // given
+        val fromMember = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(fromMember)
+
+        val toMember = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(toMember)
+
+        val toMemberCode = invitationCodeProvider.encode(toMember.id!!)
+
+        val request = InvitationWorkoutPartnerServiceRequest(
+            invitationCode = toMemberCode
+        )
+
+        // then
+        assertThat(
+            assertThrows<GlobalException> {
+                invitationService.processWorkoutPartner(
+                    memberId = fromMember.id!!,
+                    request = request
+                )
+            }.errorCode
+        ).isEqualTo(InvitationErrorCode.INVITATION_MEMBER_NOT_FOUND)
+    }
+
 }
