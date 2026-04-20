@@ -2,6 +2,7 @@ package kr.co.fitview.api.app
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import kr.co.fitview.api.app.domain.address.controller.AddressController
+import kr.co.fitview.api.app.domain.address.service.AddressQueryService
 import kr.co.fitview.api.app.domain.address.service.AddressService
 import kr.co.fitview.api.app.domain.app_feedback.controller.AdminAppFeedbackController
 import kr.co.fitview.api.app.domain.app_feedback.controller.AppFeedbackController
@@ -53,6 +54,7 @@ import kr.co.fitview.api.app.domain.review.service.ReviewTagCountQueryService
 import kr.co.fitview.api.app.domain.workout.controller.AdminWorkoutController
 import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestQueryService
 import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestService
+import kr.co.fitview.api.app.global.time.Time
 import kr.co.fitview.api.app.domain.workout_history.controller.WorkoutHistoryController
 import kr.co.fitview.api.app.domain.workout_history.service.WorkoutHistoryQueryService
 import kr.co.fitview.api.app.domain.workout_partner.controller.AdminWorkoutPartnerController
@@ -155,6 +157,9 @@ abstract class ControllerTestSupport {
 
     @MockitoBean
     protected lateinit var addressService: AddressService
+
+    @MockitoBean
+    protected lateinit var addressQueryService: AddressQueryService
 
     @MockitoBean
     protected lateinit var workoutPartnerRequestService: WorkoutPartnerRequestService

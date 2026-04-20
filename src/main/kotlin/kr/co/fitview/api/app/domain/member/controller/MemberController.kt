@@ -2,11 +2,11 @@ package kr.co.fitview.api.app.domain.member.controller
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.validation.Valid
-import kr.co.fitview.api.app.domain.address.service.AddressService
-import kr.co.fitview.api.app.domain.member.condition.MemberLocalCondition
 import kr.co.fitview.api.app.domain.address.dto.response.AddressResponse
+import kr.co.fitview.api.app.domain.address.service.AddressQueryService
 import kr.co.fitview.api.app.domain.app_feedback.service.AppFeedbackQueryService
 import kr.co.fitview.api.app.domain.app_feedback.service.RecommendationAppFeedbackDismissLogService
+import kr.co.fitview.api.app.domain.member.condition.MemberLocalCondition
 import kr.co.fitview.api.app.domain.member.condition.MemberReviewCondition
 import kr.co.fitview.api.app.domain.member.dto.request.MemberReserveNicknameRequest
 import kr.co.fitview.api.app.domain.member.dto.request.MemberUpdateRequest
@@ -36,7 +36,7 @@ class MemberController(
     val memberQueryService : MemberQueryService,
     val memberWithdrawReasonService : MemberWithdrawReasonService,
     val memberWithdrawReasonQueryService : MemberWithdrawReasonQueryService,
-    val addressService : AddressService,
+    val addressQueryService : AddressQueryService,
     val reviewTagCountQueryService: ReviewTagCountQueryService,
     val reviewQueryService: ReviewQueryService,
     val appFeedbackQueryService : AppFeedbackQueryService,
@@ -76,7 +76,7 @@ class MemberController(
     fun memberAddressDetails(
     ) : ResponseEntity<ApiResponse<AddressResponse>> {
 
-        val response = addressService.findAddressFromMemberId(securityUtil.getMemberId())
+        val response = addressQueryService.findAddressFromMemberId(securityUtil.getMemberId())
 
         return ResponseEntity.ok(ApiResponse.success(response))
     }

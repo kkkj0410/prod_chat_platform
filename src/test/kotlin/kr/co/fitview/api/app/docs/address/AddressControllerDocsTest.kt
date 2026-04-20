@@ -3,10 +3,10 @@ package kr.co.fitview.api.app.docs.address
 import kr.co.fitview.api.app.docs.RestDocsHeaders
 import kr.co.fitview.api.app.docs.RestDocsSupport
 import kr.co.fitview.api.app.domain.address.controller.AddressController
-import kr.co.fitview.api.app.domain.address.dto.request.AddressRadiusRequest
 import kr.co.fitview.api.app.domain.address.dto.request.AddressUpdateRequest
 import kr.co.fitview.api.app.domain.address.dto.response.AddressDetailResponse
 import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
+import kr.co.fitview.api.app.domain.address.service.AddressQueryService
 import kr.co.fitview.api.app.domain.address.service.AddressService
 
 import kr.co.fitview.api.app.global.entity.Role
@@ -34,17 +34,18 @@ import org.springframework.restdocs.request.RequestDocumentation.pathParameters
 class AddressControllerDocsTest : RestDocsSupport() {
 
     private val addressService: AddressService = mock(AddressService::class.java)
+    private val addressQueryService: AddressQueryService = mock(AddressQueryService::class.java)
     private val securityUtil: SecurityUtil = mock(SecurityUtil::class.java)
 
     override fun initController(): Any {
-        return AddressController(addressService, securityUtil)
+        return AddressController(addressService, addressQueryService, securityUtil)
     }
 
     @DisplayName("특정 주소 조회 API")
     @Test
     fun addressDetail() {
 
-        given(addressService.findAddressFromAddressId(any()))
+        given(addressQueryService.findAddressFromAddressId(any()))
             .willReturn(
                 AddressDetailResponse(
                     siDo = AddressSiDo.SEOUL,
@@ -166,57 +167,6 @@ class AddressControllerDocsTest : RestDocsSupport() {
                 )
             )
     }
-
-
-//    @DisplayName("회원 주소 반경 변경 API")
-//    @Test
-//    fun addressRadiusModify() {
-//        // given
-//        val request = AddressRadiusRequest(
-//            radiusKm = 2
-//        )
-//
-//        // when // then
-//        mockMvc.perform(
-//            patch("/api/v1/addresses/{addressId}/radius-km", 1)
-//                .content(objectMapper.writeValueAsString(request))
-//                .contentType(MediaType.APPLICATION_JSON)
-//                .header("Authorization", "Bearer jwt-token")
-//        )
-//            .andDo(print())
-//            .andExpect(status().isOk())
-//            .andDo(
-//                document(
-//                    "address-radius-update",
-//                    preprocessRequest(prettyPrint()),
-//                    preprocessResponse(prettyPrint()),
-//
-//                    requestHeaders(
-//                        RestDocsHeaders.authorizationHeader(Role.USER)
-//                    ),
-//
-//                    pathParameters(
-//                        parameterWithName("addressId").description("수정 대상 주소 id")
-//                    ),
-//
-//                    requestFields(
-//                        fieldWithPath("radiusKm").type(JsonFieldType.NUMBER)
-//                            .description("해당 주소 기준으로 반경 km ex) radius = 5 -> 반경 5km")
-//                    ),
-//
-//                    responseFields(
-//                        fieldWithPath("status").type(JsonFieldType.NUMBER)
-//                            .description("상태"),
-//                        fieldWithPath("code").type(JsonFieldType.STRING)
-//                            .description("코드"),
-//                        fieldWithPath("message").type(JsonFieldType.STRING)
-//                            .description("에러 메시지"),
-//                        fieldWithPath("data").type(JsonFieldType.STRING)
-//                            .description("응답 데이터"),
-//                    )
-//                )
-//            )
-//    }
 
 
 }
