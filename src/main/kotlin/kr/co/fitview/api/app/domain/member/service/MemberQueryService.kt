@@ -3,7 +3,7 @@ package kr.co.fitview.api.app.domain.member.service
 import kr.co.fitview.api.app.domain.address.constant.AddressConstant
 import kr.co.fitview.api.app.domain.address.entity.Address
 import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
-import kr.co.fitview.api.app.domain.address.service.AddressService
+import kr.co.fitview.api.app.domain.address.service.AddressQueryService
 import kr.co.fitview.api.app.domain.chat.service.ChatRoomQueryService
 import kr.co.fitview.api.app.domain.favorite.service.FavoriteQueryService
 import kr.co.fitview.api.app.domain.member.condition.AdminMemberCondition
@@ -40,7 +40,7 @@ class MemberQueryService(
     private val workoutPartnerQueryService : WorkoutPartnerQueryService,
     private val workoutPartnerRequestQueryService : WorkoutPartnerRequestQueryService,
     private val chatRoomQueryService : ChatRoomQueryService,
-    private val addressService : AddressService,
+    private val addressQueryService : AddressQueryService,
     private val redisService : RedisService,
     private val favoriteQueryService : FavoriteQueryService,
     private val randomCustom : RandomCustom
@@ -141,7 +141,7 @@ class MemberQueryService(
 
         val randomMemberId: Long = createRandomMemberId(memberId, seed)
 
-        val findAddress = addressService.findAddressEntityFrom(memberId)
+        val findAddress = addressQueryService.findAddressEntityFrom(memberId)
         val boundingBox = createBoundingBox(findAddress!!, condition.radiusKm)
 
         val findMembers = memberRepository.findMemberWithinLocal(
