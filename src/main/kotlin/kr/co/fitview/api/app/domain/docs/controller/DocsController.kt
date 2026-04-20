@@ -23,7 +23,7 @@ class DocsController(
         @RequestBody
         request: DocsLoginRequest
 
-    ): ResponseEntity<ApiResponse<*>> {
+    ): ResponseEntity<ApiResponse<String>> {
         val response = docsService.login(request.toServiceRequest())
 
         return ResponseEntity.ok()

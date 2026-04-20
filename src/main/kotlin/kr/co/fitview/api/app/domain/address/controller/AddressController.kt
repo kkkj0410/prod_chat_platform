@@ -36,7 +36,7 @@ class AddressController(
         @RequestBody
         request : AddressUpdateRequest
 
-    ) : ResponseEntity<ApiResponse<*>> {
+    ) : ResponseEntity<ApiResponse<String>> {
         addressService.modifyAddress(securityUtil.getMemberId(), addressId, request.toServiceRequest())
 
         return ResponseEntity.ok(ApiResponse.success("ok"))

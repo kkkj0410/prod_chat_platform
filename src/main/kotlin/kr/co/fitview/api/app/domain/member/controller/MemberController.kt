@@ -175,7 +175,7 @@ class MemberController(
         @Valid
         @RequestBody
         request : MemberWithdrawRequest
-    ): ResponseEntity<ApiResponse<*>> {
+    ): ResponseEntity<ApiResponse<String>> {
 
         memberWithdrawReasonService.deleteMember(securityUtil.getMemberId(), request.toServiceRequest())
 
@@ -194,7 +194,7 @@ class MemberController(
 
     @PostMapping("/recommendations/app-feedbacks/dismiss")
     fun recommendationsAppFeedbackDismiss(
-    ): ResponseEntity<ApiResponse<*>> {
+    ): ResponseEntity<ApiResponse<String>> {
 
         recommendationAppFeedbackDismissLogService.addDismissLog(securityUtil.getMemberId())
 

@@ -36,7 +36,7 @@ class InvitationController(
         @Valid
         @RequestBody
         request : InvitationWorkoutPartnerRequest
-    ) : ResponseEntity<ApiResponse<*>> {
+    ) : ResponseEntity<ApiResponse<String>> {
 
         invitationService.processWorkoutPartner(
             memberId = securityUtil.getMemberId(),

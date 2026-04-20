@@ -53,7 +53,7 @@ class NotificationController(
     fun notificationReadModify(
         @PathVariable
         notificationId : Long
-    ) : ResponseEntity<ApiResponse<*>> {
+    ) : ResponseEntity<ApiResponse<String>> {
 
         notificationService.modifyNotificationRead(notificationId)
 

@@ -33,7 +33,7 @@ class ReportController(
         @Valid
         @RequestBody
         request : ReportChatRoomCreateRequest
-    ) : ResponseEntity<ApiResponse<*>> {
+    ) : ResponseEntity<ApiResponse<String>> {
 
         chatRoomReportService.addChatRoomReport(securityUtil.getMemberId(), request.toServiceRequest())
 
@@ -46,7 +46,7 @@ class ReportController(
         @Valid
         @RequestBody
         request : ReportMemberCreateRequest
-    ) : ResponseEntity<ApiResponse<*>> {
+    ) : ResponseEntity<ApiResponse<String>> {
 
 
 

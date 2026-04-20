@@ -49,7 +49,7 @@ class FavoriteController(
     fun favoriteAdd(
         @PathVariable
         memberId: Long
-    ): ResponseEntity<ApiResponse<*>> {
+    ): ResponseEntity<ApiResponse<String>> {
         favoriteService.favoriteAdd(securityUtil.getMemberId(), memberId)
 
         return ResponseEntity.ok(ApiResponse.success("ok"))
@@ -59,7 +59,7 @@ class FavoriteController(
     fun favoriteDelete(
         @PathVariable
         memberId: Long
-    ): ResponseEntity<ApiResponse<*>> {
+    ): ResponseEntity<ApiResponse<String>> {
         favoriteService.favoriteDelete(securityUtil.getMemberId(), memberId)
 
         return ResponseEntity.ok(ApiResponse.success("ok"))
