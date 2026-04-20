@@ -24,7 +24,7 @@ class FcmController(
         @Valid
         @RequestBody
         request : FcmTokenCreateRequest
-    ) : ResponseEntity<ApiResponse<*>> {
+    ) : ResponseEntity<ApiResponse<String>> {
 
         fcmTokenService.saveFcmToken(securityUtil.getMemberId(), request.toServiceRequest())
 

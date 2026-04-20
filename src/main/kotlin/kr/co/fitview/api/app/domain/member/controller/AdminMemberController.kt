@@ -67,7 +67,7 @@ class AdminMemberController(
     fun memberRestore(
         @PathVariable
         memberId : Long
-    ): ResponseEntity<ApiResponse<*>> {
+    ): ResponseEntity<ApiResponse<String>> {
 
         memberWithdrawReasonService.restoreMember(memberId)
 

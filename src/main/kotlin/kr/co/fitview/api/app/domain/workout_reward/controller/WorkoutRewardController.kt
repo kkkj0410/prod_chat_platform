@@ -78,7 +78,7 @@ class WorkoutRewardController(
         @Valid
         request : WorkoutRewardClaimRequest
 
-    ): ResponseEntity<ApiResponse<*>>{
+    ): ResponseEntity<ApiResponse<String>>{
 
         workoutRewardService.addWorkoutRewardClaim(
             memberId = securityUtil.getMemberId(),

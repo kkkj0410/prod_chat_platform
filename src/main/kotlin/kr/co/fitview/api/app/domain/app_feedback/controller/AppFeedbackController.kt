@@ -49,7 +49,7 @@ class AppFeedbackController(
         @Valid
         @RequestBody
         request : AppFeedbackPhoneNumberAddRequest
-    ) : ResponseEntity<ApiResponse<*>> {
+    ) : ResponseEntity<ApiResponse<String>> {
 
         appFeedbackService.applyAppFeedbackForCoupon(
             appFeedbackId = appFeedbackId,
