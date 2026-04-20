@@ -1,5 +1,6 @@
 package kr.co.fitview.api.app
 
+import kr.co.fitview.api.app.domain.fcm.config.TestFirebaseConfig
 import kr.co.fitview.api.app.domain.fcm.service.FcmPublisher
 import kr.co.fitview.api.app.global.stomp.service.StompPublisher
 import kr.co.fitview.api.app.global.config.TestJwtConfig
@@ -22,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional
 @Import(
     TestJwtConfig::class,
     TestRedisConfig::class,
+    TestFirebaseConfig::class,
 )
 @Transactional
 @RecordApplicationEvents
