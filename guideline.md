@@ -84,3 +84,11 @@
 - **Git Branch Strategy**: (프로젝트 상황에 맞춰 수정 필요) 보통 `feature/{issue-number}-{description}` 형식을 사용합니다.
 - **Commit Message**: `[feat]`, `[fix]`, `[docs]`, `[refactor]`, `[test]` 등의 prefix를 사용합니다.
 - **Code Review**: PR 생성 후 동료의 리뷰를 거쳐 `develop` 브랜치에 머지합니다.
+
+## 테스트 코드 작성 규칙
+- 각 엔티티 생성 시, 각 테스트 함수 내에서 엔티티를 생성해야한다.
+  - (즉, 별도의 private 함수를 쓰지 않아야 한다.)
+
+
+## 명령 수용 규칙
+- 명령 외, 명령과 관련없는 함수를 수정하면 안된다

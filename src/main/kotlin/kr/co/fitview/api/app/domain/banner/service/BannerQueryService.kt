@@ -8,8 +8,6 @@ import kr.co.fitview.api.app.domain.workout_reward.service.WorkoutRewardQuerySer
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import software.amazon.awssdk.core.internal.waiters.ResponseOrException.response
-import kotlin.random.Random
 
 @Service
 @Transactional(readOnly = true)
@@ -25,7 +23,6 @@ class BannerQueryService(
 
         val responses = mutableListOf<BannerActiveResponse>()
 
-        // 1. 앱 피드백 배너 조회
         bannerRepository.findActiveBannerByType(memberId, BannerType.APP_FEEDBACK)?.let {
             responses.add(
                 BannerActiveResponse.AppFeedback(
@@ -37,11 +34,8 @@ class BannerQueryService(
             )
         }
 
-        // 2. 운동 리워드 배너 조회
         bannerRepository.findActiveBannerByType(memberId, BannerType.WORKOUT_REWARD)?.let {
-            val stampCount = workoutRewardQueryService.findWorkoutRewardStamp(memberId).stampCount
-            // 스탬프 현황이 1개 이상이면 조회되지 않음
-            if (stampCount < 1) {
+            if (isDisplayWorkoutRewardBanner(memberId)) {
                 responses.add(
                     BannerActiveResponse.General(
                         bannerId = it.id!!,
@@ -54,7 +48,13 @@ class BannerQueryService(
         return responses
     }
 
+
     fun findBannerReferenceFrom(bannerId : Long) : Banner {
         return bannerRepository.getReferenceById(bannerId)
+    }
+
+    private fun isDisplayWorkoutRewardBanner(memberId: Long): Boolean {
+        val stampCount = workoutRewardQueryService.findWorkoutRewardStamp(memberId).stampCount
+        return stampCount < 1
     }
 }
