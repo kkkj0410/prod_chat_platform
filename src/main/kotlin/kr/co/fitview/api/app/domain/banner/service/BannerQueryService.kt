@@ -4,6 +4,7 @@ import kr.co.fitview.api.app.domain.banner.dto.response.BannerActiveResponse
 import kr.co.fitview.api.app.domain.banner.entity.Banner
 import kr.co.fitview.api.app.domain.banner.entity.enums.BannerType
 import kr.co.fitview.api.app.domain.banner.repository.BannerRepository
+import kr.co.fitview.api.app.domain.workout_reward.service.WorkoutRewardQueryService
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -14,6 +15,7 @@ import kotlin.random.Random
 @Transactional(readOnly = true)
 class BannerQueryService(
     private val bannerRepository: BannerRepository,
+    private val workoutRewardQueryService: WorkoutRewardQueryService,
 
     @Value("\${banner.app-feedback.svg-image-url}")
     private val bannerAppFeedbackSvgImageUrl: String,
@@ -21,19 +23,30 @@ class BannerQueryService(
 
     fun findActiveBanners(memberId : Long) : List<BannerActiveResponse> {
 
-        val findBanners = bannerRepository.findAllActiveBanner(memberId)
+        val responses = mutableListOf<BannerActiveResponse>()
 
-        val responses = findBanners.map {
-            when (it.bannerType) {
-                BannerType.APP_FEEDBACK -> BannerActiveResponse.AppFeedback(
+        // 1. 앱 피드백 배너 조회
+        bannerRepository.findActiveBannerByType(memberId, BannerType.APP_FEEDBACK)?.let {
+            responses.add(
+                BannerActiveResponse.AppFeedback(
                     bannerId = it.id!!,
                     type = it.bannerType!!,
                     imageUrl = it.getImageUrl(),
                     svgImageUrl = bannerAppFeedbackSvgImageUrl
                 )
-                else -> BannerActiveResponse.General(
-                    bannerId = it.id!!,
-                    type = it.bannerType!!,
+            )
+        }
+
+        // 2. 운동 리워드 배너 조회
+        bannerRepository.findActiveBannerByType(memberId, BannerType.WORKOUT_REWARD)?.let {
+            val stampCount = workoutRewardQueryService.findWorkoutRewardStamp(memberId).stampCount
+            // 스탬프 현황이 1개 이상이면 조회되지 않음
+            if (stampCount < 1) {
+                responses.add(
+                    BannerActiveResponse.General(
+                        bannerId = it.id!!,
+                        type = it.bannerType!!,
+                    )
                 )
             }
         }
