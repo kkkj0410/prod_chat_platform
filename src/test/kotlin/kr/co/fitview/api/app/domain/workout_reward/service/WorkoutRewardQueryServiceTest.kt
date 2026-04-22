@@ -757,7 +757,7 @@ class WorkoutRewardQueryServiceTest @Autowired constructor(
                 tuple(
                     workoutRewardClaim3.id!!,
                     member2.nickname,
-                    WorkoutRewardClaimCouponStatus.PENDING.displayName,
+                    WorkoutRewardClaimWorkoutCount.FIRST.displayName,
                     WorkoutRewardClaimCouponType.BAEMIN.firstDisplayName,
                     WorkoutRewardClaimCouponStatus.PENDING,
                     WorkoutRewardClaimCouponStatus.PENDING.displayName
@@ -765,7 +765,7 @@ class WorkoutRewardQueryServiceTest @Autowired constructor(
                 tuple(
                     workoutRewardClaim2.id!!,
                     member1.nickname,
-                    WorkoutRewardClaimCouponStatus.PENDING.displayName,
+                    WorkoutRewardClaimWorkoutCount.SECOND.displayName,
                     WorkoutRewardClaimCouponType.BAEMIN.secondDisplayName,
                     WorkoutRewardClaimCouponStatus.PENDING,
                     WorkoutRewardClaimCouponStatus.PENDING.displayName
@@ -773,7 +773,7 @@ class WorkoutRewardQueryServiceTest @Autowired constructor(
                 tuple(
                     workoutRewardClaim1.id!!,
                     member1.nickname,
-                    WorkoutRewardClaimCouponStatus.PENDING.displayName,
+                    WorkoutRewardClaimWorkoutCount.FIRST.displayName,
                     WorkoutRewardClaimCouponType.BAEMIN.firstDisplayName,
                     WorkoutRewardClaimCouponStatus.PENDING,
                     WorkoutRewardClaimCouponStatus.PENDING.displayName
