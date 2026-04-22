@@ -140,7 +140,7 @@ class WorkoutRewardQueryService(
                 AdminWorkoutRewardClaimResponse(
                     workoutRewardClaimId = c.id!!,
                     nickname = c.member!!.nickname!!,
-                    stampLevelDisplayName = c.couponStatus!!.displayName,
+                    stampLevelDisplayName = c.workoutCount!!.displayName,
                     couponName = couponName,
                     phoneNumber = c.phoneNumber!!,
                     createdAt = c.createdAt!!,
