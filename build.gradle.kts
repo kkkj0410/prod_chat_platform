@@ -1,7 +1,8 @@
 plugins {
 	kotlin("jvm") version "1.9.25"
 	kotlin("kapt") version "1.9.25"
-	kotlin("plugin.spring") version "1.9.25"
+//	kotlin("plugin.spring") version "1.9.25"
+	kotlin("plugin.spring") version "2.1.21"
 	id("org.springframework.boot") version "3.5.6"
 	id("io.spring.dependency-management") version "1.1.7"
 	kotlin("plugin.jpa") version "1.9.25"
@@ -106,6 +107,18 @@ dependencies {
 	implementation ("org.springframework.boot:spring-boot-starter-actuator")
 	implementation ("io.micrometer:micrometer-registry-prometheus")
 
+	//ai
+	implementation("org.springframework.ai:spring-ai-starter-model-google-genai")
+
+	//cloud vision
+	implementation("com.google.cloud:google-cloud-vision:3.34.0")
+}
+
+extra["springAiVersion"] = "1.1.1"
+dependencyManagement {
+	imports {
+		mavenBom("org.springframework.ai:spring-ai-bom:${property("springAiVersion")}")
+	}
 }
 
 kotlin {

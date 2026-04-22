@@ -6,7 +6,11 @@ import kr.co.fitview.api.app.domain.image.dto.response.S3UploadUrlResponse
 import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.image.ImageErrorCode
 import kr.co.fitview.api.app.global.id.IdGenerator
+import org.springframework.core.io.ByteArrayResource
+import org.springframework.core.io.Resource
 import org.springframework.stereotype.Service
+import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.model.GetObjectRequest
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
 import software.amazon.awssdk.services.s3.presigner.S3Presigner
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest
@@ -18,6 +22,7 @@ import java.time.Duration
 class S3Service(
     private val s3Config: S3Config,
     private val s3Presigner: S3Presigner,
+    private val s3Client: S3Client,
     private val idGenerator: IdGenerator
 ) {
 
@@ -27,6 +32,27 @@ class S3Service(
         }
 
         return requests.map { createUploadUrl(it) }
+    }
+
+    fun downloadImage(imageUrl: String): Resource {
+        val key = extractKey(imageUrl)
+        val getObjectRequest = GetObjectRequest.builder()
+            .bucket(s3Config.bucket)
+            .key(key)
+            .build()
+
+        val response = s3Client.getObjectAsBytes(getObjectRequest)
+        return ByteArrayResource(response.asByteArray())
+    }
+
+    private fun extractKey(imageUrl: String): String {
+        val domainPrefix = "https://${s3Config.domain}/"
+        return if (imageUrl.startsWith(domainPrefix)) {
+            imageUrl.removePrefix(domainPrefix)
+        } else {
+            // Handle other URL formats if necessary, or throw exception
+            imageUrl.substringAfter("${s3Config.domain}/")
+        }
     }
 
     private fun isImageCountExceeded(request: List<S3UploadUrlServiceRequest>) =
