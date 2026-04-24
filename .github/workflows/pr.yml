@@ -1,0 +1,20 @@
+name: Auto PR Summary
+
+on:
+  pull_request:
+    types: [opened] # PR이 새로 열릴 때만 실행
+
+jobs:
+  summarize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run AI Summarizer
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          # 여기서 git diff를 추출해 API로 보내고 결과를 PR에 업데이트하는 스크립트 실행
+          python .github/scripts/pr_summarizer.py
