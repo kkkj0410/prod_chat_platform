@@ -2,7 +2,7 @@ name: Auto PR Summary
 
 on:
   pull_request:
-    types: [opened] # PR이 새로 열릴 때만 실행 변경점
+    types: [opened] # PR이 새로 열릴 때만 실행
 
 jobs:
   summarize:
