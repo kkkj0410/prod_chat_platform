@@ -64,19 +64,30 @@ def ask_ai(diff):
 
 def update_pr_body(body):
     print(f"🚀 PR #{PR_NUMBER} 본문 업데이트 중...")
+    # URL이 정확한지 로그로 찍어서 확인
     url = f"https://api.github.com/repos/{REPO}/pulls/{PR_NUMBER}"
+    print(f"🔗 요청 URL: {url}")
+
     headers = {
         "Authorization": f"Bearer {GITHUB_TOKEN}",
         "Accept": "application/vnd.github.v3+json",
         "Content-Type": "application/json",
         "User-Agent": "github-actions-ai-summarizer"
     }
+
     data = json.dumps({"body": body}).encode('utf-8')
     req = urllib.request.Request(url, data=data, headers=headers, method='PATCH')
 
-    with urllib.request.urlopen(req) as response:
-        if response.status == 200:
-            print("✅ PR 업데이트 성공!")
+    try:
+        with urllib.request.urlopen(req) as response:
+            if response.status == 200:
+                print("✅ PR 업데이트 성공!")
+    except urllib.error.HTTPError as e:
+        print(f"❌ HTTP 에러 발생: {e.code} {e.reason}")
+        # 404의 진짜 원인을 출력합니다 (핵심!)
+        error_body = e.read().decode('utf-8')
+        print(f"🔍 서버 응답 상세 내용: {error_body}")
+        raise e
 
 if __name__ == "__main__":
     try:
