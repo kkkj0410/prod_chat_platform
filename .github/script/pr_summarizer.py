@@ -101,6 +101,10 @@ if __name__ == "__main__":
         if diff_text.strip():
             ai_response = ask_ai(diff_text)
             update_pr_body(ai_response)
+
+            print("⏳ GitHub 서버 동기화를 위해 10초간 대기합니다...")
+            time.sleep(10)
+
         else:
             print("⚠️ 변경 사항이 없어 스킵합니다.")
 
