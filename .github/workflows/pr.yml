@@ -2,7 +2,11 @@ name: Auto PR Summary
 
 on:
   pull_request:
-    types: [opened] # PR이 새로 열릴 때만 실행
+    types: [opened] # PR이 처음 생성될 때 트리거
+
+permissions:
+  contents: read
+  pull-requests: write # PR 본문을 수정하기 위한 쓰기 권한
 
 jobs:
   summarize:
@@ -10,11 +14,18 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Run AI Summarizer
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Run Summarizer
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: |
-          # 여기서 git diff를 추출해 API로 보내고 결과를 PR에 업데이트하는 스크립트 실행
-          python .github/scripts/pr_summarizer.py
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          TARGET_BRANCH: ${{ github.event.pull_request.base.ref }}
+        run: python .github/script/pr_summarizer.py
