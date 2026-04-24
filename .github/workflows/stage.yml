@@ -29,6 +29,7 @@ env:
   SHORT_GITHUB_SHA: 0
 
   SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL_PRIVATE_BE }}
+  SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
 
 
 # jobs : 수행할 명령어
@@ -226,38 +227,41 @@ jobs:
         uses: slackapi/slack-github-action@v1.26.0
         with:
           payload: |
-            {
-              "text": "${{ job.status == 'success' && '✅ [Stage] 배포 및 헬스체크 성공' || '❌ [Stage] 배포 또는 헬스체크 실패' }}",
-              "attachments": [
+            ${{ toJson({
+              text: job.status == 'success' && '✅ [Stage] 배포 및 헬스체크 성공' || '❌ [Stage] 배포 또는 헬스체크 실패',
+              attachments: [
                 {
-                  "color": "${{ job.status == 'success' && '#36a64f' || '#ff0000' }}",
-                  "fields": [
+                  color: job.status == 'success' && '#36a64f' || '#ff0000',
+                  fields: [
                     {
-                      "title": "상태",
-                      "value": "${{ job.status == 'success' && '성공' || '실패 (롤백 수행됨)' }}",
-                      "short": true
+                      title: '상태',
+                      value: job.status == 'success' && '성공' || '실패 (롤백 수행됨)',
+                      short: true
                     },
                     {
-                      "title": "실행자",
-                      "value": "${{ github.actor }}",
-                      "short": true
+                      title: '실행자',
+                      value: github.actor,
+                      short: true
                     },
                     {
-                      "title": "커밋 메시지",
-                      "value": "${{ github.event.head_commit.message }}",
-                      "short": false
+                      title: '커밋 메시지',
+                      value: github.event.head_commit.message,
+                      short: false
                     },
                     {
-                      "title": "레포지토리",
-                      "value": "${{ github.repository }}",
-                      "short": true
+                      title: '레포지토리',
+                      value: github.repository,
+                      short: true
                     },
                     {
-                      "title": "브랜치",
-                      "value": "${{ github.ref_name }}",
-                      "short": true
+                      title: '브랜치',
+                      value: github.ref_name,
+                      short: true
                     }
                   ]
                 }
               ]
-            }
+            }) }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ env.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: ${{ env.SLACK_WEBHOOK_TYPE }}
