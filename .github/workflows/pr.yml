@@ -2,11 +2,11 @@ name: Auto PR Summary
 
 on:
   pull_request:
-    types: [opened] # PR이 처음 생성될 때 트리거
+    types: [opened]
 
 permissions:
   contents: read
-  pull-requests: write # PR 본문을 수정하기 위한 쓰기 권한
+  pull-requests: write
 
 jobs:
   summarize:

@@ -5,7 +5,8 @@ import urllib.request
 
 # GitHub Actions 환경변수 로드
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
+token_raw = os.getenv("GITHUB_TOKEN")
+GITHUB_TOKEN = token_raw.strip() if token_raw else None
 PR_NUMBER = os.getenv("PR_NUMBER")
 REPO = os.getenv("GITHUB_REPOSITORY")
 TARGET_BRANCH = os.getenv("TARGET_BRANCH")
