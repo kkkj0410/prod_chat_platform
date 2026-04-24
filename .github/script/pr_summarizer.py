@@ -66,9 +66,10 @@ def update_pr_body(body):
     print(f"🚀 PR #{PR_NUMBER} 본문 업데이트 중...")
     url = f"https://api.github.com/repos/{REPO}/pulls/{PR_NUMBER}"
     headers = {
-        "Authorization": f"token {GITHUB_TOKEN}",
+        "Authorization": f"Bearer {GITHUB_TOKEN}",
         "Accept": "application/vnd.github.v3+json",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "User-Agent": "github-actions-ai-summarizer"
     }
     data = json.dumps({"body": body}).encode('utf-8')
     req = urllib.request.Request(url, data=data, headers=headers, method='PATCH')
