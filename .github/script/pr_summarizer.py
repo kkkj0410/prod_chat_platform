@@ -63,6 +63,8 @@ if __name__ == "__main__":
             # 1. AI 답변을 먼저 생성합니다.
             ai_response = ask_ai(diff_text)
 
+            print(ai_response)
+
             # 2. 업데이트 하기 직전에 10초를 쉽니다. (순서 변경됨!)
             print("⏳ GitHub 서버 동기화를 위해 10초간 대기합니다...")
             time.sleep(10)
