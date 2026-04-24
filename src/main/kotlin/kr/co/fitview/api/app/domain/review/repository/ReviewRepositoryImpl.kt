@@ -194,8 +194,7 @@ class ReviewRepositoryImpl(
         )
 
         return queryFactory
-//            .select(completedDate)
-            .select(review.id)
+            .select(completedDate)
             .from(review)
             .join(review.workoutHistory, workoutHistory)
             .where(
@@ -204,7 +203,7 @@ class ReviewRepositoryImpl(
                 review.deletedAt.isNull,
                 workoutHistory.deletedAt.isNull
             )
-//            .groupBy(completedDate)
+            .groupBy(completedDate)
             .limit(limit.toLong())
             .fetch()
             .size
