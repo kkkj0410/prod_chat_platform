@@ -230,7 +230,7 @@ jobs:
               "text": "${{ job.status == 'success' && '✅ [Stage] 배포 및 헬스체크 성공' || '❌ [Stage] 배포 또는 헬스체크 실패' }}",
               "attachments": [
                 {
-                  "color": "${{ job.status == 'success' ? '#36a64f' : '#ff0000' }}",
+                  "color": "${{ job.status == 'success' && '#36a64f' || '#ff0000' }}",
                   "fields": [
                     {
                       "title": "상태",
