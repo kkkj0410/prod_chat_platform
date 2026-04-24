@@ -222,46 +222,50 @@ jobs:
                 exit 1
             fi
 
+      - name: Create Slack Payload
+        if: always()
+        env:
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
+        run: |
+          # 상태에 따른 값 설정
+          STATUS="성공"
+          COLOR="#36a64f"
+          TEXT="✅ [Stage] 배포 및 헬스체크 성공"
+
+          if [ "${{ job.status }}" != "success" ]; then
+            STATUS="실패 (롤백 수행됨)"
+            COLOR="#ff0000"
+            TEXT="❌ [Stage] 배포 또는 헬스체크 실패"
+          fi
+
+          # jq를 사용하여 안전하게 JSON 생성
+          jq -n \
+            --arg text "$TEXT" \
+            --arg color "$COLOR" \
+            --arg status "$STATUS" \
+            --arg actor "${{ github.actor }}" \
+            --arg msg "$COMMIT_MSG" \
+            --arg repo "${{ github.repository }}" \
+            --arg branch "${{ github.ref_name }}" \
+            '{
+              text: $text,
+              attachments: [{
+                color: $color,
+                fields: [
+                  {title: "상태", value: $status, short: true},
+                  {title: "실행자", value: $actor, short: true},
+                  {title: "커밋 메시지", value: $msg, short: false},
+                  {title: "레포지토리", value: $repo, short: true},
+                  {title: "브랜치", value: $branch, short: true}
+                ]
+              }]
+            }' > slack_payload.json
+
       - name: Slack Notification
         if: always()
         uses: slackapi/slack-github-action@v1.26.0
         with:
-          payload: |
-            ${{ toJson({
-              text: job.status == 'success' && '✅ [Stage] 배포 및 헬스체크 성공' || '❌ [Stage] 배포 또는 헬스체크 실패',
-              attachments: [
-                {
-                  color: job.status == 'success' && '#36a64f' || '#ff0000',
-                  fields: [
-                    {
-                      title: '상태',
-                      value: job.status == 'success' && '성공' || '실패 (롤백 수행됨)',
-                      short: true
-                    },
-                    {
-                      title: '실행자',
-                      value: github.actor,
-                      short: true
-                    },
-                    {
-                      title: '커밋 메시지',
-                      value: github.event.head_commit.message,
-                      short: false
-                    },
-                    {
-                      title: '레포지토리',
-                      value: github.repository,
-                      short: true
-                    },
-                    {
-                      title: '브랜치',
-                      value: github.ref_name,
-                      short: true
-                    }
-                  ]
-                }
-              ]
-            }) }}
+          payload-file-path: slack_payload.json
         env:
           SLACK_WEBHOOK_URL: ${{ env.SLACK_WEBHOOK_URL }}
           SLACK_WEBHOOK_TYPE: ${{ env.SLACK_WEBHOOK_TYPE }}
