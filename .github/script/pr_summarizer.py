@@ -11,6 +11,7 @@ GITHUB_TOKEN = token_raw.strip() if token_raw else None
 PR_NUMBER = os.getenv("PR_NUMBER")
 REPO = os.getenv("GITHUB_REPOSITORY")
 TARGET_BRANCH = os.getenv("TARGET_BRANCH")
+CURRENT_BRANCH = os.getenv("GITHUB_HEAD_REF")
 
 def ask_ai(diff):
     print("🤖 AI 분석 시작...")
@@ -38,12 +39,13 @@ def ask_ai(diff):
     - #130 fix: 회원가입 시 이메일 검증 오류 수정
     - #135 chore: Gradle 빌드 경량화
     
-    
     ## 체크리스트
     - [ ] 코드가 빌드되는지 확인함
     - [ ] 모든 테스트가 통과하는지 확인함
+    
     ## 반영 브랜치
-    {TARGET_BRANCH}
+    {CURRENT_BRANCH} -> {TARGET_BRANCH}
+    
     ## 작업사항
     `해당 이슈사항을 해결하기 위해 어떤 작업을 했는지 남겨주세요.`
     

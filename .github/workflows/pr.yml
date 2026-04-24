@@ -28,5 +28,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GIT_TOKEN_CHOEYOUNGJU }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           TARGET_BRANCH: ${{ github.event.pull_request.base.ref }}
+          CURRENT_BRANCH: ${{ github.event.pull_request.head.ref }}
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: python .github/script/pr_summarizer.py
