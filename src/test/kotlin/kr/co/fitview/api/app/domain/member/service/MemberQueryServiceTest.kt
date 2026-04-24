@@ -2068,14 +2068,14 @@ class MemberQueryServiceTest @Autowired constructor(
             password = "password",
             role = Role.USER,
             provider = OAuth2Provider.APPLE,
-            isSignup = true
+            signupAt = time.nowLocalDateTime
         )
         val member2 = Member(
             email = "email",
             password = "password",
             role = Role.USER,
             provider = null,
-            isSignup = false
+            signupAt = null
         )
         memberRepository.save(member1)
         memberRepository.save(member2)
@@ -2138,7 +2138,6 @@ class MemberQueryServiceTest @Autowired constructor(
             email = "email",
             password = "password",
             role = Role.USER,
-            isSignup = true,
             signupAt = time.nowLocalDateTime.minusDays(1)
         )
         memberRepository.save(member1)
@@ -2147,7 +2146,6 @@ class MemberQueryServiceTest @Autowired constructor(
             email = "email",
             password = "password",
             role = Role.USER,
-            isSignup = true,
             signupAt = time.nowLocalDateTime.minusDays(2)
         )
         memberRepository.save(member2)
@@ -2156,7 +2154,6 @@ class MemberQueryServiceTest @Autowired constructor(
             email = "email",
             password = "password",
             role = Role.USER,
-            isSignup = true,
             signupAt = time.nowLocalDateTime.minusDays(1)
         )
         memberRepository.save(member3)
@@ -2174,5 +2171,25 @@ class MemberQueryServiceTest @Autowired constructor(
             member3.id
         )
     }
+
+    @DisplayName("회원가입한 활성화 회원을 조회한다.")
+    @Test
+    fun findMemberFromIdAndSignup() {
+        // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER,
+            signupAt = time.nowLocalDateTime
+        )
+        memberRepository.save(member)
+
+        // when
+        val findMember = memberQueryService.findMemberFromIdAndSignup(member.id!!)
+
+        // then
+        assertThat(findMember!!.id!!).isEqualTo(member.id!!)
+    }
+
 
 }

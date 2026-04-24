@@ -1,0 +1,56 @@
+[[workout-reward-policy-get]]
+=== 운동 리워드 정책 조회 API
+
+==== HTTP Request
+include::{snippets}/workout-reward-policy-get/http-request.adoc[]
+include::{snippets}/workout-reward-policy-get/request-headers.adoc[]
+
+==== HTTP Response
+include::{snippets}/workout-reward-policy-get/http-response.adoc[]
+include::{snippets}/workout-reward-policy-get/response-fields.adoc[]
+
+[[workout-reward-stamp-me-get]]
+=== 운동 리워드 본인 스탬프 현황 조회 API
+
+- 2026.4.24 부터의 운동 기록에 대해서 스탬프 count를 나타냄
+
+==== HTTP Request
+include::{snippets}/workout-reward-stamp-me-get/http-request.adoc[]
+include::{snippets}/workout-reward-stamp-me-get/request-headers.adoc[]
+
+==== HTTP Response
+include::{snippets}/workout-reward-stamp-me-get/http-response.adoc[]
+include::{snippets}/workout-reward-stamp-me-get/response-fields.adoc[]
+
+
+[[workout-reward-coupon-active-get]]
+=== 운동 리워드 쿠폰 발급 가능 상태 조회 API
+
+
+==== HTTP Request
+include::{snippets}/workout-reward-coupon-active-get/http-request.adoc[]
+include::{snippets}/workout-reward-coupon-active-get/request-headers.adoc[]
+
+==== HTTP Response
+include::{snippets}/workout-reward-coupon-active-get/http-response.adoc[]
+include::{snippets}/workout-reward-coupon-active-get/response-fields.adoc[]
+
+
+[[workout-reward-claim-post]]
+=== 운동 리워드 쿠폰 발급 요청 API
+
+- 주요 에러
+
+- WORKOUT_REWARD_001 : 이미 해당 쿠폰을 발급받았거나 요청한 상태이므로 다시 요청할 수 없음
+
+- WORKOUT_REWARD_002 : 쿠폰을 발급받기 위한 조건(리워드 스탬프 개수 등)을 충족하지 못해 요청할 수 없음
+
+==== HTTP Request
+include::{snippets}/workout-reward-claim-post/http-request.adoc[]
+include::{snippets}/workout-reward-claim-post/request-headers.adoc[]
+
+==== HTTP Response
+include::{snippets}/workout-reward-claim-post/http-response.adoc[]
+include::{snippets}/workout-reward-claim-post/response-fields.adoc[]
+
+

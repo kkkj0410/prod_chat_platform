@@ -32,6 +32,7 @@ import kr.co.fitview.api.app.domain.workout.dto.response.LastWorkoutRequestMessa
 import kr.co.fitview.api.app.domain.workout.dto.response.enums.WorkoutRequestStatusForResponse
 import kr.co.fitview.api.app.domain.workout.service.WorkoutRequestService
 import kr.co.fitview.api.app.domain.workout_history.controller.WorkoutHistoryController
+import kr.co.fitview.api.app.domain.workout_history.dto.response.WorkoutHistoryRecentResponse
 import kr.co.fitview.api.app.domain.workout_history.dto.response.WorkoutHistoryReviewStatusResponse
 import kr.co.fitview.api.app.domain.workout_history.dto.response.enums.WorkoutHistoryReviewStatus
 import kr.co.fitview.api.app.domain.workout_history.service.WorkoutHistoryQueryService
@@ -43,6 +44,7 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.given
 import org.springframework.data.domain.*
 import org.springframework.http.MediaType
@@ -119,6 +121,73 @@ class WorkoutHistoryControllerDocsTest : RestDocsSupport() {
                         fieldWithPath("data.status").type(JsonFieldType.STRING)
                             .description("리뷰 상태" + WorkoutHistoryReviewStatus.allDescription()),
 
+                    )
+                )
+            )
+    }
+
+
+    @DisplayName("최근 운동 기록 리스트 조회 API")
+    @Test
+    fun workoutHistoryRecentList() {
+        // given
+        given(securityUtil.getMemberId()).willReturn(1L)
+
+        val responseList = listOf(
+            WorkoutHistoryRecentResponse(
+                workoutHistoryId = 2L,
+                nickname = "스폰지밥",
+                completedAt = LocalDateTime.of(2024, 1, 3, 10, 0, 0),
+                isReviewed = true
+            ),
+            WorkoutHistoryRecentResponse(
+                workoutHistoryId = 1L,
+                nickname = "뚱이",
+                completedAt = LocalDateTime.of(2024, 1, 2, 9, 30, 0),
+                isReviewed = false
+            )
+        )
+
+        given(workoutHistoryQueryService.findWorkoutHistoryRecentList(any(), anyOrNull(), any()))
+            .willReturn(responseList)
+
+        // when & then
+        mockMvc.perform(
+            get("/api/v1/workout-histories/recent")
+                .header("Authorization", "Bearer jwt-token")
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andDo(
+                document(
+                    "workout-history-recent-list-get",
+                    preprocessRequest(prettyPrint()),
+                    preprocessResponse(prettyPrint()),
+
+                    requestHeaders(
+                        RestDocsHeaders.authorizationHeader(Role.USER)
+                    ),
+
+                    responseFields(
+                        fieldWithPath("status").type(JsonFieldType.NUMBER)
+                            .description("상태"),
+                        fieldWithPath("code").type(JsonFieldType.STRING)
+                            .description("코드"),
+                        fieldWithPath("message").type(JsonFieldType.STRING)
+                            .description("에러 메시지"),
+                        fieldWithPath("data").type(JsonFieldType.ARRAY)
+                            .description("응답 데이터 (최근 운동 기록 리스트) - 기록이 없으면 빈 배열([]) 반환"),
+
+                        // 배열 내부 객체 필드 명세
+                        fieldWithPath("data[].workoutHistoryId").type(JsonFieldType.NUMBER)
+                            .description("운동 기록 ID"),
+                        fieldWithPath("data[].nickname").type(JsonFieldType.STRING)
+                            .description("상대방 닉네임"),
+                        fieldWithPath("data[].completedAt").type(JsonFieldType.STRING)
+                            .description("운동 완료 일시"),
+                        fieldWithPath("data[].isReviewed").type(JsonFieldType.BOOLEAN)
+                            .description("해당 운동 기록에 대한 후기 작성 여부 (true면 작성 완료)")
                     )
                 )
             )

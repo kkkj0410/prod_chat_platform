@@ -5,6 +5,7 @@ import kr.co.fitview.api.app.docs.RestDocsPagination
 import kr.co.fitview.api.app.docs.RestDocsSupport
 import kr.co.fitview.api.app.domain.address.dto.response.AddressResponse
 import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
+import kr.co.fitview.api.app.domain.address.service.AddressQueryService
 import kr.co.fitview.api.app.domain.address.service.AddressService
 import kr.co.fitview.api.app.domain.app_feedback.service.AppFeedbackQueryService
 import kr.co.fitview.api.app.domain.app_feedback.service.RecommendationAppFeedbackDismissLogService
@@ -69,6 +70,7 @@ class MemberControllerDocsTest : RestDocsSupport() {
     private val memberWithdrawReasonService: MemberWithdrawReasonService = mock(MemberWithdrawReasonService::class.java)
     private val memberWithdrawReasonQueryService: MemberWithdrawReasonQueryService = mock(MemberWithdrawReasonQueryService::class.java)
     private val addressService: AddressService = mock(AddressService::class.java)
+    private val addressQueryService: AddressQueryService = mock(AddressQueryService::class.java)
     private val appFeedbackQueryService: AppFeedbackQueryService = mock(AppFeedbackQueryService::class.java)
     private val reviewTagCountQueryService: ReviewTagCountQueryService = mock(ReviewTagCountQueryService::class.java)
     private val reviewQueryService: ReviewQueryService = mock(ReviewQueryService::class.java)
@@ -81,7 +83,7 @@ class MemberControllerDocsTest : RestDocsSupport() {
             memberQueryService = memberQueryService,
             memberWithdrawReasonService = memberWithdrawReasonService,
             memberWithdrawReasonQueryService = memberWithdrawReasonQueryService,
-            addressService = addressService,
+            addressQueryService = addressQueryService,
             reviewTagCountQueryService = reviewTagCountQueryService,
             reviewQueryService = reviewQueryService,
             appFeedbackQueryService = appFeedbackQueryService,
@@ -315,7 +317,7 @@ class MemberControllerDocsTest : RestDocsSupport() {
     @Test
     fun memberAddressDetails() {
 
-        given(addressService.findAddressFromMemberId(any()))
+        given(addressQueryService.findAddressFromMemberId(any()))
             .willReturn(
                 AddressResponse(
                     addressId = 100L,
@@ -407,7 +409,8 @@ class MemberControllerDocsTest : RestDocsSupport() {
             .willReturn(
                 MemberRecommendationAppFeedback(
                     positionIndex = 2,
-                    imageUrl = "https://static-dev.fitview.co.kr/app-feedback/card/9a6bd005-d2cc-432b-81ab-d45ad1a5b86c"
+                    imageUrl = "https://static-dev.fitview.co.kr/app-feedback/card/9a6bd005-d2cc-432b-81ab-d45ad1a5b86c",
+                    svgImageUrl = "https://static-dev.fitview.co.kr/app-feedback/card/c2725d87-e51b-423e-bb0c-c0c01308865d"
                 )
             )
 
@@ -479,7 +482,10 @@ class MemberControllerDocsTest : RestDocsSupport() {
                             .description("해당 앱 피드백 설문조사 카드의 index 위치"),
                         fieldWithPath("meta.appFeedback.imageUrl")
                             .type(JsonFieldType.STRING)
-                            .description("앱 피드백 설문조사 카드 이미지 url"),
+                            .description("앱 피드백 설문조사 카드 이미지 url (PNG 파일)"),
+                        fieldWithPath("meta.appFeedback.svgImageUrl")
+                            .type(JsonFieldType.STRING)
+                            .description("앱 피드백 설문조사 카드 이미지 url (SVG 파일)"),
                         )
                 )
             )

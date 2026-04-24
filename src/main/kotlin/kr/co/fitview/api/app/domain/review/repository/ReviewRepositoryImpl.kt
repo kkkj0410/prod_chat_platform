@@ -12,13 +12,9 @@ import kr.co.fitview.api.app.domain.member.entity.QMember.member
 import kr.co.fitview.api.app.domain.review.condition.AdminReviewCondition
 import kr.co.fitview.api.app.domain.review.dto.response.AdminReviewResponse
 import kr.co.fitview.api.app.domain.review.dto.response.ReviewResponse
-import kr.co.fitview.api.app.domain.review.dto.response.ReviewTagCountResponse
 import kr.co.fitview.api.app.domain.review.entity.QReview.review
-import kr.co.fitview.api.app.domain.review.entity.QReviewTag.reviewTag
-import kr.co.fitview.api.app.domain.review.entity.QReviewTagCount.reviewTagCount
 import kr.co.fitview.api.app.domain.review.entity.QReviewTagRelation.reviewTagRelation
 import kr.co.fitview.api.app.domain.review.entity.Review
-import kr.co.fitview.api.app.domain.review.entity.enums.ReviewType
 import kr.co.fitview.api.app.domain.workout_history.entity.QWorkoutHistory.workoutHistory
 import kr.co.fitview.api.app.domain.workout_partner.entity.QWorkoutPartner.workoutPartner
 import org.springframework.data.domain.PageRequest
@@ -26,7 +22,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Slice
 import org.springframework.data.domain.SliceImpl
 import java.time.Instant
-import java.time.LocalDateTime
+import java.time.LocalDate
 import java.time.ZoneId
 
 class ReviewRepositoryImpl(
@@ -186,5 +182,31 @@ class ReviewRepositoryImpl(
         }
 
         return SliceImpl(content, Pageable.unpaged(), hasNext)
+    }
+
+
+    override fun countDistinctDailyReviewBy(memberId : Long, startDate: LocalDate, limit: Int): Long {
+
+        val completedDate = Expressions.dateTemplate(
+            LocalDate::class.java,
+            "DATE({0})",
+            workoutHistory.completedAt
+        )
+
+        return queryFactory
+            .select(completedDate)
+            .from(review)
+            .join(review.workoutHistory, workoutHistory)
+            .where(
+                review.fromMember.id.eq(memberId),
+                review.postedAt.goe(startDate.atStartOfDay()),
+                review.deletedAt.isNull,
+                workoutHistory.deletedAt.isNull
+            )
+            .groupBy(completedDate)
+            .limit(limit.toLong())
+            .fetch()
+            .size
+            .toLong()
     }
 }

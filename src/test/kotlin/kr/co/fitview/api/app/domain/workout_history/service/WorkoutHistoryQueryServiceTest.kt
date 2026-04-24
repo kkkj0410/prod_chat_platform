@@ -1,7 +1,5 @@
 package kr.co.fitview.api.app.domain.workout_history.service
 
-import jakarta.persistence.*
-import jakarta.validation.constraints.NotNull
 import kr.co.fitview.api.app.IntegrationTestSupport
 import kr.co.fitview.api.app.domain.chat.entity.ChatMessage
 import kr.co.fitview.api.app.domain.chat.entity.ChatNoticeMessage
@@ -13,12 +11,9 @@ import kr.co.fitview.api.app.domain.chat.repository.ChatNoticeMessageRepository
 import kr.co.fitview.api.app.domain.chat.repository.ChatRoomRepository
 import kr.co.fitview.api.app.domain.member.entity.Member
 import kr.co.fitview.api.app.domain.member.repository.MemberRepository
-import kr.co.fitview.api.app.domain.review.entity.QReview.review
+import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
 import kr.co.fitview.api.app.domain.review.entity.Review
-import kr.co.fitview.api.app.domain.review.entity.ReviewReminderLog
-import kr.co.fitview.api.app.domain.review.entity.enums.ReviewReminderLogType
 import kr.co.fitview.api.app.domain.review.entity.enums.ReviewType
-import kr.co.fitview.api.app.domain.review.repository.ReviewReminderLogRepository
 import kr.co.fitview.api.app.domain.review.repository.ReviewRepository
 import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequest
 import kr.co.fitview.api.app.domain.workout.repository.WorkoutRequestRepository
@@ -27,13 +22,12 @@ import kr.co.fitview.api.app.domain.workout_history.entity.WorkoutHistory
 import kr.co.fitview.api.app.domain.workout_history.repository.WorkoutHistoryRepository
 import kr.co.fitview.api.app.global.entity.Role
 import kr.co.fitview.api.app.global.time.Time
+import kr.co.fitview.api.app.global.util.TestDataFactory
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.tuple
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import java.math.BigDecimal
-import java.time.LocalDateTime
 
 class WorkoutHistoryQueryServiceTest @Autowired constructor(
     val workoutHistoryRepository: WorkoutHistoryRepository,
@@ -44,6 +38,7 @@ class WorkoutHistoryQueryServiceTest @Autowired constructor(
     val workoutRequestRepository: WorkoutRequestRepository,
     val reviewRepository : ReviewRepository,
     val chatNoticeMessageRepository : ChatNoticeMessageRepository,
+    val oAuth2Service : OAuth2Service,
     val time : Time
 ) : IntegrationTestSupport(){
 
@@ -473,4 +468,94 @@ class WorkoutHistoryQueryServiceTest @Autowired constructor(
 
     }
 
+
+    @DisplayName("운동 이력 최근 이력을 조회한다.")
+    @Test
+    fun findWorkoutHistoryRecentList() {
+        // given
+        val me = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        val other = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(me)
+        memberRepository.save(other)
+
+        val oAuth2Request1 = TestDataFactory.oAuth2SignupRequest(nickname = "me")
+        val oAuth2Request2 = TestDataFactory.oAuth2SignupRequest(nickname = "other")
+        oAuth2Service.signup(memberId = me.id!!, request = oAuth2Request1)
+        oAuth2Service.signup(memberId = other.id!!, request = oAuth2Request2)
+
+        val chatRoom = ChatRoom(ChatRoomType.PRIVATE)
+        chatRoomRepository.save(chatRoom)
+
+        val histories = (1..6).map { i ->
+            val chatMessage = ChatMessage(
+                member = me,
+                chatRoom = chatRoom,
+                type = ChatMessageType.WORKOUT_REQUEST,
+                content = "content $i",
+                sentAt = time.nowLocalDateTime
+            ).also { chatMessageRepository.save(it) }
+
+            val workoutRequest = WorkoutRequest.of(
+                chatMessage = chatMessage,
+                fromMember = me,
+                toMember = other,
+                location = "location $i",
+                scheduledAt = time.nowLocalDateTime.plusDays(1),
+                requestedAt = time.nowLocalDateTime
+            ).also { workoutRequestRepository.save(it) }
+
+            WorkoutHistory(
+                chatRoom = chatRoom,
+                workoutRequest = workoutRequest,
+                memberOne = me,
+                memberTwo = other,
+                completedAt = time.nowLocalDateTime.minusHours((7 - i).toLong())
+            ).also { workoutHistoryRepository.save(it) }
+        }
+
+        val review = Review(
+            fromMember = me,
+            toMember = other,
+            workoutHistory = histories[5],
+            isPrivate = false,
+            type = ReviewType.GOOD,
+            score = 2.0,
+            content = "content",
+            postedAt = time.nowLocalDateTime
+        )
+        reviewRepository.save(review)
+
+        // when
+        val response = workoutHistoryQueryService.findWorkoutHistoryRecentList(
+            memberId = me.id!!,
+            startDate = time.nowLocalDate.minusYears(1),
+            limit = 5
+        )
+
+        // then
+        assertThat(response).hasSize(5)
+
+        assertThat(response)
+            .extracting(
+                "workoutHistoryId",
+                "nickname",
+                "completedAt",
+                "isReviewed"
+            )
+            .containsExactly(
+                tuple(histories[5].id!!, "other", histories[5].completedAt, true),
+                tuple(histories[4].id!!, "other", histories[4].completedAt, false),
+                tuple(histories[3].id!!, "other", histories[3].completedAt, false),
+                tuple(histories[2].id!!, "other", histories[2].completedAt, false),
+                tuple(histories[1].id!!, "other", histories[1].completedAt, false)
+            )
+    }
 }

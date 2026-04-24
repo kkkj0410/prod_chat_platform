@@ -30,7 +30,7 @@ class AuthController(
         @Valid
         @RequestBody
         request: MemberCreateRequest
-    ): ResponseEntity<ApiResponse<*>> {
+    ): ResponseEntity<ApiResponse<String>> {
         authService.signup(request.toServiceRequest())
         return ResponseEntity.ok(ApiResponse.success("ok"))
     }
@@ -43,7 +43,7 @@ class AuthController(
         request: AuthSignupRequestTest,
 
         @RequestParam(required = false) minHeight: Int?
-    ): ResponseEntity<ApiResponse<*>> {
+    ): ResponseEntity<ApiResponse<String>> {
         testAuthService.signup(request)
         return ResponseEntity.ok(ApiResponse.success("ok"))
     }

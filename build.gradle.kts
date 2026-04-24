@@ -45,12 +45,8 @@ dependencies {
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation("org.springframework.boot:spring-boot-starter-validation")
 
-	compileOnly("org.projectlombok:lombok")
-
 	runtimeOnly ("com.h2database:h2")
 	runtimeOnly("com.mysql:mysql-connector-j")
-
-	annotationProcessor("org.projectlombok:lombok")
 
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
@@ -109,6 +105,7 @@ dependencies {
 	//프로메테우스
 	implementation ("org.springframework.boot:spring-boot-starter-actuator")
 	implementation ("io.micrometer:micrometer-registry-prometheus")
+
 }
 
 kotlin {

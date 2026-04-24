@@ -37,5 +37,13 @@ class ReviewQueryService(
         return reviewRepository.countByPostedAtBetween(startOfDay, endOfDay).toInt()
     }
 
+    fun countDistinctDailyReviewFrom(
+        memberId : Long,
+        startDate: LocalDate,
+        limit : Int
+    ) : Long{
+        return reviewRepository.countDistinctDailyReviewBy(memberId, startDate, limit)
+    }
+
 
 }

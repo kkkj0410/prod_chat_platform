@@ -1,0 +1,19 @@
+[[WORKOUT_REWARD_001]]
+=== WORKOUT_REWARD_001
+
+==== HTTP Request
+include::{snippets}/WORKOUT_REWARD_001/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/WORKOUT_REWARD_001/http-response.adoc[]
+include::{snippets}/WORKOUT_REWARD_001/response-fields.adoc[]
+
+[[WORKOUT_REQUEST_002]]
+=== WORKOUT_REQUEST_002
+
+==== HTTP Request
+include::{snippets}/WORKOUT_REWARD_001/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/WORKOUT_REWARD_001/http-response.adoc[]
+include::{snippets}/WORKOUT_REWARD_001/response-fields.adoc[]

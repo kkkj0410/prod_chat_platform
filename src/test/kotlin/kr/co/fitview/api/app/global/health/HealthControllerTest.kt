@@ -11,7 +11,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 class HealthControllerTest  : ControllerTestSupport() {
 
 
-    @DisplayName("LB 사용을 위한 헬스체크 API")
+    @DisplayName("헬스체크 API")
     @Test
     fun healthCheck() {
         // given

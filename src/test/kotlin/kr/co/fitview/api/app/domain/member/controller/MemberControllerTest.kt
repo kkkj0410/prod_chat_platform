@@ -1,7 +1,6 @@
 package kr.co.fitview.api.app.domain.member.controller
 
 import kr.co.fitview.api.app.ControllerTestSupport
-import kr.co.fitview.api.app.docs.RestDocsHeaders
 import kr.co.fitview.api.app.domain.address.dto.response.AddressResponse
 import kr.co.fitview.api.app.domain.address.entity.enums.AddressSiDo
 import kr.co.fitview.api.app.domain.member.dto.request.Age
@@ -14,57 +13,36 @@ import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutExperience
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutGoal
 import kr.co.fitview.api.app.domain.member.entity.enums.MemberWorkoutStyle
 import kr.co.fitview.api.app.domain.member.entity.enums.WorkoutTimeName
-import kr.co.fitview.api.app.domain.oauth2.dto.request.OAuth2LoginRequest
 import kr.co.fitview.api.app.domain.review.dto.response.ReviewResponse
 import kr.co.fitview.api.app.domain.review.dto.response.ReviewTagCountResponse
 import kr.co.fitview.api.app.global.entity.Gender
-import kr.co.fitview.api.app.global.entity.OAuth2Provider
-import kr.co.fitview.api.app.global.entity.Role
-import kr.co.fitview.api.app.global.exception.error.jwt.JwtErrorCode
 import kr.co.fitview.api.app.global.exception.error.request.RequestErrorCode
-import kr.co.fitview.api.app.global.security.UserPrincipal
-import kr.co.fitview.api.app.global.util.SecurityUtil
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.given
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.SliceImpl
 import org.springframework.http.MediaType
-import org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders
-import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document
-import org.springframework.restdocs.operation.preprocess.Preprocessors.*
 import org.springframework.restdocs.payload.JsonFieldType
 import org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath
 import org.springframework.restdocs.payload.PayloadDocumentation.responseFields
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
-import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
-import org.springframework.test.web.servlet.result.MockMvcResultHandlers
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
-import java.time.LocalDate
 import java.time.LocalDateTime
 
 
 class MemberControllerTest : ControllerTestSupport() {
-
-//    private fun setMemberFromSecurity() {
-//        val userPrincipal = UserPrincipal(1L, Role.USER)
-//        val newAuthentication = UsernamePasswordAuthenticationToken(userPrincipal, null, userPrincipal.authorities)
-//        SecurityContextHolder.getContext().authentication = newAuthentication
-//    }
 
 
     @DisplayName("인증된 jwt 토큰으로 회원 정보를 조회한다.")
     @Test
     fun memberMe() {
         // given
-//        setMemberFromSecurity()
 
         // when // then
         mockMvc.perform(
@@ -100,7 +78,7 @@ class MemberControllerTest : ControllerTestSupport() {
     @DisplayName("회원 id로 해당 회원의 주소를 조회한다.")
     @Test
     fun memberAddressDetails() {
-        given(addressService.findAddressFromMemberId(any()))
+        given(addressQueryService.findAddressFromMemberId(any()))
             .willReturn(
                 AddressResponse(
                     addressId = 1L,
@@ -268,7 +246,8 @@ class MemberControllerTest : ControllerTestSupport() {
             .willReturn(
                 MemberRecommendationAppFeedback(
                     positionIndex = 2,
-                    imageUrl = "imageUrl"
+                    imageUrl = "imageUrl",
+                    svgImageUrl = "svgImageUrl"
                 )
             )
 
@@ -304,6 +283,8 @@ class MemberControllerTest : ControllerTestSupport() {
 
             .andExpect(jsonPath("$.meta.appFeedback.positionIndex").value(2))
             .andExpect(jsonPath("$.meta.appFeedback.imageUrl").value("imageUrl"))
+            .andExpect(jsonPath("$.meta.appFeedback.svgImageUrl").value("svgImageUrl"))
+
     }
 
     @DisplayName("우리 동네 핏버디(주소 인근 회원 조회)를 조회한다")

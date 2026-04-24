@@ -15,6 +15,7 @@ import kr.co.fitview.api.app.domain.workout_partner.dto.request.WorkoutPartnerUp
 import kr.co.fitview.api.app.domain.workout_partner.dto.request.enums.WorkoutPartnerRequestUpdateStatus
 import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartner
 import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartnerRequest
+import kr.co.fitview.api.app.domain.workout_partner.entity.enums.WorkoutPartnerRequestContent
 import kr.co.fitview.api.app.domain.workout_partner.entity.enums.WorkoutPartnerRequestStatus
 import kr.co.fitview.api.app.domain.workout_partner.repository.WorkoutPartnerRepository
 import kr.co.fitview.api.app.domain.workout_partner.repository.WorkoutPartnerRequestRepository
@@ -23,6 +24,7 @@ import kr.co.fitview.api.app.global.exception.GlobalException
 import kr.co.fitview.api.app.global.exception.error.global.GlobalErrorCode
 import kr.co.fitview.api.app.global.exception.error.member.MemberErrorCode
 import kr.co.fitview.api.app.global.exception.error.workout_partner.WorkoutPartnerErrorCode
+import kr.co.fitview.api.app.global.random.RandomCustom
 import kr.co.fitview.api.app.global.time.Time
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
@@ -32,17 +34,64 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 @Transactional(readOnly = true)
 class WorkoutPartnerRequestService(
-    private val workoutPartnerRepository: WorkoutPartnerRepository,
+    private val workoutPartnerService : WorkoutPartnerService,
+    private val workoutPartnerQueryService : WorkoutPartnerQueryService,
     private val workoutPartnerRequestRepository : WorkoutPartnerRequestRepository,
     private val memberQueryService : MemberQueryService,
     private val publisher: ApplicationEventPublisher,
-    private val time : Time
+    private val time : Time,
+    private val randomCustom : RandomCustom
+
 ) {
 
+    @Transactional
+    fun addWorkoutPartnerDirectly(
+        fromMemberId : Long,
+        toMemberId : Long,
+        seed: Long = System.currentTimeMillis()
+    ) : WorkoutPartner{
+
+        validateNotSelfWorkoutPartnerRequest(fromMemberId, toMemberId)
+
+        validateAlreadyWorkoutPartner(fromMemberId, toMemberId)
+
+        val fromMember = memberQueryService.findMemberFromId(fromMemberId)
+            ?: throw GlobalException(MemberErrorCode.MEMBER_NOT_FOUND)
+
+        val toMember = memberQueryService.findMemberReferenceFrom(toMemberId)
+
+        val workoutPartnerRequest = WorkoutPartnerRequest.of(
+            fromMember = fromMember,
+            toMember = toMember,
+            now = time.nowLocalDateTime,
+            content = getRandomPartnerContentByShuffle(
+                seed = seed
+            )
+        )
+        workoutPartnerRequest.accept()
+
+        val savedWorkoutPartnerRequest =  workoutPartnerRequestRepository.save(workoutPartnerRequest)
+
+        val savedWorkoutPartner = workoutPartnerService.addWorkoutPartner(savedWorkoutPartnerRequest)
+
+        sendStompAcceptWorkoutPartnerRequest(savedWorkoutPartnerRequest)
+
+        sendFcmNotificationAcceptWorkoutPartnerRequest(savedWorkoutPartnerRequest.getFromMemberId(), savedWorkoutPartnerRequest.getToMemberId())
+
+        sendNotificationAcceptWorkoutPartnerRequest(savedWorkoutPartnerRequest, savedWorkoutPartner.id!!)
+
+        return savedWorkoutPartner
+    }
+
+    fun getRandomPartnerContentByShuffle(seed: Long): WorkoutPartnerRequestContent {
+        val entries = WorkoutPartnerRequestContent.entries
+        return randomCustom.shuffled(seed, entries).first()
+    }
 
     @Transactional
     fun addWorkoutPartnerRequest(memberId : Long, request: WorkoutPartnerCreateServiceRequest): WorkoutPartnerRequest {
-        validateNotSelfWorkoutPartnerRequest(memberId, request)
+
+        validateNotSelfWorkoutPartnerRequest(memberId, request.memberId)
 
         validateAlreadyWorkoutPartner(memberId, request.memberId)
 
@@ -74,9 +123,9 @@ class WorkoutPartnerRequestService(
 
     private fun validateNotSelfWorkoutPartnerRequest(
         memberId: Long,
-        request: WorkoutPartnerCreateServiceRequest
+        targetMemberId : Long,
     ) {
-        if (memberId == request.memberId) {
+        if (memberId == targetMemberId) {
             throw GlobalException(WorkoutPartnerErrorCode.SELF_PARTNER_REQUEST_NOT_ALLOWED)
         }
     }
@@ -98,7 +147,7 @@ class WorkoutPartnerRequestService(
 
             findWorkoutPartnerRequest.accept()
 
-            val savedWorkoutPartner = addWorkoutPartner(findWorkoutPartnerRequest)
+            val savedWorkoutPartner = workoutPartnerService.addWorkoutPartner(findWorkoutPartnerRequest)
 
             sendStompAcceptWorkoutPartnerRequest(findWorkoutPartnerRequest)
 
@@ -130,13 +179,6 @@ class WorkoutPartnerRequestService(
             ?: throw GlobalException(WorkoutPartnerErrorCode.PARTNER_WITHDRAWN)
     }
 
-    @Transactional
-    fun addWorkoutPartner(workoutPartnerRequest: WorkoutPartnerRequest) : WorkoutPartner{
-        val workoutPartner =
-            WorkoutPartner.of(workoutPartnerRequest.fromMember!!, workoutPartnerRequest.toMember!!)
-
-        return workoutPartnerRepository.save(workoutPartner)
-    }
 
     @Transactional
     fun modifyAllWorkoutPartnerRequestExpire() {
@@ -344,8 +386,8 @@ class WorkoutPartnerRequestService(
         memberOneId: Long,
         memberTwoId: Long
     ) {
-        workoutPartnerRepository
-            .findByOrderedMemberOneIdAndMemberTwoIdAndDeletedAtIsNull(memberOneId, memberTwoId)
+        workoutPartnerQueryService
+            .findWorkoutPartnerFrom(memberOneId, memberTwoId)
             ?.let { throw GlobalException(WorkoutPartnerErrorCode.ALREADY_PARTNER_ACCEPTED) }
     }
 

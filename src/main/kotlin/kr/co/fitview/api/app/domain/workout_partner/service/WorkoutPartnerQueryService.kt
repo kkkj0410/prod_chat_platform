@@ -3,9 +3,12 @@ package kr.co.fitview.api.app.domain.workout_partner.service
 import kr.co.fitview.api.app.domain.chat.service.ChatRoomQueryService
 import kr.co.fitview.api.app.domain.member.dto.response.WorkoutPartnerStatusResponse
 import kr.co.fitview.api.app.domain.member.dto.response.enums.ProfileWorkoutPartnerStatus
+import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartner
 import kr.co.fitview.api.app.domain.workout_partner.entity.enums.WorkoutPartnerRequestStatus
 import kr.co.fitview.api.app.domain.workout_partner.repository.WorkoutPartnerRepository
 import kr.co.fitview.api.app.domain.workout_partner.repository.findByOrderedMemberOneIdAndMemberTwoIdAndDeletedAtIsNull
+import kr.co.fitview.api.app.global.exception.GlobalException
+import kr.co.fitview.api.app.global.exception.error.workout_partner.WorkoutPartnerErrorCode
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
@@ -50,6 +53,14 @@ class WorkoutPartnerQueryService(
         val endOfDay = targetDate.atTime(LocalTime.MAX)
 
         return workoutPartnerRepository.countByCreatedAtBetweenAndDeletedAtIsNull(startOfDay, endOfDay).toInt()
+    }
+
+    fun findWorkoutPartnerFrom(
+        memberOneId: Long,
+        memberTwoId: Long
+    ) : WorkoutPartner? {
+        return workoutPartnerRepository
+            .findByOrderedMemberOneIdAndMemberTwoIdAndDeletedAtIsNull(memberOneId, memberTwoId)
     }
 
     private fun getPartnerStatusResponse(fromMemberId: Long, toMemberId: Long): WorkoutPartnerStatusResponse? {

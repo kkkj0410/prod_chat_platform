@@ -12,6 +12,7 @@ import kr.co.fitview.api.app.global.exception.error.auth.AuthErrorCode
 import kr.co.fitview.api.app.global.exception.error.chat.ChatErrorCode
 import kr.co.fitview.api.app.global.exception.error.global.GlobalErrorCode
 import kr.co.fitview.api.app.global.exception.error.image.ImageErrorCode
+import kr.co.fitview.api.app.global.exception.error.invitation.InvitationErrorCode
 import kr.co.fitview.api.app.global.exception.error.jwt.JwtErrorCode
 import kr.co.fitview.api.app.global.exception.error.member.MemberErrorCode
 import kr.co.fitview.api.app.global.exception.error.network.NetworkErrorCode
@@ -23,6 +24,7 @@ import kr.co.fitview.api.app.global.exception.error.security.SecurityErrorCode
 import kr.co.fitview.api.app.global.exception.error.term.TermErrorCode
 import kr.co.fitview.api.app.global.exception.error.workout_partner.WorkoutPartnerErrorCode
 import kr.co.fitview.api.app.global.exception.error.workout_request.WorkoutRequestErrorCode
+import kr.co.fitview.api.app.global.exception.workout_reward.WorkoutRewardErrorCode
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
@@ -111,7 +113,9 @@ class GlobalExceptionHandlerDocsTest  : RestDocsSupport() {
                     WorkoutRequestErrorCode.entries +
                     ReviewErrorCode.entries +
                     ReportErrorCode.entries +
-                    AppFeedbackErrorCode.entries
+                    AppFeedbackErrorCode.entries +
+                    InvitationErrorCode.entries +
+                    WorkoutRewardErrorCode.entries
         }
     }
 

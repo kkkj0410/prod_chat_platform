@@ -18,7 +18,7 @@ class GlobalExceptionController(
 
     @GetMapping("")
     fun exception(
-    ): ResponseEntity<ApiResponse<*>> {
+    ): ResponseEntity<ApiResponse<String>> {
         globalExceptionService.throwError()
 
         return ResponseEntity.ok()

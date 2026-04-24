@@ -23,30 +23,6 @@ class OAuth2Controller(
     val securityUtil: SecurityUtil
 ) {
 
-//
-//    @PostMapping("/apple")
-//    fun appleLogin(
-//        @Valid
-//        @RequestBody
-//        request : AppleLoginRequest
-//    ) : ResponseEntity<ApiResponse<OAuth2LoginResponse>> {
-//        val response = appleService.loginAppleWithSignup(request.toServiceRequest())
-//
-//        return ResponseEntity.ok(ApiResponse.success(response))
-//    }
-//
-//    @PostMapping("/kakao")
-//    fun kakaoLogin(
-//        @Valid
-//        @RequestBody
-//        request : KakaoLoginRequest
-//    ) : ResponseEntity<ApiResponse<OAuth2LoginResponse>> {
-//        val response = kakaoService.loginKakaoWithSignup(request.toServiceRequest())
-//
-//        return ResponseEntity.ok(ApiResponse.success(response))
-//    }
-
-
     @PostMapping("/login")
     fun oAuth2Login(
         @Valid
@@ -64,7 +40,7 @@ class OAuth2Controller(
         @Valid
         @RequestBody
         request : OAuth2SignupRequest
-    ) : ResponseEntity<ApiResponse<*>> {
+    ) : ResponseEntity<ApiResponse<String>> {
 
         oAuth2Service.signup(request.toServiceRequest(), securityUtil.getMemberId())
 

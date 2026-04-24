@@ -101,7 +101,7 @@ class ChatController(
         @PathVariable
         chatRoomId : Long,
 
-    ) : ResponseEntity<ApiResponse<*>> {
+    ) : ResponseEntity<ApiResponse<String>> {
 
         messageReadStatusService.modifyMessageReadStatusFrom(securityUtil.getMemberId(), chatRoomId)
 

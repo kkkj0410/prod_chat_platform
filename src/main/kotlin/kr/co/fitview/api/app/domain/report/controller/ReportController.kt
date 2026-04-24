@@ -12,6 +12,7 @@ import kr.co.fitview.api.app.domain.report.dto.request.ReportMemberCreateRequest
 import kr.co.fitview.api.app.domain.report.dto.response.ReportReasonResponse
 import kr.co.fitview.api.app.domain.report.entity.enums.ReportTargetType
 import kr.co.fitview.api.app.domain.report.service.ChatRoomReportService
+import kr.co.fitview.api.app.domain.report.service.MemberReportService
 import kr.co.fitview.api.app.domain.report.service.ReportReasonQueryService
 import kr.co.fitview.api.app.global.dto.ApiResponse
 import kr.co.fitview.api.app.global.util.SecurityUtil
@@ -22,9 +23,10 @@ import org.springframework.web.bind.annotation.*
 @RestController
 @RequestMapping("/api/v1/reports")
 class ReportController(
-    val reportReasonQueryService: ReportReasonQueryService,
-    val chatRoomReportService : ChatRoomReportService,
-    val securityUtil : SecurityUtil,
+    private val reportReasonQueryService: ReportReasonQueryService,
+    private val chatRoomReportService : ChatRoomReportService,
+    private val memberReportService : MemberReportService,
+    private val securityUtil : SecurityUtil,
 ) {
 
 
@@ -33,7 +35,7 @@ class ReportController(
         @Valid
         @RequestBody
         request : ReportChatRoomCreateRequest
-    ) : ResponseEntity<ApiResponse<*>> {
+    ) : ResponseEntity<ApiResponse<String>> {
 
         chatRoomReportService.addChatRoomReport(securityUtil.getMemberId(), request.toServiceRequest())
 
@@ -46,9 +48,12 @@ class ReportController(
         @Valid
         @RequestBody
         request : ReportMemberCreateRequest
-    ) : ResponseEntity<ApiResponse<*>> {
+    ) : ResponseEntity<ApiResponse<String>> {
 
-
+        memberReportService.addMemberReport(
+            memberId = securityUtil.getMemberId(),
+            request = request.toServiceRequest()
+        )
 
         return ResponseEntity.ok(ApiResponse.success("ok"))
     }

@@ -57,10 +57,15 @@ class BannerControllerDocsTest : RestDocsSupport() {
         given(bannerQueryService.findActiveBanners(any()))
             .willReturn(
                 listOf(
-                    BannerActiveResponse(
+                    BannerActiveResponse.AppFeedback(
                         bannerId = 1L,
                         type = BannerType.APP_FEEDBACK,
-                        imageUrl = "https://static-dev.fitview.co.kr/app-feedback/banner/68ed0a37-b2a4-4792-adc9-cb673e08cf99"
+                        imageUrl = "https://static-dev.fitview.co.kr/app-feedback/banner/68ed0a37-b2a4-4792-adc9-cb673e08cf99",
+                        svgImageUrl = "https://static-dev.fitview.co.kr/app-feedback/banner/7ab43ddd-308c-4705-b125-a715873960d1"
+                    ),
+                    BannerActiveResponse.General(
+                        bannerId = 2L,
+                        type = BannerType.WORKOUT_REWARD
                     )
                 )
             )
@@ -99,8 +104,13 @@ class BannerControllerDocsTest : RestDocsSupport() {
                             .description("배너 ID"),
                         fieldWithPath("data[].type").type(JsonFieldType.STRING)
                             .description("배너 타입 - ${BannerType.allDescription()}"),
+
                         fieldWithPath("data[].imageUrl").type(JsonFieldType.STRING)
-                            .description("배너 이미지 URL")
+                            .optional()
+                            .description("배너 이미지 URL (APP_FEEDBACK 유형은 PNG 파일)"),
+                        fieldWithPath("data[].svgImageUrl").type(JsonFieldType.STRING)
+                            .optional()
+                            .description("배너 SVG 이미지 URL - APP_FEEDBACK 유형에만 존재. 다른 type 유형에는 없을 수 있는 필드"),
                     )
                 )
             )

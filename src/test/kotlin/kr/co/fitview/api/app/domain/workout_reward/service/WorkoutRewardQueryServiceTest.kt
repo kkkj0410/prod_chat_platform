@@ -1,0 +1,971 @@
+package kr.co.fitview.api.app.domain.workout_reward.service
+
+import kr.co.fitview.api.app.IntegrationTestSupport
+import kr.co.fitview.api.app.domain.chat.entity.ChatMessage
+import kr.co.fitview.api.app.domain.chat.entity.ChatRoom
+import kr.co.fitview.api.app.domain.chat.entity.enums.ChatMessageType
+import kr.co.fitview.api.app.domain.chat.entity.enums.ChatRoomType
+import kr.co.fitview.api.app.domain.chat.repository.ChatMessageRepository
+import kr.co.fitview.api.app.domain.chat.repository.ChatRoomRepository
+import kr.co.fitview.api.app.domain.member.entity.Member
+import kr.co.fitview.api.app.domain.member.repository.MemberRepository
+import kr.co.fitview.api.app.domain.oauth2.service.OAuth2Service
+import kr.co.fitview.api.app.domain.review.entity.Review
+import kr.co.fitview.api.app.domain.review.entity.ReviewCategory
+import kr.co.fitview.api.app.domain.review.entity.ReviewTag
+import kr.co.fitview.api.app.domain.review.entity.enums.ReviewType
+import kr.co.fitview.api.app.domain.review.repository.ReviewCategoryRepository
+import kr.co.fitview.api.app.domain.review.repository.ReviewRepository
+import kr.co.fitview.api.app.domain.review.repository.ReviewTagRelationRepository
+import kr.co.fitview.api.app.domain.review.repository.ReviewTagRepository
+import kr.co.fitview.api.app.domain.review.service.ReviewService
+import kr.co.fitview.api.app.domain.workout.entity.WorkoutRequest
+import kr.co.fitview.api.app.domain.workout.repository.WorkoutRequestRepository
+import kr.co.fitview.api.app.domain.workout_history.entity.WorkoutHistory
+import kr.co.fitview.api.app.domain.workout_history.repository.WorkoutHistoryRepository
+import kr.co.fitview.api.app.domain.workout_partner.entity.WorkoutPartner
+import kr.co.fitview.api.app.domain.workout_partner.repository.WorkoutPartnerRepository
+import kr.co.fitview.api.app.domain.workout_reward.condition.AdminWorkoutRewardCondition
+import kr.co.fitview.api.app.domain.workout_reward.dto.response.WorkoutRewardCouponStatusResponse
+import kr.co.fitview.api.app.domain.workout_reward.entity.WorkoutRewardClaim
+import kr.co.fitview.api.app.domain.workout_reward.entity.enums.WorkoutRewardClaimCouponStatus
+import kr.co.fitview.api.app.domain.workout_reward.entity.enums.WorkoutRewardClaimCouponType
+import kr.co.fitview.api.app.domain.workout_reward.entity.enums.WorkoutRewardClaimWorkoutCount
+import kr.co.fitview.api.app.domain.workout_reward.repository.WorkoutRewardClaimRepository
+import kr.co.fitview.api.app.global.entity.Role
+import kr.co.fitview.api.app.global.time.Time
+import kr.co.fitview.api.app.global.util.TestDataFactory
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.tuple
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
+import java.time.ZoneId
+
+class WorkoutRewardQueryServiceTest @Autowired constructor(
+    private val workoutRewardQueryService : WorkoutRewardQueryService,
+    private val reviewCategoryRepository: ReviewCategoryRepository,
+    private val reviewTagRepository : ReviewTagRepository,
+    private val memberRepository : MemberRepository,
+    private val chatRoomRepository : ChatRoomRepository,
+    private val workoutHistoryRepository : WorkoutHistoryRepository,
+    private val reviewRepository : ReviewRepository,
+    private val chatMessageRepository : ChatMessageRepository,
+    private val workoutRequestRepository : WorkoutRequestRepository,
+    private val workoutPartnerRepository : WorkoutPartnerRepository,
+    private val workoutRewardClaimRepository: WorkoutRewardClaimRepository,
+    private val oAuth2Service : OAuth2Service,
+    private val time : Time
+) : IntegrationTestSupport(){
+
+
+    @DisplayName("운동 리워드 정책 조회")
+    @Test
+    fun findWorkoutRewardPolicy() {
+        // given & when
+        val response = workoutRewardQueryService.findWorkoutRewardPolicy()
+
+        // then
+        assertThat(response.isActive).isTrue()
+
+        assertThat(response.stamp.first.price).isEqualTo(5000)
+        assertThat(response.stamp.first.priceDisplayName).isEqualTo("5천원")
+        assertThat(response.stamp.second.price).isEqualTo(10000)
+        assertThat(response.stamp.second.priceDisplayName).isEqualTo("1만원")
+
+        assertThat(response.coupons).hasSize(6)
+        assertThat(response.coupons.map { it.type }).containsExactly(
+            WorkoutRewardClaimCouponType.BAEMIN,
+            WorkoutRewardClaimCouponType.NAVER_PAY,
+            WorkoutRewardClaimCouponType.COUPANG,
+            WorkoutRewardClaimCouponType.GS25,
+            WorkoutRewardClaimCouponType.EMART,
+            WorkoutRewardClaimCouponType.STARBUCKS
+        )
+
+        response.coupons.forEach { coupon ->
+            assertThat(coupon.iconPngImageUrl).contains("/workout-reward/icon/")
+            assertThat(coupon.firstCardPngImageUrl).contains("/workout-reward/card/")
+            assertThat(coupon.secondCardPngImageUrl).contains("/workout-reward/card/")
+        }
+
+        assertThat(response.policyNotices).containsExactly(
+            "같은 날 여러번 운동해도 스탬프는 1개만 적립돼요.",
+            "후기를 작성해야 스탬프가 적립돼요",
+            "쿠폰은 리워드 달성 후 1회만 지급돼요",
+            "악용 사례 확인 시 지급이 제한될 수 있어요."
+        )
+    }
+
+    @DisplayName("시작일부터 각 일자별 리뷰 개수를 조회한다.")
+    @Test
+    fun countDistinctDailyReviewFrom() {
+        // given
+        val member1 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        val member2 = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(member1)
+        memberRepository.save(member2)
+
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nickname1",
+            profileImageUrl = "profile1"
+        )
+        oAuth2Service.signup(signupRequest1, member1.id!!)
+
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nickname2",
+            profileImageUrl = "profile2"
+        )
+        oAuth2Service.signup(signupRequest2, member2.id!!)
+
+        val workoutPartner = WorkoutPartner(
+            memberOne = member1,
+            memberTwo = member2
+        )
+        workoutPartnerRepository.save(workoutPartner)
+
+        val chatRoom = ChatRoom(ChatRoomType.PRIVATE)
+        chatRoomRepository.save(chatRoom)
+
+        val chatMessage = ChatMessage(
+            member = member1,
+            chatRoom = chatRoom,
+            type = ChatMessageType.WORKOUT_REQUEST,
+            content = "content",
+            sentAt = time.nowLocalDateTime
+        )
+        chatMessageRepository.save(chatMessage)
+
+        val workoutRequest = WorkoutRequest.of(
+            chatMessage = chatMessage,
+            fromMember = member1,
+            toMember = member2,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime
+        )
+        workoutRequestRepository.save(workoutRequest)
+
+        val workoutHistory = WorkoutHistory(
+            chatRoom = chatRoom,
+            workoutRequest = workoutRequest,
+            memberOne = member1,
+            memberTwo = member2,
+            completedAt = time.nowLocalDateTime
+        )
+        workoutHistoryRepository.save(workoutHistory)
+
+        val chatMessage2 = ChatMessage(
+            member = member1,
+            chatRoom = chatRoom,
+            type = ChatMessageType.WORKOUT_REQUEST,
+            content = "content",
+            sentAt = time.nowLocalDateTime.plusDays(1)
+        )
+        chatMessageRepository.save(chatMessage2)
+
+        val workoutRequest2 = WorkoutRequest.of(
+            chatMessage = chatMessage2,
+            fromMember = member1,
+            toMember = member2,
+            location = "location",
+            scheduledAt = time.nowLocalDateTime.plusDays(1),
+            requestedAt = time.nowLocalDateTime
+        )
+        workoutRequestRepository.save(workoutRequest2)
+
+        val workoutHistory2 = WorkoutHistory(
+            chatRoom = chatRoom,
+            workoutRequest = workoutRequest2,
+            memberOne = member1,
+            memberTwo = member2,
+            completedAt = time.nowLocalDateTime.plusDays(1)
+        )
+        workoutHistoryRepository.save(workoutHistory2)
+
+        val reviewCategory1 = ReviewCategory(
+            displayText = "displayText1",
+            seq = 100
+        )
+        val reviewCategory2 = ReviewCategory(
+            displayText = "displayText1",
+            seq = 200
+        )
+        reviewCategoryRepository.save(reviewCategory1)
+        reviewCategoryRepository.save(reviewCategory2)
+
+        val reviewTag1 = ReviewTag(
+            reviewCategory = reviewCategory1,
+            displayText = "tagText1",
+            seq = 100
+        )
+        val reviewTag2 = ReviewTag(
+            reviewCategory = reviewCategory1,
+            displayText = "tagText2",
+            seq = 200
+        )
+        val reviewTag3 = ReviewTag(
+            reviewCategory = reviewCategory2,
+            displayText = "tagText3",
+            seq = 100
+        )
+        reviewTagRepository.save(reviewTag1)
+        reviewTagRepository.save(reviewTag2)
+        reviewTagRepository.save(reviewTag3)
+
+        val review = Review(
+            fromMember = member1,
+            toMember = member2,
+            workoutHistory = workoutHistory,
+            isPrivate = false,
+            type = ReviewType.GOOD,
+            score = 2.0,
+            content = "content",
+            postedAt = time.nowLocalDateTime
+        )
+        reviewRepository.save(review)
+
+        val review2 = Review(
+            fromMember = member1,
+            toMember = member2,
+            workoutHistory = workoutHistory2,
+            isPrivate = false,
+            type = ReviewType.GOOD,
+            score = 2.0,
+            content = "content",
+            postedAt = time.nowLocalDateTime.plusDays(1)
+        )
+        reviewRepository.save(review2)
+
+        // when
+        val response = workoutRewardQueryService.findWorkoutRewardStamp(
+            memberId = member1.id!!,
+            startDate = time.nowLocalDate,
+            limit = 5
+        )
+
+        // then
+        assertThat(response.stampCount).isEqualTo(2)
+    }
+
+    @DisplayName("리워드 보상 쿠폰 상태 조회 - 모두 지급 가능")
+    @Test
+    fun findWorkoutRewardCouponStatusAllClaimable() {
+        // given
+        val member1 = Member(
+            email = "email1",
+            password = "password",
+            role = Role.USER
+        )
+        val member2 = Member(
+            email = "email2",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(member1)
+        memberRepository.save(member2)
+
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nickname1",
+            profileImageUrl = "profile1"
+        )
+        oAuth2Service.signup(signupRequest1, member1.id!!)
+
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nickname2",
+            profileImageUrl = "profile2"
+        )
+        oAuth2Service.signup(signupRequest2, member2.id!!)
+
+        val workoutPartner = WorkoutPartner(
+            memberOne = member1,
+            memberTwo = member2
+        )
+        workoutPartnerRepository.save(workoutPartner)
+
+        val chatRoom = ChatRoom(ChatRoomType.PRIVATE)
+        chatRoomRepository.save(chatRoom)
+
+        val reviewCategory1 = ReviewCategory(
+            displayText = "displayText1",
+            seq = 100
+        )
+        val reviewCategory2 = ReviewCategory(
+            displayText = "displayText1",
+            seq = 200
+        )
+        reviewCategoryRepository.save(reviewCategory1)
+        reviewCategoryRepository.save(reviewCategory2)
+
+        val reviewTag1 = ReviewTag(reviewCategory = reviewCategory1, displayText = "tagText1", seq = 100)
+        val reviewTag2 = ReviewTag(reviewCategory = reviewCategory1, displayText = "tagText2", seq = 200)
+        val reviewTag3 = ReviewTag(reviewCategory = reviewCategory2, displayText = "tagText3", seq = 100)
+        reviewTagRepository.save(reviewTag1)
+        reviewTagRepository.save(reviewTag2)
+        reviewTagRepository.save(reviewTag3)
+
+        val reviews = (0 until 5).map { i ->
+            val offsetDays = i.toLong()
+
+            val chatMessage = ChatMessage(
+                member = member1,
+                chatRoom = chatRoom,
+                type = ChatMessageType.WORKOUT_REQUEST,
+                content = "content $i",
+                sentAt = time.nowLocalDateTime.plusDays(offsetDays)
+            )
+            chatMessageRepository.save(chatMessage)
+
+            val workoutRequest = WorkoutRequest.of(
+                chatMessage = chatMessage,
+                fromMember = member1,
+                toMember = member2,
+                location = "location",
+                scheduledAt = time.nowLocalDateTime.plusDays(offsetDays + 1),
+                requestedAt = time.nowLocalDateTime.plusDays(offsetDays)
+            )
+            workoutRequestRepository.save(workoutRequest)
+
+            val workoutHistory = WorkoutHistory(
+                chatRoom = chatRoom,
+                workoutRequest = workoutRequest,
+                memberOne = member1,
+                memberTwo = member2,
+                completedAt = time.nowLocalDateTime.plusDays(offsetDays + 1)
+            )
+            workoutHistoryRepository.save(workoutHistory)
+
+            val review = Review(
+                fromMember = member1,
+                toMember = member2,
+                workoutHistory = workoutHistory,
+                isPrivate = false,
+                type = ReviewType.GOOD,
+                score = 2.0 + (i * 0.5),
+                content = "content $i",
+                postedAt = time.nowLocalDateTime.plusDays(offsetDays + 2)
+            )
+            reviewRepository.save(review)
+        }
+
+        // when
+        val response = workoutRewardQueryService.findWorkoutRewardCouponStatus(
+            memberId = member1.id!!
+        )
+
+        // then
+        assertThat(response)
+            .extracting(
+                "firstCouponStatus",
+                "secondCouponStatus"
+            )
+            .contains(
+                WorkoutRewardCouponStatusResponse.CouponStatus.CLAIMABLE,
+                WorkoutRewardCouponStatusResponse.CouponStatus.CLAIMABLE
+            )
+    }
+
+    @DisplayName("리워드 보상 쿠폰 상태 조회 - 3회에 대한 쿠폰만 지급 가능한 상태")
+    @Test
+    fun findWorkoutRewardCouponStatusFirstClaimable() {
+        // given
+        val member1 = Member(
+            email = "email1",
+            password = "password",
+            role = Role.USER
+        )
+        val member2 = Member(
+            email = "email2",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(member1)
+        memberRepository.save(member2)
+
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nickname1",
+            profileImageUrl = "profile1"
+        )
+        oAuth2Service.signup(signupRequest1, member1.id!!)
+
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nickname2",
+            profileImageUrl = "profile2"
+        )
+        oAuth2Service.signup(signupRequest2, member2.id!!)
+
+        val workoutPartner = WorkoutPartner(
+            memberOne = member1,
+            memberTwo = member2
+        )
+        workoutPartnerRepository.save(workoutPartner)
+
+        val chatRoom = ChatRoom(ChatRoomType.PRIVATE)
+        chatRoomRepository.save(chatRoom)
+
+        val reviewCategory1 = ReviewCategory(
+            displayText = "displayText1",
+            seq = 100
+        )
+        val reviewCategory2 = ReviewCategory(
+            displayText = "displayText1",
+            seq = 200
+        )
+        reviewCategoryRepository.save(reviewCategory1)
+        reviewCategoryRepository.save(reviewCategory2)
+
+        val reviewTag1 = ReviewTag(reviewCategory = reviewCategory1, displayText = "tagText1", seq = 100)
+        val reviewTag2 = ReviewTag(reviewCategory = reviewCategory1, displayText = "tagText2", seq = 200)
+        val reviewTag3 = ReviewTag(reviewCategory = reviewCategory2, displayText = "tagText3", seq = 100)
+        reviewTagRepository.save(reviewTag1)
+        reviewTagRepository.save(reviewTag2)
+        reviewTagRepository.save(reviewTag3)
+
+        val reviews = (0 until 3).map { i ->
+            val offsetDays = i.toLong()
+
+            val chatMessage = ChatMessage(
+                member = member1,
+                chatRoom = chatRoom,
+                type = ChatMessageType.WORKOUT_REQUEST,
+                content = "content $i",
+                sentAt = time.nowLocalDateTime.plusDays(offsetDays)
+            )
+            chatMessageRepository.save(chatMessage)
+
+            val workoutRequest = WorkoutRequest.of(
+                chatMessage = chatMessage,
+                fromMember = member1,
+                toMember = member2,
+                location = "location",
+                scheduledAt = time.nowLocalDateTime.plusDays(offsetDays + 1),
+                requestedAt = time.nowLocalDateTime.plusDays(offsetDays)
+            )
+            workoutRequestRepository.save(workoutRequest)
+
+            val workoutHistory = WorkoutHistory(
+                chatRoom = chatRoom,
+                workoutRequest = workoutRequest,
+                memberOne = member1,
+                memberTwo = member2,
+                completedAt = time.nowLocalDateTime.plusDays(offsetDays + 1)
+            )
+            workoutHistoryRepository.save(workoutHistory)
+
+            val review = Review(
+                fromMember = member1,
+                toMember = member2,
+                workoutHistory = workoutHistory,
+                isPrivate = false,
+                type = ReviewType.GOOD,
+                score = 2.0 + (i * 0.5),
+                content = "content $i",
+                postedAt = time.nowLocalDateTime.plusDays(offsetDays + 2)
+            )
+            reviewRepository.save(review)
+        }
+
+        // when
+        val response = workoutRewardQueryService.findWorkoutRewardCouponStatus(
+            memberId = member1.id!!
+        )
+
+        // then
+        assertThat(response)
+            .extracting(
+                "firstCouponStatus",
+                "secondCouponStatus"
+            )
+            .contains(
+                WorkoutRewardCouponStatusResponse.CouponStatus.CLAIMABLE,
+                WorkoutRewardCouponStatusResponse.CouponStatus.UNAVAILABLE
+            )
+    }
+
+    @DisplayName("리워드 보상 쿠폰 상태 조회 - 이미 신청한 상태")
+    @Test
+    fun findWorkoutRewardCouponStatusAllClaimed() {
+        // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(member)
+
+        val workoutRewardClaim = WorkoutRewardClaim(
+            member = member,
+            phoneNumber = "01011111111",
+            workoutCount = WorkoutRewardClaimWorkoutCount.FIRST,
+            isPrivacyAgreed = true,
+            couponStatus = WorkoutRewardClaimCouponStatus.PENDING,
+            couponType = WorkoutRewardClaimCouponType.BAEMIN
+        )
+        workoutRewardClaimRepository.save(workoutRewardClaim)
+
+        // when
+        val response = workoutRewardQueryService.findWorkoutRewardCouponStatus(
+            memberId = member.id!!
+        )
+
+        // then
+        assertThat(response)
+            .extracting(
+                "firstCouponStatus",
+                "secondCouponStatus"
+            )
+            .contains(
+                WorkoutRewardCouponStatusResponse.CouponStatus.CLAIMED,
+                WorkoutRewardCouponStatusResponse.CouponStatus.UNAVAILABLE
+            )
+    }
+
+    @DisplayName("리워드 보상 쿠폰 상태 조회 - 조건 미충족으로 쿠폰 지급을 할 수 없는 상태")
+    @Test
+    fun findWorkoutRewardCouponStatusAllUnavailable() {
+        // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(member)
+
+        // when
+        val response = workoutRewardQueryService.findWorkoutRewardCouponStatus(
+            memberId = member.id!!
+        )
+
+        // then
+        assertThat(response)
+            .extracting(
+                "firstCouponStatus",
+                "secondCouponStatus"
+            )
+            .contains(
+                WorkoutRewardCouponStatusResponse.CouponStatus.UNAVAILABLE,
+                WorkoutRewardCouponStatusResponse.CouponStatus.UNAVAILABLE
+            )
+    }
+
+    @DisplayName("리워드 보상 쿠폰 상태 조회 - 조건 미충족으로 1개 쿠폰 지급을 할 수 없는 상태 + 1개는 이미 신청한 상태")
+    @Test
+    fun findWorkoutRewardCouponStatusOneClaimedOneUnavailable() {
+        // given
+        val member1 = Member(
+            email = "email1",
+            password = "password",
+            role = Role.USER
+        )
+        val member2 = Member(
+            email = "email2",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(member1)
+        memberRepository.save(member2)
+
+        val signupRequest1 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nickname1",
+            profileImageUrl = "profile1"
+        )
+        oAuth2Service.signup(signupRequest1, member1.id!!)
+
+        val signupRequest2 = TestDataFactory.oAuth2SignupRequest(
+            nickname = "nickname2",
+            profileImageUrl = "profile2"
+        )
+        oAuth2Service.signup(signupRequest2, member2.id!!)
+
+        val workoutPartner = WorkoutPartner(
+            memberOne = member1,
+            memberTwo = member2
+        )
+        workoutPartnerRepository.save(workoutPartner)
+
+        val chatRoom = ChatRoom(ChatRoomType.PRIVATE)
+        chatRoomRepository.save(chatRoom)
+
+        val reviewCategory1 = ReviewCategory(
+            displayText = "displayText1",
+            seq = 100
+        )
+        val reviewCategory2 = ReviewCategory(
+            displayText = "displayText1",
+            seq = 200
+        )
+        reviewCategoryRepository.save(reviewCategory1)
+        reviewCategoryRepository.save(reviewCategory2)
+
+        val reviewTag1 = ReviewTag(reviewCategory = reviewCategory1, displayText = "tagText1", seq = 100)
+        val reviewTag2 = ReviewTag(reviewCategory = reviewCategory1, displayText = "tagText2", seq = 200)
+        val reviewTag3 = ReviewTag(reviewCategory = reviewCategory2, displayText = "tagText3", seq = 100)
+        reviewTagRepository.save(reviewTag1)
+        reviewTagRepository.save(reviewTag2)
+        reviewTagRepository.save(reviewTag3)
+
+        val reviews = (0 until 3).map { i ->
+            val offsetDays = i.toLong()
+
+            val chatMessage = ChatMessage(
+                member = member1,
+                chatRoom = chatRoom,
+                type = ChatMessageType.WORKOUT_REQUEST,
+                content = "content $i",
+                sentAt = time.nowLocalDateTime.plusDays(offsetDays)
+            )
+            chatMessageRepository.save(chatMessage)
+
+            val workoutRequest = WorkoutRequest.of(
+                chatMessage = chatMessage,
+                fromMember = member1,
+                toMember = member2,
+                location = "location",
+                scheduledAt = time.nowLocalDateTime.plusDays(offsetDays + 1),
+                requestedAt = time.nowLocalDateTime.plusDays(offsetDays)
+            )
+            workoutRequestRepository.save(workoutRequest)
+
+            val workoutHistory = WorkoutHistory(
+                chatRoom = chatRoom,
+                workoutRequest = workoutRequest,
+                memberOne = member1,
+                memberTwo = member2,
+                completedAt = time.nowLocalDateTime.plusDays(offsetDays + 1)
+            )
+            workoutHistoryRepository.save(workoutHistory)
+
+            val review = Review(
+                fromMember = member1,
+                toMember = member2,
+                workoutHistory = workoutHistory,
+                isPrivate = false,
+                type = ReviewType.GOOD,
+                score = 2.0 + (i * 0.5),
+                content = "content $i",
+                postedAt = time.nowLocalDateTime.plusDays(offsetDays + 2)
+            )
+            reviewRepository.save(review)
+        }
+
+        val workoutRewardClaim = WorkoutRewardClaim(
+            member = member1,
+            phoneNumber = "01011111111",
+            workoutCount = WorkoutRewardClaimWorkoutCount.FIRST,
+            isPrivacyAgreed = true,
+            couponStatus = WorkoutRewardClaimCouponStatus.PENDING,
+            couponType = WorkoutRewardClaimCouponType.BAEMIN
+        )
+        workoutRewardClaimRepository.save(workoutRewardClaim)
+
+        // when
+        val response = workoutRewardQueryService.findWorkoutRewardCouponStatus(
+            memberId = member1.id!!
+        )
+
+        // then
+        assertThat(response)
+            .extracting(
+                "firstCouponStatus",
+                "secondCouponStatus"
+            )
+            .contains(
+                WorkoutRewardCouponStatusResponse.CouponStatus.CLAIMED,
+                WorkoutRewardCouponStatusResponse.CouponStatus.UNAVAILABLE
+            )
+    }
+
+    @DisplayName("운동 리워드 보상 요청 이력을 DTO로 변환하여 조회한다.")
+    @Test
+    fun findAllWorkoutReward() {
+        // given
+        val member1 = Member(email = "email1", password = "password", role = Role.USER)
+        val member2 = Member(email = "email2", password = "password", role = Role.USER)
+        memberRepository.save(member1)
+        memberRepository.save(member2)
+
+        oAuth2Service.signup(
+            TestDataFactory.oAuth2SignupRequest(nickname = "nickname1", profileImageUrl = "profile1"),
+            member1.id!!
+        )
+        oAuth2Service.signup(
+            TestDataFactory.oAuth2SignupRequest(nickname = "nickname2", profileImageUrl = "profile2"),
+            member2.id!!
+        )
+
+        val workoutRewardClaim1 = WorkoutRewardClaim(
+            member = member1,
+            phoneNumber = "01011111111",
+            workoutCount = WorkoutRewardClaimWorkoutCount.FIRST,
+            isPrivacyAgreed = true,
+            couponStatus = WorkoutRewardClaimCouponStatus.PENDING,
+            couponType = WorkoutRewardClaimCouponType.BAEMIN
+        )
+        workoutRewardClaim1.createdAt = time.nowLocalDateTime.plusSeconds(1)
+        workoutRewardClaimRepository.save(workoutRewardClaim1)
+
+        val workoutRewardClaim2 = WorkoutRewardClaim(
+            member = member1,
+            phoneNumber = "01011111111",
+            workoutCount = WorkoutRewardClaimWorkoutCount.SECOND,
+            isPrivacyAgreed = true,
+            couponStatus = WorkoutRewardClaimCouponStatus.PENDING,
+            couponType = WorkoutRewardClaimCouponType.BAEMIN
+        )
+        workoutRewardClaim2.createdAt = time.nowLocalDateTime.plusSeconds(2)
+        workoutRewardClaimRepository.save(workoutRewardClaim2)
+
+        val workoutRewardClaim3 = WorkoutRewardClaim(
+            member = member2,
+            phoneNumber = "01011111111",
+            workoutCount = WorkoutRewardClaimWorkoutCount.FIRST,
+            isPrivacyAgreed = true,
+            couponStatus = WorkoutRewardClaimCouponStatus.PENDING,
+            couponType = WorkoutRewardClaimCouponType.BAEMIN
+        )
+        workoutRewardClaim3.createdAt = time.nowLocalDateTime.plusSeconds(3)
+        workoutRewardClaimRepository.save(workoutRewardClaim3)
+
+        val condition = AdminWorkoutRewardCondition(
+            size = 10,
+            cursorAt = null
+        )
+
+        // when
+        val response = workoutRewardQueryService.findAllWorkoutReward(condition)
+
+        // then
+        assertThat(response.content)
+            .extracting(
+                "workoutRewardClaimId",
+                "nickname",
+                "stampLevelDisplayName",
+                "couponName",
+                "coupon.status",
+                "coupon.statusLabel"
+            )
+            .containsExactly(
+                tuple(
+                    workoutRewardClaim3.id!!,
+                    member2.nickname,
+                    WorkoutRewardClaimWorkoutCount.FIRST.displayName,
+                    WorkoutRewardClaimCouponType.BAEMIN.firstDisplayName,
+                    WorkoutRewardClaimCouponStatus.PENDING,
+                    WorkoutRewardClaimCouponStatus.PENDING.displayName
+                ),
+                tuple(
+                    workoutRewardClaim2.id!!,
+                    member1.nickname,
+                    WorkoutRewardClaimWorkoutCount.SECOND.displayName,
+                    WorkoutRewardClaimCouponType.BAEMIN.secondDisplayName,
+                    WorkoutRewardClaimCouponStatus.PENDING,
+                    WorkoutRewardClaimCouponStatus.PENDING.displayName
+                ),
+                tuple(
+                    workoutRewardClaim1.id!!,
+                    member1.nickname,
+                    WorkoutRewardClaimWorkoutCount.FIRST.displayName,
+                    WorkoutRewardClaimCouponType.BAEMIN.firstDisplayName,
+                    WorkoutRewardClaimCouponStatus.PENDING,
+                    WorkoutRewardClaimCouponStatus.PENDING.displayName
+                )
+            )
+    }
+
+    @DisplayName("운동 리워드 보상 요청 이력을 DTO로 변환하여 조회한다. - cursorAt으로 커서 페이징")
+    @Test
+    fun findAllWorkoutRewardByCursor() {
+        // given
+        val member1 = Member(email = "email1", password = "password", role = Role.USER)
+        memberRepository.save(member1)
+        oAuth2Service.signup(
+            TestDataFactory.oAuth2SignupRequest(nickname = "nickname1", profileImageUrl = "profile1"),
+            member1.id!!
+        )
+
+        val workoutRewardClaim1 = WorkoutRewardClaim(
+            member = member1,
+            phoneNumber = "01011111111",
+            workoutCount = WorkoutRewardClaimWorkoutCount.FIRST,
+            isPrivacyAgreed = true,
+            couponStatus = WorkoutRewardClaimCouponStatus.PENDING,
+            couponType = WorkoutRewardClaimCouponType.BAEMIN
+        )
+        workoutRewardClaim1.createdAt = time.nowLocalDateTime.plusSeconds(1)
+        workoutRewardClaimRepository.save(workoutRewardClaim1)
+
+        val workoutRewardClaim2 = WorkoutRewardClaim(
+            member = member1,
+            phoneNumber = "01011111111",
+            workoutCount = WorkoutRewardClaimWorkoutCount.SECOND,
+            isPrivacyAgreed = true,
+            couponStatus = WorkoutRewardClaimCouponStatus.PENDING,
+            couponType = WorkoutRewardClaimCouponType.BAEMIN
+        )
+        workoutRewardClaim2.createdAt = time.nowLocalDateTime.plusSeconds(2)
+        workoutRewardClaimRepository.save(workoutRewardClaim2)
+
+        val workoutRewardClaim3 = WorkoutRewardClaim(
+            member = member1,
+            phoneNumber = "01011111111",
+            workoutCount = WorkoutRewardClaimWorkoutCount.FIRST,
+            isPrivacyAgreed = true,
+            couponStatus = WorkoutRewardClaimCouponStatus.PENDING,
+            couponType = WorkoutRewardClaimCouponType.BAEMIN
+        )
+        workoutRewardClaim3.createdAt = time.nowLocalDateTime.plusSeconds(3)
+        workoutRewardClaimRepository.save(workoutRewardClaim3)
+
+        val condition = AdminWorkoutRewardCondition(
+            size = 10,
+            cursorAt = workoutRewardClaim3.createdAt!!
+                .atZone(ZoneId.of("Asia/Seoul"))
+                .toInstant()
+                .toEpochMilli()
+        )
+
+        // when
+        val response = workoutRewardQueryService.findAllWorkoutReward(condition)
+
+        // then
+        assertThat(response.content)
+            .extracting("workoutRewardClaimId")
+            .containsExactly(
+                workoutRewardClaim2.id!!,
+                workoutRewardClaim1.id!!
+            )
+    }
+
+    @DisplayName("운동 리워드 보상 요청 이력을 DTO로 변환하여 조회한다. - size로 개수 제한")
+    @Test
+    fun findAllWorkoutRewardBySize() {
+        // given
+        val member1 = Member(email = "email1", password = "password", role = Role.USER)
+        memberRepository.save(member1)
+        oAuth2Service.signup(
+            TestDataFactory.oAuth2SignupRequest(nickname = "nickname1", profileImageUrl = "profile1"),
+            member1.id!!
+        )
+
+        val workoutRewardClaim1 = WorkoutRewardClaim(
+            member = member1,
+            phoneNumber = "01011111111",
+            workoutCount = WorkoutRewardClaimWorkoutCount.FIRST,
+            isPrivacyAgreed = true,
+            couponStatus = WorkoutRewardClaimCouponStatus.PENDING,
+            couponType = WorkoutRewardClaimCouponType.BAEMIN
+        )
+        workoutRewardClaim1.createdAt = time.nowLocalDateTime.plusSeconds(1)
+        workoutRewardClaimRepository.save(workoutRewardClaim1)
+
+        val workoutRewardClaim2 = WorkoutRewardClaim(
+            member = member1,
+            phoneNumber = "01011111111",
+            workoutCount = WorkoutRewardClaimWorkoutCount.SECOND,
+            isPrivacyAgreed = true,
+            couponStatus = WorkoutRewardClaimCouponStatus.PENDING,
+            couponType = WorkoutRewardClaimCouponType.BAEMIN
+        )
+        workoutRewardClaim2.createdAt = time.nowLocalDateTime.plusSeconds(2)
+        workoutRewardClaimRepository.save(workoutRewardClaim2)
+
+        val workoutRewardClaim3 = WorkoutRewardClaim(
+            member = member1,
+            phoneNumber = "01011111111",
+            workoutCount = WorkoutRewardClaimWorkoutCount.FIRST,
+            isPrivacyAgreed = true,
+            couponStatus = WorkoutRewardClaimCouponStatus.PENDING,
+            couponType = WorkoutRewardClaimCouponType.BAEMIN
+        )
+        workoutRewardClaim3.createdAt = time.nowLocalDateTime.plusSeconds(3)
+        workoutRewardClaimRepository.save(workoutRewardClaim3)
+
+        val condition = AdminWorkoutRewardCondition(
+            size = 2,
+            cursorAt = null
+        )
+
+        // when
+        val response = workoutRewardQueryService.findAllWorkoutReward(condition)
+
+        // then
+        assertThat(response.content).hasSize(2)
+        assertThat(response.content)
+            .extracting("workoutRewardClaimId")
+            .containsExactly(
+                workoutRewardClaim3.id!!,
+                workoutRewardClaim2.id!!
+            )
+    }
+
+    @DisplayName("특정 회원의 운동 리워드 신청 현황을 조회한다.")
+    @Test
+    fun findWorkoutRewardClaimFrom() {
+        // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(member)
+
+        val workoutRewardClaim = WorkoutRewardClaim(
+            member = member,
+            phoneNumber = "01011111111",
+            workoutCount = WorkoutRewardClaimWorkoutCount.FIRST,
+            isPrivacyAgreed = true,
+            couponStatus = WorkoutRewardClaimCouponStatus.PENDING,
+            couponType = WorkoutRewardClaimCouponType.BAEMIN
+        )
+        workoutRewardClaimRepository.save(workoutRewardClaim)
+
+        // when
+        val findWorkoutRewardClaim = workoutRewardQueryService.findWorkoutRewardClaimFrom(
+            memberId = member.id!!,
+            workoutCount = WorkoutRewardClaimWorkoutCount.FIRST
+        )
+
+        // then
+        assertThat(findWorkoutRewardClaim!!.id).isEqualTo(workoutRewardClaim.id)
+    }
+
+    @DisplayName("운동 리워드 요청 id로 해당 운동 리워드 요청을 조회한다.")
+    @Test
+    fun findWorkoutRewardClaimFromId() {
+        // given
+        val member = Member(
+            email = "email",
+            password = "password",
+            role = Role.USER
+        )
+        memberRepository.save(member)
+
+        val workoutRewardClaim = WorkoutRewardClaim(
+            member = member,
+            phoneNumber = "01011111111",
+            workoutCount = WorkoutRewardClaimWorkoutCount.FIRST,
+            isPrivacyAgreed = true,
+            couponStatus = WorkoutRewardClaimCouponStatus.PENDING,
+            couponType = WorkoutRewardClaimCouponType.BAEMIN
+        )
+        workoutRewardClaimRepository.save(workoutRewardClaim)
+
+        // when
+        val findWorkoutRewardClaim = workoutRewardQueryService.findWorkoutRewardClaimFrom(
+            workoutRewardClaimId = workoutRewardClaim.id!!
+        )
+
+        // then
+        assertThat(findWorkoutRewardClaim!!.id!!).isEqualTo(workoutRewardClaim.id!!)
+    }
+
+}

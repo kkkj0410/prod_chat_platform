@@ -56,5 +56,6 @@ data class MemberRecommendationMeta(
 
 data class MemberRecommendationAppFeedback(
     val positionIndex : Int,
-    val imageUrl : String
+    val imageUrl : String,
+    val svgImageUrl : String
 )

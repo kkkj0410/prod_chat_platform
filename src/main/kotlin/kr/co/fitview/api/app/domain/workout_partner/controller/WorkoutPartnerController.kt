@@ -30,7 +30,7 @@ class WorkoutPartnerController(
         @Valid
         @RequestBody
         request : WorkoutPartnerCreateRequest
-    ) : ResponseEntity<ApiResponse<*>> {
+    ) : ResponseEntity<ApiResponse<String>> {
 
         workoutPartnerRequestService.addWorkoutPartnerRequest(securityUtil.getMemberId(), request.toServiceRequest())
 
@@ -45,7 +45,7 @@ class WorkoutPartnerController(
         @Valid
         @RequestBody
         request : WorkoutPartnerUpdateRequest
-    ) : ResponseEntity<ApiResponse<*>> {
+    ) : ResponseEntity<ApiResponse<String>> {
 
         workoutPartnerRequestService.updateWorkoutPartnerRequest(securityUtil.getMemberId(), workoutPartnerRequestId, request.toServiceRequest())
 
