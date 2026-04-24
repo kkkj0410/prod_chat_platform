@@ -24,7 +24,7 @@ class AddressController(
         addressId: Long
     ) : ResponseEntity<ApiResponse<AddressDetailResponse>> {
         val response = addressQueryService.findAddressFromAddressId(addressId)
-
+        val a = 100
         return ResponseEntity.ok(ApiResponse.success(response))
     }
 
