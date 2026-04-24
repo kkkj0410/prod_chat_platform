@@ -28,4 +28,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           TARGET_BRANCH: ${{ github.event.pull_request.base.ref }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
         run: python .github/script/pr_summarizer.py
