@@ -12,7 +12,7 @@ include::{snippets}/workout-reward-policy-get/response-fields.adoc[]
 [[workout-reward-stamp-me-get]]
 === 운동 리워드 본인 스탬프 현황 조회 API
 
-- 2026.4.17 부터의 운동 기록에 대해서 스탬프 count를 나타냄
+- 2026.4.24 부터의 운동 기록에 대해서 스탬프 count를 나타냄
 
 ==== HTTP Request
 include::{snippets}/workout-reward-stamp-me-get/http-request.adoc[]

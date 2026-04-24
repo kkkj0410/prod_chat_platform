@@ -1728,7 +1728,7 @@ class ReviewRepositoryTest @Autowired constructor(
     }
 
     @DisplayName("일자별 리뷰 개수 조회 시, 같은날의 운동 기록 중복은 개수 1개로 취급한다.")
-//    @Test
+    @Test
     fun countDistinctDailyReviewByDuplicateDailyWorkoutHistory() {
         // given
         val member1 = Member(
@@ -1887,7 +1887,7 @@ class ReviewRepositoryTest @Autowired constructor(
     }
 
     @DisplayName("일자별 리뷰 개수 조회 시, 리뷰 날짜가 다르더라도 운동 기록일이 같으면 1개 count로 제한한다.")
-//    @Test
+    @Test
     fun countDistinctDailyReviewByOtherReviewDuplicateWorkoutHistory() {
         // given
         val member1 = Member(
