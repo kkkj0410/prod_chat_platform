@@ -25,7 +25,7 @@ jobs:
       - name: Run Summarizer
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GIT_TOKEN_CHOEYOUNGJU }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           TARGET_BRANCH: ${{ github.event.pull_request.base.ref }}
           GITHUB_REPOSITORY: ${{ github.repository }}
