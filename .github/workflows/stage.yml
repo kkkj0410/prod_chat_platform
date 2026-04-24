@@ -31,6 +31,8 @@ env:
   SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL_PRIVATE_BE }}
   SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
 
+  GITHUB_TOKEN: ${{ secrets.GIT_TOKEN_CHOEYOUNGJU }}
+
 
 # jobs : 수행할 명령어
 # jobs를 여러개 써도 됨
@@ -258,6 +260,35 @@ jobs:
                   {title: "레포지토리", value: $repo, short: true},
                   {title: "브랜치", value: $branch, short: true}
                 ]
+              }]
+            }' > slack_payload.json
+
+      - name: Fetch PR Info and Create Slack Payload
+        if: always()
+        run: |
+          COLOR="#36a64f"
+          # 성공 시 채널 전체 알림
+          TEXT="<!channel> ✅ *[Stage] 배포 및 헬스체크 성공*"
+          
+          if [ "${{ job.status }}" != "success" ]; then
+            COLOR="#ff0000"
+            # 실패 시 채널 전체 알림
+            TEXT="<!channel> ❌ *[Stage] 배포 또는 헬스체크 실패 (롤백 수행됨)*"
+          fi
+          
+          # 병합된 PR 본문을 가져옴 (AI가 작성해둔 슬랙 알림 포맷 포함)
+          PR_BODY=$(gh api /repos/${{ github.repository }}/commits/${{ github.sha }}/pulls --jq '.[0].body // "PR 본문 없음"')
+          
+          # jq로 json 파일 생성
+          jq -n \
+            --arg text "$TEXT" \
+            --arg color "$COLOR" \
+            --arg details "$PR_BODY" \
+            '{
+              text: $text,
+              attachments: [{
+                color: $color,
+                text: $details
               }]
             }' > slack_payload.json
 
