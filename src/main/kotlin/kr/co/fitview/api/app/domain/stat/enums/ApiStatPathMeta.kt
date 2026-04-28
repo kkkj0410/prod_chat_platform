@@ -148,6 +148,13 @@ enum class ApiStatPathMeta(
         isSignificantStat = true
     ),
 
+    WORKOUT_REWARD_STAMP_ME(
+        method = ApiStatMethod.GET,
+        path = "/api/v1/workout-rewards/stamps/me",
+        description = "운동 리워드 스탬프 개수 조회",
+        isSignificantStat = true
+    ),
+
     IMAGE_PRESIGN(
         method = ApiStatMethod.POST,
         path = "/api/v1/images/presign",
