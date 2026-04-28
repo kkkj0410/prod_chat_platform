@@ -227,7 +227,12 @@ class MemberControllerTest : ControllerTestSupport() {
                         workoutGoal = MemberWorkoutGoal.WEIGHT_LOSS,
                         profileImageUrl = "https://example.com/profile/1.jpg",
                         workoutImageUrl = "https://example.com/workout/1.jpg",
-                        lastWorkoutPartnerRequest = null
+                        lastWorkoutPartnerRequest = null,
+                        matchStatus = MatchStatus(
+                            workoutExperience = true,
+                            workoutStyle = false,
+                            workoutGoal = true
+                        )
                     ),
                     MemberRecommendationResponse(
                         memberId = 2L,
@@ -237,7 +242,12 @@ class MemberControllerTest : ControllerTestSupport() {
                         workoutGoal = MemberWorkoutGoal.PERFORMANCE_GOAL,
                         profileImageUrl = "https://example.com/profile/2.jpg",
                         workoutImageUrl = null,
-                        lastWorkoutPartnerRequest = null
+                        lastWorkoutPartnerRequest = null,
+                        matchStatus = MatchStatus(
+                            workoutExperience = false,
+                            workoutStyle = true,
+                            workoutGoal = false
+                        )
                     )
                 )
             )
@@ -272,6 +282,9 @@ class MemberControllerTest : ControllerTestSupport() {
             .andExpect(jsonPath("$.data[0].workoutGoal").value("WEIGHT_LOSS"))
             .andExpect(jsonPath("$.data[0].profileImageUrl").value("https://example.com/profile/1.jpg"))
             .andExpect(jsonPath("$.data[0].workoutImageUrl").value("https://example.com/workout/1.jpg"))
+            .andExpect(jsonPath("$.data[0].matchStatus.workoutExperience").value(true))
+            .andExpect(jsonPath("$.data[0].matchStatus.workoutStyle").value(false))
+            .andExpect(jsonPath("$.data[0].matchStatus.workoutGoal").value(true))
 
             .andExpect(jsonPath("$.data[1].memberId").value(2L))
             .andExpect(jsonPath("$.data[1].nickname").value("김철수"))
@@ -280,6 +293,9 @@ class MemberControllerTest : ControllerTestSupport() {
             .andExpect(jsonPath("$.data[1].workoutGoal").value("PERFORMANCE_GOAL"))
             .andExpect(jsonPath("$.data[1].profileImageUrl").value("https://example.com/profile/2.jpg"))
             .andExpect(jsonPath("$.data[1].workoutImageUrl").doesNotExist())
+            .andExpect(jsonPath("$.data[1].matchStatus.workoutExperience").value(false))
+            .andExpect(jsonPath("$.data[1].matchStatus.workoutStyle").value(true))
+            .andExpect(jsonPath("$.data[1].matchStatus.workoutGoal").value(false))
 
             .andExpect(jsonPath("$.meta.appFeedback.positionIndex").value(2))
             .andExpect(jsonPath("$.meta.appFeedback.imageUrl").value("imageUrl"))

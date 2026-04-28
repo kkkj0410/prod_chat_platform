@@ -282,7 +282,16 @@ class MemberQueryService(
                 )
             }
 
-            member.copy(lastWorkoutPartnerRequest = lastWorkoutPartnerRequest)
+            val matchStatus = MatchStatus(
+                workoutExperience = findMeMember.workoutExperience!! == member.workoutExperience,
+                workoutStyle = findMeMember.workoutStyle!! == member.workoutStyle,
+                workoutGoal = findMeMember.workoutGoal!! == member.workoutGoal
+            )
+
+            member.copy(
+                lastWorkoutPartnerRequest = lastWorkoutPartnerRequest,
+                matchStatus = matchStatus
+            )
         }
 
     }
