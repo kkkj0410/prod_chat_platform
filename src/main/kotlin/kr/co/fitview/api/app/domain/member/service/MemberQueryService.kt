@@ -283,10 +283,11 @@ class MemberQueryService(
             }
 
             val matchStatus = MatchStatus(
-                workoutExperience = findMeMember.workoutExperience!! == member.workoutExperience,
-                workoutStyle = findMeMember.workoutStyle!! == member.workoutStyle,
-                workoutGoal = findMeMember.workoutGoal!! == member.workoutGoal
+                workoutExperience = isEqual(findMeMember.workoutExperience!!, member.workoutExperience),
+                workoutStyle = isEqual(findMeMember.workoutStyle!!, member.workoutStyle),
+                workoutGoal = isEqual(findMeMember.workoutGoal!!, member.workoutGoal)
             )
+
 
             member.copy(
                 lastWorkoutPartnerRequest = lastWorkoutPartnerRequest,
@@ -411,5 +412,7 @@ class MemberQueryService(
     }
 
     private fun isNotNull(value : Any?) = value != null
+
+    private fun isEqual(me: Any, other: Any) = me == other
 
 }
