@@ -381,7 +381,12 @@ class MemberControllerDocsTest : RestDocsSupport() {
                         workoutGoal = MemberWorkoutGoal.WEIGHT_LOSS,
                         profileImageUrl = "https://example.com/profile/1.jpg",
                         workoutImageUrl = "https://example.com/workout/1.jpg",
-                        lastWorkoutPartnerRequest = null
+                        lastWorkoutPartnerRequest = null,
+                        matchStatus = MatchStatus(
+                            workoutExperience = true,
+                            workoutStyle = false,
+                            workoutGoal = true
+                        )
                     ),
                     MemberRecommendationResponse(
                         memberId = 2L,
@@ -395,6 +400,11 @@ class MemberControllerDocsTest : RestDocsSupport() {
                             workoutPartnerRequestId = 101L,
                             status = WorkoutPartnerRequestStatus.PENDING,
                             chatRoomId = null
+                        ),
+                        matchStatus = MatchStatus(
+                            workoutExperience = false,
+                            workoutStyle = true,
+                            workoutGoal = false
                         )
                     )
                 )
@@ -472,6 +482,15 @@ class MemberControllerDocsTest : RestDocsSupport() {
                             .type(JsonFieldType.NUMBER)
                             .optional()
                             .description("운동 파트너 요청이 ACCEPT + 채팅방 존재 상태일 경우 생성된 채팅방 ID (PENDING 상태에서는 null)"),
+
+                        fieldWithPath("data[].matchStatus").type(JsonFieldType.OBJECT)
+                            .description("본인과 상대방 간의 운동 취향 일치 여부"),
+                        fieldWithPath("data[].matchStatus.workoutExperience").type(JsonFieldType.BOOLEAN)
+                            .description("운동 경력 일치 여부 (true: 일치, false: 불일치)"),
+                        fieldWithPath("data[].matchStatus.workoutStyle").type(JsonFieldType.BOOLEAN)
+                            .description("운동 스타일 일치 여부 (true: 일치, false: 불일치)"),
+                        fieldWithPath("data[].matchStatus.workoutGoal").type(JsonFieldType.BOOLEAN)
+                            .description("운동 목표 일치 여부 (true: 일치, false: 불일치)"),
 
                         fieldWithPath("meta.appFeedback")
                             .type(JsonFieldType.OBJECT)

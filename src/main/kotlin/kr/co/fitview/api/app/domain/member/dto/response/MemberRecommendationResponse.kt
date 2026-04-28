@@ -14,7 +14,8 @@ data class MemberRecommendationResponse (
     val workoutGoal: MemberWorkoutGoal,
     val profileImageUrl : String,
     val workoutImageUrl : String? = null,
-    val lastWorkoutPartnerRequest : LastWorkoutPartnerRequestResponse?
+    val lastWorkoutPartnerRequest : LastWorkoutPartnerRequestResponse?,
+    val matchStatus : MatchStatus? = null
 
 ){
     constructor(
@@ -26,6 +27,12 @@ data class MemberRecommendationResponse (
         profileImageUrl: String
     ) : this(memberId, nickname, workoutExperience, workoutStyle, workoutGoal, profileImageUrl, null, null)
 }
+
+data class MatchStatus(
+    val workoutExperience: Boolean,
+    val workoutStyle: Boolean,
+    val workoutGoal: Boolean
+)
 
 
 data class MemberRecommendationWithMetaResponse(
