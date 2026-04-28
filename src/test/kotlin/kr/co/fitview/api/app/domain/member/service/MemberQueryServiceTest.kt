@@ -1744,11 +1744,11 @@ class MemberQueryServiceTest @Autowired constructor(
         // then
         assertThat(response).hasSize(3)
         assertThat(response)
-            .extracting("memberId", "nickname", "workoutImageUrl")
+            .extracting("memberId", "nickname", "workoutImageUrl", "matchStatus.workoutExperience", "matchStatus.workoutStyle", "matchStatus.workoutGoal")
             .containsExactlyInAnyOrder(
-                tuple(matchMember1.id!!, "update1", "updateMember1Workout1"),
-                tuple(matchMember2.id!!, "update2", "updateMember2Workout1"),
-                tuple(matchMember3.id!!, "update3", "updateMember3Workout1"),
+                tuple(matchMember1.id!!, "update1", "updateMember1Workout1", false, true, true),
+                tuple(matchMember2.id!!, "update2", "updateMember2Workout1", true, false, true),
+                tuple(matchMember3.id!!, "update3", "updateMember3Workout1", false, true, true),
             )
     }
 
