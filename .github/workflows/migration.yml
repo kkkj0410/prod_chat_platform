@@ -275,3 +275,12 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ env.SLACK_WEBHOOK_URL }}
           SLACK_WEBHOOK_TYPE: ${{ env.SLACK_WEBHOOK_TYPE }}
+
+      - name: Delete old images
+        uses: snok/container-retention-policy@v2
+        with:
+          image-names: ${{ env.DOCKER_IMAGE_NAME }}
+          cut-off: A day ago UTC
+          keep-at-least: 3
+          account-type: personal
+          token: ${{ secrets.GIT_TOKEN_CHOEYOUNGJU }}
