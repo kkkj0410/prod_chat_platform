@@ -148,6 +148,7 @@ jobs:
             echo "=== [Deploy] 새 버전 컨테이너 실행 ==="
             sudo docker run -d \
               --name $CONTAINER_NAME \
+              --add-host=host.docker.internal:host-gateway \
               -p $PORT:$PORT \
               $IMAGE_FULL_NAME:$NEW_VERSION
 
