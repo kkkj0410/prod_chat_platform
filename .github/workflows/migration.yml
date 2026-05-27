@@ -157,7 +157,7 @@ jobs:
             echo "=== [Health Check] 서비스 상태 확인 시작 (5초 간격, 최대 20회) ==="
             
             RETRIES=0
-            MAX_RETRIES=20
+            MAX_RETRIES=40
             SUCCESS="false"
 
             while [ $RETRIES -lt $MAX_RETRIES ]; do
