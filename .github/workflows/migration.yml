@@ -1,0 +1,277 @@
+#해당 파일 이름(의미X)
+name: fitview-be-migration-CI/CD
+
+#on : 어떤 경우에 깃허브 액션을 실행할지 정함
+#(아래는 push 발생 시, 깃허브 액션을 수행. 즉, 아래 명령어들 실행)
+on:
+  push:
+    branches: [ "migration" ]
+
+# env : 변수 선언
+env:
+  SERVER_HOST: ${{ secrets.MIGRATION_SERVER_HOST }}
+  SERVER_HOST_NAME : ubuntu
+  SERVER_SSH_PRIVATE_KEY: ${{ secrets.MIGRATION_SERVER_SSH_PRIVATE_KEY }}
+
+  DOCKER_IMAGE_NAME: fitview-be
+  DOCKER_IMAGE_VERSION: latest
+  DOCKER_CONTAINER_NAME: backend
+
+  APPLICATION_PROD: ${{ secrets.MIGRATION_APPLICATION_YML }}
+  APPLICATION_TEST: ${{ secrets.TEST_APPLICATION_YML }}
+
+  FIREBASE_KEY: ${{ secrets.FIREBASE_KEY }}
+
+  FULL_GITHUB_SHA: ${{ github.sha }}
+  SHORT_GITHUB_SHA: 0
+
+  SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL_PRIVATE_BE }}
+  SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+
+  GITHUB_TOKEN: ${{ secrets.GIT_TOKEN_CHOEYOUNGJU }}
+
+
+# jobs : 수행할 명령어
+jobs:
+  build-and-push-docker:
+    runs-on: ubuntu-latest
+
+    # GHCR 패키지 접근 권한 추가
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set SHORT_GITHUB_SHA
+        run: echo "SHORT_GITHUB_SHA=${FULL_GITHUB_SHA::7}" >> $GITHUB_ENV
+
+      # GHCR 레지스트리에 맞게 환경변수 설정 (대문자 방지)
+      - name: Set GHCR variables
+        run: |
+          OWNER_LC=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          echo "IMAGE_FULL_NAME=ghcr.io/$OWNER_LC/${{ env.DOCKER_IMAGE_NAME }}" >> $GITHUB_ENV
+          echo "OWNER_LC=$OWNER_LC" >> $GITHUB_ENV
+
+      - name: Generate docker-compose.yml from template
+        run: envsubst < docker-compose.yml.template > docker-compose.yml
+        env:
+          DOCKER_NAME: ghcr.io/${{ env.OWNER_LC }}
+          DOCKER_IMAGE_NAME: ${{ env.DOCKER_IMAGE_NAME }}
+          DOCKER_CONTAINER_NAME: ${{ env.DOCKER_CONTAINER_NAME }}
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Set up application-prod.yml
+        run: echo "${{ env.APPLICATION_PROD }}" > ./src/main/resources/application.yml
+
+      - name: Set up application-test.yml
+        run: echo "${{ env.APPLICATION_TEST }}" > ./src/main/resources/application-test.yml
+
+      - name: Set up Firebase key
+        run: |
+          mkdir -p ./src/main/resources/firebase/
+          echo '${{ env.FIREBASE_KEY }}' > ./src/main/resources/firebase/firebase-key.json
+          ls -la ./src/main/resources/firebase/
+
+      - name: Grant execute permission for gradlew
+        run: sudo chmod +x ./gradlew
+
+      - name: Build with Gradle (Run tests)
+        run: ./gradlew build
+
+      - name: Build the Docker image
+        run: docker build . --file Dockerfile --tag ${{ env.DOCKER_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_VERSION }}
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ env.GITHUB_TOKEN }}
+
+      - name: Push the Docker image to GHCR
+        run: |
+          docker tag ${{ env.DOCKER_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_VERSION }} ${{ env.IMAGE_FULL_NAME }}:${{ env.DOCKER_IMAGE_VERSION }}
+          docker tag ${{ env.DOCKER_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_VERSION }} ${{ env.IMAGE_FULL_NAME }}:${{ env.SHORT_GITHUB_SHA }}
+          
+          docker push ${{ env.IMAGE_FULL_NAME }}:${{ env.DOCKER_IMAGE_VERSION }}
+          docker push ${{ env.IMAGE_FULL_NAME }}:${{ env.SHORT_GITHUB_SHA }}
+
+      - name: Deploy with Rollback Strategy
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ env.SERVER_HOST }}
+          username: ${{ env.SERVER_HOST_NAME }}
+          key: ${{ env.SERVER_SSH_PRIVATE_KEY }}
+          script: |
+            # ==========================================
+            # 1. 변수 및 환경 설정
+            # ==========================================
+            CONTAINER_NAME="${{ env.DOCKER_CONTAINER_NAME }}"
+            IMAGE_FULL_NAME="${{ env.IMAGE_FULL_NAME }}"
+            NEW_VERSION="${{ env.DOCKER_IMAGE_VERSION }}"
+            BACKUP_TAG="backup"
+            PORT="8080"
+
+            echo "=== [Deploy] GHCR 로그인 ==="
+            echo "${{ env.GITHUB_TOKEN }}" | sudo docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+            echo "=== [Deploy] 새 이미지 Pull ==="
+            sudo docker pull $IMAGE_FULL_NAME:$NEW_VERSION
+
+            # ==========================================
+            # 2. 현재 버전 백업 (Tagging)
+            # ==========================================
+            echo "=== [Deploy] 현재 실행 중인 이미지 백업 ==="
+            if [ "$(sudo docker ps -q -f name=$CONTAINER_NAME)" ]; then
+                CURRENT_ID=$(sudo docker inspect --format='{{.Image}}' $CONTAINER_NAME)
+                sudo docker tag $CURRENT_ID $IMAGE_FULL_NAME:$BACKUP_TAG
+                echo "-> 현재 버전을 백업했습니다: $IMAGE_FULL_NAME:$BACKUP_TAG"
+            else
+                echo "-> 실행 중인 컨테이너가 없습니다. 백업을 건너뜁니다."
+            fi
+
+            # ==========================================
+            # 3. 기존 컨테이너 중지/삭제 및 새 버전 실행
+            # ==========================================
+            echo "=== [Deploy] 기존 컨테이너 삭제 ==="
+            sudo docker stop $CONTAINER_NAME || true
+            sudo docker rm $CONTAINER_NAME || true
+
+            echo "=== [Deploy] 새 버전 컨테이너 실행 ==="
+            sudo docker run -d \
+              --name $CONTAINER_NAME \
+              -p $PORT:$PORT \
+              $IMAGE_FULL_NAME:$NEW_VERSION
+
+            # ==========================================
+            # 4. 반복 헬스 체크 (Retry Loop)
+            # ==========================================
+            echo "=== [Health Check] 서비스 상태 확인 시작 (5초 간격, 최대 20회) ==="
+            
+            RETRIES=0
+            MAX_RETRIES=20
+            SUCCESS="false"
+
+            while [ $RETRIES -lt $MAX_RETRIES ]; do
+                RETRIES=$((RETRIES+1))
+                echo "Checking health... ($RETRIES/$MAX_RETRIES)"
+                sleep 5
+
+                HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:$PORT/health || echo "000")
+
+                if [ "$HTTP_CODE" == "200" ]; then
+                    echo "[Success] 서버가 정상적으로 응답합니다. (HTTP 200)"
+                    SUCCESS="true"
+                    break
+                fi
+            done
+
+            # ==========================================
+            # 5. 결과 처리 (성공 or 롤백)
+            # ==========================================
+            if [ "$SUCCESS" == "true" ]; then
+                echo "=== [Deploy] 배포 성공 마무리 작업 ==="
+                sudo docker image prune -f
+                sudo docker logout
+                exit 0
+            else
+                echo "[Fail] 100초 동안 서버가 응답하지 않습니다. (Last Code: $HTTP_CODE)"
+                echo "롤백 프로세스를 시작합니다."
+
+                # ------------------------------------------
+                # 롤백 프로세스
+                # ------------------------------------------
+                echo "=== [Rollback] 실패한 컨테이너 삭제 ==="
+                sudo docker stop $CONTAINER_NAME
+                sudo docker rm $CONTAINER_NAME
+
+                echo "=== [Rollback] 백업 이미지로 복구 시작 ==="
+                sudo docker run -d \
+                  --name $CONTAINER_NAME \
+                  -p $PORT:$PORT \
+                  $IMAGE_FULL_NAME:$BACKUP_TAG
+
+                echo "[Rollback] 롤백 완료. 이전 버전이 실행 중입니다."
+                sudo docker logout
+            
+                exit 1
+            fi
+
+      - name: Create Slack Payload
+        if: always()
+        env:
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
+        run: |
+          STATUS="성공"
+          COLOR="#36a64f"
+          TEXT="[Stage] 배포 및 헬스체크 성공"
+
+          if [ "${{ job.status }}" != "success" ]; then
+            STATUS="실패 (롤백 수행됨)"
+            COLOR="#ff0000"
+            TEXT="[Stage] 배포 또는 헬스체크 실패"
+          fi
+
+          jq -n \
+            --arg text "$TEXT" \
+            --arg color "$COLOR" \
+            --arg status "$STATUS" \
+            --arg actor "${{ github.actor }}" \
+            --arg msg "$COMMIT_MSG" \
+            --arg repo "${{ github.repository }}" \
+            --arg branch "${{ github.ref_name }}" \
+            '{
+              text: $text,
+              attachments: [{
+                color: $color,
+                fields: [
+                  {title: "상태", value: $status, short: true},
+                  {title: "실행자", value: $actor, short: true},
+                  {title: "커밋 메시지", value: $msg, short: false},
+                  {title: "레포지토리", value: $repo, short: true},
+                  {title: "브랜치", value: $branch, short: true}
+                ]
+              }]
+            }' > slack_payload.json
+
+      - name: Fetch PR Info and Create Slack Payload
+        if: always()
+        run: |
+          COLOR="#36a64f"
+          TEXT="<!channel> *[Stage] 배포 및 헬스체크 성공*"
+          
+          if [ "${{ job.status }}" != "success" ]; then
+            COLOR="#ff0000"
+            TEXT="<!channel> *[Stage] 배포 또는 헬스체크 실패 (롤백 수행됨)*"
+          fi
+          
+          PR_BODY=$(gh api /repos/${{ github.repository }}/commits/${{ github.sha }}/pulls --jq '.[0].body // "PR 본문 없음"')
+          
+          jq -n \
+            --arg text "$TEXT" \
+            --arg color "$COLOR" \
+            --arg details "$PR_BODY" \
+            '{
+              text: $text,
+              attachments: [{
+                color: $color,
+                text: $details
+              }]
+            }' > slack_payload.json
+
+      - name: Slack Notification
+        if: always()
+        uses: slackapi/slack-github-action@v1.26.0
+        with:
+          payload-file-path: slack_payload.json
+        env:
+          SLACK_WEBHOOK_URL: ${{ env.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: ${{ env.SLACK_WEBHOOK_TYPE }}
