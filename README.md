@@ -1,5 +1,37 @@
 # 설계 고민과 의사결정 기록
 
+
+<details>
+<summary><h3>로컬 실행 시 주의사항 (IntelliJ IDEA)</h3></summary>
+
+- 프로젝트 최초 클론 후 실행 시, 환경에 따라 아래와 같은 에러가 발생할 수 있습니다.
+> `Error running 'AppApplication': Command line is too long. Shorten the command line and rerun.`
+
+**해결 방법:**
+
+1. `AppApplication` → `Edit Configuration` 클릭
+
+![Edit Configuration](docs/images/image%200.png)
+
+2. `Modify options` 클릭
+
+![Modify options](docs/images/image%201.png)
+
+3. `shorten command line` 클릭
+
+![shorten command line](docs/images/image%202.png)
+
+4. `JAR manifest` 선택
+
+![JAR manifest](docs/images/image%203.png)
+
+5. 적용
+
+![적용](docs/images/image%204.png)
+
+</details>
+
+
 ### ※ 전부 공개 허락을 받는 내용입니다
 
 ### 목차
