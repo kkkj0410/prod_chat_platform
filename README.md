@@ -11,23 +11,23 @@
 
 1. `AppApplication` → `Edit Configuration` 클릭
 
-![Edit Configuration](docs/images/image%200.png)
+![Edit Configuration](docs/images/caution1.png)
 
 2. `Modify options` 클릭
 
-![Modify options](docs/images/image%201.png)
+![Modify options](docs/images/caution2.png)
 
 3. `shorten command line` 클릭
 
-![shorten command line](docs/images/image%202.png)
+![shorten command line](docs/images/caution3.png)
 
 4. `JAR manifest` 선택
 
-![JAR manifest](docs/images/image%203.png)
+![JAR manifest](docs/images/caution4.png)
 
 5. 적용
 
-![적용](docs/images/image%204.png)
+![적용](docs/images/caution5.png)
 
 </details>
 
