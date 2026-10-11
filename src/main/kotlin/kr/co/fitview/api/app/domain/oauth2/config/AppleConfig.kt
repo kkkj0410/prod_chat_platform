@@ -2,9 +2,9 @@ package kr.co.fitview.api.app.domain.oauth2.config
 
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Profile
 import org.springframework.core.io.ClassPathResource
 import java.nio.file.Files
-
 
 @Configuration
 class AppleConfig(

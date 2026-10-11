@@ -18,7 +18,7 @@ import org.springframework.data.redis.listener.PatternTopic
 import org.springframework.data.redis.listener.RedisMessageListenerContainer
 import org.springframework.data.redis.listener.adapter.MessageListenerAdapter
 
-@Profile("!test")
+@Profile("prod")
 @Configuration
 class RedisConfig(
     @Value("\${spring.data.redis.host}") private val host: String,

@@ -15,6 +15,7 @@ import java.util.Base64
 
 
 @Configuration
+@Profile("prod")
 class FirebaseConfig {
 
     @Value("\${firebase.key-json}")

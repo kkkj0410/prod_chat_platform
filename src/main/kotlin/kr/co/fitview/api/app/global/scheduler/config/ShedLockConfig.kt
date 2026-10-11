@@ -10,7 +10,7 @@ import org.springframework.data.redis.connection.RedisConnectionFactory
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.context.annotation.Profile
 
-@Profile("!test")
+@Profile("prod")
 @Configuration
 @EnableScheduling
 @EnableSchedulerLock(defaultLockAtMostFor = "PT10M")
