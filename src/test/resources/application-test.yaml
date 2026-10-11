@@ -1,0 +1,116 @@
+spring:
+  main:
+    # 테스트를 위한 가짜 빈 오버라이딩 설정
+    allow-bean-definition-overriding: true
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false;MODE=MySQL;DATABASE_TO_LOWER=TRUE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  flyway:
+    enabled: false
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+  h2:
+    console:
+      enabled: true
+
+jwt:
+  secret: E8l1jy3wDp2lXwInqbq1xfOwp6J0GwDLGBn3RlyNMfTS6M3xqM
+  access-token-validity-in-ms: 1209600000
+  refresh-token-validity-in-ms: 1209600000
+  docs-token-validity-in-ms: 2592000000
+
+cloud:
+  aws:
+    region: region
+    credentials:
+      access-key: accessKey
+      secret-key: secretKey
+  s3:
+    bucket: bucket
+    domain: domain
+    # 단일 이미지 업로드는 50MB 제한
+    max-image-byte: 52428800
+    max-image-count: 50
+    max-duration-minute: 10
+  stack:
+    auto: false
+
+oauth2:
+  apple:
+    # service ID
+    client-id: com.test.client
+    # App ID identifier
+    bundle-id: com.test
+    # Identifiers : App ID prefix
+    team-id: teamId
+    key-id: keyId
+    # key-value는 *.p8 가짜 데이터. 노출돼도 괜찮습니다.
+    key-value: |
+      -----BEGIN PRIVATE KEY-----
+      MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgVJ/s48cs3V88a8mrZ0p
+      y3E4i/g5fSBlr3a4Ea4fUF2yhRANCAATf5iYrXp2askncgWk2Sjsc+pUs3d78JHIJ
+      4g2Wj+gXydk4vI8QhGqI5s2e9kUaYyDo/p8Y1qg4A8z2Y+K5yR+m
+      -----END PRIVATE KEY-----
+    jwt:
+      validity-in-ms: 300000
+  google:
+    client-id-web: "clientIdWeb"
+    client-secret-web: "clientSecretWeb"
+    redirect-uri-web: "redirectUriWeb"
+
+
+cors:
+  allow-origin-localhost: "http://localhost:*"
+  allow-origin-127: "http://127.0.0.1:*"
+  allow-origin-webapp: 'http://hello'
+  allow-origin-domain: 'http://hello'
+
+fcm:
+  deep-link:
+    base-domain: "domain://"
+
+app-feedback:
+  image-url: "https://hello/app-feedback/card/hello"
+  svg-image-url : "https://hello/app-feedback/card/hello"
+
+banner:
+  app-feedback:
+    svg-image-url: "https://hello/app-feedback/banner/hello"
+
+logging.level:
+  org.hibernate.SQL: debug # SQL문 log 출력
+
+workout-reward:
+  policy:
+    start-date: "2026-04-17"
+  coupons:
+    BAEMIN:
+      icon-png-image-url: "https://hello/workout-reward/icon/hello"
+      first-card-png-image-url: "https://hello/workout-reward/card/hello"
+      second-card-png-image-url: "https://hello/workout-reward/card/hello"
+    NAVER_PAY:
+      icon-png-image-url: "https://hello/workout-reward/icon/hello"
+      first-card-png-image-url: "https://hello/workout-reward/card/hello"
+      second-card-png-image-url: "https://hello/workout-reward/card/hello"
+    COUPANG:
+      icon-png-image-url: "https://hello/workout-reward/icon/hello"
+      first-card-png-image-url: "https://hello/workout-reward/card/hello"
+      second-card-png-image-url: "https://hello/workout-reward/card/hello"
+    GS25:
+      icon-png-image-url: "https://hello/workout-reward/icon/hello"
+      first-card-png-image-url: "https://hello/workout-reward/card/hello"
+      second-card-png-image-url: "https://hello/workout-reward/card/hello"
+    EMART:
+      icon-png-image-url: "https://hello/workout-reward/icon/hello"
+      first-card-png-image-url: "https://hello/workout-reward/card/hello"
+      second-card-png-image-url: "https://hello/workout-reward/card/hello"
+    STARBUCKS:
+      icon-png-image-url: "https://hello/workout-reward/icon/hello"
+      first-card-png-image-url: "https://hello/workout-reward/card/hello"
+      second-card-png-image-url: "https://hello/workout-reward/card/hello"
