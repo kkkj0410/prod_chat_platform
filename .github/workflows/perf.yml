@@ -1,4 +1,4 @@
-name: fitview-be-PERF-CI/CD
+name: PERF-CI/CD
 
 on:
   workflow_dispatch:
