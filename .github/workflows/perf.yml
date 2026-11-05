@@ -38,7 +38,7 @@ jobs:
       - name: Build with Gradle
         run: |
           chmod +x ./gradlew
-          ./gradlew build -x test
+          ./gradlew build -PskipDocs -x test
 
       # GHCR 이미지 이름은 소문자여야 하므로 변환
       - name: Set image name (lowercase)

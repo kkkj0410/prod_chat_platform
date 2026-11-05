@@ -149,6 +149,8 @@ tasks.named<org.asciidoctor.gradle.jvm.AsciidoctorTask>("asciidoctor") {
 	}
 	baseDirFollowsSourceFile() // 다른 adoc 파일 include 시, 경로를 baseDir로 맞추기
 	dependsOn(tasks.test)
+
+	onlyIf { !project.hasProperty("skipDocs") }
 }
 
 // 4. bootJar task
