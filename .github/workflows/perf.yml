@@ -1,6 +1,9 @@
 name: PERF-CI/CD
 
 on:
+  push:
+    branches:
+      - perf/master
   workflow_dispatch:
 
 permissions:
