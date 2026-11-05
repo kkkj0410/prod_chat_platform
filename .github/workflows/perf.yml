@@ -1,0 +1,92 @@
+name: fitview-be-PERF-CI/CD
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  PERF_WAS_INSTANCE_IP: ${{ secrets.PERF_WAS_INSTANCE_IP }}
+  PERF_WAS_SSH_KEY: ${{ secrets.PERF_WAS_SSH_KEY }}
+  APPLICATION_PERF: ${{ secrets.PERF_APPLICATION_YML }}
+
+  SERVER_USER: ubuntu
+  DOCKER_IMAGE_VERSION: latest
+  DOCKER_CONTAINER_NAME: backend-perf
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Create Configuration Files
+        run: |
+          echo "$APPLICATION_PERF" > ./src/main/resources/application.yml
+
+      - name: Build with Gradle
+        run: |
+          chmod +x ./gradlew
+          ./gradlew build -x test
+
+      # GHCR 이미지 이름은 소문자여야 하므로 변환
+      - name: Set image name (lowercase)
+        run: |
+          echo "IMAGE_FULL_NAME=ghcr.io/${GITHUB_REPOSITORY,,}" >> $GITHUB_ENV
+
+      - name: Login to GHCR
+        run: |
+          echo "${{ secrets.GIT_TOKEN }}" | docker login ghcr.io \
+            -u "${{ github.actor }}" --password-stdin
+
+      - name: Build Docker Image
+        run: |
+          docker build . -t ${{ env.IMAGE_FULL_NAME }}:${{ env.DOCKER_IMAGE_VERSION }}
+
+      - name: Push to GHCR
+        run: |
+          docker push ${{ env.IMAGE_FULL_NAME }}:${{ env.DOCKER_IMAGE_VERSION }}
+
+      - name: Deploy to PERF WAS
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          GHCR_USER: ${{ github.actor }}
+          GHCR_TOKEN: ${{ secrets.GIT_TOKEN }}
+        with:
+          host: ${{ env.PERF_WAS_INSTANCE_IP }}
+          username: ${{ env.SERVER_USER }}
+          key: ${{ env.PERF_WAS_SSH_KEY }}
+          envs: GHCR_USER,GHCR_TOKEN
+          script: |
+            CONTAINER_NAME="${{ env.DOCKER_CONTAINER_NAME }}"
+            IMAGE_FULL_NAME="${{ env.IMAGE_FULL_NAME }}"
+            NEW_VERSION="${{ env.DOCKER_IMAGE_VERSION }}"
+            PORT=8080
+
+            echo "=== [Deploy] GHCR 로그인 ==="
+            echo "$GHCR_TOKEN" | sudo docker login ghcr.io \
+              -u "$GHCR_USER" --password-stdin
+
+            echo "=== [Deploy] 새 이미지 Pull ==="
+            sudo docker pull $IMAGE_FULL_NAME:$NEW_VERSION
+
+            echo "=== [Deploy] 기존 컨테이너 삭제 ==="
+            sudo docker rm -f $CONTAINER_NAME || true
+
+            echo "=== [Deploy] 새 컨테이너 실행 ==="
+            sudo docker run -d --name $CONTAINER_NAME \
+              -p $PORT:$PORT -e TZ=Asia/Seoul \
+              -v ~/server_logs:/logs \
+              $IMAGE_FULL_NAME:$NEW_VERSION
+
+            echo "=== [Deploy] 정리 ==="
+            sudo docker image prune -f
+            sudo docker logout ghcr.io

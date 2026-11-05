@@ -43,7 +43,9 @@ object SecurityConstant {
         "$WS_STOMP_URI/**",
         "/health",
 
-        "/actuator/prometheus",
+//        "/actuator/prometheus",
+        "/actuator",
+        "/actuator/*",
 
         "/css/**",
         "/js/**",

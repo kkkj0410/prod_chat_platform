@@ -42,6 +42,7 @@ out/
 
 ### yml ###
 /src/main/resources/*.yml
+/src/main/resources/*.yaml
 /src/main/resources/static/*.yaml
 /src/main/resources/*.p8
 /src/main/resources/*.json
