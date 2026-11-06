@@ -16,7 +16,7 @@ import java.util.Base64
 
 
 @Configuration
-@Profile("local")
+@Profile("local", "perf")
 class LocalFirebaseConfig {
 
     @Bean
