@@ -87,6 +87,7 @@ jobs:
             echo "=== [Deploy] 새 컨테이너 실행 ==="
             sudo docker run -d --name $CONTAINER_NAME \
               -p $PORT:$PORT -e TZ=Asia/Seoul \
+              -e SPRING_PROFILES_ACTIVE=perf \
               -v ~/server_logs:/logs \
               $IMAGE_FULL_NAME:$NEW_VERSION
 
