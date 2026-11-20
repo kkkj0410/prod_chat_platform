@@ -66,7 +66,6 @@ class ChatController(
     ) : ResponseEntity<ApiResponse<SuccessCursorAtPagedResponseWithBefore<LastChatMessage>>> {
 
         val response = chatMessageQueryService.findChatMessages(securityUtil.getMemberId(), chatRoomId, condition)
-
         return ResponseEntity.ok(ApiResponse.successWithCursorAtPaginationWithBefore(
             slice = response,
             timeExtractor = { it.sentAt }
