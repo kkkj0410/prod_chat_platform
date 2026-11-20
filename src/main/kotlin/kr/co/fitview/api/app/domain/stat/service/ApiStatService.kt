@@ -19,39 +19,47 @@ class ApiStatService(
 ) {
 
     @Transactional
-    fun increaseApiStat(path : String, method : ApiStatMethod) : ApiStat {
+    fun increaseApiStat(path : String, method : ApiStatMethod) : Int {
         val statDate = time.nowLocalDate
         val normalizedPath = normalizePath(path)
 
-        val findApiStat = apiStatQueryService.findApiStatFrom(
+        return apiStatRepository.upsertCount(
             statDate = statDate,
+            method = method,
             path = normalizedPath,
-            method = method
-        )
+            delta = 1,
+            now = time.nowLocalDateTime
+        );
 
-        if(isNotNull(findApiStat)){
-            apiStatRepository.increaseCountBy(findApiStat!!.id!!)
-            return findApiStat
-        }
-
-        return try {
-            apiStatRepository.saveAndFlush(
-                ApiStat.of(
-                    statDate = statDate,
-                    path = normalizedPath,
-                    method = method
-                )
-            )
-        } catch (e: DataIntegrityViolationException) {
-            val retry = apiStatQueryService.findApiStatFrom(
-                statDate = statDate,
-                path = normalizedPath,
-                method = method
-            ) ?: throw e
-
-            apiStatRepository.increaseCountBy(retry.id!!)
-            retry
-        }
+//        val findApiStat = apiStatQueryService.findApiStatFrom(
+//            statDate = statDate,
+//            path = normalizedPath,
+//            method = method
+//        )
+//
+//        if(isNotNull(findApiStat)){
+//            apiStatRepository.increaseCountBy(findApiStat!!.id!!)
+//            return findApiStat
+//        }
+//
+//        return try {
+//            apiStatRepository.saveAndFlush(
+//                ApiStat.of(
+//                    statDate = statDate,
+//                    path = normalizedPath,
+//                    method = method
+//                )
+//            )
+//        } catch (e: DataIntegrityViolationException) {
+//            val retry = apiStatQueryService.findApiStatFrom(
+//                statDate = statDate,
+//                path = normalizedPath,
+//                method = method
+//            ) ?: throw e
+//
+//            apiStatRepository.increaseCountBy(retry.id!!)
+//            retry
+//        }
     }
 
     private fun isNotNull(data: Any?): Boolean = data != null

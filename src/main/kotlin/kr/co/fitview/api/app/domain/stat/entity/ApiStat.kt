@@ -8,6 +8,7 @@ import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.Table
+import jakarta.persistence.UniqueConstraint
 import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
 import kr.co.fitview.api.app.domain.stat.entity.enums.ApiStatMethod
@@ -17,7 +18,15 @@ import java.time.Instant
 import java.time.LocalDate
 
 @Entity
-@Table(name = "api_stat")
+@Table(
+    name = "api_stat",
+    uniqueConstraints = [
+        UniqueConstraint(
+            name = "api_stat_stat_date_path_method_uk",
+            columnNames = ["stat_date", "path", "method"]
+        )
+    ]
+)
 open class ApiStat(
 
     @NotNull
