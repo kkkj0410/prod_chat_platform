@@ -85,14 +85,14 @@ jobs:
             sudo docker rm -f $CONTAINER_NAME || true
 
             echo "=== [Deploy] 새 컨테이너 실행 ==="
-            sudo docker run -d --name $CONTAINER_NAME \
+            sudo docker run -d --name backend-perf \
               --network host \
               -e TZ=Asia/Seoul \
               -e SPRING_PROFILES_ACTIVE=perf \
-              -e "JAVA_OPTS=-Xms1g -Xmx1g -javaagent:/pinpoint-agent/pinpoint-bootstrap-4.0.0.jar -Dpinpoint.agentId=perf-01 -Dpinpoint.applicationName=chat-perf -Dpinpoint.profiler.profiles.active=local" \
-              -v ~/server_logs:/logs \
-              -v ~/pinpoint-agent:/pinpoint-agent \
-              $IMAGE_FULL_NAME:$NEW_VERSION
+              -e "JAVA_OPTS=-Xms1g -Xmx1g -javaagent:/pinpoint-agent/pinpoint-bootstrap-2.5.4.jar -Dpinpoint.agentId=perf-01 -Dpinpoint.applicationName=chat-perf -Dpinpoint.profiler.profiles.active=local" \
+              -v /home/ubuntu/server_logs:/logs \
+              -v /home/ubuntu/pinpoint-agent:/pinpoint-agent \
+              ghcr.io/kkkj0410/prod_chat_platform:latest
 
             echo "=== [Deploy] 정리 ==="
             sudo docker image prune -f
