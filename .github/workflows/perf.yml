@@ -87,6 +87,7 @@ jobs:
             echo "=== [Deploy] 새 컨테이너 실행 ==="
             sudo docker run -d --name backend-perf \
               --network host \
+              --log-opt max-size=50m --log-opt max-file=3 \
               -e TZ=Asia/Seoul \
               -e SPRING_PROFILES_ACTIVE=perf \
               -e "JAVA_OPTS=-Xms1g -Xmx1g -javaagent:/pinpoint-agent/pinpoint-bootstrap-2.5.4.jar -Dpinpoint.agentId=perf-01 -Dpinpoint.applicationName=chat-perf -Dpinpoint.profiler.profiles.active=local" \
